@@ -496,6 +496,188 @@ class FindSettings {
 #endregion
 
 
+#region ArgTokenizer
+########################################
+# ArgTokenizer
+########################################
+enum ArgTokenType {
+    Bool
+    Str
+    Int
+}
+
+class ArgToken {
+    [string]$Name
+    [ArgTokenType]$Type
+    [object]$Value
+
+    ArgToken([string]$Name, [ArgTokenType]$Type, [object]$Value) {
+        $this.Name = $Name
+        $this.Type = $Type
+        $this.Value = $Value
+    }
+}
+
+class ArgTokenizer {
+    # These need to be case-sensitive
+    [system.collections.hashtable]$BoolMap
+    [system.collections.hashtable]$StrMap
+    [system.collections.hashtable]$IntMap
+
+    ArgTokenizer([system.collections.hashtable]$BoolMap,
+                 [system.collections.hashtable]$StrMap,
+                 [system.collections.hashtable]$IntMap) {
+        $this.BoolMap = $BoolMap
+        $this.StrMap = $StrMap
+        $this.IntMap = $IntMap
+    }
+
+    [ArgToken[]]TokenizeArgs([string[]]$argList) {
+        [ArgToken[]]$argTokens = @()
+        $idx = 0
+        while ($idx -lt $argList.Count) {
+            $arg = $argList[$idx]
+            if ($arg.StartsWith('-')) {
+                [string[]]$argNames = @()
+                [string]$argVal = ''
+
+                if ($arg.StartsWith('--')) {
+                    $arg = $arg.Substring(2)
+                    if ($arg.Contains('=')) {
+                        $parts = $arg -split '='
+                        if ($parts.Length -gt 0) {
+                            $arg = $parts[0]
+                        }
+                        if ($parts.Length -gt 1) {
+                            $argVal = $parts[1]
+                        }
+                    }
+                    $argNames += $arg
+                } else {
+                    $arg = $arg.Substring(1)
+                    # TODO: add each char as separate arg
+                    foreach ($c in $arg.ToCharArray()) {
+                        $c = $c.ToString()
+                        if ($this.BoolMap.ContainsKey($c)) {
+                            $argNames += $this.BoolMap[$c]
+                        } elseif ($this.StrMap.ContainsKey($c)) {
+                            $argNames += $this.StrMap[$c]
+                        } elseif ($this.IntMap.ContainsKey($c)) {
+                            $argNames += $this.IntMap[$c]
+                        }
+                    }
+                }
+
+                foreach ($argName in $argNames) {
+                    if ($this.BoolMap.ContainsKey($argName)) {
+                        $argTokens += [ArgToken]::new($argName, [ArgTokenType]::Bool, $true)
+                        if ($argName -eq 'help' -or $argName -eq 'version') {
+                            return $argTokens;
+                        }
+                    } else {
+                        if ($argVal -eq '') {
+                            $idx++
+                            if ($idx -ge $argList.Count) {
+                                throw "Missing value for $arg"
+                            }
+                            $argVal = $argList[$idx]
+                        }
+                        if ($this.StrMap.ContainsKey($argName) -or $argName -eq 'settings-file') {
+                            $argTokens += [ArgToken]::new($argName, [ArgTokenType]::Str, $argVal)
+                        } elseif ($this.IntMap.ContainsKey($argName)) {
+                            $argTokens += [ArgToken]::new($argName, [ArgTokenType]::Int, [int]$argVal)
+                        } else {
+                            throw "Invalid option: $arg"
+                        }
+                    }
+                }
+            } else {
+                $argTokens += [ArgToken]::new('path', [ArgTokenType]::Str, $arg)
+            }
+            $idx++
+        }
+        return $argTokens;
+    }
+
+    [ArgToken[]]TokenizeHashtable([Hashtable]$argHash) {
+        [ArgToken[]]$argTokens = @()
+        # keys are sorted so that output is consistent across all versions
+        $keys = $argHash.Keys | Sort-Object
+        foreach ($key in $keys) {
+            $value = $argHash[$key]
+            if ($this.BoolMap.ContainsKey($key)) {
+                if ($value -is [bool]) {
+                    $argTokens += [ArgToken]::new($key, [ArgTokenType]::Bool, $value)
+                } else {
+                    throw "Invalid value for option: " + $key
+                }
+            } elseif ($this.StrMap.ContainsKey($key)) {
+                if ($value -is [string])
+                {
+                    $argTokens += [ArgToken]::new($key, [ArgTokenType]::Str, $value)
+                } elseif ($value -is [object]) {
+                    foreach ($val in $value) {
+                        $argTokens += [ArgToken]::new($key, [ArgTokenType]::Str, $val)
+                    }
+                } else {
+                    throw "Invalid value for option: " + $key
+                }
+            } elseif ($this.IntMap.ContainsKey($key)) {
+                if ($value -is [int] -or $value -is [int64]) {
+                    $argTokens += [ArgToken]::new($key, [ArgTokenType]::Int, $value)
+                } else {
+                    throw "Invalid value for option: " + $key
+                }
+            } elseif ($key -eq 'settings-file') {
+                if ($value -is [string])
+                {
+                    $argTokens += [ArgToken]::new($key, [ArgTokenType]::Str, $value)
+                } elseif ($value -is [object]) {
+                    foreach ($val in $value) {
+                        $argTokens += [ArgToken]::new($key, [ArgTokenType]::Str, $val)
+                    }
+                } else {
+                    throw "Invalid value for option: " + $key
+                }
+            } else {
+                throw "Invalid option: " + $key
+            }
+        }
+        return $argTokens
+    }
+
+    [ArgToken[]]TokenizeJson([string]$json) {
+        $argHash = @{}
+        try {
+            $argHash = $json | ConvertFrom-Json -AsHashtable
+        } catch {
+            throw "Unable to parse JSON"
+        }
+        return $this.TokenizeHashtable($argHash)
+    }
+
+    [ArgToken[]]TokenizeFilePath([string]$filePath) {
+        $expandedPath = ExpandPath($filePath)
+        if (-not (Test-Path -Path $expandedPath)) {
+            throw "Settings file not found: $filePath"
+        }
+        if (-not $filePath.EndsWith(".json")) {
+            throw "Invalid settings file (must be JSON): $filePath"
+        }
+        $json = Get-Content -Path $expandedPath -Raw
+        try {
+            return $this.TokenizeJson($json)
+        } catch {
+            if ($_.Exception.Message -eq 'Unable to parse JSON') {
+                throw "Unable to parse JSON in settings file: $filePath"
+            }
+            throw $_
+        }
+    }
+}
+#endregion
+
+
 #region FindOptions
 ########################################
 # FindOptions
@@ -523,6 +705,7 @@ class FindOption {
 
 class FindOptions {
     [FindOption[]]$FindOptions = @()
+    [ArgTokenizer]$ArgTokenizer
     # $LongArgMap = @{}
     # instantiate this way to get case sensitivity of keys
     $LongArgMap = [system.collections.hashtable]::new()
@@ -707,6 +890,7 @@ class FindOptions {
 
     FindOptions() {
         $this.FindOptions = $this.LoadOptionsFromJson()
+        $this.ArgTokenizer = $this.GetArgTokenizer()
     }
 
     [FindOption[]]LoadOptionsFromJson() {
@@ -729,171 +913,90 @@ class FindOptions {
         })
         return $opts | Sort-Object -Property SortArg
     }
-
-    [void]UpdateSettingsFromHash([FindSettings]$settings, [Hashtable]$settingsHash) {
-        # keys are sorted so that output is consistent across all versions
-        $keys = $settingsHash.Keys | Sort-Object
-        $invalidKeys = @($keys | Where-Object { -not $this.LongArgMap.ContainsKey($_) })
-        if ($invalidKeys.Count -gt 0) {
-            throw "Invalid option: " + $invalidKeys[0]
+    
+    [ArgTokenizer]GetArgTokenizer() {
+        $BoolMap = [system.collections.hashtable]::new()
+        $StrMap = [system.collections.hashtable]::new()
+        $StrMap['path'] = 'path'
+        $IntMap = [system.collections.hashtable]::new()
+        foreach ($opt in $this.FindOptions) {
+            if ($this.BoolActionMap.ContainsKey($opt.LongArg)) {
+                $BoolMap[$opt.LongArg] = $opt.LongArg
+                if ($opt.ShortArg -ne '') {
+                    $BoolMap[$opt.ShortArg] = $opt.LongArg
+                }
+            } elseif ($this.StringActionMap.ContainsKey($opt.LongArg)) {
+                $StrMap[$opt.LongArg] = $opt.LongArg
+                if ($opt.ShortArg -ne '') {
+                    $StrMap[$opt.ShortArg] = $opt.LongArg
+                }
+            } elseif ($this.IntActionMap.ContainsKey($opt.LongArg)) {
+                $IntMap[$opt.LongArg] = $opt.LongArg
+                if ($opt.ShortArg -ne '') {
+                    $IntMap[$opt.ShortArg] = $opt.LongArg
+                }
+            }
         }
-        foreach ($key in $keys) {
-            $value = $settingsHash[$key]
-            if ($this.BoolActionMap.ContainsKey($key)) {
-                if ($value -is [bool]) {
-                    $this.BoolActionMap[$key].Invoke($value, $settings)
-                } else {
-                    throw "Invalid value for option: " + $key
-                }
-            } elseif ($this.StringActionMap.ContainsKey($key)) {
-                if ($value -is [string])
-                {
-                    $this.StringActionMap[$key].Invoke($value, $settings)
-                } elseif ($value -is [object]) {
-                    foreach ($val in $value) {
-                        $this.StringActionMap[$key].Invoke($val, $settings)
+        return [ArgTokenizer]::new($BoolMap, $StrMap, $IntMap)
+    }
+
+    [void]UpdateSettingsFromArgTokens([FindSettings]$settings, [ArgToken[]]$argTokens) {
+        foreach ($argToken in $argTokens) {
+            if ($argToken.Type -eq [ArgTokenType]::Bool) {
+                if ($this.BoolActionMap.ContainsKey($argToken.Name)) {
+                    if ($argToken.Value -is [bool]) {
+                        $this.BoolActionMap[$argToken.Name].Invoke($argToken.Value, $settings)
+                    } else {
+                        throw "Invalid value for option: " + $argToken.Name
                     }
                 } else {
-                    throw "Invalid value for option: " + $key
+                    throw "Invalid option: " + $argToken.Name
                 }
-            } elseif ($this.IntActionMap.ContainsKey($key)) {
-                if ($value -is [int] -or $value -is [int64]) {
-                    $this.IntActionMap[$key].Invoke($value, $settings)
-                } else {
-                    throw "Invalid value for option: " + $key
-                }
-            } elseif ($key -eq 'settings-file') {
-                if ($value -is [string])
-                {
-                    $this.UpdateSettingsFromFilePath($settings, $value)
-                } elseif ($value -is [object]) {
-                    foreach ($val in $value) {
-                        $this.UpdateSettingsFromFilePath($settings, $val)
+            } elseif ($argToken.Type -eq [ArgTokenType]::Str) {
+                if ($this.StringActionMap.ContainsKey($argToken.Name)) {
+                    if ($argToken.Value -is [string]) {
+                        $this.StringActionMap[$argToken.Name].Invoke($argToken.Value, $settings)
+                    } else {
+                        throw "Invalid value for option: " + $argToken.Name
+                    }
+                } elseif ($argToken.Name -eq 'settings-file') {
+                    if ($argToken.Value -is [string]) {
+                        $this.UpdateSettingsFromFilePath($settings, $argToken.Value)
+                    } else {
+                        throw "Invalid value for option: " + $argToken.Name
                     }
                 } else {
-                    throw "Invalid value for option: " + $key
+                    throw "Invalid option: " + $argToken.Name
+                }
+            } elseif ($argToken.Type -eq [ArgTokenType]::Int) {
+                if ($this.IntActionMap.ContainsKey($argToken.Name)) {
+                    if ($argToken.Value -is [int] -or $argToken.Value -is [int64]) {
+                        $this.IntActionMap[$argToken.Name].Invoke($argToken.Value, $settings)
+                    } else {
+                        throw "Invalid value for option: " + $argToken.Name
+                    }
+                } else {
+                    throw "Invalid option: " + $argToken.Name
                 }
             } else {
-                # should never reach here
-                throw "Invalid option: " + $key
+                throw "Invalid option: " + $argToken.Name
             }
         }
     }
 
     [void]UpdateSettingsFromJson([FindSettings]$settings, [string]$json) {
-        $settingsHash = @{}
-        try {
-            $settingsHash = $json | ConvertFrom-Json -AsHashtable
-        } catch {
-            throw "Unable to parse JSON"
-        }
-        $this.UpdateSettingsFromHash($settings, $settingsHash)
+        $argTokens = $this.ArgTokenizer.TokenizeJson($json)
+        $this.UpdateSettingsFromArgTokens($settings, $argTokens)
     }
 
     [void]UpdateSettingsFromFilePath([FindSettings]$settings, [string]$filePath) {
-        $expandedPath = ExpandPath($filePath)
-        if (-not (Test-Path -Path $expandedPath)) {
-            throw "Settings file not found: $filePath"
-        }
-        if (-not $filePath.EndsWith(".json")) {
-            throw "Invalid settings file (must be JSON): $filePath"
-        }
-        $json = Get-Content -Path $expandedPath -Raw
-        try {
-            $this.UpdateSettingsFromJson($settings, $json)
-        }
-        catch {
-            if ($_.Exception.Message -eq 'Unable to parse JSON') {
-                throw "Unable to parse JSON in settings file: $filePath"
-            }
-            throw $_
-        }
-    }
-
-    [Hashtable]HashtableFromArgs([string[]]$argList) {
-        $settingsHash = @{}
-        $idx = 0
-        while ($idx -lt $argList.Count) {
-            $arg = $argList[$idx]
-            if ($arg.StartsWith('-')) {
-                [string[]]$argNames = @()
-                [string]$argVal = ''
-
-                if ($arg.StartsWith('--'))
-                {
-                    $arg = $arg.Substring(2)
-                    if ($arg.Contains('=')) {
-                        $parts = $arg -split '='
-                        if ($parts.Length -gt 0) {
-                            $arg = $parts[0]
-                        }
-                        if ($parts.Length -gt 1) {
-                            $argVal = $parts[1]
-                        }
-                    }
-                    if (-not $this.LongArgMap.ContainsKey($arg)) {
-                        throw "Invalid option: $arg"
-                    }
-                    $longArg = $this.LongArgMap[$arg]
-                    $argNames += $longArg
-                }
-                else
-                {
-                    $arg = $arg.Substring(1)
-                    # TODO: add each char as separate arg
-                    foreach ($c in $arg.ToCharArray()) {
-                        $c = $c.ToString()
-                        if (-not $this.LongArgMap.ContainsKey($c)) {
-                            throw "Invalid option: $c"
-                        }
-                        $longArg = $this.LongArgMap[$c]
-                        $argNames += $longArg
-                    }
-
-                }
-
-                foreach ($argName in $argNames)
-                {
-                    if ($this.BoolActionMap.ContainsKey($argName)) {
-                        $settingsHash[$argName] = $true
-                        if ($argName -eq 'help' -or $argName -eq 'version') {
-                            return $settingsHash;
-                        }
-
-                    } else {
-                        if ($argVal -eq '') {
-                            $idx++
-                            if ($idx -ge $argList.Count) {
-                                throw "Missing value for $arg"
-                            }
-                            $argVal = $argList[$idx]
-                        }
-                        if ($this.StringActionMap.ContainsKey($argName) -or $argName -eq 'settings-file') {
-                            if (-not $settingsHash.ContainsKey($argName)) {
-                                $settingsHash[$argName] = @()
-                            }
-                            $settingsHash[$argName] += $argVal
-                        } elseif ($this.IntActionMap.ContainsKey($argName)) {
-                            $settingsHash[$argName] = [int]$argVal
-                        } else {
-                            throw "Invalid option: $arg"
-                        }
-                    }
-                }
-            } else {
-                if (-not $settingsHash.ContainsKey('path')) {
-                    $settingsHash['path'] = @()
-                }
-                $settingsHash['path'] += $arg
-            }
-            $idx++
-        }
-        return $settingsHash;
+        $argTokens = $this.ArgTokenizer.TokenizeFilePath($filePath)
+        $this.UpdateSettingsFromArgTokens($settings, $argTokens)
     }
 
     [void]UpdateSettingsFromArgs([FindSettings]$settings, [string[]]$argList) {
-        $settingsHash = $this.HashtableFromArgs($argList)
-        $this.UpdateSettingsFromHash($settings, $settingsHash)
+        $argTokens = $this.ArgTokenizer.TokenizeArgs($argList)
+        $this.UpdateSettingsFromArgTokens($settings, $argTokens)
     }
 
     [FindSettings]SettingsFromArgs([string[]]$argList) {
