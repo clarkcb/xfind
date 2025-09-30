@@ -1,3 +1,4 @@
+#import "ArgTokenizer.h"
 #import "FileUtil.h"
 #import "FindConfig.h"
 #import "Regex.h"
@@ -10,6 +11,7 @@
 @property NSDictionary *boolActionDict;
 @property NSDictionary *stringActionDict;
 @property NSDictionary *integerActionDict;
+@property ArgTokenizer *argTokenizer;
 
 @end
 
@@ -23,6 +25,7 @@
         self.boolActionDict = [self getBoolActionDict];
         self.stringActionDict = [self getStringActionDict];
         self.integerActionDict = [self getIntegerActionDict];
+        self.argTokenizer = [self getArgTokenizer];
     }
     return self;
 }
@@ -181,96 +184,109 @@ typedef void (^IntegerActionBlockType)(NSInteger, FindSettings*);
     };
 }
 
-- (void) applySetting:(NSString *)name obj:(NSObject *)obj settings:(FindSettings *)settings error:(NSError **)error {
-    if (self.longArgDict[name]) {
-        if (self.boolActionDict[name]) {
-            if ([obj isKindOfClass:[NSNumber class]]) {
-                NSNumber *num = (NSNumber *)obj;
-                BOOL b = [num boolValue];
-                void(^block)(BOOL, FindSettings*) = self.boolActionDict[name];
-                block(b, settings);
-            } else {
-                setError(error, [@"Invalid value for option: " stringByAppendingString:name]);
-                return;
+- (ArgTokenizer *) getArgTokenizer {
+    NSMutableDictionary *boolDict = [[NSMutableDictionary alloc] init];
+    NSMutableDictionary *stringDict = [[NSMutableDictionary alloc] init];
+    stringDict[@"path"] = @"path";
+    NSMutableDictionary *intDict = [[NSMutableDictionary alloc] init];
+    
+    for (FindOption *fo in self.findOptions) {
+        if (self.boolActionDict[fo.longArg]) {
+            boolDict[fo.longArg] = fo.longArg;
+            if (fo.shortArg) {
+                boolDict[fo.shortArg] = fo.longArg;
             }
-        } else if (self.stringActionDict[name]) {
-            if ([obj isKindOfClass:[NSString class]]) {
-                NSString *s = (NSString *)obj;
-                void(^block)(NSString *, FindSettings *) = self.stringActionDict[name];
-                block(s, settings);
-            } else if ([obj isKindOfClass:[NSArray class]]) {
-                NSArray *arr = (NSArray *)obj;
-                for (NSObject *o in arr) {
-                    [self applySetting:name obj:o settings:settings error:error];
-                    if (*error) {
-                        return;
-                    }
+        } else if (self.stringActionDict[fo.longArg]) {
+            stringDict[fo.longArg] = fo.longArg;
+            if (fo.shortArg) {
+                stringDict[fo.shortArg] = fo.longArg;
+            }
+        } else if (self.integerActionDict[fo.longArg]) {
+            intDict[fo.longArg] = fo.longArg;
+            if (fo.shortArg) {
+                intDict[fo.shortArg] = fo.longArg;
+            }
+        }
+    }
+
+    return [[ArgTokenizer alloc] initWithBoolDict:boolDict stringDict:stringDict intDict:intDict];
+}
+
+- (void) applyArgTokenToSettings:(ArgToken *)argToken settings:(FindSettings *)settings error:(NSError **)error {
+    if (argToken.type == ArgTokenTypeBool) {
+        if ([argToken.value isKindOfClass:[NSNumber class]]) {
+            NSNumber *num = (NSNumber *)argToken.value;
+            BOOL b = [num boolValue];
+            void(^block)(BOOL, FindSettings*) = self.boolActionDict[argToken.name];
+            block(b, settings);
+        } else {
+            setError(error, [@"Invalid value for option: " stringByAppendingString:argToken.name]);
+            return;
+        }
+    } else if (argToken.type == ArgTokenTypeStr) {
+        if ([argToken.value isKindOfClass:[NSString class]]) {
+            NSString *s = (NSString *)argToken.value;
+            void(^block)(NSString *, FindSettings *) = self.stringActionDict[argToken.name];
+            block(s, settings);
+        } else if ([argToken.value isKindOfClass:[NSArray class]]) {
+            NSArray *arr = (NSArray *)argToken.value;
+            for (NSObject *o in arr) {
+                if ([o isKindOfClass:[NSString class]]) {
+                    NSString *s = (NSString *)argToken.value;
+                    void(^block)(NSString *, FindSettings *) = self.stringActionDict[argToken.name];
+                    block(s, settings);
+                } else {
+                    setError(error, [@"Invalid value for option: " stringByAppendingString:argToken.name]);
+                    return;
                 }
-            } else {
-                setError(error, [@"Invalid value for option: " stringByAppendingString:name]);
-                return;
-            }
-        } else if (self.integerActionDict[name]) {
-            if ([obj isKindOfClass:[NSNumber class]]) {
-                NSNumber *num = (NSNumber *)obj;
-                NSInteger i = [num integerValue];
-                void(^block)(NSInteger, FindSettings*) = self.integerActionDict[name];
-                block(i, settings);
-            } else {
-                setError(error, [@"Invalid value for option: " stringByAppendingString:name]);
-                return;
             }
         } else {
-            setError(error, [@"Invalid option: " stringByAppendingString:name]);
+            setError(error, [@"Invalid value for option: " stringByAppendingString:argToken.name]);
+            return;
+        }
+    } else if (argToken.type == ArgTokenTypeInt) {
+        if ([argToken.value isKindOfClass:[NSNumber class]]) {
+            NSNumber *num = (NSNumber *)argToken.value;
+            NSInteger i = [num integerValue];
+            void(^block)(NSInteger, FindSettings*) = self.integerActionDict[argToken.name];
+            block(i, settings);
+        } else {
+            setError(error, [@"Invalid value for option: " stringByAppendingString:argToken.name]);
             return;
         }
     } else {
-        setError(error, [@"Invalid option: " stringByAppendingString:name]);
+        setError(error, [@"Invalid option: " stringByAppendingString:argToken.name]);
+        return;
+    }
+}
+
+- (void) updateSettingsFromArgTokens:(FindSettings *)settings argTokens:(NSArray<ArgToken*> *)argTokens error:(NSError **)error {
+    for (ArgToken *argToken in argTokens) {
+        if ([argToken.name isEqualToString:@"settings-file"]) {
+            [self updateSettingsFromFile:settings filePath:[NSString stringWithFormat:@"%@", argToken.value] error:error];
+        } else {
+            [self applyArgTokenToSettings:argToken settings:settings error:error];
+        }
+        if (*error) {
+            return;
+        }
     }
 }
 
 - (void) updateSettingsFromDictionary:(FindSettings *)settings dictionary:(NSDictionary *)dictionary error:(NSError **)error {
-    // keys are sorted so that output is consistent across all versions
-    NSArray<NSString*> *keys = [[dictionary allKeys] sortedArrayUsingSelector:@selector(compare:)];
-    // First check for invalid keys
-    for (NSString *key in keys) {
-        if (!self.longArgDict[key] && ![key isEqualToString:@"settings-file"]) {
-            setError(error, [@"Invalid option: " stringByAppendingString:key]);
-            return;
-        }
+    NSArray<ArgToken*> *argTokens = [self.argTokenizer tokenizeDictionary:dictionary error:error];
+    if (*error) {
+        return;
     }
-    for (NSString *key in keys) {
-        NSObject *val = dictionary[key];
-        if ([key isEqualToString:@"settings-file"]) {
-            [self updateSettingsFromFile:settings filePath:[NSString stringWithFormat:@"%@", val] error:error];
-        } else {
-            [self applySetting:key obj:val settings:settings error:error];
-        }
-        if (*error) {
-            return;
-        }
-    }
+    [self updateSettingsFromArgTokens:settings argTokens:argTokens error:error];
 }
 
 - (void) updateSettingsFromData:(FindSettings *)settings data:(NSData *)data error:(NSError **)error {
-    if (NSClassFromString(@"NSJSONSerialization")) {
-        id jsonObject = [NSJSONSerialization
-                         JSONObjectWithData:data
-                         options:0
-                         error:error];
-        
-        if (*error) {
-            setError(error, @"Unable to parse json");
-            return;
-        }
-        
-        if (![jsonObject isKindOfClass:[NSDictionary class]]) {
-            setError(error, @"Invalid json");
-            return;
-        }
-        
-        [self updateSettingsFromDictionary:settings dictionary:jsonObject error:error];
+    NSArray<ArgToken*> *argTokens = [self.argTokenizer tokenizeData:data error:error];
+    if (*error) {
+        return;
     }
+    [self updateSettingsFromArgTokens:settings argTokens:argTokens error:error];
 }
 
 - (FindSettings *) settingsFromData:(NSData *)data error:(NSError **)error {
@@ -279,141 +295,33 @@ typedef void (^IntegerActionBlockType)(NSInteger, FindSettings*);
     return settings;
 }
 
-- (void) updateSettingsFromFile:(FindSettings *)settings filePath:(NSString *)settingsFilePath error:(NSError **)error {
-    NSString *expandedPath = [FileUtil expandPath:settingsFilePath];
-    if (![[NSFileManager defaultManager] fileExistsAtPath:expandedPath]) {
-        setError(error, [@"Settings file not found: " stringByAppendingString:settingsFilePath]);
-        return;
-    }
-    if (![expandedPath hasSuffix:@".json"]) {
-        setError(error, [@"Invalid settings file (must be JSON): " stringByAppendingString:settingsFilePath]);
-        return;
-    }
-    NSData *data = [NSData dataWithContentsOfFile:expandedPath];
-    [self updateSettingsFromData:settings data:data error:error];
+- (void) updateSettingsFromFile:(FindSettings *)settings filePath:(NSString *)filePath error:(NSError **)error {
+    NSArray<ArgToken*> *argTokens = [self.argTokenizer tokenizeFile:filePath error:error];
     if (*error) {
-        if ([[*error domain] isEqualToString:@"Unable to parse JSON"] || [[*error domain] isEqualToString:@"Invalid JSON"]) {
-            NSString *newErr = [[[*error domain] stringByAppendingString:@" in settings file: "] stringByAppendingString:settingsFilePath];
-            setError(error, newErr);
-        }
+        return;
     }
+    [self updateSettingsFromArgTokens:settings argTokens:argTokens error:error];
 }
 
-- (FindSettings *) settingsFromFile:(NSString *)settingsFilePath error:(NSError **)error {
+- (FindSettings *) settingsFromFile:(NSString *)filePath error:(NSError **)error {
     FindSettings *settings = [[FindSettings alloc] init];
-    [self updateSettingsFromFile:settings filePath:settingsFilePath error:error];
+    [self updateSettingsFromFile:settings filePath:filePath error:error];
     return settings;
 }
 
-- (NSDictionary *) dictionaryFromArgs:(NSArray<NSString*> *)args error:(NSError **)error {
-    NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
-
-    int i = 1;
-    while (i < [args count]) {
-        if (*error) {
-            return nil;
-        }
-        NSString *arg = args[i];
-        if ([arg hasPrefix:@"-"]) {
-            NSMutableArray *argNames = [NSMutableArray array];
-            NSString *argVal = nil;
-            if ([arg hasPrefix:@"--"]) {
-                if ([arg length] > 2) {
-                    // Process long arg
-                    arg = [arg substringFromIndex:2];
-                    NSArray *parts = [arg componentsSeparatedByString:@"="];
-                    if ([parts count] > 0) {
-                        arg = [parts objectAtIndex:0];
-                    }
-                    if ([parts count] > 1) {
-                        argVal = [parts objectAtIndex:1];
-                    }
-                    if (self.longArgDict[arg]) {
-                        [argNames addObject:arg];
-                    } else {
-                        setError(error, [NSString stringWithFormat:@"Invalid option: %@", arg]);
-                        return nil;
-                    }
-                } else {
-                    setError(error, [NSString stringWithFormat:@"Invalid option: %@", arg]);
-                    return nil;
-                }
-            } else if ([arg length] > 1) {
-                // Process short arg(s)
-                arg = [arg substringFromIndex:1];
-                for (NSUInteger i = 0; i < [arg length]; i++) {
-                    unichar c = [arg characterAtIndex:i];
-                    NSString *cs = [NSString stringWithFormat:@"%C", c];
-                    if (self.longArgDict[cs]) {
-                        [argNames addObject:self.longArgDict[cs]];
-                    } else {
-                        setError(error, [NSString stringWithFormat:@"Invalid option: %@", cs]);
-                        return nil;
-                    }
-                }
-            } else {
-                setError(error, [NSString stringWithFormat:@"Invalid option: %@", arg]);
-                return nil;
-            }
-
-            for (NSString *argName in argNames) {
-                if (self.boolActionDict[argName]) {
-                    void(^block)(BOOL, FindSettings *) = self.boolActionDict[argName];
-                    dict[argName] = @(YES);
-                } else {
-                    if (argVal == nil) {
-                        if ([args count] > i+1) {
-                            argVal = args[i+1];
-                            i++;
-                        } else {
-                            setError(error, [NSString stringWithFormat:@"Missing argument for option %@", arg]);
-                            return nil;
-                        }
-                    }
-                    if (self.stringActionDict[argName]) {
-                        NSMutableArray *argVals = [[NSMutableArray alloc] init];
-                        if (dict[argName]) {
-                            argVals = dict[argName];
-                        }
-                        [argVals addObject:argVal];
-                        dict[argName] = argVals;
-                    } else if (self.integerActionDict[argName]) {
-                        dict[argName] = @([argVal integerValue]);
-                    } else if ([argName isEqualToString:@"settings-file"]) {
-                        dict[argName] = argVal;
-                    } else {
-                        setError(error, [NSString stringWithFormat:@"Invalid option: %@", arg]);
-                        return nil;
-                    }
-                }
-            }
-
-        } else {
-            NSMutableArray *paths = [[NSMutableArray alloc] init];
-            if (dict[@"path"]) {
-                paths = dict[@"paths"];
-            }
-            [paths addObject:arg];
-            dict[@"path"] = paths;
-        }
-        i++;
+- (void) updateSettingsFromArgs:(FindSettings *)settings args:(NSArray *)args error:(NSError **)error {
+    NSArray<ArgToken*> *argTokens = [self.argTokenizer tokenizeArgs:args error:error];
+    if (*error) {
+        return;
     }
-    
-    return [NSDictionary dictionaryWithDictionary:dict];
+    [self updateSettingsFromArgTokens:settings argTokens:argTokens error:error];
 }
 
 - (FindSettings *) settingsFromArgs:(NSArray<NSString*> *)args error:(NSError **)error {
     FindSettings *settings = [[FindSettings alloc] init];
     // default printFiles to true since running as cli
     settings.printFiles = true;
-
-    NSDictionary *argDict = [self dictionaryFromArgs:args error:error];
-    if (*error) {
-        return settings;
-    }
-
-    [self updateSettingsFromDictionary:settings dictionary:argDict error:error];
-
+    [self updateSettingsFromArgs:settings args:args error:error];
     return settings;
 }
 

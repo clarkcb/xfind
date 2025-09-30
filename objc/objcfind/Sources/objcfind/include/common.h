@@ -51,6 +51,13 @@ typedef enum {
     SortByLastMod
 } SortBy;
 
+// ArgTokenType enum
+typedef enum {
+    ArgTokenTypeBool = 1,
+    ArgTokenTypeStr,
+    ArgTokenTypeInt
+} ArgTokenType;
+
 // common functions
 void logMsg(NSString *s);
 void logError(NSString *s);
