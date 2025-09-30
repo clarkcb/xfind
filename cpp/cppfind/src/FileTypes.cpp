@@ -17,13 +17,13 @@ namespace cppfind {
     }
 
     void FileTypes::load_file_types() {
-        auto file_types_path = std::filesystem::path(xfindpath()) / "shared/filetypes.json";
+        const auto file_types_path = std::filesystem::path(xfindpath()) / "shared/filetypes.json";
 
         if (!std::filesystem::exists(file_types_path)) {
             throw FindException("Filetypes file not found: " + file_types_path.string());
         }
 
-        uint64_t file_size = std::filesystem::file_size(file_types_path);
+        const uint64_t file_size = std::filesystem::file_size(file_types_path);
         // current size is 12076, make sure it's not dramatically bigger than that
         if (file_size > 12100) {
             throw FindException("Invalid filetypes file");

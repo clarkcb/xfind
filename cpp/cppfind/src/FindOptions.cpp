@@ -1,17 +1,17 @@
 #include <algorithm>
 #include <any>
-#include <deque>
+#include <complex>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <typeinfo>
 
 #include "rapidjson/filereadstream.h"
 
+#include "ArgToken.h"
 #include "FindConfig.h"
 #include "FindException.h"
 #include "FindOptions.h"
-
-#include "FileUtil.h"
 #include "StringUtil.h"
 
 namespace cppfind {
@@ -77,6 +77,7 @@ namespace cppfind {
         };
 
         load_options();
+        m_arg_tokenizer = get_arg_tokenizer();
     }
 
     void FindOptions::load_options() {
@@ -88,7 +89,7 @@ namespace cppfind {
             throw FindException(msg);
         }
 
-        uint64_t file_size = std::filesystem::file_size(find_options_path);
+        const uint64_t file_size = std::filesystem::file_size(find_options_path);
         // current size is 5178, make sure it's not dramatically bigger than that
         if (file_size > 5200) {
             throw FindException("Invalid findoptions file");
@@ -132,99 +133,104 @@ namespace cppfind {
         }
     }
 
-    // TODO: try using https://github.com/CLIUtils/CLI11 for CLI arg parsing
-    void FindOptions::update_settings_from_args(FindSettings& settings, int &argc, char **argv) {
-        std::deque<std::string> arg_deque;
-        unsigned int i;
-
-        for (i=1; i < argc; ++i) {
-            arg_deque.emplace_back(argv[i]);
+    ArgTokenizer FindOptions::get_arg_tokenizer() const {
+        std::unordered_map<std::string, std::string> bool_map;
+        std::unordered_map<std::string, std::string> str_map;
+        str_map["path"] = "path";
+        std::unordered_map<std::string, std::string> int_map;
+        std::unordered_map<std::string, std::string> long_map;
+        for (auto& option : m_options) {
+            if (m_bool_arg_map.contains(option.long_arg())) {
+                bool_map[option.long_arg()] = option.long_arg();
+                if (!option.short_arg().empty()) {
+                    bool_map[option.short_arg()] = option.long_arg();
+                }
+            } else if (m_str_arg_map.contains(option.long_arg())) {
+                str_map[option.long_arg()] = option.long_arg();
+                if (!option.short_arg().empty()) {
+                    str_map[option.short_arg()] = option.long_arg();
+                }
+            } else if (m_int_arg_map.contains(option.long_arg())) {
+                int_map[option.long_arg()] = option.long_arg();
+                if (!option.short_arg().empty()) {
+                    int_map[option.short_arg()] = option.long_arg();
+                }
+            } else if (m_long_arg_map.contains(option.long_arg())) {
+                long_map[option.long_arg()] = option.long_arg();
+                if (!option.short_arg().empty()) {
+                    long_map[option.short_arg()] = option.long_arg();
+                }
+            }
         }
+        return {bool_map, str_map, int_map, long_map};
+    }
 
-        std::string next_arg;
-        while (!arg_deque.empty()) {
-            next_arg = arg_deque.front();
-            arg_deque.pop_front();
-
-            if (next_arg.rfind('-', 0) == 0) {
-                std::deque<std::string> next_arg_deque;
-                std::string next_val;
-                if (next_arg.rfind("--", 0) == 0) {
-                    if (next_arg.size() < 3) {
-                        std::string msg{"Invalid option: " + next_arg};
-                        msg.append(next_arg);
-                        throw FindException(msg);
-                    }
-                    next_arg = next_arg.substr(2);
-                    std::vector<std::string> parts = StringUtil::split_string(next_arg, '=');
-                    if (!parts.empty()) {
-                        next_arg = parts[0];
-                    }
-                    if (parts.size() > 1) {
-                        next_val = parts[1];
-                    }
-                    next_arg_deque.emplace_back(next_arg);
-
-                } else if (next_arg.size() > 1) {
-                    next_arg = next_arg.substr(1);
-                    for (const char & c : next_arg) {
-                        std::string cs(1, c);
-                        next_arg_deque.emplace_back(cs);
-                    }
-
+    void FindOptions::update_settings_from_arg_token(FindSettings& settings, const ArgToken& arg_token) {
+        if (arg_token.token_type() == ARG_TOKEN_TYPE_BOOL) {
+            if (m_bool_arg_map.contains(arg_token.name())) {
+                if (arg_token.value().type() == typeid(bool)) {
+                    m_bool_arg_map[arg_token.name()](std::any_cast<bool>(arg_token.value()), settings);
                 } else {
-                    std::string msg{"Invalid option: " + next_arg};
-                    msg.append(next_arg);
+                    std::string msg{"Invalid value for option: " + arg_token.name()};
                     throw FindException(msg);
                 }
-
-                while (!next_arg_deque.empty()) {
-                    next_arg = next_arg_deque.front();
-                    next_arg_deque.pop_front();
-
-                    if (m_arg_name_map.contains(next_arg)) {
-                        if (auto long_arg = m_arg_name_map[next_arg];
-                            m_bool_arg_map.contains(long_arg)) {
-                            m_bool_arg_map[long_arg](true, settings);
-                            } else if (m_str_arg_map.contains(long_arg)
-                                || m_int_arg_map.contains(long_arg)
-                                || m_long_arg_map.contains(long_arg)) {
-                                if (next_val.empty()) {
-                                    if (arg_deque.empty()) {
-                                        std::string msg{"Missing value for option "};
-                                        msg.append(next_arg);
-                                        throw FindException(msg);
-                                    }
-                                    next_val = std::string(arg_deque.front());
-                                    arg_deque.pop_front();
-                                }
-                                if (m_str_arg_map.contains(long_arg)) {
-                                    m_str_arg_map[long_arg](next_val, settings);
-                                } else if (m_int_arg_map.contains(long_arg)) {
-                                    const int int_val = std::stoi(next_val);
-                                    m_int_arg_map[long_arg](int_val, settings);
-                                } else if (m_long_arg_map.contains(long_arg)) {
-                                    const long long_val = std::stol(next_val);
-                                    m_long_arg_map[long_arg](long_val, settings);
-                                }
-                                } else [[unlikely]] { // shouldn't be possible to get here
-                                    std::string msg{"Invalid option: "};
-                                    msg.append(next_arg);
-                                    throw FindException(msg);
-                                }
-                    } else {
-                        std::string msg{"Invalid option: "};
-                        msg.append(next_arg);
-                        throw FindException(msg);
-                    }
+            } else {
+                std::string msg{"Invalid option: " + arg_token.name()};
+                throw FindException(msg);
+            }
+        } else if (arg_token.token_type() == ARG_TOKEN_TYPE_STR) {
+            if (m_str_arg_map.contains(arg_token.name())) {
+                if (arg_token.value().type() == typeid(std::string)) {
+                    auto s = std::any_cast<std::string>(arg_token.value());
+                    m_str_arg_map[arg_token.name()](s, settings);
+                } else {
+                    std::string msg{"Invalid value for option: " + arg_token.name()};
+                    throw FindException(msg);
                 }
             } else {
-                settings.add_path(next_arg);
+                std::string msg{"Invalid option: " + arg_token.name()};
+                throw FindException(msg);
+            }
+        } else if (arg_token.token_type() == ARG_TOKEN_TYPE_INT) {
+            if (m_int_arg_map.contains(arg_token.name())) {
+                if (arg_token.value().type() == typeid(int) || arg_token.value().type() == typeid(unsigned)) {
+                    auto i = std::any_cast<int>(arg_token.value());
+                    m_int_arg_map[arg_token.name()](i, settings);
+                } else {
+                    std::string msg{"Invalid value for option: " + arg_token.name()};
+                    throw FindException(msg);
+                }
+            } else {
+                std::string msg{"Invalid option: " + arg_token.name()};
+                throw FindException(msg);
+            }
+        } else if (arg_token.token_type() == ARG_TOKEN_TYPE_LONG) {
+            if (m_long_arg_map.contains(arg_token.name())) {
+                if (arg_token.value().type() == typeid(long)) {
+                    auto l = std::any_cast<long>(arg_token.value());
+                    m_long_arg_map[arg_token.name()](l, settings);
+                } else {
+                    std::string msg{"Invalid value for option: " + arg_token.name()};
+                    throw FindException(msg);
+                }
+            } else {
+                std::string msg{"Invalid option: " + arg_token.name()};
+                throw FindException(msg);
             }
         }
     }
 
-    // TODO: try using https://github.com/CLIUtils/CLI11 for CLI arg parsing
+    void FindOptions::update_settings_from_arg_tokens(FindSettings& settings, const std::vector<ArgToken>& arg_tokens) {
+        for (const auto& arg_token : arg_tokens) {
+            update_settings_from_arg_token(settings, arg_token);
+        }
+    }
+
+    void FindOptions::update_settings_from_args(FindSettings& settings, int &argc, char **argv) {
+        const auto arg_tokens = m_arg_tokenizer.tokenize_args(argc, argv);
+        update_settings_from_arg_tokens(settings, arg_tokens);
+    }
+
     FindSettings FindOptions::settings_from_args(int &argc, char **argv) {
         auto settings = FindSettings();
 
@@ -236,120 +242,14 @@ namespace cppfind {
         return settings;
     }
 
-    void FindOptions::update_settings_from_document(FindSettings& settings, rapidjson::Document& document) {
-        assert(document.IsObject());
-
-        // Get the property names
-        std::vector<std::string> names;
-        for (rapidjson::Value::ConstMemberIterator it=document.MemberBegin(); it != document.MemberEnd(); ++it) {
-            std::string name = it->name.GetString();
-            names.push_back(name);
-        }
-
-        // Sort the names
-        std::ranges::sort(names);
-
-        // Verify all names are valid options
-        for (const auto& name : names) {
-            if (!m_arg_name_map.contains(name)) {
-                const std::string msg = "Invalid option: " + name;
-                throw FindException(msg);
-            }
-        }
-
-        // Iterate through names and values, validating values and applying to settings
-        for (rapidjson::Value::ConstMemberIterator it=document.MemberBegin(); it != document.MemberEnd(); ++it) {
-            std::string name = it->name.GetString();
-            if (m_bool_arg_map.contains(name)) {
-                if (it->value.IsBool()) {
-                    m_bool_arg_map[name](it->value.GetBool(), settings);
-                } else {
-                    std::string msg{"Invalid value for option: " + name};
-                    throw FindException(msg);
-                }
-            } else if (m_str_arg_map.contains(name)) {
-                if (it->value.IsString()) {
-                    auto s = std::string(it->value.GetString());
-                    m_str_arg_map[name](s, settings);
-                } else if (it->value.IsArray()) {
-                    const auto& arr = it->value.GetArray();
-                    for (rapidjson::SizeType i = 0; i < arr.Size(); ++i) {
-                        if (arr[i].IsString()) {
-                            auto s = std::string(arr[i].GetString());
-                            m_str_arg_map[name](s, settings);
-                        } else {
-                            std::string msg{"Invalid value for option: " + name};
-                            throw FindException(msg);
-                        }
-                    }
-                } else {
-                    std::string msg{"Invalid value for option: " + name};
-                    throw FindException(msg);
-                }
-            } else if (m_int_arg_map.contains(name)) {
-                if (it->value.IsInt()) {
-                    m_int_arg_map[name](it->value.GetInt(), settings);
-                } else if (it->value.IsUint64()) {
-                    const auto l = it->value.GetUint64();
-                    const int i = 0 + l;
-                    m_int_arg_map[name](i, settings);
-                } else {
-                    std::string msg{"Invalid value for option: " + name};
-                    throw FindException(msg);
-                }
-            } else if (m_long_arg_map.contains(name)) {
-                if (it->value.IsInt()) {
-                    const auto i = it->value.GetInt();
-                    const long l = 0 + i;
-                    m_long_arg_map[name](l, settings);
-                } else if (it->value.IsUint64()) {
-                    m_long_arg_map[name](it->value.GetUint64(), settings);
-                } else {
-                    std::string msg{"Invalid value for option: " + name};
-                    throw FindException(msg);
-                }
-            } else {
-                // Shouldn't be able to get here since we already checked names
-                std::string msg{"Invalid option: " + name};
-                throw FindException(msg);
-            }
-        }
-    }
-
     void FindOptions::update_settings_from_json(FindSettings& settings, const std::string_view json) {
-        rapidjson::Document document;
-        document.Parse(std::string{json}.c_str());
-        update_settings_from_document(settings, document);
+        const auto arg_tokens = m_arg_tokenizer.tokenize_json(json);
+        update_settings_from_arg_tokens(settings, arg_tokens);
     }
 
     void FindOptions::update_settings_from_file(FindSettings& settings, const std::filesystem::path& file_path) {
-        std::filesystem::path expanded_path = FileUtil::expand_path(file_path);
-        if (!std::filesystem::exists(expanded_path)) {
-            std::string msg{"Settings file not found: "};
-            msg.append(file_path);
-            throw FindException(msg);
-        }
-
-        if (file_path.extension() != ".json") {
-            std::string msg{"Invalid settings file (must be JSON): "};
-            msg.append(file_path);
-            throw FindException(msg);
-        }
-
-        const uint64_t file_size = std::filesystem::file_size(expanded_path);
-        // ~1MB, an arbitrary limit, but at least a limit
-        assert(file_size <= 1024000);
-
-        FILE *fp = fopen(expanded_path.c_str(), "r");
-
-        char readBuffer[file_size];
-        rapidjson::FileReadStream is(fp, readBuffer, sizeof(readBuffer));
-
-        rapidjson::Document document;
-        document.ParseStream(is);
-        fclose(fp);
-
-        update_settings_from_document(settings, document);
+        const auto arg_tokens = m_arg_tokenizer.tokenize_file(file_path);
+        update_settings_from_arg_tokens(settings, arg_tokens);
     }
 
     std::string FindOptions::get_usage_string() {
@@ -379,10 +279,10 @@ namespace cppfind {
             opt_descs.push_back(option.description());
         }
 
-        for (int i = 0; i < opt_strings.size(); ++i) {
+        for (size_t i = 0; i < opt_strings.size(); ++i) {
             usage_string.append(" ");
             usage_string.append(opt_strings[i]);
-            for (int j = 0; j <= longest_len - opt_strings[i].length() + 1; ++j) {
+            for (size_t j = 0; j <= longest_len - opt_strings[i].length() + 1; ++j) {
                 usage_string.append(" ");
             }
             usage_string.append(opt_descs[i]);

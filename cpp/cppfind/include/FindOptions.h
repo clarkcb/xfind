@@ -8,6 +8,7 @@
 
 #include "rapidjson/document.h"
 
+#include "ArgTokenizer.h"
 #include "FindOption.h"
 #include "FindSettings.h"
 
@@ -29,8 +30,11 @@ namespace cppfind {
         std::unordered_map<std::string, std::function<void(std::string&, FindSettings&)>> m_str_arg_map;
         std::unordered_map<std::string, std::string> m_arg_name_map;
         std::vector<FindOption> m_options;
+        ArgTokenizer m_arg_tokenizer;
         void load_options();
-        void update_settings_from_document(FindSettings& settings, rapidjson::Document& document);
+        [[nodiscard]] ArgTokenizer get_arg_tokenizer() const;
+        void update_settings_from_arg_token(FindSettings& settings, const ArgToken& arg_tokens);
+        void update_settings_from_arg_tokens(FindSettings& settings, const std::vector<ArgToken>& arg_tokens);
 
     };
 }

@@ -46,6 +46,7 @@
  *
  */
 
+#include <any>
 #include <filesystem>
 #include <regex>
 #include <string>
@@ -190,6 +191,34 @@ namespace cppfind {
     // common.h
     void log_msg(std::string_view msg);
     void log_error(std::string_view msg);
+
+    // ArgToken.h
+    class ArgToken {
+    public:
+        ArgToken(std::string_view name, uint8_t token_type, const std::any &value);
+        ArgToken() = delete;
+        [[nodiscard]] std::string name() const;
+        [[nodiscard]] uint8_t token_type() const;
+        [[nodiscard]] std::any value() const;
+    };
+
+    // ArgTokenizer.h
+#define ARG_TOKEN_TYPE_BOOL 0
+#define ARG_TOKEN_TYPE_STR  1
+#define ARG_TOKEN_TYPE_INT  2
+#define ARG_TOKEN_TYPE_LONG 3
+
+    class ArgTokenizer {
+    public:
+        ArgTokenizer();
+        ArgTokenizer(const std::unordered_map<std::string, std::string> &bool_map,
+                     const std::unordered_map<std::string, std::string> &str_map,
+                     const std::unordered_map<std::string, std::string> &int_map,
+                     const std::unordered_map<std::string, std::string> &long_map);
+        [[nodiscard]] std::vector<ArgToken> tokenize_args(int &argc, char **argv) const;
+        [[nodiscard]] std::vector<ArgToken> tokenize_json(std::string_view json) const;
+        [[nodiscard]] std::vector<ArgToken> tokenize_file(const std::filesystem::path& file_path) const;
+    };
 
     // FindSettings.h
 #define SORT_BY_NAME_FILEPATH "filepath"
@@ -383,6 +412,7 @@ namespace cppfind {
     public:
         FindOptions();
         FindSettings settings_from_args(int &argc, char **argv);
+        void update_settings_from_args(FindSettings& settings, int &argc, char **argv);
         void update_settings_from_file(FindSettings& settings, const std::filesystem::path& file_path);
         void update_settings_from_json(FindSettings& settings, std::string_view json_str);
         void usage();

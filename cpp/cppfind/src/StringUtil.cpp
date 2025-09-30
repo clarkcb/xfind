@@ -1,5 +1,3 @@
-#include <ctime>
-
 #include "StringUtil.h"
 
 namespace cppfind {
