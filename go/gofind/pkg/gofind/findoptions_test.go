@@ -57,7 +57,7 @@ func TestFindSettingsFromValidArgs(t *testing.T) {
 func TestFindSettingsFromJson(t *testing.T) {
 	findOptions := NewFindOptions()
 
-	jsonSettings := []byte(`{
+	jsonByteArray := []byte(`{
   "path": "~/src/xfind/",
   "in-ext": ["js","ts"],
   "out-dirpattern": "node_module",
@@ -66,6 +66,7 @@ func TestFindSettingsFromJson(t *testing.T) {
   "followsymlinks": true,
   "includehidden": true
 }`)
+	jsonSettings := string(jsonByteArray)
 
 	settings := GetDefaultFindSettings()
 	var err error

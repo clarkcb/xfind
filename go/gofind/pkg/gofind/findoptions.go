@@ -5,8 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"reflect"
-	"strconv"
 	"strings"
 )
 
@@ -17,335 +15,17 @@ type FindOption struct {
 }
 
 type FindOptions struct {
-	FindOptions []*FindOption
-}
-
-type ArgMap map[string]interface{}
-
-func FindOptionsFromJson() (*FindOptions, error) {
-	config := NewFindConfig()
-	data, err := os.ReadFile(config.FINDOPTIONSPATH)
-	if err != nil {
-		return &FindOptions{}, err
-	}
-	var findOptions FindOptions
-	if err = json.Unmarshal(data, &findOptions); err != nil {
-		return &FindOptions{}, err
-	}
-
-	// TEMPORARY
-	//findOptions.generateCodeFile("/Users/cary/src/xfind/go/gofind/pkg/gofind/findoptionsgen.go")
-
-	return &findOptions, nil
-}
-
-func NewFindOptions() *FindOptions {
-	findOptions, err := FindOptionsFromJson()
-	if err != nil {
-		// do something
-	}
-	return findOptions
-}
-
-func (fo *FindOptions) isValidOption(opt string) bool {
-	if opt == "path" {
-		return true
-	}
-	for _, o := range fo.FindOptions {
-		if o.Long == opt || (o.Short != "" && o.Short == opt) {
-			return true
-		}
-	}
-	return false
-}
-
-func (fo *FindOptions) UpdateSettingsFromArgMap(settings *FindSettings, argMap ArgMap) error {
-	boolActionMap := fo.getBoolActionMap()
-	stringActionMap := fo.getStringActionMap()
-	intActionMap := fo.getIntActionMap()
-	longActionMap := fo.getLongActionMap()
-
-	for k := range argMap {
-		if bf, isBool := boolActionMap[k]; isBool {
-			if v, hasVal := argMap[k]; hasVal {
-				bf(v.(bool), settings)
-			} else {
-				return fmt.Errorf("Invalid value for option: %v", k)
-			}
-		} else if sf, isString := stringActionMap[k]; isString {
-			if v, hasVal := argMap[k]; hasVal {
-				switch v := v.(type) {
-				case string:
-					sf(v, settings)
-				case int:
-					sf(strconv.Itoa(v), settings)
-				case float32, float64:
-					sf(fmt.Sprintf("%v", v.(float64)), settings)
-				case []string:
-					for i := range v {
-						sf(v[i], settings)
-					}
-				case []interface{}:
-					for i := range v {
-						sf(v[i].(string), settings)
-					}
-				default:
-					Log(fmt.Sprintf("k: %v", k))
-					Log(fmt.Sprintf("reflect.TypeOf(v).Kind(): %v", reflect.TypeOf(v).Kind()))
-					const errMsg = "Unknown data type in ArgMap"
-					Log(errMsg)
-					return fmt.Errorf(errMsg)
-				}
-			} else {
-				return fmt.Errorf("Invalid value for option: %v", k)
-			}
-		} else if iff, isInt := intActionMap[k]; isInt {
-			if v, hasVal := argMap[k]; hasVal {
-				switch v := v.(type) {
-				case int:
-					iff(v, settings)
-				case float32, float64:
-					iff(int(v.(float64)), settings)
-				default:
-					Log(fmt.Sprintf("k: %v", k))
-					Log(fmt.Sprintf("reflect.TypeOf(v).Kind(): %v", reflect.TypeOf(v).Kind()))
-					return fmt.Errorf("Unknown data type in ArgMap")
-				}
-			} else {
-				return fmt.Errorf("Invalid value for option: %v", k)
-			}
-		} else if lff, isLong := longActionMap[k]; isLong {
-			if v, hasVal := argMap[k]; hasVal {
-				switch v := v.(type) {
-				case int64:
-					lff(v, settings)
-				case float32, float64:
-					lff(int64(v.(float64)), settings)
-				default:
-					Log(fmt.Sprintf("k: %v", k))
-					Log(fmt.Sprintf("reflect.TypeOf(v).Kind(): %v", reflect.TypeOf(v).Kind()))
-					const errMsg = "Unknown data type in ArgMap"
-					Log(errMsg)
-					return fmt.Errorf(errMsg)
-				}
-			} else {
-				return fmt.Errorf("Invalid value for option: %v", k)
-			}
-		} else if k == "settings-file" {
-			settingsFile := argMap[k].(string)
-			err := fo.UpdateSettingsFromFile(settings, settingsFile)
-			if err != nil {
-				return err
-			}
-		} else {
-			return fmt.Errorf("Invalid option: %v", k)
-		}
-	}
-	return nil
-}
-
-func (fo *FindOptions) UpdateSettingsFromJson(settings *FindSettings, data []byte) error {
-	var argMap ArgMap
-	if err := json.Unmarshal(data, &argMap); err != nil {
-		return fmt.Errorf("Unable to parse JSON")
-	}
-	return fo.UpdateSettingsFromArgMap(settings, argMap)
-}
-
-func (fo *FindOptions) UpdateSettingsFromFile(settings *FindSettings, filePath string) error {
-	expandedPath := ExpandPath(filePath)
-	if data, err := os.ReadFile(expandedPath); err != nil {
-		if strings.HasSuffix(err.Error(), "no such file or directory") {
-			return fmt.Errorf("Settings file not found: %v", filePath)
-		}
-		return err
-	} else {
-		if err := fo.UpdateSettingsFromJson(settings, data); err != nil {
-			if err.Error() == "Unable to parse JSON" {
-				return fmt.Errorf("Invalid JSON settings file: %v", filePath)
-			}
-			return err
-		}
-		return nil
-	}
-}
-
-func (fo *FindOptions) argMapFromArgs(args []string) (ArgMap, error) {
-	argMap := make(ArgMap)
-
-	boolActionMap := fo.getBoolActionMap()
-	stringActionMap := fo.getStringActionMap()
-	intActionMap := fo.getIntActionMap()
-	longActionMap := fo.getLongActionMap()
-
-	for i := 0; i < len(args); {
-		if strings.HasPrefix(args[i], "-") {
-			argNames := []string{}
-			argVal := ""
-			if strings.HasPrefix(args[i], "--") && len(args[i]) > 2 {
-				// Process long arg
-				longArg := strings.TrimLeft(args[i], "-")
-				if strings.Index(longArg, "=") > -1 {
-					parts := strings.Split(longArg, "=")
-					if len(parts) > 0 {
-						longArg = parts[0]
-					}
-					if len(parts) > 1 {
-						argVal = parts[1]
-					}
-				}
-				argNames = append(argNames, longArg)
-			} else if len(args[i]) > 1 {
-				// Process short arg(s)
-				shortArgs := strings.TrimLeft(args[i], "-")
-				for _, c := range shortArgs {
-					argNames = append(argNames, string(c))
-				}
-			} else {
-				return nil, fmt.Errorf("Invalid option: %s", args[i])
-			}
-
-			for _, argName := range argNames {
-				if fo.isValidOption(argName) {
-					if _, isBool := boolActionMap[argName]; isBool {
-						argMap[argName] = true
-					} else {
-						if argVal == "" {
-							i++
-							if len(args) < i+1 {
-								return nil, fmt.Errorf("Missing value for option: %s", argName)
-							}
-							argVal = args[i]
-						}
-
-						if _, isString := stringActionMap[argName]; isString {
-							if _, hasArg := argMap[argName]; !hasArg {
-								argMap[argName] = []string{argVal}
-							} else {
-								argMap[argName] = append(argMap[argName].([]string), argVal)
-							}
-						} else if _, isInt := intActionMap[argName]; isInt {
-							intVal, err := strconv.Atoi(argVal)
-							if err != nil {
-								return nil, fmt.Errorf("Invalid value for option %s", argName)
-							}
-							argMap[argName] = intVal
-						} else if _, isLong := longActionMap[argName]; isLong {
-							longVal, err := strconv.ParseInt(argVal, 0, 64)
-							if err != nil {
-								return nil, fmt.Errorf("Invalid value for option %s", argName)
-							}
-							argMap[argName] = longVal
-						} else if argName == "settings-file" {
-							argMap[argName] = argVal
-						} else {
-							return nil, fmt.Errorf("Invalid option: %s", argName)
-						}
-					}
-				} else {
-					return nil, fmt.Errorf("Invalid option: %s", argName)
-				}
-			}
-		} else {
-			path := "path"
-			if _, hasArg := argMap[path]; !hasArg {
-				argMap[path] = []string{args[i]}
-			} else {
-				argMap[path] = append(argMap[path].([]string), args[i])
-			}
-		}
-		i++
-	}
-	return argMap, nil
-}
-
-func (fo *FindOptions) FindSettingsFromArgs(args []string) (*FindSettings, error) {
-	argMap, err := fo.argMapFromArgs(args)
-	if err != nil {
-		return nil, err
-	}
-
-	settings := GetDefaultFindSettings()
-	// default printFiles to true since running as cli
-	settings.SetPrintFiles(true)
-
-	err = fo.UpdateSettingsFromArgMap(settings, argMap)
-	if err != nil {
-		return nil, err
-	}
-
-	return settings, nil
-}
-
-func (fo *FindOptions) getUsageString() string {
-	var buffer bytes.Buffer
-	buffer.WriteString("\nUsage:\n")
-	buffer.WriteString(" gofind [options] <path> [<path> ...]\n\nOptions:\n")
-	sortKeyMap := fo.getSortKeyMap()
-	optStringMap := fo.getOptStringMap()
-	optDescMap := fo.getOptDescMap()
-	sortedKeys := GetSortedKeys(sortKeyMap)
-	optStrings := GetMapValues(optStringMap)
-	longestLen := GetLongestLen(optStrings)
-	optFormat := fmt.Sprintf(" %%-%ds  %%s\n", longestLen)
-	for _, k := range sortedKeys {
-		o := optStringMap[sortKeyMap[k]]
-		d := optDescMap[sortKeyMap[k]]
-		buffer.WriteString(fmt.Sprintf(optFormat, o, d))
-	}
-	return buffer.String()
-}
-
-func (fo *FindOptions) PrintUsage() {
-	Log(fo.getUsageString())
-	os.Exit(0)
-}
-
-func (fo *FindOptions) PrintVersion() {
-	config := NewFindConfig()
-	Log(fmt.Sprintf("xfind version %s", config.VERSION))
-	os.Exit(0)
-}
-
-func (fo *FindOptions) getSortKeyMap() map[string]string {
-	m := map[string]string{}
-	for _, o := range fo.FindOptions {
-		sortKey := ""
-		if o.Short == "" {
-			sortKey = strings.ToLower(o.Long)
-		} else {
-			sortKey = fmt.Sprintf("%s@%s", strings.ToLower(o.Short),
-				strings.ToLower(o.Long))
-		}
-		m[sortKey] = o.Long
-	}
-	return m
-}
-
-func (fo *FindOptions) getOptStringMap() map[string]string {
-	m := map[string]string{}
-	for _, o := range fo.FindOptions {
-		optString := ""
-		if o.Short != "" {
-			optString = fmt.Sprintf("-%s,", o.Short)
-		}
-		optString = fmt.Sprintf("%s--%s", optString, o.Long)
-		m[o.Long] = optString
-	}
-	return m
-}
-
-func (fo *FindOptions) getOptDescMap() map[string]string {
-	m := map[string]string{}
-	for _, o := range fo.FindOptions {
-		m[o.Long] = o.Desc
-	}
-	return m
+	FindOptions     []*FindOption
+	BoolActionMap   map[string]boolAction
+	StringActionMap map[string]stringAction
+	IntActionMap    map[string]intAction
+	LongActionMap   map[string]longAction
+	ArgTokenizer    *ArgTokenizer
 }
 
 type boolAction func(b bool, settings *FindSettings)
 
-func (fo *FindOptions) getBoolActionMap() map[string]boolAction {
+func getBoolActionMap() map[string]boolAction {
 	m := map[string]boolAction{
 		"archivesonly": func(b bool, settings *FindSettings) {
 			settings.SetArchivesOnly(b)
@@ -417,19 +97,12 @@ func (fo *FindOptions) getBoolActionMap() map[string]boolAction {
 			settings.SetPrintVersion(b)
 		},
 	}
-	for _, o := range fo.FindOptions {
-		if o.Short != "" {
-			if f, ok := m[o.Long]; ok {
-				m[o.Short] = f
-			}
-		}
-	}
 	return m
 }
 
 type stringAction func(s string, settings *FindSettings)
 
-func (fo *FindOptions) getStringActionMap() map[string]stringAction {
+func getStringActionMap() map[string]stringAction {
 	m := map[string]stringAction{
 		"in-archiveext": func(s string, settings *FindSettings) {
 			settings.AddInArchiveExtension(s)
@@ -480,19 +153,12 @@ func (fo *FindOptions) getStringActionMap() map[string]stringAction {
 			settings.SetSortByFromString(s)
 		},
 	}
-	for _, o := range fo.FindOptions {
-		if o.Short != "" {
-			if f, ok := m[o.Long]; ok {
-				m[o.Short] = f
-			}
-		}
-	}
 	return m
 }
 
 type intAction func(i int, settings *FindSettings)
 
-func (fo *FindOptions) getIntActionMap() map[string]intAction {
+func getIntActionMap() map[string]intAction {
 	m := map[string]intAction{
 		"maxdepth": func(i int, settings *FindSettings) {
 			settings.SetMaxDepth(i)
@@ -506,7 +172,7 @@ func (fo *FindOptions) getIntActionMap() map[string]intAction {
 
 type longAction func(l int64, settings *FindSettings)
 
-func (fo *FindOptions) getLongActionMap() map[string]longAction {
+func getLongActionMap() map[string]longAction {
 	m := map[string]longAction{
 		"maxsize": func(l int64, settings *FindSettings) {
 			settings.SetMaxSize(l)
@@ -514,6 +180,215 @@ func (fo *FindOptions) getLongActionMap() map[string]longAction {
 		"minsize": func(l int64, settings *FindSettings) {
 			settings.SetMinSize(l)
 		},
+	}
+	return m
+}
+
+func (fo *FindOptions) setArgTokenizer() error {
+	boolMap := make(map[string]string)
+	stringMap := make(map[string]string)
+	stringMap["path"] = "path"
+	intMap := make(map[string]string)
+	longMap := make(map[string]string)
+
+	for _, o := range fo.FindOptions {
+		if _, isBool := fo.BoolActionMap[o.Long]; isBool {
+			boolMap[o.Long] = o.Long
+			if o.Short != "" {
+				boolMap[o.Short] = o.Long
+			}
+		} else if _, isString := fo.StringActionMap[o.Long]; isString {
+			stringMap[o.Long] = o.Long
+			if o.Short != "" {
+				stringMap[o.Short] = o.Long
+			}
+		} else if _, isInt := fo.IntActionMap[o.Long]; isInt {
+			intMap[o.Long] = o.Long
+			if o.Short != "" {
+				intMap[o.Short] = o.Long
+			}
+		} else if _, isLong := fo.LongActionMap[o.Long]; isLong {
+			longMap[o.Long] = o.Long
+			if o.Short != "" {
+				longMap[o.Short] = o.Long
+			}
+		}
+	}
+
+	fo.ArgTokenizer = NewArgTokenizer(boolMap, stringMap, intMap, longMap)
+	return nil
+}
+
+func FindOptionsFromJson() (*FindOptions, error) {
+	config := NewFindConfig()
+	data, err := os.ReadFile(config.FINDOPTIONSPATH)
+	if err != nil {
+		return &FindOptions{}, err
+	}
+	var findOptions FindOptions
+	if err = json.Unmarshal(data, &findOptions); err != nil {
+		return &FindOptions{}, err
+	}
+
+	// TEMPORARY
+	//findOptions.generateCodeFile("/Users/cary/src/xfind/go/gofind/pkg/gofind/findoptionsgen.go")
+
+	findOptions.BoolActionMap = getBoolActionMap()
+	findOptions.StringActionMap = getStringActionMap()
+	findOptions.IntActionMap = getIntActionMap()
+	findOptions.LongActionMap = getLongActionMap()
+
+	return &findOptions, nil
+}
+
+func NewFindOptions() *FindOptions {
+	findOptions, err := FindOptionsFromJson()
+	if err != nil {
+		// do something
+	}
+	if findOptions != nil {
+		err = findOptions.setArgTokenizer()
+		if err != nil {
+			// do something
+		}
+	}
+	return findOptions
+}
+
+func (fo *FindOptions) updateSettingsFromArgTokens(settings *FindSettings, argTokens []*ArgToken) error {
+	for _, argToken := range argTokens {
+		if argToken.Type == ArgTokenTypeBool {
+			if bf, isBool := fo.BoolActionMap[argToken.Name]; isBool {
+				bf(argToken.Value.(bool), settings)
+			} else {
+				return fmt.Errorf("Invalid value for option: %v", argToken.Name)
+			}
+		} else if argToken.Type == ArgTokenTypeString {
+			if sf, isString := fo.StringActionMap[argToken.Name]; isString {
+				sf(argToken.Value.(string), settings)
+			} else if argToken.Name == "settings-file" {
+				err := fo.UpdateSettingsFromFile(settings, argToken.Value.(string))
+				if err != nil {
+					return err
+				}
+			} else {
+				return fmt.Errorf("Invalid value for option: %v", argToken.Name)
+			}
+		} else if argToken.Type == ArgTokenTypeInt {
+			if iff, isInt := fo.IntActionMap[argToken.Name]; isInt {
+				iff(argToken.Value.(int), settings)
+			} else {
+				return fmt.Errorf("Invalid value for option: %v", argToken.Name)
+			}
+		} else if argToken.Type == ArgTokenTypeLong {
+			if lff, isLong := fo.LongActionMap[argToken.Name]; isLong {
+				lff(argToken.Value.(int64), settings)
+			} else {
+				return fmt.Errorf("Invalid value for option: %v", argToken.Name)
+			}
+		} else {
+			return fmt.Errorf("Invalid option: %v", argToken.Name)
+		}
+	}
+	return nil
+}
+
+func (fo *FindOptions) UpdateSettingsFromJson(settings *FindSettings, jsonString string) error {
+	argTokens, err := fo.ArgTokenizer.TokenizeJson(jsonString)
+	if err != nil {
+		return err
+	}
+	return fo.updateSettingsFromArgTokens(settings, argTokens)
+}
+
+func (fo *FindOptions) UpdateSettingsFromFile(settings *FindSettings, filePath string) error {
+	argTokens, err := fo.ArgTokenizer.TokenizeFile(filePath)
+	if err != nil {
+		return err
+	}
+	return fo.updateSettingsFromArgTokens(settings, argTokens)
+}
+
+func (fo *FindOptions) UpdateSettingsFromArgs(settings *FindSettings, args []string) error {
+	argTokens, err := fo.ArgTokenizer.TokenizeArgs(args)
+	if err != nil {
+		return err
+	}
+	return fo.updateSettingsFromArgTokens(settings, argTokens)
+}
+
+func (fo *FindOptions) FindSettingsFromArgs(args []string) (*FindSettings, error) {
+	settings := GetDefaultFindSettings()
+	// default printFiles to true since running as cli
+	settings.SetPrintFiles(true)
+
+	err := fo.UpdateSettingsFromArgs(settings, args)
+
+	return settings, err
+}
+
+func (fo *FindOptions) getUsageString() string {
+	var buffer bytes.Buffer
+	buffer.WriteString("\nUsage:\n")
+	buffer.WriteString(" gofind [options] <path> [<path> ...]\n\nOptions:\n")
+	sortKeyMap := fo.getSortKeyMap()
+	optStringMap := fo.getOptStringMap()
+	optDescMap := fo.getOptDescMap()
+	sortedKeys := GetSortedKeys(sortKeyMap)
+	optStrings := GetMapValues(optStringMap)
+	longestLen := GetLongestLen(optStrings)
+	optFormat := fmt.Sprintf(" %%-%ds  %%s\n", longestLen)
+	for _, k := range sortedKeys {
+		o := optStringMap[sortKeyMap[k]]
+		d := optDescMap[sortKeyMap[k]]
+		buffer.WriteString(fmt.Sprintf(optFormat, o, d))
+	}
+	return buffer.String()
+}
+
+func (fo *FindOptions) PrintUsage() {
+	Log(fo.getUsageString())
+	os.Exit(0)
+}
+
+func (fo *FindOptions) PrintVersion() {
+	config := NewFindConfig()
+	Log(fmt.Sprintf("xfind version %s", config.VERSION))
+	os.Exit(0)
+}
+
+func (fo *FindOptions) getSortKeyMap() map[string]string {
+	m := map[string]string{}
+	for _, o := range fo.FindOptions {
+		sortKey := ""
+		if o.Short == "" {
+			sortKey = strings.ToLower(o.Long)
+		} else {
+			sortKey = fmt.Sprintf("%s@%s", strings.ToLower(o.Short),
+				strings.ToLower(o.Long))
+		}
+		m[sortKey] = o.Long
+	}
+	return m
+}
+
+func (fo *FindOptions) getOptStringMap() map[string]string {
+	m := map[string]string{}
+	for _, o := range fo.FindOptions {
+		optString := ""
+		if o.Short != "" {
+			optString = fmt.Sprintf("-%s,", o.Short)
+		}
+		optString = fmt.Sprintf("%s--%s", optString, o.Long)
+		m[o.Long] = optString
+	}
+	return m
+}
+
+func (fo *FindOptions) getOptDescMap() map[string]string {
+	m := map[string]string{}
+	for _, o := range fo.FindOptions {
+		m[o.Long] = o.Desc
 	}
 	return m
 }
@@ -536,5 +411,8 @@ func (fo *FindOptions) generateCodeFile(filePath string) {
 	buffer.WriteString(fmt.Sprintf("%s},\n", strings.Repeat("\t", depth)))
 	depth--
 	buffer.WriteString(fmt.Sprintf("%s}\n}\n", strings.Repeat("\t", depth)))
-	os.WriteFile(filePath, buffer.Bytes(), 0644)
+	err := os.WriteFile(filePath, buffer.Bytes(), 0644)
+	if err != nil {
+		panic(err)
+	}
 }
