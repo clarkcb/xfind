@@ -18,7 +18,7 @@
     },
     "require-dev": {
         "phpunit/phpunit": "^9.6.29",
-        "phpstan/phpstan": "^1.12.31"
+        "phpstan/phpstan": "^1.12.32"
     },
     "bin": ["bin/phpfind.php"]
 }

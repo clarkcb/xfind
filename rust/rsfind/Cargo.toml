@@ -5,8 +5,9 @@ authors = ["Cary Clark <clarkcb@gmail.com>"]
 edition = "2024"
 
 [dependencies]
-chrono = "0.4.41"
-regex = "1.11.1"
-serde = { version ="1.0.219", features = ["derive"] }
-serde_json = "1.0.143"
+chrono = "0.4.42"
+regex = "1.11.3"
+serde = { version ="1.0.228", features = ["derive"] }
+serde_json = "1.0.145"
+once_cell = "1.21.3"
 #zip = "2.5.0"
