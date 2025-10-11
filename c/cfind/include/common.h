@@ -4,6 +4,16 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+#if defined(_WIN32) || defined(_WIN64)
+#define OS_WINDOWS 1
+#define PATH_SEPARATOR '\\'
+#define PATH_SEPARATOR_S "\\"
+#else
+#define OS_WINDOWS 0
+#define PATH_SEPARATOR '/'
+#define PATH_SEPARATOR_S "/"
+#endif
+
 #define MAX_FILENAME_LENGTH 255
 #define MAX_PATH_LENGTH 1024
 #define MAX_STRING_LENGTH 1024

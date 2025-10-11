@@ -65,7 +65,7 @@ void add_char_split_to_string_node(const char c, const char *s, StringNode *stri
     while (s[endidx] == c) {
         endidx--;
     }
-    assert(endidx > startidx);
+    assert(endidx >= startidx);
 
     IntNode *int_node = empty_int_node();
     for (unsigned int i=startidx; i <= endidx; i++) {
