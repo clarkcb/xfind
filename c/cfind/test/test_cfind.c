@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
     test_dir_or_file_exists();
     test_get_extension();
 	test_is_dot_dir();
-	test_is_hidden();
+	test_is_hidden_path();
     test_expand_path();
     test_join_path();
     test_split_path();

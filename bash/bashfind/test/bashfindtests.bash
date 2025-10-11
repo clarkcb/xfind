@@ -15,6 +15,9 @@
 #
 ################################################################################
 
+# start with non-failing status
+export BASHFIND_TEST_FAILED=
+
 TESTDIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
 # Settings tests
@@ -60,7 +63,7 @@ test_is_dot_dir
 
 test_expanded_path
 
-test_is_hidden
+test_is_hidden_path
 
 
 # Finder tests
@@ -103,3 +106,12 @@ test_follow_symlinks_default
 test_follow_symlinks
 
 test_no_follow_symlinks
+
+if [ -n "$BASHFIND_TEST_FAILED" ]
+then
+    echo -e "${RED}Some tests failed${COLOR_RESET}"
+    exit 1
+else
+    echo -e "${GREEN}All tests passed${COLOR_RESET}"
+    exit 0
+fi

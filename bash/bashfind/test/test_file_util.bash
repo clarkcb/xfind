@@ -64,54 +64,54 @@ test_expanded_path () {
     assert_equals_string expanded_path "$expanded_path" "$HOME/src/xfind"
 }
 
-test_is_hidden () {
+test_is_hidden_path () {
     echo
-    hdr "test_is_hidden"
+    hdr "test_is_hidden_path"
 
     source "$BASHFIND_PATH/lib/bashfindlib.bash"
 
     dot_dir="."
-    is_hidden "$dot_dir"
-    assert_equals_number "is_hidden $dot_dir" $? 0
+    is_hidden_path "$dot_dir"
+    assert_equals_number "is_hidden_path $dot_dir" $? 0
 
     dot_dot_dir=".."
-    is_hidden "$dot_dot_dir"
-    assert_equals_number "is_hidden $dot_dot_dir" $? 0
+    is_hidden_path "$dot_dot_dir"
+    assert_equals_number "is_hidden_path $dot_dot_dir" $? 0
 
     dot_dash_dir="./"
-    is_hidden "$dot_dash_dir"
-    assert_equals_number "is_hidden $dot_dash_dir" $? 0
+    is_hidden_path "$dot_dash_dir"
+    assert_equals_number "is_hidden_path $dot_dash_dir" $? 0
 
     dot_dot_dash_dir="../"
-    is_hidden "$dot_dot_dash_dir"
-    assert_equals_number "is_hidden $dot_dot_dash_dir" $? 0
+    is_hidden_path "$dot_dot_dash_dir"
+    assert_equals_number "is_hidden_path $dot_dot_dash_dir" $? 0
 
     dot_git_dir=".git"
-    is_hidden "$dot_git_dir"
-    assert_equals_number "is_hidden $dot_git_dir" $? 1
+    is_hidden_path "$dot_git_dir"
+    assert_equals_number "is_hidden_path $dot_git_dir" $? 1
 
     dot_git_dash_dir=".git/"
-    is_hidden "$dot_git_dash_dir"
-    assert_equals_number "is_hidden $dot_git_dash_dir" $? 1
+    is_hidden_path "$dot_git_dash_dir"
+    assert_equals_number "is_hidden_path $dot_git_dash_dir" $? 1
 
     dot_gitignore=".gitignore"
-    is_hidden "$dot_gitignore"
-    assert_equals_number "is_hidden $dot_gitignore" $? 1
+    is_hidden_path "$dot_gitignore"
+    assert_equals_number "is_hidden_path $dot_gitignore" $? 1
 
     path_dot_gitignore="/path/to/.gitignore"
-    is_hidden "$path_dot_gitignore"
-    assert_equals_number "is_hidden $path_dot_gitignore" $? 1
+    is_hidden_path "$path_dot_gitignore"
+    assert_equals_number "is_hidden_path $path_dot_gitignore" $? 1
 
     path_dot_gitignore="/path/to/.git/config"
-    is_hidden "$path_dot_gitignore"
-    assert_equals_number "is_hidden $path_dot_gitignore" $? 1
+    is_hidden_path "$path_dot_gitignore"
+    assert_equals_number "is_hidden_path $path_dot_gitignore" $? 1
 
 
     current_path_file="./bashfindtests.bash"
-    is_hidden "$current_path_file"
-    assert_equals_number "is_hidden $current_path_file" $? 0
+    is_hidden_path "$current_path_file"
+    assert_equals_number "is_hidden_path $current_path_file" $? 0
 
     parent_path_file="../bashfindtests.bash"
-    is_hidden "$parent_path_file"
-    assert_equals_number "is_hidden $parent_path_file" $? 0
+    is_hidden_path "$parent_path_file"
+    assert_equals_number "is_hidden_path $parent_path_file" $? 0
 }

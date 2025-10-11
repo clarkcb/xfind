@@ -28,6 +28,8 @@ assertion_passed () {
 assertion_failed () {
     local msg="$1"
     echo -e "${RED}Assertion failed: $msg${COLOR_RESET}"
+    # set an env variable so the test runner can detect failure
+    export BASHFIND_TEST_FAILED=1
 }
 
 assert_equals_number () {

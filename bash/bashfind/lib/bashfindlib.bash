@@ -284,7 +284,13 @@ is_hidden_path () {
 filter_dir_by_hidden () {
     local dir_path="$1"
 
-    if [ "$dir_path" == "" -o "$dir_path" == "." -o "$dir_path" == ".." ]
+    if [ "$dir_path" == "" ]
+    then
+        return 1
+    fi
+
+    is_dot_dir "$dir_path"
+    if [ $? == 1 ]
     then
         return 1
     fi
@@ -339,6 +345,12 @@ filter_dir_by_out_patterns () {
 
 is_matching_dir () {
     local dir_path="$1"
+
+    is_dot_dir "$dir_path"
+    if [ $? == 1 ]
+    then
+        return 1
+    fi
 
     filter_dir_by_hidden "$dir_path"
     if [ $? == 0 ]
@@ -438,6 +450,15 @@ is_matching_archive_file_name () {
 is_matching_archive_file () {
     local file_path="$1"
     local file_name=$(basename $file_path)
+
+    if [ $INCLUDE_HIDDEN == false ]
+    then
+        is_hidden_name "$file_name"
+        if [ $? == 1 ]
+        then
+            return 0
+        fi
+    fi
 
     has_matching_archive_ext "$file_name"
     if [ $? == 0 ]
@@ -611,6 +632,15 @@ is_matching_file () {
     local file_size=$3
     local last_mod=$4
     local file_name=$(basename $file_path)
+
+    if [ $INCLUDE_HIDDEN == false ]
+    then
+        is_hidden_name "$file_name"
+        if [ $? == 1 ]
+        then
+            return 0
+        fi
+    fi
 
     has_matching_ext "$file_name"
     if [ $? == 0 ]

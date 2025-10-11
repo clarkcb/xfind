@@ -123,9 +123,9 @@ void test_is_dot_dir(void)
     }
 }
 
-void test_is_hidden(void)
+void test_is_hidden_path(void)
 {
-    printf("\ntest_is_hidden()\n");
+    printf("\ntest_is_hidden_path()\n");
 
     char **file_paths = (char *[]) {
         NULL,

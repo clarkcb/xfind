@@ -59,6 +59,15 @@ unittest_bashfind () {
     log "Unit-testing bashfind"
     log "$BASHFIND_PATH/test/bashfindtests.bash"
     $BASHFIND_PATH/test/bashfindtests.bash
+
+    # check for success/failure
+    if [ "$?" -eq 0 ]
+    then
+        log "Tests succeeded"
+    else
+        log_error "Tests failed"
+        FAILED_BUILDS+=("bashfind")
+    fi
 }
 
 unittest_cfind () {
@@ -93,15 +102,28 @@ unittest_cfind () {
                 # else
                 #     log_error "ERROR: C unit tests failed"
                 # fi
+
+                # check for success/failure
+                if [ "$?" -ne 0 ]
+                then
+                    log_error "Tests failed"
+                    FAILED_BUILDS+=("cfind")
+                    return
+                fi
+
             else
                 log_error "cfind-tests not found: $CFIND_TEST_EXE"
                 FAILED_BUILDS+=("cfind")
+                return
             fi
         else
             log_error "cmake build directory not found: $CMAKE_BUILD_DIR"
             FAILED_BUILDS+=("cfind")
+            return
         fi
     done
+
+    log "Tests succeeded"
 }
 
 unittest_cljfind () {

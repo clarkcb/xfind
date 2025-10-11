@@ -411,7 +411,7 @@ void test_follow_symlinks_follow_symlinks(void) {
     if (res_count > 0) {
         const char* color = res_count > 2 ? COLOR_GREEN : COLOR_RED;
         printf("%sres_count: %d%s\n", color, (int)res_count, COLOR_RESET);
-        assert(res_count < 3);
+        assert(res_count > 2);
     }
 
     destroy_file_results(results);
