@@ -7,6 +7,7 @@
 #
 ################################################################################
 param([switch]$help = $false,
+      [switch]$lock = $false,
       [switch]$all = $false)
 
 ########################################
@@ -28,6 +29,7 @@ if ($langs -contains 'all')
 }
 
 Log("help: $help")
+Log("lock: $lock")
 Log("all: $all")
 if ($langs.Length -gt 0 -and -not $all)
 {
@@ -44,7 +46,7 @@ $failedBuilds = @()
 
 function Usage
 {
-    Write-Host "`nUsage: clean.ps1 [-help] {""all"" | lang [lang...]}`n"
+    Write-Host "`nUsage: clean.ps1 [-help] [-lock] {""all"" | lang [lang...]}`n"
     exit
 }
 
@@ -225,6 +227,12 @@ function CleanDartFind
     Log('dart pub cache repair')
     dart pub cache repair
 
+    if ($lock -and (Test-Path 'pubspec.lock'))
+    {
+        Log('Remove-Item pubspec.lock')
+        Remove-Item 'pubspec.lock'
+    }
+
     Set-Location $oldPwd
 }
 
@@ -254,6 +262,12 @@ function CleanExFind
 
     Log('mix clean')
     mix clean
+
+    if ($lock -and (Test-Path 'mix.lock'))
+    {
+        Log('Remove-Item mix.lock')
+        Remove-Item 'mix.lock'
+    }
 
     Set-Location $oldPwd
 }
@@ -348,10 +362,10 @@ function CleanGroovyFind
     Log("$gradle --warning-mode all clean")
     & $gradle --warning-mode all clean
 
-    $resourcesPath = Join-Path $groovyFindPath 'src' 'main' 'resources'
+    $resourcesPath = Join-Path $groovyFindPath 'lib' 'src' 'main' 'resources'
     CleanJsonResources($resourcesPath)
 
-    $testResourcesPath = Join-Path $groovyFindPath 'src' 'test' 'resources'
+    $testResourcesPath = Join-Path $groovyFindPath 'lib' 'src' 'test' 'resources'
     CleanTestResources($testResourcesPath)
 
     Set-Location $oldPwd
@@ -377,6 +391,12 @@ function CleanHsFind
 
     $resourcesPath = Join-Path $hsFindPath 'data'
     CleanJsonResources($resourcesPath)
+
+    if ($lock -and (Test-Path 'stack.yaml.lock'))
+    {
+        Log('Remove-Item stack.yaml.lock')
+        Remove-Item 'stack.yaml.lock'
+    }
 
     Set-Location $oldPwd
 }
@@ -404,10 +424,10 @@ function CleanJavaFind
     Log("$gradle --warning-mode all clean")
     & $gradle --warning-mode all clean
 
-    $resourcesPath = Join-Path $javaFindPath 'src' 'main' 'resources'
+    $resourcesPath = Join-Path $javaFindPath 'lib' 'src' 'main' 'resources'
     CleanJsonResources($resourcesPath)
 
-    $testResourcesPath = Join-Path $javaFindPath 'src' 'test' 'resources'
+    $testResourcesPath = Join-Path $javaFindPath 'lib' 'src' 'test' 'resources'
     CleanTestResources($testResourcesPath)
 
     Set-Location $oldPwd
@@ -433,6 +453,12 @@ function CleanJsFind
 
     $resourcesPath = Join-Path $jsFindPath 'data'
     CleanJsonResources($resourcesPath)
+
+    if ($lock -and (Test-Path 'package-lock.json'))
+    {
+        Log('Remove-Item package-lock.json')
+        Remove-Item 'package-lock.json'
+    }
 
     Set-Location $oldPwd
 }
@@ -461,10 +487,10 @@ function CleanKtFind
     Log("$gradle --warning-mode all clean")
     & $gradle --warning-mode all clean
 
-    $resourcesPath = Join-Path $ktFindPath 'src' 'main' 'resources'
+    $resourcesPath = Join-Path $ktFindPath 'lib' 'src' 'main' 'resources'
     CleanJsonResources($resourcesPath)
 
-    $testResourcesPath = Join-Path $ktFindPath 'src' 'test' 'resources'
+    $testResourcesPath = Join-Path $ktFindPath 'lib' 'src' 'test' 'resources'
     CleanTestResources($testResourcesPath)
 
     Set-Location $oldPwd
@@ -498,6 +524,21 @@ function CleanMlFind
     Log('not implemented at this time')
 }
 
+function CleanPhpFind
+{
+    Write-Host
+    Hdr('CleanPhpFind')
+
+    $resourcesPath = Join-Path $phpFindPath 'resources'
+    CleanJsonResources($resourcesPath)
+
+    if ($lock -and (Test-Path (Join-Path $phpFindPath 'composer.lock')))
+    {
+        Log('Remove-Item composer.lock')
+        Remove-Item (Join-Path $phpFindPath 'composer.lock')
+    }
+}
+
 function CleanPlFind
 {
     Write-Host
@@ -507,20 +548,12 @@ function CleanPlFind
     CleanJsonResources($resourcesPath)
 }
 
-function CleanPhpFind
-{
-    Write-Host
-    Hdr('CleanPhpFind')
-
-    $resourcesPath = Join-Path $phpFindPath 'resources'
-    CleanJsonResources($resourcesPath)
-}
-
 function CleanPs1Find
 {
     Write-Host
     Hdr('CleanPs1Find')
     Log('Nothing to do for powershell')
+    # TODO: do we want to uninstall?
 }
 
 function CleanPyFind
@@ -542,6 +575,12 @@ function CleanRbFind
 
     $testResourcesPath = Join-Path $rbFindPath 'test' 'fixtures'
     CleanTestResources($testResourcesPath)
+
+    if ($lock -and (Test-Path (Join-Path $rbFindPath 'Gemfile.lock')))
+    {
+        Log('Remove-Item Gemfile.lock')
+        Remove-Item (Join-Path $rbFindPath 'Gemfile.lock')
+    }
 }
 
 function CleanRsFind
@@ -561,6 +600,12 @@ function CleanRsFind
 
     Log('cargo clean')
     cargo clean
+
+    if ($lock -and (Test-Path 'Cargo.lock'))
+    {
+        Log('Remove-Item Cargo.lock')
+        Remove-Item 'Cargo.lock'
+    }
 
     Set-Location $oldPwd
 }
@@ -634,6 +679,12 @@ function CleanTsFind
     $resourcesPath = Join-Path $tsFindPath 'data'
     CleanJsonResources($resourcesPath)
 
+    if ($lock -and (Test-Path 'package-lock.json'))
+    {
+        Log('Remove-Item package-lock.json')
+        Remove-Item 'package-lock.json'
+    }
+
     Set-Location $oldPwd
 }
 
@@ -653,6 +704,8 @@ function CleanLinux
     CleanCsFind
 
     CleanDartFind
+
+    CleanExFind
 
     CleanFsFind
 
@@ -709,6 +762,8 @@ function CleanAll
     CleanCsFind
 
     CleanDartFind
+
+    CleanExFind
 
     CleanFsFind
 
