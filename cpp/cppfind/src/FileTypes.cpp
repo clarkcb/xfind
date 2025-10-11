@@ -24,8 +24,8 @@ namespace cppfind {
         }
 
         uint64_t file_size = std::filesystem::file_size(file_types_path);
-        // current size is 11634, make sure it's not dramatically bigger than that
-        if (file_size > 12000) {
+        // current size is 12076, make sure it's not dramatically bigger than that
+        if (file_size > 12100) {
             throw FindException("Invalid filetypes file");
         }
 

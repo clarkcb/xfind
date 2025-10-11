@@ -118,9 +118,11 @@
         ".bash_history", ".bash_profile", ".bashrc", ".bzrignore",
         ".dockerignore", ".editorconfig", ".env", ".gitattributes",
         ".gitconfig", ".gitignore", ".gitkeep", ".profile", ".viminfo",
-        ".zprofile", ".zsh_history", ".zshenv", ".zshrc", "CMakeLists.txt",
-        "Dockerfile", "Gemfile", "Jenkinsfile", "Makefile", "MANIFEST",
-        "mime.types", "Pipfile", "PKG-INFO", "Rakefile", "Vagrantfile"
+        ".zprofile", ".zsh_history", ".zshenv", ".zshrc", "Cargo.lock",
+        "CMakeLists.txt", "composer.lock", "Dockerfile", "Gemfile",
+        "Gemfile.lock", "Jenkinsfile", "Makefile", "MANIFEST", "mime.types",
+        "mix.lock", "Pipfile", "PKG-INFO", "pubspec.lock", "Rakefile",
+        "Vagrantfile"
       ]
     },
     {

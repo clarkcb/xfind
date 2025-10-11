@@ -53,8 +53,8 @@ error_t get_file_types(FileTypes *file_types)
 
     // load the file
     const long fsize = file_size(full_path);
-    // current size is 11634, make sure it's not dramatically bigger than that
-    assert(fsize <= 12000);
+    // current size is 12076, make sure it's not dramatically bigger than that
+    assert(fsize <= 12100);
     char contents[fsize];
     contents[0] = '\0';
     FILE *fp = fopen(full_path, "r");
