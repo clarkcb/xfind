@@ -17,11 +17,34 @@ public class ArgTokenizer {
     private final Map<String, String> intMap;
     private final Map<String, String> longMap;
 
-    public ArgTokenizer(Map<String, String> boolMap, Map<String, String> strMap, Map<String, String> intMap, Map<String, String> longMap) {
-        this.boolMap = boolMap;
-        this.strMap = strMap;
-        this.intMap = intMap;
-        this.longMap = longMap;
+    public ArgTokenizer(List<? extends Option> options) {
+        this.boolMap = new HashMap<>();
+        this.strMap = new HashMap<>();
+        this.intMap = new HashMap<>();
+        this.longMap = new HashMap<>();
+        for (Option option : options) {
+            if (option.argType() == ArgTokenType.BOOL) {
+                this.boolMap.put(option.longArg(), option.longArg());
+                if (option.shortArg() != null && !option.shortArg().isEmpty()) {
+                    this.boolMap.put(option.shortArg(), option.longArg());
+                }
+            } else if (option.argType() == ArgTokenType.STR) {
+                this.strMap.put(option.longArg(), option.longArg());
+                if (option.shortArg() != null && !option.shortArg().isEmpty()) {
+                    this.strMap.put(option.shortArg(), option.longArg());
+                }
+            } else if (option.argType() == ArgTokenType.INT) {
+                this.intMap.put(option.longArg(), option.longArg());
+                if (option.shortArg() != null && !option.shortArg().isEmpty()) {
+                    this.intMap.put(option.shortArg(), option.longArg());
+                }
+            } else if (option.argType() == ArgTokenType.LONG) {
+                this.longMap.put(option.longArg(), option.longArg());
+                if (option.shortArg() != null && !option.shortArg().isEmpty()) {
+                    this.longMap.put(option.shortArg(), option.longArg());
+                }
+            }
+        }
     }
 
     public List<ArgToken> tokenizeArgs(final String[] args) throws FindException {

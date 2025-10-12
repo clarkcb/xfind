@@ -10,11 +10,9 @@ Class to encapsulate a command line find option
 
 package javafind;
 
-public record FindOption(String shortArg, String longArg, String description, ArgTokenType argType) implements Option {
-    public String getSortArg() {
-        if (null != this.shortArg && !this.shortArg.isEmpty()) {
-            return this.shortArg.toLowerCase() + "@" + this.longArg;
-        }
-        return this.longArg;
-    }
+public interface Option {
+    String shortArg();
+    String longArg();
+    String description();
+    ArgTokenType argType();
 }

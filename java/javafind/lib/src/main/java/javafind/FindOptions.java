@@ -22,17 +22,12 @@ import static javafind.FindError.STARTPATH_NOT_DEFINED;
 public class FindOptions {
     private static final String FIND_OPTIONS_JSON_PATH = "/findoptions.json";
     private final List<FindOption> options;
-    private final Map<String, String> boolMap = new HashMap<>();
-    private final Map<String, String> strMap = new HashMap<>();
-    private final Map<String, String> intMap = new HashMap<>();
-    private final Map<String, String> longMap = new HashMap<>();
     private final ArgTokenizer argTokenizer;
 
     public FindOptions() throws IOException {
         options = new ArrayList<>();
-        strMap.put("path", "path");
         setOptionsFromJson();
-        argTokenizer = new ArgTokenizer(boolMap, strMap, intMap, longMap);
+        argTokenizer = new ArgTokenizer(options);
     }
 
     @FunctionalInterface
@@ -130,31 +125,25 @@ public class FindOptions {
         for (var i=0; i<findOptionsArray.length(); i++) {
             var findOptionObj = findOptionsArray.getJSONObject(i);
             var longArg = findOptionObj.getString("long");
+            var argType = ArgTokenType.UNKNOWN;
             if (boolActionMap.containsKey(longArg)) {
-                boolMap.put(longArg, longArg);
+                argType = ArgTokenType.BOOL;
             } else if (stringActionMap.containsKey(longArg)) {
-                strMap.put(longArg, longArg);
+                argType = ArgTokenType.STR;
             } else if (intActionMap.containsKey(longArg)) {
-                intMap.put(longArg, longArg);
+                argType = ArgTokenType.INT;
             } else if (longActionMap.containsKey(longArg)) {
-                longMap.put(longArg, longArg);
+                argType = ArgTokenType.LONG;
             }
             var desc = findOptionObj.getString("desc");
             var shortArg = "";
             if (findOptionObj.has("short")) {
                 shortArg = findOptionObj.getString("short");
-                if (boolActionMap.containsKey(longArg)) {
-                    boolMap.put(shortArg, longArg);
-                } else if (stringActionMap.containsKey(longArg)) {
-                    strMap.put(shortArg, longArg);
-                } else if (intActionMap.containsKey(longArg)) {
-                    intMap.put(shortArg, longArg);
-                } else if (longActionMap.containsKey(longArg)) {
-                    longMap.put(shortArg, longArg);
-                }
             }
-            options.add(new FindOption(shortArg, longArg, desc));
+            options.add(new FindOption(shortArg, longArg, desc, argType));
         }
+        // Add path option, which is not in the json file
+        options.add(new FindOption("", "path", "", ArgTokenType.STR));
     }
 
     private void applyArgTokenToSettings(final ArgToken argToken, FindSettings settings)
@@ -270,6 +259,9 @@ public class FindOptions {
         var optDescs = new ArrayList<>();
         int longest = 0;
         for (var opt : this.options) {
+            if (opt.longArg().equals("path")) {
+                continue;
+            }
             var optString = new StringBuilder();
             var shortArg = opt.shortArg();
             if (null != shortArg && !shortArg.isEmpty()) {
