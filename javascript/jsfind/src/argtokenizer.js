@@ -15,10 +15,28 @@ class ArgTokenizer {
     strMap
     intMap
 
-    constructor(boolMap, strMap, intMap) {
-        this.boolMap = boolMap;
-        this.strMap = strMap;
-        this.intMap = intMap;
+    constructor(options) {
+        this.boolMap = {};
+        this.strMap = {};
+        this.intMap = {};
+        for (const option of options) {
+            if (option.argType === ArgTokenType.Bool) {
+                this.boolMap[option.longArg] = option.longArg;
+                if (option.shortArg) {
+                    this.boolMap[option.shortArg] = option.longArg;
+                }
+            } else if (option.argType === ArgTokenType.Str) {
+                this.strMap[option.longArg] = option.longArg;
+                if (option.shortArg) {
+                    this.strMap[option.shortArg] = option.longArg;
+                }
+            } else if (option.argType === ArgTokenType.Int) {
+                this.intMap[option.longArg] = option.longArg;
+                if (option.shortArg) {
+                    this.intMap[option.shortArg] = option.longArg;
+                }
+            }
+        }
     }
 
     tokenizeArgs(args) {

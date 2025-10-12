@@ -7,6 +7,7 @@
 'use strict'
 
 const ArgTokenType = {
+    Unknown: 0,
     Bool: 1,
     Str: 2,
     Int: 3

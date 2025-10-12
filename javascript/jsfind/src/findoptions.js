@@ -112,9 +112,6 @@ class FindOptions {
 
         // the list of FindOption objects (populated from JSON)
         this.options = [];
-        this.boolMap = {};
-        this.strMap = {'path': 'path'};
-        this.intMap = {};
 
         // populate options from JSON file
         (() => {
@@ -123,33 +120,28 @@ class FindOptions {
             if (Object.prototype.hasOwnProperty.call(obj, 'findoptions') && Array.isArray(obj.findoptions)) {
                 obj.findoptions.forEach(fo => {
                     let longArg = fo.long;
+                    let argType = ArgTokenType.Unknown;
                     this.argNameMap[longArg] = longArg;
                     if (this.boolActionMap[longArg]) {
-                        this.boolMap[longArg] = longArg;
+                        argType = ArgTokenType.Bool;
                     } else if (this.stringActionMap[longArg]) {
-                        this.strMap[longArg] = longArg;
+                        argType = ArgTokenType.Str;
                     } else if (this.intActionMap[longArg]) {
-                        this.intMap[longArg] = longArg;
+                        argType = ArgTokenType.Int;
                     }
                     let shortArg = '';
                     if (Object.prototype.hasOwnProperty.call(fo, 'short')) {
                         shortArg = fo.short;
                         this.argNameMap[shortArg] = longArg;
-                        if (this.boolActionMap[longArg]) {
-                            this.boolMap[shortArg] = longArg;
-                        } else if (this.stringActionMap[longArg]) {
-                            this.strMap[shortArg] = longArg;
-                        } else if (this.intActionMap[longArg]) {
-                            this.intMap[shortArg] = longArg;
-                        }
                     }
                     let desc = fo.desc;
-                    const option = new FindOption(shortArg, longArg, desc);
-                    this.options.push(option);
+                    this.options.push(new FindOption(shortArg, longArg, desc, argType));
                 });
+                // add the path option (not in the json file)
+                this.options.push(new FindOption('', 'path', '', ArgTokenType.Str));
             } else throw new FindError(`Invalid findoptions file: ${config.FIND_OPTIONS_JSON_PATH}`);
             this.options.sort(this.optCmp);
-            this.argTokenizer = new ArgTokenizer(this.boolMap, this.strMap, this.intMap);
+            this.argTokenizer = new ArgTokenizer(this.options);
         })();
     }
 
@@ -237,6 +229,8 @@ class FindOptions {
         let optDescs = [];
         let longest = 0;
         this.options.forEach(opt => {
+            if (opt.longArg === 'path')
+                return;
             let optString = ' ';
             if (opt.shortArg)
                 optString += '-' + opt.shortArg + ',';
