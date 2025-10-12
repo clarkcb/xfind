@@ -29,8 +29,7 @@ class FindOptions:
         self.options = []
         self.__set_dicts()
         self.__set_options_from_json()
-        self.arg_tokenizer = ArgTokenizer(bool_dict=self.bool_dict, str_dict=self.str_dict,
-                                          int_dict=self.int_dict, date_dict=self.date_dict)
+        self.arg_tokenizer = ArgTokenizer(options=self.options)
 
     def __set_dicts(self):
         self.__bool_action_dict = {
@@ -110,7 +109,6 @@ class FindOptions:
                 lambda b, settings:
                 settings.set_property('print_version', b)
         }
-        self.bool_dict = {k: k for k in self.__bool_action_dict.keys()}
 
         self.__str_action_dict = {
             'in-archiveext':
@@ -156,7 +154,6 @@ class FindOptions:
                 lambda s, settings:
                 settings.set_sort_by(s),
         }
-        self.str_dict = {k: k for k in self.__str_action_dict.keys()}
 
         self.__date_action_dict = {
             'lastmod-after':
@@ -172,7 +169,6 @@ class FindOptions:
                 lambda dt, settings:
                 settings.set_property('min_last_mod', dt),
         }
-        self.date_dict = {k: k for k in self.__date_action_dict.keys()}
 
         self.__int_action_dict = {
             'maxdepth':
@@ -188,7 +184,6 @@ class FindOptions:
                 lambda i, settings:
                 settings.set_property('min_size', i),
         }
-        self.int_dict = {k: k for k in self.__int_action_dict.keys()}
 
     def __set_options_from_json(self):
         data = importlib.resources.files('pyfind').joinpath('data')
@@ -200,22 +195,22 @@ class FindOptions:
             if 'short' in find_option_obj:
                 short_arg = find_option_obj['short']
             desc = find_option_obj['desc']
-            if long_arg not in self.__bool_action_dict and \
-                    long_arg not in self.__str_action_dict and \
-                    long_arg not in self.__date_action_dict and \
-                    long_arg not in self.__int_action_dict and \
-                    long_arg != 'settings-file':
+            if long_arg in self.__bool_action_dict:
+                arg_type = ArgTokenType.BOOL
+            elif long_arg in self.__str_action_dict:
+                arg_type = ArgTokenType.STR
+            elif long_arg in self.__date_action_dict:
+                arg_type = ArgTokenType.DATE
+            elif long_arg in self.__int_action_dict:
+                arg_type = ArgTokenType.INT
+            # special case for settings-file which is not in any dict
+            elif long_arg == 'settings-file':
+                arg_type = ArgTokenType.STR
+            else:
                 raise FindException(f'Unknown find option: {long_arg}')
-            self.options.append(FindOption(short_arg, long_arg, desc))
-            if short_arg:
-                if long_arg in self.__bool_action_dict:
-                    self.bool_dict[short_arg] = long_arg
-                elif long_arg in self.__str_action_dict:
-                    self.str_dict[short_arg] = long_arg
-                elif long_arg in self.__date_action_dict:
-                    self.date_dict[short_arg] = long_arg
-                elif long_arg in self.__int_action_dict:
-                    self.int_dict[short_arg] = long_arg
+            self.options.append(FindOption(short_arg, long_arg, desc, arg_type))
+        # Add path option (not in json)
+        self.options.append(FindOption('', 'path', '', ArgTokenType.STR))
 
     def update_settings_from_arg_tokens(self, settings: FindSettings, arg_tokens: list[ArgToken]):
         """Update settings from a list of arg tokens"""

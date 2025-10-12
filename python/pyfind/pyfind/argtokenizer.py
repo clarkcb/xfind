@@ -16,6 +16,7 @@ from typing import Any
 
 from .common import parse_datetime_str
 from .findexception import FindException
+from .option import Option
 
 
 class ArgTokenType(Enum):
@@ -44,23 +45,28 @@ class ArgTokenizer:
     __slots__ = [
         'bool_dict', 'date_dict', 'int_dict', 'str_dict'
     ]
-    def __init__(self,
-                 bool_dict: dict[str, str] = None,
-                 date_dict: dict[str, str] = None,
-                 str_dict: dict[str, str] = None,
-                 int_dict: dict[str, str] = None):
+    def __init__(self, options: list[Option]):
         self.bool_dict: dict[str, str] = {}
-        if bool_dict:
-            self.bool_dict.update(bool_dict)
         self.date_dict: dict[str, str] = {}
-        if date_dict:
-            self.date_dict.update(date_dict)
         self.int_dict: dict[str, str] = {}
-        if int_dict:
-            self.int_dict.update(int_dict)
         self.str_dict: dict[str, str] = {}
-        if str_dict:
-            self.str_dict.update(str_dict)
+        for option in options:
+            if option.arg_type == ArgTokenType.BOOL:
+                self.bool_dict[option.long_arg] = option.long_arg
+                if option.short_arg:
+                    self.bool_dict[option.short_arg] = option.long_arg
+            elif option.arg_type == ArgTokenType.STR:
+                self.str_dict[option.long_arg] = option.long_arg
+                if option.short_arg:
+                    self.str_dict[option.short_arg] = option.long_arg
+            elif option.arg_type == ArgTokenType.INT:
+                self.int_dict[option.long_arg] = option.long_arg
+                if option.short_arg:
+                    self.int_dict[option.short_arg] = option.long_arg
+            elif option.arg_type == ArgTokenType.DATE:
+                self.date_dict[option.long_arg] = option.long_arg
+                if option.short_arg:
+                    self.date_dict[option.short_arg] = option.long_arg
 
     def tokenize_args(self, args: list[str]) -> list[ArgToken]:
         """Tokenize list of args"""
