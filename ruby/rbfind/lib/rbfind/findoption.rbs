@@ -9,10 +9,11 @@ module RbFind
     attr_reader short_arg: String
     attr_reader long_arg: String
     attr_reader desc: String
+    attr_reader arg_type: ArgTokenType
     # attr_reader func: Proc
 
     # def initialize: (String short_arg, String long_arg, String desc, Proc func) -> void
-    def initialize: (String short_arg, String long_arg, String desc) -> void
+    def initialize: (String short_arg, String long_arg, String desc, ArgTokenType arg_type) -> void
 
     def sort_arg: () -> String
   end

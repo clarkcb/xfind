@@ -20,13 +20,10 @@ module RbFind
       @bool_action_dict = {}
       @str_action_dict = {}
       @int_action_dict = {}
-      @bool_dict = {}
-      @str_dict = {}
-      @int_dict = {}
       set_actions
       set_options_from_json
       @options.sort! { |a, b| a.sort_arg <=> b.sort_arg }
-      @arg_tokenizer = ArgTokenizer.new(@bool_dict, @str_dict, @int_dict)
+      @arg_tokenizer = ArgTokenizer.new(@options)
     end
 
     def update_settings_from_json(settings, json)
@@ -65,6 +62,7 @@ module RbFind
       opt_descs = []
       longest = 0
       @options.each do |opt|
+        next if opt.long_arg == 'path'
         if opt.short_arg.empty?
           opt_string = "--#{opt.long_arg}"
         else
@@ -153,19 +151,19 @@ module RbFind
             ''
           end
         desc = so['desc']
-        @options.push(FindOption.new(short, long, desc))
+        arg_type = ArgTokenType::UNKNOWN
         long_sym = long.to_sym
         if @bool_action_dict.key?(long_sym)
-          @bool_dict[long_sym] = long_sym
-          @bool_dict[short.to_sym] = long_sym if short
+          arg_type = ArgTokenType::BOOL
         elsif @str_action_dict.key?(long_sym)
-          @str_dict[long_sym] = long_sym
-          @str_dict[short.to_sym] = long_sym if short
+          arg_type = ArgTokenType::STR
         elsif @int_action_dict.key?(long_sym)
-          @int_dict[long_sym] = long_sym
-          @int_dict[short.to_sym] = long_sym if short
+          arg_type = ArgTokenType::INT
         end
+        @options.push(FindOption.new(short, long, desc, arg_type))
       end
+      # add path option (not in JSON)
+      @options.push(FindOption.new('', 'path', '', ArgTokenType::STR))
     rescue StandardError => e
       raise FindError, "#{e} (file: #{find_options_json_path})"
     ensure

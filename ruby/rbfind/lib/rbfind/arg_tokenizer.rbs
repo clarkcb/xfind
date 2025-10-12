@@ -1,8 +1,9 @@
 module RbFind
   module ArgTokenType
-    BOOL: 0
-    STR:  1
-    INT:  2
+    UNKNOWN: 0
+    BOOL:    1
+    STR:     2
+    INT:     3
   end
 
   class ArgToken
@@ -22,7 +23,7 @@ module RbFind
     @str_dict: Hash[Symbol, Symbol]
     @int_dict: Hash[Symbol, Symbol]
 
-    def initialize: (Hash[Symbol, Symbol] bool_dict, Hash[Symbol, Symbol] str_dict, Hash[Symbol, Symbol] int_dict) -> void
+    def initialize: (Array[FindOption]) -> void
 
     def tokenize_args: (Array[String] args) -> Array[ArgToken]
 

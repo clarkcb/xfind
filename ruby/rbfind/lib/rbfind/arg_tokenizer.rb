@@ -3,9 +3,10 @@
 module RbFind
 
   module ArgTokenType
-    BOOL = 0
-    STR  = 1
-    INT  = 2
+    UNKNOWN = 0
+    BOOL    = 1
+    STR     = 2
+    INT     = 3
   end
 
   class ArgToken
@@ -22,10 +23,23 @@ module RbFind
 
   class ArgTokenizer
 
-    def initialize(bool_dict, str_dict, int_dict)
-      @bool_dict = bool_dict
-      @str_dict = str_dict
-      @int_dict = int_dict
+    def initialize(options)
+      @bool_dict = {}
+      @str_dict = {}
+      @int_dict = {}
+      options.each do |o|
+        long_sym = o.long_arg.to_sym
+        if o.arg_type == ArgTokenType::BOOL
+          @bool_dict[long_sym] = long_sym
+          @bool_dict[o.short_arg.to_sym] = long_sym if o.short_arg
+        elsif o.arg_type == ArgTokenType::STR
+          @str_dict[long_sym] = long_sym
+          @str_dict[o.short_arg.to_sym] = long_sym if o.short_arg
+        elsif o.arg_type == ArgTokenType::INT
+          @int_dict[long_sym] = long_sym
+          @int_dict[o.short_arg.to_sym] = long_sym if o.short_arg
+        end
+      end
     end
 
     def tokenize_args(args)
