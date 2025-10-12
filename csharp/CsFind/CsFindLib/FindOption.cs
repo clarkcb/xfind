@@ -2,10 +2,22 @@
 
 namespace CsFindLib;
 
-public class FindOption(string? shortArg, string longArg, string description)
+public interface IOption
+{
+	string? ShortArg { get; }
+	string LongArg { get; }
+	string Description { get; }
+	ArgTokenType ArgType { get; }
+
+	string SortArg { get; }
+}
+
+public class FindOption(string? shortArg, string longArg, string description, ArgTokenType argType) : IOption
 {
 	public string? ShortArg { get; } = shortArg;
 	public string LongArg { get; } = longArg;
+	public string Description { get; } = description;
+	public ArgTokenType ArgType { get; } =  argType;
 
 	public string SortArg
 	{
@@ -17,5 +29,4 @@ public class FindOption(string? shortArg, string longArg, string description)
 			return longArg;
 		}
 	}
-	public string Description { get; } = description;
 }

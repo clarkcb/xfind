@@ -75,7 +75,7 @@ public class FindOptions
 			{ "minsize", (i, settings) => settings.MinSize = i },
 		};
 
-	public List<FindOption> Options { get; }
+	public List<IOption> Options { get; }
 	private Dictionary<string, string> BoolDictionary { get; }
 	private Dictionary<string, string> StringDictionary { get; }
 	private Dictionary<string, string> IntDictionary { get; }
@@ -90,7 +90,7 @@ public class FindOptions
 		StringDictionary = new Dictionary<string, string> { { "path", "path" } };
 		IntDictionary = new Dictionary<string, string>();
 		SetOptionsFromJson();
-		ArgTokenizer = new ArgTokenizer(BoolDictionary, StringDictionary, IntDictionary);
+		ArgTokenizer = new ArgTokenizer(Options);
 	}
 
 	private void SetOptionsFromJson()
@@ -105,17 +105,18 @@ public class FindOptions
 		foreach (var optionDict in optionDicts)
 		{
 			var longArg = optionDict["long"];
+			ArgTokenType argType;
 			if (BoolActionDictionary.ContainsKey(longArg))
 			{
-				BoolDictionary.Add(longArg, longArg);
+				argType = ArgTokenType.Bool;
 			}
 			else if (StringActionDictionary.ContainsKey(longArg) || longArg.Equals("settings-file"))
 			{
-				StringDictionary.Add(longArg, longArg);
+				argType = ArgTokenType.String;
 			}
 			else if (IntActionDictionary.ContainsKey(longArg))
 			{
-				IntDictionary.Add(longArg, longArg);
+				argType = ArgTokenType.Int;
 			}
 			else
 			{
@@ -125,23 +126,12 @@ public class FindOptions
 			if (optionDict.TryGetValue("short", out var shortVal))
 			{
 				shortArg = shortVal;
-				if (BoolActionDictionary.ContainsKey(longArg))
-				{
-					BoolDictionary.Add(shortArg, longArg);
-				}
-				else if (StringActionDictionary.ContainsKey(longArg))
-				{
-					StringDictionary.Add(shortArg, longArg);
-				}
-				else if (IntActionDictionary.ContainsKey(longArg))
-				{
-					IntDictionary.Add(shortArg, longArg);
-				}
 			}
 			var desc = optionDict["desc"];
-			var option = new FindOption(shortArg, longArg, desc);
+			var option = new FindOption(shortArg, longArg, desc, argType);
 			Options.Add(option);
 		}
+		Options.Add(new FindOption(null, "path", "", ArgTokenType.String));
 	}
 
 	private void ApplyArgTokenToSettings(ArgToken argToken, FindSettings settings)
@@ -330,6 +320,7 @@ public class FindOptions
 		var longest = 0;
 		foreach (var opt in Options.OrderBy(o => o.SortArg))
 		{
+			if (opt.LongArg == "path") continue;
 			var optString = new StringBuilder();
 			if (!string.IsNullOrWhiteSpace(opt.ShortArg))
 			{

@@ -7,15 +7,43 @@ using System.Text.Json;
 
 namespace CsFindLib;
 
-public class ArgTokenizer(
-	Dictionary<string, string> boolDict,
-	Dictionary<string, string> stringDict,
-	Dictionary<string, string> intDict)
+public class ArgTokenizer
 {
-    private Dictionary<string, string> BoolDictionary { get; } = boolDict;
-    private Dictionary<string, string> StringDictionary { get; } = stringDict;
-    private Dictionary<string, string> IntDictionary { get; } = intDict;
+    private Dictionary<string, string> BoolDictionary { get; } =  new();
+    private Dictionary<string, string> StringDictionary { get; } = new();
+    private Dictionary<string, string> IntDictionary { get; }  = new();
 
+    public ArgTokenizer(List<IOption> options)
+    {
+	    foreach (var option in options)
+	    {
+		    if (option.ArgType == ArgTokenType.Bool)
+		    {
+			    BoolDictionary[option.LongArg] = option.LongArg;
+			    if (option.ShortArg != null)
+			    {
+				    BoolDictionary[option.ShortArg] = option.LongArg;
+			    }
+		    }
+		    else if (option.ArgType == ArgTokenType.String)
+		    {
+			    StringDictionary[option.LongArg] = option.LongArg;
+			    if (option.ShortArg != null)
+			    {
+				    StringDictionary[option.ShortArg] = option.LongArg;
+			    }
+		    }
+		    else if (option.ArgType == ArgTokenType.Int) 
+		    {
+			    IntDictionary[option.LongArg] = option.LongArg;
+			    if (option.ShortArg != null)
+			    {
+				    IntDictionary[option.ShortArg] = option.LongArg;
+			    }
+		    }
+	    }
+    }
+    
     public List<ArgToken> TokenizeArgs(IEnumerable<string> args)
 	{
 		var argTokens = new List<ArgToken>();
