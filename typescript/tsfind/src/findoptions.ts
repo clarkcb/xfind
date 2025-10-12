@@ -25,9 +25,6 @@ export class FindOptions {
     boolActionMap: StringActionMap;
     stringActionMap: StringActionMap;
     intActionMap: StringActionMap;
-    boolMap = new Map<string, string>();
-    strMap = new Map<string, string>();
-    intMap = new Map<string, string>();
     argTokenizer: ArgTokenizer;
 
     constructor() {
@@ -128,9 +125,8 @@ export class FindOptions {
                 (i: number, settings: FindSettings) => { settings.minSize = i; },
         };
 
-        this.strMap.set('path', 'path');
         this.setOptionsFromJsonFile();
-        this.argTokenizer = new ArgTokenizer(this.boolMap, this.strMap, this.intMap);
+        this.argTokenizer = new ArgTokenizer(this.options);
     }
 
     private static optCmp(o1: FindOption, o2: FindOption) {
@@ -146,28 +142,23 @@ export class FindOptions {
         if (Object.prototype.hasOwnProperty.call(obj, 'findoptions') && Array.isArray(obj['findoptions'])) {
             obj['findoptions'].forEach(fo => {
                 const longArg = fo['long'];
+                let argType = ArgTokenType.Unknown;
                 if (this.boolActionMap[longArg]) {
-                    this.boolMap.set(longArg, longArg);
+                    argType = ArgTokenType.Bool;
                 } else if (this.stringActionMap[longArg]) {
-                    this.strMap.set(longArg, longArg);
+                    argType = ArgTokenType.Str;
                 } else if (this.intActionMap[longArg]) {
-                    this.intMap.set(longArg, longArg);
+                    argType = ArgTokenType.Int;
                 }
                 let shortArg = '';
                 if (Object.prototype.hasOwnProperty.call(fo, 'short')) {
                     shortArg = fo['short'];
-                    if (this.boolActionMap[longArg]) {
-                        this.boolMap.set(shortArg, longArg);
-                    } else if (this.stringActionMap[longArg]) {
-                        this.strMap.set(shortArg, longArg);
-                    } else if (this.intActionMap[longArg]) {
-                        this.intMap.set(shortArg, longArg);
-                    }
                 }
                 const desc = fo['desc'];
-                const option = new FindOption(shortArg, longArg, desc);
-                this.options.push(option);
+                this.options.push(new FindOption(shortArg, longArg, desc, argType));
             });
+            // add the path option (not in the json file)
+            this.options.push(new FindOption('', 'path', '', ArgTokenType.Str));
         } else throw new Error(`Invalid findoptions file: ${config.FIND_OPTIONS_JSON_PATH}`);
         this.options.sort(FindOptions.optCmp);
     }
@@ -250,6 +241,8 @@ export class FindOptions {
         const optDescs: string[] = [];
         let longest = 0;
         this.options.forEach((opt: FindOption) => {
+            if (opt.longArg === 'path')
+                return;
             let optString = ' ';
             if (opt.shortArg)
                 optString += '-' + opt.shortArg + ',';

@@ -12,6 +12,7 @@ import {ArgTokenType} from "./argtokentype";
 import {FindError} from "./finderror";
 import fs from "fs";
 import {FileUtil} from "./fileutil";
+import {Option} from "./findoption";
 
 export interface ArgTokenizerResult {
     err: Error | undefined;
@@ -23,10 +24,28 @@ export class ArgTokenizer {
     strMap: Map<string, string>;
     intMap: Map<string, string>;
 
-    constructor(boolMap: Map<string, string>, strMap: Map<string, string>, intMap: Map<string, string>) {
-        this.boolMap = boolMap;
-        this.strMap = strMap;
-        this.intMap = intMap;
+    constructor(options: Option[]) {
+        this.boolMap = new Map<string, string>();
+        this.strMap = new Map<string, string>();
+        this.intMap = new Map<string, string>();
+        options.forEach(opt => {
+            if (opt.argType === ArgTokenType.Bool) {
+                this.boolMap.set(opt.longArg, opt.longArg);
+                if (opt.shortArg) {
+                    this.boolMap.set(opt.shortArg, opt.longArg);
+                }
+            } else if (opt.argType === ArgTokenType.Str) {
+                this.strMap.set(opt.longArg, opt.longArg);
+                if (opt.shortArg) {
+                    this.strMap.set(opt.shortArg, opt.longArg);
+                }
+            } else if (opt.argType === ArgTokenType.Int) {
+                this.intMap.set(opt.longArg, opt.longArg);
+                if (opt.shortArg) {
+                    this.intMap.set(opt.shortArg, opt.longArg);
+                }
+            }
+        });
     }
 
     public tokenizeArgs(args: string[]): ArgTokenizerResult {
