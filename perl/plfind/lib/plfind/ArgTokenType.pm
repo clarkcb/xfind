@@ -12,6 +12,7 @@ use strict;
 use warnings;
 
 use constant {
+    UNKNOWN => 'unknown',
     BOOL => 'bool',
     STR => 'str',
     INT => 'int',

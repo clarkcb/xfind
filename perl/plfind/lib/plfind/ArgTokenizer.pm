@@ -18,7 +18,19 @@ use plfind::ArgToken;
 use plfind::ArgTokenType;
 
 sub new {
-    my ($class, $bool_hash, $str_hash, $int_hash) = @_;
+    my ($class, $options_hash) = @_;
+    my $bool_hash = {};
+    my $str_hash = {};
+    my $int_hash = {};
+    foreach my $opt_key (keys %{$options_hash}) {
+        if ($options_hash->{$opt_key}->{arg_type} eq plfind::ArgTokenType->BOOL) {
+            $bool_hash->{$opt_key} = $options_hash->{$opt_key}->{long_arg};
+        } elsif ($options_hash->{$opt_key}->{arg_type} eq plfind::ArgTokenType->STR) {
+            $str_hash->{$opt_key} = $options_hash->{$opt_key}->{long_arg};
+        } elsif ($options_hash->{$opt_key}->{arg_type} eq plfind::ArgTokenType->INT) {
+            $int_hash->{$opt_key} = $options_hash->{$opt_key}->{long_arg};
+        }
+    }
     my $self = {
         bool_hash => $bool_hash,
         str_hash => $str_hash,

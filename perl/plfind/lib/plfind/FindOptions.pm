@@ -207,24 +207,9 @@ my $int_action_hash = {
 sub new {
     my $class = shift;
     my $options_hash = set_options_from_json();
-    my $bool_hash = {};
-    my $str_hash = {'path' => 'path'};
-    my $int_hash = {};
-    foreach my $opt_key (keys %{$options_hash}) {
-        if (exists $bool_action_hash->{$options_hash->{$opt_key}->{long_arg}}) {
-            $bool_hash->{$opt_key} = $options_hash->{$opt_key}->{long_arg};
-        } elsif (exists $str_action_hash->{$options_hash->{$opt_key}->{long_arg}}) {
-            $str_hash->{$opt_key} = $options_hash->{$opt_key}->{long_arg};
-        } elsif (exists $int_action_hash->{$options_hash->{$opt_key}->{long_arg}}) {
-            $int_hash->{$opt_key} = $options_hash->{$opt_key}->{long_arg};
-        }
-    }
-    my $arg_tokenizer = plfind::ArgTokenizer->new($bool_hash, $str_hash, $int_hash);
+    my $arg_tokenizer = plfind::ArgTokenizer->new($options_hash);
     my $self = {
         options => $options_hash,
-        bool_hash => $bool_hash,
-        str_hash => $str_hash,
-        int_hash => $int_hash,
         arg_tokenizer => $arg_tokenizer,
     };
     bless $self, $class;
@@ -239,12 +224,21 @@ sub set_options_from_json {
         my $short = $find_option->{short};
         my $long = $find_option->{long};
         my $desc = $find_option->{desc};
-        my $opt = plfind::FindOption->new($short, $long, $desc);
-        $options_hash->{$long} = $opt;
+        my $arg_type = plfind::ArgTokenType->UNKNOWN;
+        if (exists $bool_action_hash->{$long}) {
+            $arg_type = plfind::ArgTokenType->BOOL;
+        } elsif (exists $str_action_hash->{$long}) {
+            $arg_type = plfind::ArgTokenType->STR;
+        } elsif (exists $int_action_hash->{$long}) {
+            $arg_type = plfind::ArgTokenType->INT;
+        }
+        $options_hash->{$long} = plfind::FindOption->new($short, $long, $desc, $arg_type);
         if (defined $short) {
             $options_hash->{$short} = $options_hash->{$long};
         }
     }
+    # Add path (not in JSON)
+    $options_hash->{'path'} = plfind::FindOption->new('', 'path', '', plfind::ArgTokenType->STR);
     return $options_hash;
 }
 
@@ -350,6 +344,9 @@ sub get_usage_string {
     foreach my $opt_key (keys %{$self->{options}}) {
         my $option = $self->{options}->{$opt_key};
         my $long_arg = $option->{long_arg};
+        if ($long_arg eq 'path') {
+            next;
+        }
         my $short_arg = $option->{short_arg};
         my $sort_arg = $long_arg;
         if (defined $short_arg) {
