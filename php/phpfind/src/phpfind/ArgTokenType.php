@@ -7,7 +7,8 @@ namespace phpfind;
  */
 enum ArgTokenType: int
 {
-    case Bool = 0;
-    case Str = 1;
-    case Int = 2;
+    case Unknown = 0;
+    case Bool = 1;
+    case Str = 2;
+    case Int = 3;
 }

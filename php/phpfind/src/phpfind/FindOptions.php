@@ -29,18 +29,6 @@ class FindOptions
      */
     private readonly array $int_action_map;
     /**
-     * @var array<string, string> $bool_map
-     */
-    private array $bool_map;
-    /**
-     * @var array<string, string> $str_map
-     */
-    private array $str_map;
-    /**
-     * @var array<string, string> $int_map
-     */
-    private array $int_map;
-    /**
      * @var ArgTokenizer $arg_tokenizer
      */
     private ArgTokenizer $arg_tokenizer;
@@ -109,30 +97,8 @@ class FindOptions
             'mindepth' => fn(int $i, FindSettings $fs) => $fs->min_depth = $i,
             'minsize' => fn(int $i, FindSettings $fs) => $fs->min_size = $i,
         ];
-        $this->str_map = ['path' => 'path'];
         $this->set_options_from_json();
-        $this->arg_tokenizer = new ArgTokenizer($this->bool_map, $this->str_map, $this->int_map);
-    }
-
-    private function add_option(FindOption $opt): void
-    {
-        $this->options[] = $opt;
-        if (array_key_exists($opt->long_arg, $this->bool_action_map)) {
-            $this->bool_map[$opt->long_arg] = $opt->long_arg;
-            if ($opt->short_arg != '') {
-                $this->bool_map[$opt->short_arg] = $opt->long_arg;
-            }
-        } elseif (array_key_exists($opt->long_arg, $this->str_action_map)) {
-            $this->str_map[$opt->long_arg] = $opt->long_arg;
-            if ($opt->short_arg != '') {
-                $this->str_map[$opt->short_arg] = $opt->long_arg;
-            }
-        } elseif (array_key_exists($opt->long_arg, $this->int_action_map)) {
-            $this->int_map[$opt->long_arg] = $opt->long_arg;
-            if ($opt->short_arg != '') {
-                $this->int_map[$opt->short_arg] = $opt->long_arg;
-            }
-        }
+        $this->arg_tokenizer = new ArgTokenizer($this->options);
     }
 
     /**
@@ -153,13 +119,24 @@ class FindOptions
                     foreach ((array)$find_options as $fo) {
                         $fo = (array)$fo;
                         $short = '';
-                        $long = (string)$fo['long'];
-                        $desc = (string)$fo['desc'];
                         if (array_key_exists('short', $fo)) {
                             $short = (string)$fo['short'];
                         }
-                        $this->add_option(new FindOption($short, $long, $desc));
+                        $long = (string)$fo['long'];
+                        $desc = (string)$fo['desc'];
+                        if (array_key_exists($long, $this->bool_action_map)) {
+                            $arg_type = ArgTokenType::Bool;
+                        } elseif (array_key_exists($long, $this->str_action_map)) {
+                            $arg_type = ArgTokenType::Str;
+                        } elseif (array_key_exists($long, $this->int_action_map)) {
+                            $arg_type = ArgTokenType::Int;
+                        } else {
+                            throw new FindException('Invalid option: ' . $long);
+                        }
+                        $this->options[] = new FindOption($short, $long, $desc, $arg_type);
                     }
+                    // Add path (not in JSON)
+                    $this->options[] = new FindOption('', 'path', '', ArgTokenType::Str);
                     usort($this->options, array('phpfind\FindOptions', 'cmp_find_options'));
                 }
             } catch (\JsonException $e) {
@@ -284,6 +261,7 @@ class FindOptions
         $opt_map = [];
         $longest = 0;
         foreach ($this->options as $option) {
+            if ($option->long_arg == 'path') continue;
             $opt_str = '';
             if ($option->short_arg) {
                 $opt_str = '-' . $option->short_arg . ',';

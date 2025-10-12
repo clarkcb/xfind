@@ -4,16 +4,34 @@ declare(strict_types=1);
 
 namespace phpfind;
 
-readonly class ArgTokenizer {
+class ArgTokenizer {
     private array $bool_map;
     private array $str_map;
     private array $int_map;
 
-    public function __construct(array $bool_map, array $str_map, array $int_map)
+    public function __construct(array $options)
     {
-        $this->bool_map = $bool_map;
-        $this->str_map = $str_map;
-        $this->int_map = $int_map;
+        $this->bool_map = [];
+        $this->str_map = [];
+        $this->int_map = [];
+        foreach ($options as $opt) {
+            if ($opt->arg_type == ArgTokenType::Bool) {
+                $this->bool_map[$opt->long_arg] = $opt->long_arg;
+                if ($opt->short_arg != '') {
+                    $this->bool_map[$opt->short_arg] = $opt->long_arg;
+                }
+            } elseif ($opt->arg_type == ArgTokenType::Str) {
+                $this->str_map[$opt->long_arg] = $opt->long_arg;
+                if ($opt->short_arg != '') {
+                    $this->str_map[$opt->short_arg] = $opt->long_arg;
+                }
+            } elseif ($opt->arg_type == ArgTokenType::Int) {
+                $this->int_map[$opt->long_arg] = $opt->long_arg;
+                if ($opt->short_arg != '') {
+                    $this->int_map[$opt->short_arg] = $opt->long_arg;
+                }
+            }
+        }
     }
 
     /**
