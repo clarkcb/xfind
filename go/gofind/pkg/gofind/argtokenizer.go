@@ -12,10 +12,11 @@ import (
 type ArgTokenType int
 
 const (
-	ArgTokenTypeBool   ArgTokenType = iota
-	ArgTokenTypeString ArgTokenType = iota
-	ArgTokenTypeInt    ArgTokenType = iota
-	ArgTokenTypeLong   ArgTokenType = iota
+	ArgTokenTypeUnknown ArgTokenType = iota
+	ArgTokenTypeBool    ArgTokenType = iota
+	ArgTokenTypeString  ArgTokenType = iota
+	ArgTokenTypeInt     ArgTokenType = iota
+	ArgTokenTypeLong    ArgTokenType = iota
 )
 
 type ArgToken struct {
@@ -31,10 +32,37 @@ type ArgTokenizer struct {
 	LongMap   map[string]string
 }
 
-func NewArgTokenizer(boolMap map[string]string,
-	stringMap map[string]string,
-	intMap map[string]string,
-	longMap map[string]string) *ArgTokenizer {
+// TODO: change FindOption to Option interface
+func NewArgTokenizer(options []*FindOption) *ArgTokenizer {
+	boolMap := make(map[string]string)
+	stringMap := make(map[string]string)
+	stringMap["path"] = "path"
+	intMap := make(map[string]string)
+	longMap := make(map[string]string)
+
+	for _, o := range options {
+		if o.ArgType == ArgTokenTypeBool {
+			boolMap[o.Long] = o.Long
+			if o.Short != "" {
+				boolMap[o.Short] = o.Long
+			}
+		} else if o.ArgType == ArgTokenTypeString {
+			stringMap[o.Long] = o.Long
+			if o.Short != "" {
+				stringMap[o.Short] = o.Long
+			}
+		} else if o.ArgType == ArgTokenTypeInt {
+			intMap[o.Long] = o.Long
+			if o.Short != "" {
+				intMap[o.Short] = o.Long
+			}
+		} else if o.ArgType == ArgTokenTypeLong {
+			longMap[o.Long] = o.Long
+			if o.Short != "" {
+				longMap[o.Short] = o.Long
+			}
+		}
+	}
 	return &ArgTokenizer{
 		boolMap,
 		stringMap,

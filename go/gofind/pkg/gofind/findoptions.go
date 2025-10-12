@@ -8,10 +8,20 @@ import (
 	"strings"
 )
 
+// TODO: figure out the best way for FindOption to implement Option without breaking JSON unmarshalling, etc.
+type Option interface {
+	HasShort() bool
+}
+
 type FindOption struct {
-	Short string
-	Long  string
-	Desc  string
+	Short   string
+	Long    string
+	Desc    string
+	ArgType ArgTokenType
+}
+
+func (o FindOption) HasShort() bool {
+	return o.Short != ""
 }
 
 type FindOptions struct {
@@ -185,37 +195,7 @@ func getLongActionMap() map[string]longAction {
 }
 
 func (fo *FindOptions) setArgTokenizer() error {
-	boolMap := make(map[string]string)
-	stringMap := make(map[string]string)
-	stringMap["path"] = "path"
-	intMap := make(map[string]string)
-	longMap := make(map[string]string)
-
-	for _, o := range fo.FindOptions {
-		if _, isBool := fo.BoolActionMap[o.Long]; isBool {
-			boolMap[o.Long] = o.Long
-			if o.Short != "" {
-				boolMap[o.Short] = o.Long
-			}
-		} else if _, isString := fo.StringActionMap[o.Long]; isString {
-			stringMap[o.Long] = o.Long
-			if o.Short != "" {
-				stringMap[o.Short] = o.Long
-			}
-		} else if _, isInt := fo.IntActionMap[o.Long]; isInt {
-			intMap[o.Long] = o.Long
-			if o.Short != "" {
-				intMap[o.Short] = o.Long
-			}
-		} else if _, isLong := fo.LongActionMap[o.Long]; isLong {
-			longMap[o.Long] = o.Long
-			if o.Short != "" {
-				longMap[o.Short] = o.Long
-			}
-		}
-	}
-
-	fo.ArgTokenizer = NewArgTokenizer(boolMap, stringMap, intMap, longMap)
+	fo.ArgTokenizer = NewArgTokenizer(fo.FindOptions)
 	return nil
 }
 
@@ -237,6 +217,19 @@ func FindOptionsFromJson() (*FindOptions, error) {
 	findOptions.StringActionMap = getStringActionMap()
 	findOptions.IntActionMap = getIntActionMap()
 	findOptions.LongActionMap = getLongActionMap()
+
+	// Add ArgType top each FindOption (not in JSON)
+	for _, o := range findOptions.FindOptions {
+		if _, isBool := findOptions.BoolActionMap[o.Long]; isBool {
+			o.ArgType = ArgTokenTypeBool
+		} else if _, isString := findOptions.StringActionMap[o.Long]; isString {
+			o.ArgType = ArgTokenTypeString
+		} else if _, isInt := findOptions.IntActionMap[o.Long]; isInt {
+			o.ArgType = ArgTokenTypeInt
+		} else if _, isLong := findOptions.LongActionMap[o.Long]; isLong {
+			o.ArgType = ArgTokenTypeLong
+		}
+	}
 
 	return &findOptions, nil
 }
@@ -403,9 +396,9 @@ func (fo *FindOptions) generateCodeFile(filePath string) {
 	depth++
 	buffer.WriteString(fmt.Sprintf("%s[]*FindOption{\n", strings.Repeat("\t", depth)))
 	depth++
-	for _, so := range fo.FindOptions {
+	for _, o := range fo.FindOptions {
 		buffer.WriteString(fmt.Sprintf("%s{\"%s\", \"%s\", \"%s\"},\n",
-			strings.Repeat("\t", depth), so.Short, so.Long, EscapeQuotes(so.Desc)))
+			strings.Repeat("\t", depth), o.Short, o.Long, EscapeQuotes(o.Desc)))
 	}
 	depth--
 	buffer.WriteString(fmt.Sprintf("%s},\n", strings.Repeat("\t", depth)))
