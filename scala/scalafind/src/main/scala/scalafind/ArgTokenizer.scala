@@ -9,15 +9,43 @@ import scala.jdk.CollectionConverters.*
 import scala.util.matching.Regex
 
 enum ArgTokenType:
-  case Bool, Str, Int, Long
+  case Unknown, Bool, Str, Int, Long
 
 case class ArgToken(name: String, tokenType: ArgTokenType, value: Any) {
 }
 
-class ArgTokenizer(boolMap: Map[String, String],
-                   strMap: Map[String, String],
-                   intMap: Map[String, String],
-                   longMap: Map[String, String]) {
+class ArgTokenizer(options: List[FindOption]) {
+
+  private var boolMap: Map[String, String] = Map.empty
+  private var strMap: Map[String, String] = Map.empty
+  private var intMap: Map[String, String] = Map.empty
+  private var longMap: Map[String, String] = Map.empty
+
+  options.foreach { opt =>
+    opt.argType match {
+      case ArgTokenType.Bool =>
+        boolMap += (opt.longArg -> opt.longArg)
+        if (opt.shortArg.isDefined) {
+          boolMap += (opt.shortArg.get -> opt.longArg)
+        }
+      case ArgTokenType.Str =>
+        strMap += (opt.longArg -> opt.longArg)
+        if (opt.shortArg.isDefined) {
+          strMap += (opt.shortArg.get -> opt.longArg)
+        }
+      case ArgTokenType.Int =>
+        intMap += (opt.longArg -> opt.longArg)
+        if (opt.shortArg.isDefined) {
+          intMap += (opt.shortArg.get -> opt.longArg)
+        }
+      case ArgTokenType.Long =>
+        longMap += (opt.longArg -> opt.longArg)
+        if (opt.shortArg.isDefined) {
+          longMap += (opt.shortArg.get -> opt.longArg)
+        }
+      case _ => // ignore
+    }
+  }
 
   private val longArgWithValRegex: Regex = "^--([a-zA-Z0-9-]+)=(.+)$".r
   private val longArgWithoutValRegex: Regex = "^--([a-zA-Z0-9-]+)$".r

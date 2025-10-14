@@ -8,7 +8,7 @@ import scala.annotation.tailrec
 import scala.collection.mutable
 import scala.jdk.CollectionConverters.*
 
-case class FindOption(shortArg: Option[String], longArg: String, desc: String) {
+case class FindOption(shortArg: Option[String], longArg: String, desc: String, argType: ArgTokenType) {
   val sortArg: String = shortArg match {
     case Some(sa) => sa.toLowerCase + "@" + longArg.toLowerCase
     case None => longArg.toLowerCase
@@ -42,42 +42,6 @@ object FindOptions {
     _longArgMap
   }
 
-  private var _boolMap = Map.empty[String, String]
-
-  private def boolMap: Map[String, String] = {
-    if (_boolMap.isEmpty) {
-      _boolMap = longArgMap.filter((k, v) => boolActionMap.contains(v))
-    }
-    _boolMap
-  }
-
-  private var _strMap = Map.empty[String, String]
-
-  private def strMap: Map[String, String] = {
-    if (_strMap.isEmpty) {
-      _strMap = longArgMap.filter((k, v) => stringActionMap.contains(v))
-    }
-    _strMap
-  }
-
-  private var _intMap = Map.empty[String, String]
-
-  private def intMap: Map[String, String] = {
-    if (_intMap.isEmpty) {
-      _intMap = longArgMap.filter((k, v) => intActionMap.contains(v))
-    }
-    _intMap
-  }
-
-  private var _longMap = Map.empty[String, String]
-
-  private def longMap: Map[String, String] = {
-    if (_longMap.isEmpty) {
-      _longMap = longArgMap.filter((k, v) => longActionMap.contains(v))
-    }
-    _longMap
-  }
-
   private def loadFindOptionsFromJson(): Unit = {
     try {
       val findOptionsInputStream = getClass.getResourceAsStream(_findOptionsJsonPath)
@@ -93,9 +57,22 @@ object FindOptions {
             None
           }
         val desc = findOptionObj.getString("desc")
-        val option = FindOption(shortArg, longArg, desc)
-        _findOptions += option
+        val argType =
+          if (boolActionMap.contains(longArg)) {
+            ArgTokenType.Bool
+          } else if (stringActionMap.contains(longArg)) {
+            ArgTokenType.Str
+          } else if (intActionMap.contains(longArg)) {
+            ArgTokenType.Int
+          } else if (longActionMap.contains(longArg)) {
+            ArgTokenType.Long
+          } else {
+            throw new FindException("Invalid option in findoptions.json: " + longArg)
+          }
+        _findOptions += FindOption(shortArg, longArg, desc, argType)
       }
+      // Add path option (not in JSON file)
+      _findOptions += FindOption(None, "path", "", ArgTokenType.Str)
     } catch {
       case e: IOException =>
         print(e.getMessage)
@@ -254,7 +231,7 @@ object FindOptions {
     updateSettingsFromArgTokens(settings, argTokens)
   }
 
-  private val argTokenizer: ArgTokenizer = new ArgTokenizer(boolMap, strMap, intMap, longMap)
+  private val argTokenizer: ArgTokenizer = new ArgTokenizer(findOptions)
 
   def updateSettingsFromArgs(settings: FindSettings, args: Array[String]): FindSettings = {
     val argTokens = argTokenizer.tokenizeArgs(args)
@@ -270,12 +247,12 @@ object FindOptions {
     sb.append("Usage:\n")
     sb.append(" scalafind [options] <path> [<path> ...]\n\n")
     sb.append("Options:\n")
-    val optPairs = findOptions.map { so =>
-      val opts = so.shortArg match {
-        case Some(sa) => s"-$sa,--${so.longArg}"
-        case None => s"--${so.longArg}"
+    val optPairs = findOptions.filterNot(_.longArg == "path").map { fo =>
+      val opts = fo.shortArg match {
+        case Some(sa) => s"-$sa,--${fo.longArg}"
+        case None => s"--${fo.longArg}"
       }
-      (opts, so.desc)
+      (opts, fo.desc)
     }
     val longest = optPairs.map(_._1.length).max
     val format = " %1$-" + longest + "s  %2$s\n"
