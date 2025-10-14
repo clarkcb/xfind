@@ -10,22 +10,55 @@ import java.nio.file.Files
 import java.nio.file.Paths
 
 enum class ArgTokenType {
-    BOOL, STR, INT, LONG
+    UNKNOWN, BOOL, STR, INT, LONG
 }
 
 data class ArgToken(val name: String, val type: ArgTokenType, val value: Any) {
 }
 
-class ArgTokenizer(val boolMap: Map<String, String>,
-                   val strMap: Map<String, String>,
-                   val intMap: Map<String, String>,
-                   val longMap: Map<String, String>) {
+class ArgTokenizer(options: List<FindOption>) {
+
+    private var boolMap = mutableMapOf<String, String>()
+    private var strMap = mutableMapOf<String, String>()
+    private var intMap = mutableMapOf<String, String>()
+    private var longMap = mutableMapOf<String, String>()
 
     private val longArgWithValRegex = Regex("^--([a-zA-Z0-9-]+)=(.*)$")
     private val longArgWithoutValRegex = Regex("^--([a-zA-Z0-9-]+)$")
     private val shortArgsRegex = Regex("^-([a-zA-Z0-9]{2,})$")
     private val shortArgRegex = Regex("^-([a-zA-Z0-9])$")
 
+    init {
+        options.forEach { option ->
+            when (option.argType) {
+                ArgTokenType.BOOL -> {
+                    boolMap[option.longArg] = option.longArg
+                    option.shortArg?.let { boolMap[it] = option.longArg }
+                }
+
+                ArgTokenType.STR -> {
+                    strMap[option.longArg] = option.longArg
+                    option.shortArg?.let { strMap[it] = option.longArg }
+                }
+
+                ArgTokenType.INT -> {
+                    intMap[option.longArg] = option.longArg
+                    option.shortArg?.let { intMap[it] = option.longArg }
+                }
+
+                ArgTokenType.LONG -> {
+                    longMap[option.longArg] = option.longArg
+                    option.shortArg?.let {
+                        longMap[it] = option.longArg
+                    }
+                }
+
+                else -> {
+                    throw FindException("Invalid option: ${option.longArg}")
+                }
+            }
+        }
+    }
 
     private fun updateArgTokens(argName: String, argVal: Any?, argTokens: List<ArgToken>): List<ArgToken> {
         val nextArgTokens: List<ArgToken> =

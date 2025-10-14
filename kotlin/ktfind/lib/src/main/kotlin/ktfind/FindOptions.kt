@@ -6,7 +6,7 @@ import org.json.JSONTokener
 /**
  * @author cary on 7/23/16.
  */
-data class FindOption(val shortArg: String?, val longArg: String, val desc: String) {
+data class FindOption(val shortArg: String?, val longArg: String, val desc: String, val argType: ArgTokenType) {
     val sortArg =
         if (shortArg == null) {
             longArg.lowercase()
@@ -20,10 +20,6 @@ class FindOptions {
     private val findOptions: List<FindOption>
     // We add path manually since it's not an option in findoptions.json
     private var longArgs = mutableSetOf<String>("path")
-    private var boolMap = mutableMapOf<String, String>()
-    private var strMap = mutableMapOf<String, String>()
-    private var intMap = mutableMapOf<String, String>()
-    private var longMap = mutableMapOf<String, String>()
     private var argTokenizer: ArgTokenizer
 
     private val boolActionMap: Map<String, ((Boolean, FindSettings) -> FindSettings)> = mapOf(
@@ -114,41 +110,34 @@ class FindOptions {
             val findOptionObj = findOptionsArray.next() as JSONObject
             val longArg = findOptionObj.getString("long")
             longArgs.add(longArg)
+            var argType = ArgTokenType.UNKNOWN
             if (boolActionMap.containsKey(longArg)) {
-                boolMap[longArg] = longArg
+                argType = ArgTokenType.BOOL
             } else if (stringActionMap.containsKey(longArg)) {
-                strMap[longArg] = longArg
+                argType = ArgTokenType.STR
             } else if (intActionMap.containsKey(longArg)) {
-                intMap[longArg] = longArg
+                argType = ArgTokenType.INT
             } else if (longActionMap.containsKey(longArg)) {
-                longMap[longArg] = longArg
+                argType = ArgTokenType.LONG
             }
             val shortArg =
                 if (findOptionObj.has("short")) {
                     val sArg = findOptionObj.getString("short")
-                    if (boolActionMap.containsKey(longArg)) {
-                        boolMap[sArg] = longArg
-                    } else if (stringActionMap.containsKey(longArg)) {
-                        strMap[sArg] = longArg
-                    } else if (intActionMap.containsKey(longArg)) {
-                        intMap[sArg] = longArg
-                    } else if (longActionMap.containsKey(longArg)) {
-                        longMap[sArg] = longArg
-                    }
                     sArg
                 } else {
                     null
                 }
             val desc = findOptionObj.getString("desc")
-            options.add(FindOption(shortArg, longArg, desc))
+            options.add(FindOption(shortArg, longArg, desc, argType))
         }
+        // Add path option (not in JSON)
+        options.add(FindOption(null, "path", "", ArgTokenType.STR))
         return options.toList().sortedBy { it.sortArg }
     }
 
     init {
-        strMap["path"] = "path"
         findOptions = loadFindOptionsFromJson()
-        argTokenizer = ArgTokenizer(boolMap, strMap, intMap, longMap)
+        argTokenizer = ArgTokenizer(findOptions)
     }
 
     private fun applyArgTokenToSettings(argToken: ArgToken, settings: FindSettings): FindSettings {
@@ -247,7 +236,7 @@ class FindOptions {
             return (if (so.shortArg == null) "" else "-${so.shortArg},") + "--${so.longArg}"
         }
 
-        val optPairs = findOptions.map { Pair(getOptString(it), it.desc) }
+        val optPairs = findOptions.filterNot { it.longArg == "path" }.map { Pair(getOptString(it), it.desc) }
         val longest = optPairs.maxOfOrNull { it.first.length }
         val format = " %1$-${longest}s  %2${'$'}s\n"
         for (o in optPairs) {
