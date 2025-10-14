@@ -3,17 +3,26 @@ package groovyfind
 import groovy.json.JsonSlurper
 import groovy.transform.CompileStatic
 
+interface Option {
+    String shortArg()
+    String longArg()
+    String description()
+    ArgTokenType argType()
+}
+
 @CompileStatic
-class FindOption {
+class FindOption implements Option {
     final String shortArg
     final String longArg
     final String description
+    final ArgTokenType argType
 
     FindOption(final String shortArg, final String longArg,
-               final String description) {
+               final String description, final ArgTokenType argType) {
         this.shortArg = shortArg
         this.longArg = longArg
         this.description = description
+        this.argType = argType
     }
 
     final String getSortArg() {
@@ -22,22 +31,37 @@ class FindOption {
         }
         this.longArg
     }
+
+    @Override
+    String shortArg() {
+        return shortArg
+    }
+
+    @Override
+    String longArg() {
+        return longArg
+    }
+
+    @Override
+    String description() {
+        return description
+    }
+
+    @Override
+    ArgTokenType argType() {
+        return argType
+    }
 }
 
 class FindOptions {
     private static final String FIND_OPTIONS_JSON_PATH = '/findoptions.json'
     private final List<FindOption> options
-    private Map<String, String> boolMap = new HashMap<>()
-    private Map<String, String> strMap = new HashMap<>()
-    private Map<String, String> intMap = new HashMap<>()
-    private Map<String, String> longMap = new HashMap<>()
     private ArgTokenizer argTokenizer
 
     FindOptions() throws IOException {
         options = []
-        strMap.put('path', 'path')
         setOptionsFromJson()
-        argTokenizer = new ArgTokenizer(boolMap, strMap, intMap, longMap)
+        argTokenizer = new ArgTokenizer(options)
     }
 
     @FunctionalInterface
@@ -128,31 +152,25 @@ class FindOptions {
         for (int i = 0; i < findOptionsArray.size(); i++) {
             Map findOptionObj = (Map)findOptionsArray[i]
             String longArg = findOptionObj.long
+            ArgTokenType argType = ArgTokenType.UNKNOWN
             if (longArg in this.boolActionMap) {
-                boolMap.put(longArg, longArg)
+                argType = ArgTokenType.BOOL
             } else if (longArg in this.stringActionMap) {
-                strMap.put(longArg, longArg)
+                argType = ArgTokenType.STR
             } else if (longArg in this.intActionMap) {
-                intMap.put(longArg, longArg)
+                argType = ArgTokenType.INT
             } else if (longArg in this.longActionMap) {
-                longMap.put(longArg, longArg)
+                argType = ArgTokenType.LONG
             }
             String desc = findOptionObj.desc
             String shortArg = ''
             if ('short' in findOptionObj) {
                 shortArg = findOptionObj.short
-                if (longArg in this.boolActionMap) {
-                    boolMap.put(shortArg, longArg)
-                } else if (longArg in this.stringActionMap) {
-                    strMap.put(shortArg, longArg)
-                } else if (longArg in this.intActionMap) {
-                    intMap.put(shortArg, longArg)
-                } else if (longArg in this.longActionMap) {
-                    longMap.put(shortArg, longArg)
-                }
             }
-            options.add(new FindOption(shortArg, longArg, desc))
+            options.add(new FindOption(shortArg, longArg, desc, argType))
         }
+        // Add path (not in JSON)
+        options.add(new FindOption('', 'path', '', ArgTokenType.STR))
     }
 
     private void applyArgTokenToSetting(final ArgToken argToken, FindSettings settings)
@@ -261,6 +279,9 @@ class FindOptions {
         List<String> optDescs = []
         int longest = 0
         this.options.each { opt ->
+            if (opt.longArg == 'path') {
+                return
+            }
             StringBuilder optString = new StringBuilder()
             String shortArg = opt.shortArg
             if (null != shortArg && !shortArg.isEmpty()) {

@@ -13,14 +13,30 @@ class ArgTokenizer {
     private Map<String, String> intMap = new HashMap<>()
     private Map<String, String> longMap = new HashMap<>()
 
-    ArgTokenizer(final Map<String, String> boolMap,
-                 final Map<String, String> strMap,
-                 final Map<String, String> intMap,
-                 final Map<String, String> longMap) {
-        this.boolMap = boolMap
-        this.strMap = strMap
-        this.intMap = intMap
-        this.longMap = longMap
+    ArgTokenizer(final List<Option> options) {
+        options.each { opt ->
+            if (opt.argType() == ArgTokenType.BOOL) {
+                this.boolMap.put(opt.longArg(), opt.longArg())
+                if (opt.shortArg() != null) {
+                    this.boolMap.put(opt.shortArg(), opt.longArg())
+                }
+            } else if (opt.argType() == ArgTokenType.STR) {
+                this.strMap.put(opt.longArg(), opt.longArg())
+                if (opt.shortArg() != null) {
+                    this.strMap.put(opt.shortArg(), opt.longArg())
+                }
+            } else if (opt.argType() == ArgTokenType.INT) {
+                this.intMap.put(opt.longArg(), opt.longArg())
+                if (opt.shortArg() != null) {
+                    this.intMap.put(opt.shortArg(), opt.longArg())
+                }
+            } else if (opt.argType() == ArgTokenType.LONG) {
+                this.longMap.put(opt.longArg(), opt.longArg())
+                if (opt.shortArg() != null) {
+                    this.longMap.put(opt.shortArg(), opt.longArg())
+                }
+            }
+        }
     }
 
     List<ArgToken> tokenizeArgs(final String[] args) throws FindException {
