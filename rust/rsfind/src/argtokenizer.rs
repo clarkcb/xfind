@@ -9,12 +9,29 @@ use serde_json::{Map, Value};
 use crate::fileutil::FileUtil;
 
 
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub enum ArgTokenType {
+    Unknown,
+    Bool,
+    String,
+    Int,
+    Long,
+}
+
 #[derive(Clone, Debug)]
 pub enum ArgToken {
     Bool { name: String, value: bool },
     String { name: String, value: String },
     Int { name: String, value: i32 },
     Long { name: String, value: i64 },
+}
+
+#[derive(Clone, Debug)]
+pub struct ArgOption {
+    pub long: String,
+    pub short: Option<String>,
+    pub desc: String,
+    pub arg_type: ArgTokenType,
 }
 
 static LONG_ARG_WITH_VAL_REGEX: Lazy<Regex> = Lazy::new(|| {
@@ -38,10 +55,35 @@ pub struct ArgTokenizer {
 }
 
 impl ArgTokenizer {
-    pub fn new(bool_map: HashMap<String, String>,
-               string_map: HashMap<String, String>,
-               int_map: HashMap<String, String>,
-               long_map: HashMap<String, String>) -> ArgTokenizer {
+    pub fn new(options: &Vec<ArgOption>) -> ArgTokenizer {
+        let mut bool_map: HashMap<String, String> = HashMap::new();
+        let mut string_map: HashMap<String, String> = HashMap::new();
+        let mut int_map: HashMap<String, String> = HashMap::new();
+        let mut long_map: HashMap<String, String> = HashMap::new();
+        for o in options.iter() {
+            if o.arg_type == ArgTokenType::Bool {
+                bool_map.insert(o.long.to_string(), o.long.to_string());
+                if o.short.is_some() {
+                    bool_map.insert(o.short.as_ref().unwrap().to_string(), o.long.to_string());
+                }
+            } else if o.arg_type == ArgTokenType::String {
+                string_map.insert(o.long.to_string(), o.long.to_string());
+                if o.short.is_some() {
+                    string_map.insert(o.short.as_ref().unwrap().to_string(), o.long.to_string());
+                }
+            } else if o.arg_type == ArgTokenType::Int {
+                int_map.insert(o.long.to_string(), o.long.to_string());
+                if o.short.is_some() {
+                    int_map.insert(o.short.as_ref().unwrap().to_string(), o.long.to_string());
+                }
+            } else if o.arg_type == ArgTokenType::Long {
+                long_map.insert(o.long.to_string(), o.long.to_string());
+                if o.short.is_some() {
+                    long_map.insert(o.short.as_ref().unwrap().to_string(), o.long.to_string());
+                }
+            }
+        }
+
         ArgTokenizer {
             bool_map,
             string_map,

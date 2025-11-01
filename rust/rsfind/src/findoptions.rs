@@ -1,4 +1,4 @@
-use crate::argtokenizer::{ArgToken, ArgTokenizer};
+use crate::argtokenizer::{ArgOption, ArgToken, ArgTokenType, ArgTokenizer};
 use crate::common::{log, timestamp_from_date_string};
 use crate::config::Config;
 use crate::filetypes::FileTypes;
@@ -11,11 +11,19 @@ use std::collections::HashMap;
 use std::fs;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
-pub struct FindOption {
+pub struct JsonFindOption {
     long: String,
     short: Option<String>,
     desc: String,
 }
+
+#[derive(Serialize, Deserialize)]
+pub struct JsonFindOptions {
+    pub findoptions: Vec<JsonFindOption>,
+}
+
+// Alias FindOption to ArgOption (will do similar in rssearch)
+type FindOption = ArgOption;
 
 type BoolAction = Box<dyn Fn(bool, &mut FindSettings) -> Result<(), FindError>>;
 type StringAction = Box<dyn Fn(&str, &mut FindSettings) -> Result<(), FindError>>;
@@ -30,11 +38,6 @@ pub struct FindOptions {
     pub int_action_map: HashMap<String, IntAction>,
     pub long_action_map: HashMap<String, LongAction>,
     pub arg_tokenizer: ArgTokenizer,
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct JsonFindOptions {
-    pub findoptions: Vec<FindOption>,
 }
 
 impl FindOptions {
@@ -52,9 +55,10 @@ impl FindOptions {
         let string_action_map: HashMap<String, StringAction> = get_string_action_map();
         let int_action_map: HashMap<String, IntAction> = get_int_action_map();
         let long_action_map: HashMap<String, LongAction> = get_long_action_map();
-        let arg_tokenizer = get_arg_tokenizer(&jso.findoptions, &bool_action_map, &string_action_map, &int_action_map, &long_action_map);
+        let find_options = json_options_to_find_options(&jso.findoptions, &bool_action_map, &string_action_map, &int_action_map, &long_action_map);
+        let arg_tokenizer = ArgTokenizer::new(&find_options);
         Ok(FindOptions {
-            find_options: jso.findoptions.clone(),
+            find_options,
             version: config.version.clone(),
             bool_action_map,
             string_action_map,
@@ -246,6 +250,9 @@ impl FindOptions {
     fn get_sort_opt_map(&self) -> HashMap<String, &FindOption> {
         let mut map = HashMap::with_capacity(self.find_options.len());
         for so in self.find_options.iter() {
+            if so.long == "path" {
+                continue;
+            }
             let sort_key = match &so.short {
                 Some(short) => String::from(format!("{}@{}", short.to_ascii_lowercase(), &so.long)),
                 None => String::from(&so.long),
@@ -552,40 +559,30 @@ fn get_long_action_map() -> HashMap<String, LongAction> {
     long_action_map
 }
 
-fn get_arg_tokenizer(options: &Vec<FindOption>,
-                     bool_action_map: &HashMap<String, BoolAction>,
-                     string_action_map: &HashMap<String, StringAction>,
-                     int_action_map: &HashMap<String, IntAction>,
-                     long_action_map: &HashMap<String, LongAction>) -> ArgTokenizer {
-    let mut bool_map: HashMap<String, String> = HashMap::new();
-    let mut str_map: HashMap<String, String> = HashMap::new();
-    let mut int_map: HashMap<String, String> = HashMap::new();
-    let mut long_map: HashMap<String, String> = HashMap::new();
-    str_map.insert("path".to_string(), "path".to_string());
-    for o in options.iter() {
-        if bool_action_map.contains_key(&o.long.to_string()) {
-            bool_map.insert(o.long.to_string(), o.long.to_string());
-            if o.short.is_some() {
-                bool_map.insert(o.short.as_ref().unwrap().to_string(), o.long.to_string());
-            }
-        } else if string_action_map.contains_key(&o.long.to_string()) {
-            str_map.insert(o.long.to_string(), o.long.to_string());
-            if o.short.is_some() {
-                str_map.insert(o.short.as_ref().unwrap().to_string(), o.long.to_string());
-            }
-        } else if int_action_map.contains_key(&o.long.to_string()) {
-            int_map.insert(o.long.to_string(), o.long.to_string());
-            if o.short.is_some() {
-                int_map.insert(o.short.as_ref().unwrap().to_string(), o.long.to_string());
-            }
-        } else if long_action_map.contains_key(&o.long.to_string()) {
-            long_map.insert(o.long.to_string(), o.long.to_string());
-            if o.short.is_some() {
-                long_map.insert(o.short.as_ref().unwrap().to_string(), o.long.to_string());
-            }
+fn json_options_to_find_options(json_options: &Vec<JsonFindOption>,
+                                bool_action_map: &HashMap<String, BoolAction>,
+                                string_action_map: &HashMap<String, StringAction>,
+                                int_action_map: &HashMap<String, IntAction>,
+                                long_action_map: &HashMap<String, LongAction>) -> Vec<FindOption> {
+    let mut find_options: Vec<FindOption> = Vec::new();
+    for jo in json_options.iter() {
+        let long_arg = jo.long.clone();
+        let short_arg = jo.short.clone();
+        let desc = jo.desc.clone();
+        let mut arg_type = ArgTokenType::Unknown;
+        if bool_action_map.contains_key(&long_arg) {
+            arg_type = ArgTokenType::Bool;
+        } else if string_action_map.contains_key(&long_arg) {
+            arg_type = ArgTokenType::String;
+        } else if int_action_map.contains_key(&long_arg) {
+            arg_type = ArgTokenType::Int;
+        } else if long_action_map.contains_key(&jo.long.to_string()) {
+            arg_type = ArgTokenType::Long;
         }
+        find_options.push(FindOption { long: long_arg, short: short_arg, desc, arg_type });
     }
-    ArgTokenizer::new(bool_map, str_map, int_map, long_map)
+    find_options.push(FindOption { long: "path".to_string(), short: None, desc: "".to_string(), arg_type: ArgTokenType::String });
+    find_options
 }
 
 #[cfg(test)]
