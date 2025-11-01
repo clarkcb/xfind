@@ -9,7 +9,7 @@
 import Foundation
 
 public enum ArgTokenType {
-    case bool, str, int, long
+    case unknown, bool, str, int, long
 }
 
 public struct ArgToken {
@@ -24,11 +24,30 @@ public class ArgTokenizer {
     private var intDict: [String: String] = [:]
     private var longDict: [String: String] = [:]
 
-    public init(_ boolDict: [String: String], _ stringDict: [String: String], _ intDict: [String: String], _ longDict: [String: String]) {
-        self.boolDict = boolDict
-        self.stringDict = stringDict
-        self.intDict = intDict
-        self.longDict = longDict
+    public init (_ options: [Option]) {
+        for o in options {
+            if o.argType == ArgTokenType.bool {
+                self.boolDict[o.longArg] = o.longArg
+                if o.shortArg != nil {
+                    self.boolDict[o.shortArg!] = o.longArg
+                }
+            } else if o.argType == ArgTokenType.str {
+                self.stringDict[o.longArg] = o.longArg
+                if o.shortArg != nil {
+                    self.stringDict[o.shortArg!] = o.longArg
+                }
+            } else if o.argType == ArgTokenType.int {
+                self.intDict[o.longArg] = o.longArg
+                if o.shortArg != nil {
+                    self.intDict[o.shortArg!] = o.longArg
+                }
+            } else if o.argType == ArgTokenType.long {
+                self.longDict[o.longArg] = o.longArg
+                if o.shortArg != nil {
+                    self.longDict[o.shortArg!] = o.longArg
+                }
+            }
+        }
     }
 
     public func tokenizeArgs(_ args: [String]) throws -> [ArgToken] {

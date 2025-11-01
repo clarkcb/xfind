@@ -8,10 +8,18 @@
 
 import Foundation
 
-struct FindOption {
+public protocol Option {
+    var shortArg: String? { get }
+    var longArg: String { get }
+    var desc: String { get }
+    var argType: ArgTokenType { get }
+}
+
+struct FindOption: Option {
     let shortArg: String?
     let longArg: String
     let desc: String
+    let argType: ArgTokenType
 
     var sortArg: String {
         if shortArg != nil, !shortArg!.isEmpty {
@@ -31,7 +39,7 @@ public class FindOptions {
     public init() {
         config = FindConfig()
         setFindOptionsFromJson()
-        argTokenizer = getArgTokenizer()
+        argTokenizer = ArgTokenizer(findOptions)
     }
 
     private func setFindOptionsFromJson() {
@@ -44,8 +52,20 @@ public class FindOptions {
                         let longArg = so["long"] as! String
                         let shortArg = so.index(forKey: "short") != nil ? (so["short"] as! String) : nil
                         let desc = so["desc"] as! String
-                        findOptions.append(FindOption(shortArg: shortArg, longArg: longArg, desc: desc))
+                        var argType = ArgTokenType.unknown
+                        if self.boolActionDict.index(forKey: longArg) != nil {
+                            argType = ArgTokenType.bool
+                        } else if self.stringActionDict.index(forKey: longArg) != nil {
+                            argType = ArgTokenType.str
+                        } else if self.intActionDict.index(forKey: longArg) != nil {
+                            argType = ArgTokenType.int
+                        } else if self.longActionDict.index(forKey: longArg) != nil {
+                            argType = ArgTokenType.long
+                        }
+                        findOptions.append(FindOption(shortArg: shortArg, longArg: longArg, desc: desc, argType: argType))
                     }
+                    // Add path
+                    findOptions.append(FindOption(shortArg: nil, longArg: "path", desc: "", argType: ArgTokenType.str))
                     for opt in findOptions {
                         longArgDict[opt.longArg] = opt.longArg
                         if opt.shortArg != nil, !opt.shortArg!.isEmpty {
@@ -200,37 +220,6 @@ public class FindOptions {
         },
     ]
 
-    private func getArgTokenizer() -> ArgTokenizer {
-        var boolDict: [String:String] = [:]
-        var stringDict: [String:String] = ["path": "path"]
-        var intDict: [String:String] = [:]
-        var longDict: [String:String] = [:]
-        for o in findOptions {
-            if self.boolActionDict.index(forKey: o.longArg) != nil {
-                boolDict[o.longArg] = o.longArg
-                if o.shortArg != nil {
-                    boolDict[o.shortArg!] = o.longArg
-                }
-            } else if self.stringActionDict.index(forKey: o.longArg) != nil {
-                stringDict[o.longArg] = o.longArg
-                if o.shortArg != nil {
-                    stringDict[o.shortArg!] = o.longArg
-                }
-            } else if self.intActionDict.index(forKey: o.longArg) != nil {
-                intDict[o.longArg] = o.longArg
-                if o.shortArg != nil {
-                    intDict[o.shortArg!] = o.longArg
-                }
-            } else if self.longActionDict.index(forKey: o.longArg) != nil {
-                longDict[o.longArg] = o.longArg
-                if o.shortArg != nil {
-                    longDict[o.shortArg!] = o.longArg
-                }
-            }
-        }
-        return ArgTokenizer(boolDict, stringDict, intDict, longDict)
-    }
-
     public func updateSettingsFromArgTokens(_ settings: FindSettings, argTokens: [ArgToken]) throws {
         for argToken in argTokens {
             if argToken.type == ArgTokenType.bool {
@@ -309,9 +298,10 @@ public class FindOptions {
     func getUsageString() -> String {
         var str = "\nUsage:\n swiftfind [options] <path> [<path> ...]\n\n"
         str += "Options:\n"
-        findOptions.sort(by: { $0.sortArg < $1.sortArg })
+        var options = findOptions.filter {$0.longArg != "path"}
+        options.sort(by: { $0.sortArg < $1.sortArg })
 
-        let optStrings = findOptions.map {
+        let optStrings = options.map {
             switch ($0.shortArg, $0.longArg) {
             // Order errors by code
             case let (nil, longArg):
@@ -323,7 +313,7 @@ public class FindOptions {
             }
         }
 
-        let optDescs = findOptions.map(\.desc)
+        let optDescs = options.map(\.desc)
         let longest = optStrings.map { $0.lengthOfBytes(using: String.Encoding.utf8) }.max()!
         for i in 0 ..< optStrings.count {
             var optLine = " \(optStrings[i])"
