@@ -22,6 +22,7 @@ function Main {
         $settings = $options.SettingsFromArgs($_args)
 
         if ($settings.Debug) {
+            # Set-LogConfiguration -LogLevel Debug
             LogMsg($settings.ToString())
         }
 

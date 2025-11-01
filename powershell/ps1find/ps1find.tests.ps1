@@ -294,6 +294,38 @@ Describe -tag "FileResult" -name "test_file_result_abs_path" {
 #endregion
 
 
+#region ArgTokenizer
+Describe -tag "ArgTokenizer" -name "test_tokenize_args_no_args" {
+    It "equals no tokens" {
+        $options = [FindOptions]::new()
+        $_args = @()
+        $tokens = $options.ArgTokenizer.TokenizeArgs($_args)
+
+        $tokens.Count | Should -BeExactly 0
+    }
+}
+
+Describe -tag "ArgTokenizer" -name "test_tokenize_args_valid_args" {
+    It "has valid tokens" {
+        $options = [FindOptions]::new()
+        $_args = @('--debug', '-x', 'php,py', '.')
+        $tokens = $options.ArgTokenizer.TokenizeArgs($_args)
+
+        $tokens.Count | Should -BeExactly 3
+        $tokens[0].Name | Should -BeExactly "debug"
+        $tokens[0].Type | Should -BeExactly Bool
+        $tokens[0].Value | Should -BeExactly True
+        $tokens[1].Name | Should -BeExactly "in-ext"
+        $tokens[1].Type | Should -BeExactly Str
+        $tokens[1].Value | Should -BeExactly "php,py"
+        $tokens[2].Name | Should -BeExactly "path"
+        $tokens[2].Type | Should -BeExactly Str
+        $tokens[2].Value | Should -BeExactly "."
+    }
+}
+#endregion
+
+
 #region FindOptions
 Describe -tag "FindOptions" -name "test_settings_from_args_no_args" {
     It "equals default settings" {

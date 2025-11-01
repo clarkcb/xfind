@@ -501,6 +501,7 @@ class FindSettings {
 # ArgTokenizer
 ########################################
 enum ArgTokenType {
+    Unknown
     Bool
     Str
     Int
@@ -518,18 +519,41 @@ class ArgToken {
     }
 }
 
+class Option {
+    [string]$ShortArg
+    [string]$LongArg
+    [string]$Desc
+    [ArgTokenType]$ArgType
+}
+
 class ArgTokenizer {
     # These need to be case-sensitive
     [system.collections.hashtable]$BoolMap
     [system.collections.hashtable]$StrMap
     [system.collections.hashtable]$IntMap
 
-    ArgTokenizer([system.collections.hashtable]$BoolMap,
-                 [system.collections.hashtable]$StrMap,
-                 [system.collections.hashtable]$IntMap) {
-        $this.BoolMap = $BoolMap
-        $this.StrMap = $StrMap
-        $this.IntMap = $IntMap
+    ArgTokenizer([Option[]]$options) {
+        $this.BoolMap = [system.collections.hashtable]::new()
+        $this.StrMap = [system.collections.hashtable]::new()
+        $this.IntMap = [system.collections.hashtable]::new()
+        foreach ($opt in $options) {
+            if ($opt.ArgType -eq [ArgTokenType]::Bool) {
+                $this.BoolMap[$opt.LongArg] = $opt.LongArg
+                if ($opt.ShortArg -ne '') {
+                    $this.BoolMap[$opt.ShortArg] = $opt.LongArg
+                }
+            } elseif ($opt.ArgType -eq [ArgTokenType]::Str) {
+                $this.StrMap[$opt.LongArg] = $opt.LongArg
+                if ($opt.ShortArg -ne '') {
+                    $this.StrMap[$opt.ShortArg] = $opt.LongArg
+                }
+            } elseif ($opt.ArgType -eq [ArgTokenType]::Int) {
+                $this.IntMap[$opt.LongArg] = $opt.LongArg
+                if ($opt.ShortArg -ne '') {
+                    $this.IntMap[$opt.ShortArg] = $opt.LongArg
+                }
+            }
+        }
     }
 
     [ArgToken[]]TokenizeArgs([string[]]$argList) {
@@ -682,16 +706,14 @@ class ArgTokenizer {
 ########################################
 # FindOptions
 ########################################
-class FindOption {
-    [string]$ShortArg
-    [string]$LongArg
-    [string]$Desc
+class FindOption : Option {
     [string]$SortArg
 
-    FindOption([string]$ShortArg, [string]$LongArg, [string]$Desc) {
+    FindOption([string]$ShortArg, [string]$LongArg, [string]$Desc, [ArgTokenType]$ArgType) {
         $this.ShortArg = $ShortArg
         $this.LongArg = $LongArg
         $this.Desc = $Desc
+        $this.ArgType = $ArgType
         $this.SortArg = $this.GetSortArg()
     }
 
@@ -706,7 +728,6 @@ class FindOption {
 class FindOptions {
     [FindOption[]]$FindOptions = @()
     [ArgTokenizer]$ArgTokenizer
-    # $LongArgMap = @{}
     # instantiate this way to get case sensitivity of keys
     $LongArgMap = [system.collections.hashtable]::new()
     $BoolActionMap = @{
@@ -864,6 +885,10 @@ class FindOptions {
             param([string]$s, [FindSettings]$settings)
             $settings.Paths += $s
         }
+        "settings-file" = {
+            param([string]$s, [FindSettings]$settings)
+            $this.UpdateSettingsFromFilePath($settings, $s)
+        }
         "sort-by" = {
             param([string]$s, [FindSettings]$settings)
             $settings.SortBy = GetSortByFromName($s)
@@ -890,7 +915,7 @@ class FindOptions {
 
     FindOptions() {
         $this.FindOptions = $this.LoadOptionsFromJson()
-        $this.ArgTokenizer = $this.GetArgTokenizer()
+        $this.ArgTokenizer = [ArgTokenizer]::new($this.FindOptions)
     }
 
     [FindOption[]]LoadOptionsFromJson() {
@@ -904,40 +929,24 @@ class FindOptions {
             $ShortArg = ''
             $LongArg = $optionObj['long']
             $Desc = $optionObj['desc']
+            $ArgType = [ArgTokenType]::Unknown
+            if ($this.BoolActionMap.ContainsKey($LongArg)) {
+                $ArgType = [ArgTokenType]::Bool
+            } elseif ($this.StringActionMap.ContainsKey($LongArg)) {
+                $ArgType = [ArgTokenType]::Str
+            } elseif ($this.IntActionMap.ContainsKey($LongArg)) {
+                $ArgType = [ArgTokenType]::Int
+            }
             $this.LongArgMap[$LongArg] = $LongArg
             if ($optionObj.ContainsKey('short')) {
                 $ShortArg = $optionObj['short']
                 $this.LongArgMap[$ShortArg] = $LongArg
             }
-            [FindOption]::new($ShortArg, $LongArg, $Desc)
+            [FindOption]::new($ShortArg, $LongArg, $Desc, $ArgType)
         })
+        # Add path (not in JSON)
+        $opts += [FindOption]::new('', 'path', '', [ArgTokenType]::Str)
         return $opts | Sort-Object -Property SortArg
-    }
-    
-    [ArgTokenizer]GetArgTokenizer() {
-        $BoolMap = [system.collections.hashtable]::new()
-        $StrMap = [system.collections.hashtable]::new()
-        $StrMap['path'] = 'path'
-        $IntMap = [system.collections.hashtable]::new()
-        foreach ($opt in $this.FindOptions) {
-            if ($this.BoolActionMap.ContainsKey($opt.LongArg)) {
-                $BoolMap[$opt.LongArg] = $opt.LongArg
-                if ($opt.ShortArg -ne '') {
-                    $BoolMap[$opt.ShortArg] = $opt.LongArg
-                }
-            } elseif ($this.StringActionMap.ContainsKey($opt.LongArg)) {
-                $StrMap[$opt.LongArg] = $opt.LongArg
-                if ($opt.ShortArg -ne '') {
-                    $StrMap[$opt.ShortArg] = $opt.LongArg
-                }
-            } elseif ($this.IntActionMap.ContainsKey($opt.LongArg)) {
-                $IntMap[$opt.LongArg] = $opt.LongArg
-                if ($opt.ShortArg -ne '') {
-                    $IntMap[$opt.ShortArg] = $opt.LongArg
-                }
-            }
-        }
-        return [ArgTokenizer]::new($BoolMap, $StrMap, $IntMap)
     }
 
     [void]UpdateSettingsFromArgTokens([FindSettings]$settings, [ArgToken[]]$argTokens) {
@@ -956,12 +965,6 @@ class FindOptions {
                 if ($this.StringActionMap.ContainsKey($argToken.Name)) {
                     if ($argToken.Value -is [string]) {
                         $this.StringActionMap[$argToken.Name].Invoke($argToken.Value, $settings)
-                    } else {
-                        throw "Invalid value for option: " + $argToken.Name
-                    }
-                } elseif ($argToken.Name -eq 'settings-file') {
-                    if ($argToken.Value -is [string]) {
-                        $this.UpdateSettingsFromFilePath($settings, $argToken.Value)
                     } else {
                         throw "Invalid value for option: " + $argToken.Name
                     }
@@ -1012,7 +1015,8 @@ class FindOptions {
         $optStrs = @()
         $optMap = @{}
         $longest = 0
-        foreach ($option in $this.FindOptions) {
+        $options = $this.FindOptions | Where-Object { $_.LongArg -ne 'path' }
+        foreach ($option in $options) {
             $optStr = ''
             if ($option.ShortArg) {
                 $optStr = "-$($option.ShortArg),"
