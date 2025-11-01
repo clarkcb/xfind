@@ -3,7 +3,7 @@ module Main (main) where
 import System.Environment (getArgs)
 import System.IO (hPutStr, stderr)
 
-import HsFind.FindOptions (getFindOptions, getUsage, ioSettingsFromArgs)
+import HsFind.FindOptions (getFindOptions, getUsage, settingsFromArgs)
 import HsFind.Finder (doFind, formatMatchingDirs, formatMatchingFiles, getFinder, validateFindSettings)
 import HsFind.FindSettings (FindSettings(..), findSettingsToString)
 
@@ -23,7 +23,7 @@ main = do
       logMsg "\n"
       logErr $ errMsg ++ "\n"
     Right findOptions -> do
-      settingsFromArgsEither <- ioSettingsFromArgs findOptions args
+      settingsFromArgsEither <- settingsFromArgs findOptions args
       case settingsFromArgsEither of
         Left errMsg -> do
           logMsg "\n"

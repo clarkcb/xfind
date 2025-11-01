@@ -1,26 +1,29 @@
 {-# LANGUAGE DeriveGeneric, NoMonomorphismRestriction #-}
 module HsFind.FindOptions (
     FindOption(..)
+  , FindOptions(..)
   , getFindOptions
   , getUsage
   , parseDateToUtc
-  , ioSettingsFromArgs
-  , settingsFromArgs) where
+  , settingsFromArgs
+  , settingsFromFile
+  , settingsFromJson) where
 
+import Data.Aeson
 import qualified Data.ByteString.Lazy.Char8 as BC
 import Data.Char (toLower)
-import Data.Either (isLeft, lefts, rights)
+import Data.Either (isLeft, lefts, rights, either)
 import Data.List (isPrefixOf, isSuffixOf, sortBy)
 import Data.Maybe (fromJust, isJust, listToMaybe)
 import Data.Time (UTCTime(..), parseTimeM, defaultTimeLocale)
-
 import GHC.Generics
-import Data.Aeson
 
 import HsFind.Paths_hsfind (getDataFileName)
+import HsFind.ArgTokenizer
 import HsFind.FileTypes (getFileTypeForName)
 import HsFind.FileUtil (expandPath, getFileString, isFile)
 import HsFind.FindSettings
+
 
 data FindOption = FindOption
   { long :: String
@@ -30,30 +33,65 @@ data FindOption = FindOption
 
 instance FromJSON FindOption
 
-newtype FindOptions
-  = FindOptions {findoptions :: [FindOption]}
+newtype JsonFindOptions
+  = JsonFindOptions {findoptions :: [FindOption]}
   deriving (Show, Eq, Generic)
 
-instance FromJSON FindOptions
+instance FromJSON JsonFindOptions
+
+data FindOptions = FindOptions
+  { options :: [FindOption]
+  , argTokenizer :: ArgTokenizer
+  } deriving (Show, Eq, Generic)
 
 findOptionsFile :: FilePath
 findOptionsFile = "findoptions.json"
 
-getFindOptions :: IO (Either String [FindOption])
+getArgTokenizer :: [FindOption] -> ArgTokenizer
+getArgTokenizer jsonOpts =
+  ArgTokenizer
+    { boolMap = boolMap
+    , stringMap = stringMap
+    , intMap = intMap
+    }
+  where
+    boolMap = boolShortMap ++ boolLongMap
+    stringMap = stringShortMap ++ stringLongMap ++ [("path", "path"), ("settings-file", "settings-file")]
+    intMap = intShortMap ++ intLongMap
+    boolLongMap :: [(String, String)]
+    boolLongMap = [(long o, long o) | o <- jsonOpts, isBoolOption o]
+    boolShortMap :: [(String, String)]
+    boolShortMap = [(fromJust (short o), long o) | o <- jsonOpts, isBoolOption o, isJust (short o)]
+    stringLongMap :: [(String, String)]
+    stringLongMap = [(long o, long o) | o <- jsonOpts, isStringOption o]
+    stringShortMap :: [(String, String)]
+    stringShortMap = [(fromJust (short o), long o) | o <- jsonOpts, isStringOption o, isJust (short o)]
+    intLongMap :: [(String, String)]
+    intLongMap = [(long o, long o) | o <- jsonOpts, isIntOption o]
+    intShortMap :: [(String, String)]
+    intShortMap = [(fromJust (short o), long o) | o <- jsonOpts, isIntOption o, isJust (short o)]
+    isBoolOption :: FindOption -> Bool
+    isBoolOption o = long o `elem` map fst boolActions
+    isStringOption :: FindOption -> Bool
+    isStringOption o = long o `elem` map fst stringActions
+    isIntOption :: FindOption -> Bool
+    isIntOption o = long o `elem` map fst integerActions
+
+getFindOptions :: IO (Either String FindOptions)
 getFindOptions = do
   findOptionsPath <- getDataFileName findOptionsFile
   findOptionsJsonString <- getFileString findOptionsPath
   case findOptionsJsonString of
     Left e -> return $ Left e
     Right jsonString ->
-      case (eitherDecode (BC.pack jsonString) :: Either String FindOptions) of
+      case (eitherDecode (BC.pack jsonString) :: Either String JsonFindOptions) of
         Left e -> return $ Left e
-        Right jsonFindOptions -> return $ Right (findoptions jsonFindOptions)
+        Right jsonFindOptions -> return $ Right FindOptions { options = findoptions jsonFindOptions,
+                                                              argTokenizer = getArgTokenizer (findoptions jsonFindOptions) }
 
-getUsage :: [FindOption] -> String
+getUsage :: FindOptions -> String
 getUsage findOptions =
-  "Usage:\n hsfind [options] <path> [<path> ...]\n\nOptions:\n" ++
-  findOptionsToString findOptions
+  "Usage:\n hsfind [options] <path> [<path> ...]\n\nOptions:\n" ++ findOptionsToString (options findOptions)
 
 getOptStrings :: [FindOption] -> [String]
 getOptStrings = map formatOpts
@@ -156,143 +194,78 @@ integerActions = [ ("maxdepth", \ss i -> ss {maxDepth = i})
                  , ("minsize", \ss i -> ss {minSize = i})
                  ]
 
-argToLongs :: [FindOption] -> String -> Either String [String]
-argToLongs _ "" = Left "Missing argument"
-argToLongs opts s | "--" `isPrefixOf` s = Right [s]
-                  | "-" `isPrefixOf` s =
-                    if all (\x -> any (\so -> short so == Just x) optsWithShort) $ getShorts s
-                    then Right $ map (("--" ++) . getLongForShort) $ getShorts s
-                    else Left $ "Invalid option: " ++ tail s
-                  | otherwise = Right [s]
-  where optsWithShort = filter (isJust . short) opts
-        getLongForShort :: String -> String
-        getLongForShort x = (long . head . filter (\so -> short so == Just x)) optsWithShort
-        charToString :: Char -> [Char]
-        charToString c = [c]
-        getShorts :: String -> [String]
-        getShorts = map charToString . tail
+updateSettingsFromTokens :: FindSettings -> FindOptions -> [ArgToken] -> IO (Either String FindSettings)
+updateSettingsFromTokens settings findOptions tokens = do
+  case tokens of
+    [] -> return $ Right settings
+    t:ts ->
+      case getActionType (name t) of
+        BoolActionType ->
+          case value t of
+            TypeA b -> updateSettingsFromTokens (getBoolAction (name t) settings b) findOptions ts
+            _ -> return $ Left $ "Invalid boolean value for option: " ++ name t
+        StringActionType ->
+          case value t of
+            TypeB s ->
+              if name t == "settings-file"
+              then do
+                settingsEither <- updateSettingsFromFile settings findOptions s
+                case settingsEither of
+                  Left e -> return $ Left e
+                  Right settings' -> updateSettingsFromTokens settings' findOptions ts
+              else updateSettingsFromTokens (getStringAction (name t) settings s) findOptions ts
+            _ -> return $ Left $ "Invalid string value for option: " ++ name t
+        IntegerActionType ->
+          case value t of
+            TypeC i -> updateSettingsFromTokens (getIntegerAction (name t) settings (toInteger i)) findOptions ts
+            _ -> return $ Left $ "Invalid integer value for option: " ++ name t
+        UnknownActionType -> return $ Left $ "Invalid option from updateSettingsFromTokens: " ++ name t
+  where
+    getActionType :: String -> ActionType
+    getActionType a
+      | isBoolAction a = BoolActionType
+      | isStringAction a = StringActionType
+      | a == "settings-file" = StringActionType
+      | isIntegerAction a = IntegerActionType
+      | otherwise = UnknownActionType
+    getBoolAction :: String -> BoolAction
+    getBoolAction a = snd $ head $ filter (\(x,_) -> a==x) boolActions
+    getStringAction :: String -> StringAction
+    getStringAction a = snd $ head $ filter (\(x,_) -> a==x) stringActions
+    getIntegerAction :: String -> IntegerAction
+    getIntegerAction a = snd $ head $ filter (\(x,_) -> a==x) integerActions
+    isBoolAction :: String -> Bool
+    isBoolAction a = isJust $ lookup a boolActions
+    isStringAction :: String -> Bool
+    isStringAction a = isJust $ lookup a stringActions
+    isIntegerAction :: String -> Bool
+    isIntegerAction a = isJust $ lookup a integerActions
 
-updateSettingsFromJson :: FindSettings -> [FindOption] -> String -> IO (Either String FindSettings)
-updateSettingsFromJson settings opts jsonStr = do
-  case decode (BC.pack jsonStr) of
-    Just json -> 
-      case updateFindSettingsFromJsonValue settings json of
-        Left e -> return $ Left e
-        Right settings' -> return $ Right settings'
-    Nothing -> return $ Left "Unable to parse JSON"
+updateSettingsFromJson :: FindSettings -> FindOptions -> String -> IO (Either String FindSettings)
+updateSettingsFromJson settings findOptions jsonStr = do
+  let eitherTokens = tokenizeJson (argTokenizer findOptions) jsonStr
+  case eitherTokens of
+    Left e -> return $ Left e
+    Right tokens -> updateSettingsFromTokens settings findOptions tokens
 
-updateSettingsFromFile :: FindSettings -> [FindOption] -> FilePath -> IO (Either String FindSettings)
-updateSettingsFromFile settings opts filePath = do
-  expandedPath <- expandPath filePath
-  isFile' <- isFile expandedPath
-  if isFile'
-  then if ".json" `isSuffixOf` expandedPath
-       then do
-          settingsJsonStringEither <- getFileString expandedPath
-          case settingsJsonStringEither of
-            Left e -> return $ Left e
-            Right settingsJsonString -> do
-              updatedSettingsEither <- updateSettingsFromJson settings opts settingsJsonString
-              case updatedSettingsEither of
-                Left e ->
-                  if e == "Unable to parse JSON"
-                  then return $ Left $ e ++ " in settings file: " ++ filePath
-                  else return $ Left e
-                Right settings' -> return $ Right settings'
-       else return $ Left $ "Invalid settings file (must be JSON): " ++ filePath
-  else return $ Left $ "Settings file not found: " ++ filePath
+settingsFromJson :: FindOptions -> String -> IO (Either String FindSettings)
+settingsFromJson = updateSettingsFromJson defaultFindSettings
 
-updateSettingsFromArgs :: FindSettings -> [FindOption] -> [String] -> Either String FindSettings
-updateSettingsFromArgs settings opts arguments =
-  if any isLeft longArgs
-  then (Left . head . lefts) longArgs
-  else recSettingsFromArgs settings $ concat $ rights longArgs
-  where recSettingsFromArgs :: FindSettings -> [String] -> Either String FindSettings
-        recSettingsFromArgs ss args =
-          case args of
-          [] -> Right ss
-          a:as | "--" `isPrefixOf` a && '=' `elem` a ->
-            procArg ss (argName a) (Just (argVal a)) as
-          a:as | "--" `isPrefixOf` a -> procArg ss (argName a) (listToMaybe as) as
-          a:as -> recSettingsFromArgs (ss {paths = paths ss ++ [a]}) as
-        procArg :: FindSettings -> String -> Maybe String -> [String] -> Either String FindSettings
-        procArg ss arg argVal args =
-          case getActionType arg of
-            BoolActionType -> recSettingsFromArgs (getBoolAction arg ss True) args
-            StringActionType ->
-              if isJust argVal
-                then recSettingsFromArgs (getStringAction arg ss (fromJust argVal)) (tail args)
-                else Left $ "Missing value for option: " ++ arg
-            IntegerActionType ->
-              if isJust argVal
-                then recSettingsFromArgs (getIntegerAction arg ss (read (fromJust argVal))) (tail args)
-                else Left $ "Missing value for option: " ++ arg
-            UnknownActionType -> Left $ "Invalid option: " ++ arg
-        longArgs :: [Either String [String]]
-        longArgs = map (argToLongs opts) arguments
-        getActionType :: String -> ActionType
-        getActionType a
-          | isBoolAction a = BoolActionType
-          | isStringAction a = StringActionType
-          | isIntegerAction a = IntegerActionType
-          | otherwise = UnknownActionType
-        argName :: String -> String
-        argName a = takeWhile (/='=') (dropWhile (=='-') a)
-        argVal :: String -> String
-        argVal a = drop 1 (dropWhile (/='=') a)
-        getBoolAction :: String -> BoolAction
-        getBoolAction a = snd $ head $ filter (\(x,_) -> a==x) boolActions
-        getStringAction :: String -> StringAction
-        getStringAction a = snd $ head $ filter (\(x,_) -> a==x) stringActions
-        getIntegerAction :: String -> IntegerAction
-        getIntegerAction a = snd $ head $ filter (\(x,_) -> a==x) integerActions
-        isBoolAction :: String -> Bool
-        isBoolAction a = isJust $ lookup a boolActions
-        isStringAction :: String -> Bool
-        isStringAction a = isJust $ lookup a stringActions
-        isIntegerAction :: String -> Bool
-        isIntegerAction a = isJust $ lookup a integerActions
+updateSettingsFromFile :: FindSettings -> FindOptions -> FilePath -> IO (Either String FindSettings)
+updateSettingsFromFile settings findOptions filePath = do
+  eitherTokens <- tokenizeFile (argTokenizer findOptions) filePath
+  case eitherTokens of
+    Left e -> return $ Left e
+    Right tokens -> updateSettingsFromTokens settings findOptions tokens
 
-settingsFromArgs :: [FindOption] -> [String] -> Either String FindSettings
+settingsFromFile :: FindOptions -> FilePath -> IO (Either String FindSettings)
+settingsFromFile = updateSettingsFromFile defaultFindSettings
+
+updateSettingsFromArgs :: FindSettings -> FindOptions -> [String] -> IO (Either String FindSettings)
+updateSettingsFromArgs settings findOptions arguments = do
+  case tokenizeArgs (argTokenizer findOptions) arguments of
+    Left e -> return $ Left e
+    Right tokens -> updateSettingsFromTokens settings findOptions tokens
+
+settingsFromArgs :: FindOptions -> [String] -> IO (Either String FindSettings)
 settingsFromArgs = updateSettingsFromArgs defaultFindSettings{printFiles=True}
-
-ioUpdateSettingsFromArgs :: FindSettings -> [FindOption] -> [String] -> IO (Either String FindSettings)
-ioUpdateSettingsFromArgs settings opts arguments = do
-  if hasSettingsFileArg arguments
-    then do
-      let beforeSettingsFileArgs = takeWhile (not . isSettingsFileArg) arguments
-      let settingsFileArgs = getSettingsFileArgs arguments
-      let afterSettingsFileArgs = drop 1 $ dropWhile (not . isSettingsFileArg) arguments
-      let settingsEither1 = updateSettingsFromArgs settings opts beforeSettingsFileArgs
-      case settingsEither1 of
-        Left e -> return $ Left e
-        Right settings1 -> do
-          case settingsFileArgs of
-            [] -> do
-              return $ updateSettingsFromArgs settings1 opts afterSettingsFileArgs
-            [a] -> do
-              settingsEither2 <- updateSettingsFromFile settings1 opts $ head afterSettingsFileArgs
-              case settingsEither2 of
-                Left e -> return $ Left e
-                Right settings2 -> do
-                  return $ updateSettingsFromArgs settings2 opts $ tail afterSettingsFileArgs
-            a:as -> do
-              settingsEither2 <- updateSettingsFromFile settings1 opts $ head as
-              case settingsEither2 of
-                Left e -> return $ Left e
-                Right settings2 -> do
-                  return $ updateSettingsFromArgs settings2 opts afterSettingsFileArgs
-    else return $ updateSettingsFromArgs settings opts arguments
-    where isSettingsFileArg :: String -> Bool
-          isSettingsFileArg arg = "--settings-file" == takeWhile (/='=') arg
-          hasSettingsFileArg :: [String] -> Bool
-          hasSettingsFileArg = any isSettingsFileArg
-          splitSettingsFileArg :: String -> [String]
-          splitSettingsFileArg arg = if '=' `elem` arg
-                                     then ["--settings-file", drop 1 (dropWhile (/='=') arg)]
-                                     else [arg]
-          getSettingsFileArgs :: [String] -> [String]
-          getSettingsFileArgs args = concatMap splitSettingsFileArg $ take 1 $ dropWhile (not . isSettingsFileArg) args
-
-ioSettingsFromArgs :: [FindOption] -> [String] -> IO (Either String FindSettings)
-ioSettingsFromArgs = ioUpdateSettingsFromArgs defaultFindSettings{printFiles=True}

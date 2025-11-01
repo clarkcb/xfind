@@ -1,6 +1,6 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.38.0.
+-- This file has been generated from package.yaml by hpack version 0.38.1.
 --
 -- see: https://github.com/sol/hpack
 
@@ -29,6 +29,7 @@ source-repository head
 
 library
   exposed-modules:
+      HsFind.ArgTokenizer
       HsFind.Color
       HsFind.Config
       HsFind.FileResult
@@ -89,6 +90,7 @@ test-suite hsfind-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
+      HsFind.ArgTokenizerTest
       HsFind.FileResultTest
       HsFind.FileTypesTest
       HsFind.FileUtilTest

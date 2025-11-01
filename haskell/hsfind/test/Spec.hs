@@ -1,5 +1,6 @@
 module Main (main) where
 
+import HsFind.ArgTokenizerTest
 import HsFind.FileResultTest
 import HsFind.FileTypesTest
 import HsFind.FileUtilTest
@@ -11,6 +12,10 @@ import Test.Framework
 
 main :: IO ()
 main = do
+  -- ArgTokenizer tests
+  tokenizeArgsNoArgsTests <- getTokenizeArgsNoArgsTests
+  tokenizeArgsWithArgsTests <- getTokenizeArgsWithArgsTests
+
   -- FileResult tests
   fileResultTests <- getFileResultTests
   fileResultWithSizeTests <- getFileResultWithSizeTests
@@ -43,7 +48,9 @@ main = do
   defaultFindSettingsTests <- getDefaultFindSettingsTests
   newExtensionsTests <- getNewExtensionsTests
 
-  defaultMain (fileResultTests ++ fileResultWithSizeTests ++
+  defaultMain (
+    tokenizeArgsNoArgsTests ++ tokenizeArgsWithArgsTests ++
+    fileResultTests ++ fileResultWithSizeTests ++
     fileTypeTests ++ fileTypeFromNameTests ++
     fileUtilTests ++ 
     isMatchingDirPathTests ++ isMatchingFilePathTests ++
@@ -52,4 +59,5 @@ main = do
     settingsFromArgsTests ++ settingsFromNoArgsTests ++
     archivesOnlyTests ++ debugTests ++
     followSymlinksDefaultTests ++ followSymlinksTrueTests ++ followSymlinksFalseTests ++
-    defaultFindSettingsTests ++ newExtensionsTests)
+    defaultFindSettingsTests ++ newExtensionsTests
+    )
