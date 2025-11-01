@@ -20,41 +20,20 @@
         [clojure.java.io :only (file)]
         [clojure.set :only (union)]
         [clojure.string :as str :only (lower-case)]
-        [cljfind.common :only (log-msg)]
+        [cljfind.common :only (as-keyword as-string log-msg)]
+        [cljfind.argtokenizer]
         [cljfind.fileutil :only (exists-path? expand-path path-str to-path)]
         [cljfind.findsettings :only
-         (->FindSettings DEFAULT-FIND-SETTINGS add-extension add-file-type add-path
-                         add-pattern set-archives-only set-debug set-int-val set-long-val
-                         sort-by-from-name)]))
+          (->FindSettings DEFAULT-FIND-SETTINGS add-extension add-file-type add-path
+           add-pattern set-archives-only set-debug set-int-val set-long-val
+           sort-by-from-name)]))
 
-(defrecord FindOption [short-arg long-arg desc])
+(defrecord FindOption [short-arg long-arg desc arg-type])
 
 (defn get-sort-arg ^String [^FindOption fo]
   (if (= "" (:short-arg fo))
     (:long-arg fo)
     (str (str/lower-case (:short-arg fo)) "a" (:long-arg fo))))
-
-(defn get-find-options-from-json []
-  (let [contents (slurp (io/resource "findoptions.json"))
-        find-options-objs (:findoptions (json/read-str contents :key-fn keyword))
-        long-names (map #(get % :long) find-options-objs)
-        short-names (map #(get % :short "") find-options-objs)
-        long-short-map (zipmap long-names short-names)
-        descs (map #(.trim %) (map :desc find-options-objs))
-        long-desc-map (zipmap long-names descs)
-        get-short (fn [l] (get long-short-map l))
-        get-desc (fn [l] (get long-desc-map l))]
-    (sort-by get-sort-arg (map #(FindOption. (get-short %) % (get-desc %)) long-names))))
-
-(def ^:const FIND-OPTIONS (get-find-options-from-json))
-
-(defn print-option [^FindOption opt]
-  (let [format-string "(FindOption short=\"%s\" long=\"%s\" desc=\"%s\")"]
-    (println
-      (format format-string (:short-arg opt) (:long-arg opt) (:desc opt)))))
-
-(defn print-options []
-  (doseq [o FIND-OPTIONS] (print-option o)))
 
 (def bool-action-map
   { :archivesonly (fn [^FindSettings settings b] (set-archives-only settings b))
@@ -111,6 +90,35 @@
     :minsize (fn [^FindSettings settings l] (set-long-val settings l :min-size))
   })
 
+(defn get-action-arg-type [^String long-arg]
+  (let [long-key (as-keyword long-arg)]
+    (cond
+      (contains? (set (keys bool-action-map)) long-key) :bool
+      (contains? (set (keys string-action-map)) long-key) :string
+      (contains? (set (keys int-action-map)) long-key) :int
+      (contains? (set (keys long-action-map)) long-key) :long
+      (= long-key :path) :string
+      (= long-key :settings-file) :string
+      :else :unknown)))
+
+(defn get-find-options-from-json []
+  (let [contents (slurp (io/resource "findoptions.json"))
+        find-options-objs (:findoptions (json/read-str contents :key-fn keyword))
+        find-options (map #(->FindOption (get % :short "") (get % :long) (get % :desc) (get-action-arg-type (get % :long))) find-options-objs)]
+    (conj find-options (->FindOption "" "path" "" :string))))
+
+(def ^:const FIND-OPTIONS (get-find-options-from-json))
+
+(def arg-tokenizer (get-arg-tokenizer-for-options FIND-OPTIONS))
+
+(defn print-option [^FindOption opt]
+  (let [format-string "(FindOption short=\"%s\" long=\"%s\" desc=\"%s\")"]
+    (println
+      (format format-string (:short-arg opt) (:long-arg opt) (:desc opt)))))
+
+(defn print-options []
+  (doseq [o FIND-OPTIONS] (print-option o)))
+
 (defn get-long-arg-map []
   (let [long-names     (concat (map :long-arg FIND-OPTIONS) ["path"])
         long-map       (zipmap long-names (map #(keyword %) long-names))
@@ -118,171 +126,97 @@
         short-long-map (zipmap (map :short-arg short-options) (map #(keyword %) (map :long-arg short-options)))]
     (merge long-map short-long-map)))
 
-(declare settings-from-file)
+(declare update-settings-from-file)
 
-(defn settings-from-arg-map
-  ([^FindSettings settings long-arg-map arg-map errs]
-    (let [ks (sort (keys arg-map))
-          invalid-ks (remove #(contains? long-arg-map %) (map #(name %) ks))]
-      (if (not (empty? invalid-ks))
-        [nil [(str "Invalid option: " (first invalid-ks))]]
-        (settings-from-arg-map settings long-arg-map ks arg-map errs))))
-  ([^FindSettings settings long-arg-map ks arg-map errs]
-    (if (or (empty? ks) (not (empty? errs)))
+(defn update-settings-from-tokens
+  ([^FindSettings settings tokens]
+    (update-settings-from-tokens settings tokens []))
+  ([^FindSettings settings tokens errs]
+    (if (or (empty? tokens) (not (empty? errs)))
       [settings errs]
-      (let [k (keyword (first ks))
-            v (k arg-map)]
-        (cond
-          (contains? bool-action-map k)
-            (if (instance? Boolean v)
-              (settings-from-arg-map ((k bool-action-map) settings v) long-arg-map (rest ks) arg-map errs)
-              (settings-from-arg-map settings long-arg-map (rest ks) arg-map (conj errs (str "Invalid value for option: " (name k)))))
-          (contains? string-action-map k)
-            (if (instance? String v)
-              (settings-from-arg-map ((k string-action-map) settings v) long-arg-map (rest ks) arg-map errs)
-              (if (coll? v)
-                (if (empty? v)
-                  (settings-from-arg-map settings long-arg-map (rest ks) arg-map errs)
-                  (settings-from-arg-map ((k string-action-map) settings (first v)) long-arg-map ks (assoc arg-map k (rest v)) errs))
-                (settings-from-arg-map settings long-arg-map (rest ks) arg-map (conj errs (str "Invalid value for option: " (name k))))))
-          (contains? int-action-map k)
-            (if (instance? Integer v)
-              (settings-from-arg-map ((k int-action-map) settings v) long-arg-map (rest ks) arg-map errs)
-              (if (instance? Long v)
-                (settings-from-arg-map ((k int-action-map) settings (.intValue v)) long-arg-map (rest ks) arg-map errs)
-                (if (instance? String v)
-                  (settings-from-arg-map ((k int-action-map) settings (Integer/parseInt v)) long-arg-map (rest ks) arg-map errs)
-                  (settings-from-arg-map settings long-arg-map (rest ks) arg-map (conj errs (str "Invalid value for option: " (name k)))))))
-          (contains? long-action-map k)
-            (if (instance? Long v)
-              (settings-from-arg-map ((k long-action-map) settings v) long-arg-map (rest ks) arg-map errs)
-              (if (instance? Integer v)
-                (settings-from-arg-map ((k long-action-map) settings (.longValue v)) long-arg-map (rest ks) arg-map errs)
-                (if (instance? String v)
-                  (settings-from-arg-map ((k long-action-map) settings (Long/parseLong v)) long-arg-map (rest ks) arg-map errs)
-                  (settings-from-arg-map settings long-arg-map (rest ks) arg-map (conj errs (str "Invalid value for option: " (name k)))))))
-          (= k :settings-file)
-            (if (instance? String v)
-              (let [[new-settings new-errs] (settings-from-file settings long-arg-map v)]
-                (if (empty? new-errs)
-                  (settings-from-arg-map new-settings long-arg-map (rest ks) arg-map errs)
-                  (settings-from-arg-map settings long-arg-map (rest ks) arg-map (conj errs (str "Error reading settings file: " v) new-errs)))))
-          :else
-            (settings-from-arg-map settings long-arg-map (rest ks) arg-map (conj errs (str "Invalid option: " (name k)))))))))
+      (let [token (first tokens)
+            name (:name token)
+            arg-type (:type token)
+            value (:value token)]
+        (case arg-type
+          :bool
+            (cond
+              (not (contains? bool-action-map name))
+                (update-settings-from-tokens settings [] [(str "Invalid option: " name)])
+              (not (boolean? value))
+                (update-settings-from-tokens settings [] [(str "Invalid value option: " name)])
+              :else
+                (update-settings-from-tokens ((name bool-action-map) settings value) (rest tokens) errs))
+          :string
+            (cond
+              (and (not (contains? string-action-map name)) (not (= name :settings-file)))
+                (update-settings-from-tokens settings [] [(str "Invalid option: " name)])
+              (not (string? value))
+                (update-settings-from-tokens settings [] [(str "Invalid value option: " name)])
+              :else
+                (if (= name :settings-file)
+                  (let [[new-settings new-errs] (update-settings-from-file settings value)]
+                    (if (empty? new-errs)
+                      (update-settings-from-tokens new-settings (rest tokens) errs)
+                      (update-settings-from-tokens settings (rest tokens) (concat errs new-errs))))
+                  (update-settings-from-tokens ((name string-action-map) settings value) (rest tokens) errs)))
+          :int
+            (cond
+              (not (contains? int-action-map name))
+                (update-settings-from-tokens settings [] [(str "Invalid option: " name)])
+              (not (int? value))
+                (update-settings-from-tokens settings [] [(str "Invalid value option: " name)])
+              :else
+                (update-settings-from-tokens ((name int-action-map) settings value) (rest tokens) errs))
+          :long
+            (cond
+              (not (contains? long-action-map name))
+                (update-settings-from-tokens settings [] [(str "Invalid option: " name)])
+              (not (integer? value))
+                (update-settings-from-tokens settings [] [(str "Invalid value option: " name)])
+              :else
+                (update-settings-from-tokens ((name long-action-map) settings value) (rest tokens) errs))
+          (update-settings-from-tokens settings [] [(str "Unknown token type: " name arg-type)]))))))
 
-(defn settings-from-json
-  ([^String json]
-    (settings-from-json DEFAULT-FIND-SETTINGS (get-long-arg-map) json))
-  ([^FindSettings settings long-arg-map ^String json]
-   (let [obj (json/read-str json :key-fn keyword)]
-      (settings-from-arg-map settings long-arg-map obj []))))
+(defn settings-from-tokens [tokens]
+  (update-settings-from-tokens DEFAULT-FIND-SETTINGS tokens))
 
-(defn settings-from-file
-  ([f]
-    (settings-from-file DEFAULT-FIND-SETTINGS (get-long-arg-map) f))
-  ([^FindSettings settings long-arg-map f]
-    (let [filepath (expand-path (to-path f))
-          pathstr (path-str filepath)]
-      (if (not (exists-path? filepath))
-        [settings [(str "Settings file not found: " pathstr)]]
-        (if (not (.endsWith pathstr ".json"))
-          [settings [(str "Invalid settings file (must be JSON): " pathstr)]]
-          (try
-            (settings-from-json settings long-arg-map (slurp pathstr))
-            (catch Exception e
-              [settings [(str "Unable to parse JSON in settings file: " pathstr)]])))))))
+(defn update-settings-from-arg-map [^FindSettings settings arg-map]
+  (let [[tokens errs] (tokenize-arg-map arg-tokenizer arg-map)]
+    (if (not (empty? errs))
+      [settings errs]
+      (update-settings-from-tokens settings tokens))))
 
-(defn get-arg-map-from-args
-  ([long-arg-map args]
-    (get-arg-map-from-args long-arg-map args {} []))
-  ([long-arg-map args arg-map errs]
-    (defn proc-arg [long-arg-map arg long-arg arg-val args arg-map errs]
-      (cond
-        ;; 1) no long-arg
-        (not long-arg)
-        (get-arg-map-from-args long-arg-map (rest args) arg-map (conj errs (str "Invalid option: " arg)))
+(defn settings-from-arg-map [arg-map]
+  (update-settings-from-arg-map DEFAULT-FIND-SETTINGS (get-long-arg-map) arg-map))
 
-        ;; 2) boolean option
-        (contains? bool-action-map long-arg)
-        (get-arg-map-from-args long-arg-map (rest args) (assoc arg-map long-arg true) errs)
+(defn update-settings-from-json [^FindSettings settings ^String json]
+  (let [[tokens errs] (tokenize-json arg-tokenizer json)]
+    (if (not (empty? errs))
+      [settings errs]
+      (update-settings-from-tokens settings tokens))))
 
-        ;; 3) option without arg
-        (not arg-val)
-        (get-arg-map-from-args long-arg-map (rest args) arg-map (conj errs (str "Missing arg for option " arg)))
+(defn settings-from-json [^String json]
+  (update-settings-from-json DEFAULT-FIND-SETTINGS json))
 
-        ;; 4) string option
-        (contains? string-action-map long-arg)
-        (get-arg-map-from-args long-arg-map (drop 2 args) (assoc arg-map long-arg (conj (get arg-map long-arg []) arg-val)) errs)
+(defn update-settings-from-file [^FindSettings settings f]
+  (let [[tokens errs] (tokenize-file arg-tokenizer f)]
+    (if (not (empty? errs))
+      [settings errs]
+      (update-settings-from-tokens settings tokens))))
 
-        ;; 5) int option
-        (contains? int-action-map long-arg)
-        (if (instance? String arg-val)
-          (get-arg-map-from-args long-arg-map (drop 2 args) (assoc arg-map long-arg (Integer/parseInt arg-val)) errs)
-          (get-arg-map-from-args long-arg-map (drop 2 args) (assoc arg-map long-arg arg-val) errs))
+(defn settings-from-file [f]
+  (update-settings-from-file DEFAULT-FIND-SETTINGS (get-long-arg-map) f))
 
-        ;; 6) long option
-        (contains? long-action-map long-arg)
-        (if (instance? String arg-val)
-          (get-arg-map-from-args long-arg-map (drop 2 args) (assoc arg-map long-arg (Long/parseLong arg-val)) errs)
-          (get-arg-map-from-args long-arg-map (drop 2 args) (assoc arg-map long-arg arg-val) errs))
-
-        ;; 7) settings-file option
-        (= long-arg :settings-file)
-        (get-arg-map-from-args long-arg-map (drop 2 args) (assoc arg-map long-arg arg-val) errs)
-
-        :else
-        (get-arg-map-from-args long-arg-map (rest args) (conj errs (str "Invalid option: " arg)))))
-    (if (or (empty? args) (not (empty? errs)))
-      [arg-map errs]
-      (let [arg (first args)
-            arg-val (second args)
-            long-arg-with-val (re-matches #"^--([a-zA-Z0-9\-]+)=(.*)$" arg)
-            long-arg-no-val (re-matches #"^--([a-zA-Z0-9\-]+)$" arg)
-            short-args (re-matches #"^-([a-zA-Z0-9])([a-zA-Z0-9]+)$" arg)
-            short-arg (re-matches #"^-([a-zA-Z0-9])$" arg)]
-        (cond
-          ;; 1) match long arg with = and arg-val
-          (> (count long-arg-with-val) 2)
-          (let [a (second long-arg-with-val)
-                k (get long-arg-map a)
-                v (nth long-arg-with-val 2)]
-            (if k
-              (get-arg-map-from-args long-arg-map (rest args) (assoc arg-map k v) errs)
-              (get-arg-map-from-args long-arg-map (rest args) arg-map (conj errs (str "Invalid option: " a)))))
-
-          ;; 2) match long arg
-          (> (count long-arg-no-val) 1)
-          (let [a (second long-arg-no-val)
-                k (get long-arg-map a)]
-            (proc-arg long-arg-map a k arg-val args arg-map errs))
-
-          ;; 3) match short args
-          (> (count short-args) 2)
-          (let [a (second short-args)
-                as (nth short-args 2)
-                k (get long-arg-map a)]
-            (proc-arg long-arg-map a k arg-val (concat [arg (str "-" as)] (rest args)) arg-map errs))
-
-          ;; 4) match short arg
-          (> (count short-arg) 1)
-          (let [a (second short-arg)
-                k (get long-arg-map a)]
-            (proc-arg long-arg-map a k arg-val args arg-map errs))
-
-          ;; 5) no match, treat as path
-          :else
-          (get-arg-map-from-args long-arg-map (rest args) (assoc arg-map :path (conj (get arg-map :path []) arg)) errs))))))
+(defn update-settings-from-args [^FindSettings settings args]
+  (let [[tokens errs] (tokenize-args arg-tokenizer args)]
+    (if (not (empty? errs))
+      [settings errs]
+      (update-settings-from-tokens settings tokens))))
 
 (defn settings-from-args [args]
   ;; default print-files to true since running as cli
-   (let [initial-settings (assoc DEFAULT-FIND-SETTINGS :print-files true)
-         long-arg-map (get-long-arg-map)
-         arg-map-with-errs (get-arg-map-from-args long-arg-map args)
-         arg-map (first arg-map-with-errs)
-         errs (second arg-map-with-errs)]
-    (if (not (empty? errs))
-      [nil errs]
-      (settings-from-arg-map initial-settings long-arg-map arg-map []))))
+  (update-settings-from-args (assoc DEFAULT-FIND-SETTINGS :print-files true) args))
 
 (defn longest-length [options]
   (let [lens (map #(+ (count (:long-arg %)) (if (:short-arg %) 3 0)) options)]
@@ -297,16 +231,17 @@
     (format (str "%-" longest "s %s") opt-string d)))
 
 (defn usage-string ^String []
-  (let [longest (longest-length FIND-OPTIONS)]
+  (let [options (sort-by get-sort-arg (filter #(not (= (:long-arg %) "path")) FIND-OPTIONS))
+        longest (longest-length options)]
     (str
      "Usage:\n"
      " cljfind [options] <path> [<path> ...]\n\n"
      "Options:\n "
-     (str/join "\n " (map #(option-to-string % longest) FIND-OPTIONS)))))
+     (str/join "\n " (map #(option-to-string % longest) options)))))
 
 (defn usage
   ([exit-code]
     (log-msg "" (usage-string) "")
     (System/exit exit-code))
   ([]
-   (usage 0)))
+    (usage 0)))
