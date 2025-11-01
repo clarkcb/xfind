@@ -8,9 +8,10 @@ open System.Text.Json
 open System.Text.RegularExpressions
 
 type ArgTokenType = 
-    | Bool = 0
-    | Str = 1
-    | Int = 2
+    | Unknown = 0
+    | Bool = 1
+    | Str = 2
+    | Int = 3
 
 type ArgToken = {
     Name : string;
@@ -18,7 +19,35 @@ type ArgToken = {
     Value : obj
 }
 
-type ArgTokenizer (boolMap: Map<string, string>, strMap: Map<string, string>, intMap: Map<string, string>) =
+type Option = {
+    ShortArg : string;
+    LongArg : string;
+    Description : string
+    ArgType : ArgTokenType
+}
+
+type ArgTokenizer (options: Option list) =
+
+    let MapsFromOptions (options : Option list) =
+        let boolDict = Dictionary<string, string>()
+        let strDict = Dictionary<string, string>()
+        let intDict = Dictionary<string, string>()
+        for o in options do
+            if o.ArgType = ArgTokenType.Bool then
+                boolDict.Add(o.LongArg, o.LongArg)
+                if o.ShortArg <> "" then
+                    boolDict.Add(o.ShortArg, o.LongArg)
+            elif o.ArgType = ArgTokenType.Str then
+                strDict.Add(o.LongArg, o.LongArg)
+                if o.ShortArg <> "" then
+                    strDict.Add(o.ShortArg, o.LongArg)
+            elif o.ArgType = ArgTokenType.Int then
+                intDict.Add(o.LongArg, o.LongArg)
+                if o.ShortArg <> "" then
+                    intDict.Add(o.ShortArg, o.LongArg)
+        (boolDict, strDict, intDict)
+
+    let boolMap, strMap, intMap = MapsFromOptions(options)
 
     let longArgWithValRegex = Regex("^--([a-zA-Z0-9-]+)=(.*)$")
     let longArgWithoutValRegex = Regex("^--([a-zA-Z0-9-]+)$")

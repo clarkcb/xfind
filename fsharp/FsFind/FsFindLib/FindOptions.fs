@@ -6,11 +6,7 @@ open System.Text.Json
 
 module FindOptions =   
 
-    type FindOption = {
-        ShortArg : string;
-        LongArg : string;
-        Description : string
-    }
+    type FindOption = Option
 
     let SortOption (o1 : FindOption) (o2 : FindOption) : int =
         let os1 = if o1.ShortArg <> "" then o1.ShortArg + "@" + o1.LongArg else o1.LongArg
@@ -77,11 +73,18 @@ module FindOptions =
     let OptionsFromJson (jsonString : string) : FindOption list =
         let findOptionsDict = JsonSerializer.Deserialize<FindOptionsDictionary>(jsonString)
         let optionDicts = findOptionsDict["findoptions"]
-        [ for optionDict in optionDicts do
-            let longArg = optionDict["long"]
-            let shortArg = if optionDict.ContainsKey("short") then optionDict["short"] else ""
-            let desc = optionDict["desc"]
-            yield { ShortArg=shortArg; LongArg=longArg; Description=desc } ]
+        let options =
+            [ for optionDict in optionDicts do
+                let longArg = optionDict["long"]
+                let shortArg = if optionDict.ContainsKey("short") then optionDict["short"] else ""
+                let desc = optionDict["desc"]
+                let argType =
+                    if boolActionMap.ContainsKey(longArg) then ArgTokenType.Bool
+                    elif stringActionMap.ContainsKey(longArg) then ArgTokenType.Str
+                    elif intActionMap.ContainsKey(longArg) then ArgTokenType.Int
+                    else ArgTokenType.Unknown
+                yield { ShortArg=shortArg; LongArg=longArg; Description=desc; ArgType=argType } ]
+        List.append options [{ ShortArg=""; LongArg="path"; Description=""; ArgType=ArgTokenType.Str }]
 
     let _findOptionsResource = EmbeddedResource.GetResourceFileContents("FsFindLib.Resources.findoptions.json");
     let options = OptionsFromJson(_findOptionsResource)
@@ -96,12 +99,7 @@ module FindOptions =
     let optionNameMap = GetOptionNameMap
     
     let argTokenizer : ArgTokenizer =
-        let boolMap = optionNameMap |> Map.filter (fun (_k : string) (v : string) -> boolActionMap.ContainsKey(v))
-        let strMap = optionNameMap
-                     |> Map.filter (fun (_k : string) (v : string) -> stringActionMap.ContainsKey(v))
-                     |> Map.add "path" "path"
-        let intMap = optionNameMap |> Map.filter (fun (_k : string) (v : string) -> intActionMap.ContainsKey(v))
-        ArgTokenizer(boolMap, strMap, intMap)
+        ArgTokenizer(options)
 
     let rec ApplyArgTokenToSettings (argToken : ArgToken) (settings : FindSettings) : Result<FindSettings, string> =
         if argToken.Type = ArgTokenType.Bool then
@@ -181,7 +179,9 @@ module FindOptions =
         UpdateSettingsFromArgs settings args
 
     let GetUsageString () : string =
-        let sortedOptions = options |> List.sortWith SortOption
+        let sortedOptions = options
+                            |> List.where (fun o -> not (o.LongArg.Equals("path")))
+                            |> List.sortWith SortOption
         let optStringMap =
             [ for opt in sortedOptions do
                 let shortString : string = 
