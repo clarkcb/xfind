@@ -12,12 +12,33 @@
 
 @implementation ArgTokenizer
 
-- (instancetype) initWithBoolDict:(NSDictionary<NSString*,NSString*>*)boolDict stringDict:(NSDictionary<NSString*,NSString*>*)stringDict intDict:(NSDictionary<NSString*,NSString*>*)intDict {
+- (instancetype) initWithOptions:(NSArray<id<Option>>*)options {
     self = [super init];
     if (self) {
-        self.boolDict = boolDict;
-        self.stringDict = stringDict;
-        self.intDict = intDict;
+        NSMutableDictionary<NSString*, NSString*>* boolDict = [[NSMutableDictionary alloc] init];
+        NSMutableDictionary<NSString*, NSString*>* stringDict = [[NSMutableDictionary alloc] init];
+        NSMutableDictionary<NSString*, NSString*>* intDict = [[NSMutableDictionary alloc] init];
+        for (id<Option> o in options) {
+            if (o.argType == ArgTokenTypeBool) {
+                boolDict[o.longArg] = o.longArg;
+                if (o.shortArg) {
+                    boolDict[o.shortArg] = o.longArg;
+                }
+            } else if (o.argType == ArgTokenTypeStr) {
+                stringDict[o.longArg] = o.longArg;
+                if (o.shortArg) {
+                    stringDict[o.shortArg] = o.longArg;
+                }
+            } else if (o.argType == ArgTokenTypeInt) {
+                intDict[o.longArg] = o.longArg;
+                if (o.shortArg) {
+                    intDict[o.shortArg] = o.longArg;
+                }
+            }
+        }
+        self.boolDict = [NSDictionary dictionaryWithDictionary:boolDict];
+        self.stringDict = [NSDictionary dictionaryWithDictionary:stringDict];
+        self.intDict = [NSDictionary dictionaryWithDictionary:intDict];
     }
     return self;
 }

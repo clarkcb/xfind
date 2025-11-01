@@ -53,6 +53,7 @@ typedef enum {
 
 // ArgTokenType enum
 typedef enum {
+    ArgTokenTypeUnknown = 0,
     ArgTokenTypeBool = 1,
     ArgTokenTypeStr,
     ArgTokenTypeInt

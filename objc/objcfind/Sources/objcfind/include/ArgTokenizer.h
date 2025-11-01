@@ -3,9 +3,10 @@
 
 #import <Foundation/Foundation.h>
 #import "ArgToken.h"
+#import "Option.h"
 
 @interface ArgTokenizer : NSObject
-- (instancetype) initWithBoolDict:(NSDictionary<NSString*,NSString*>*)boolDict stringDict:(NSDictionary<NSString*,NSString*>*)stringDict intDict:(NSDictionary<NSString*,NSString*>*)intDict;
+- (instancetype) initWithOptions:(NSArray<id<Option>>*)options;
 - (NSArray<ArgToken*> *) tokenizeArgs:(NSArray<NSString*> *)args error:(NSError **)error;
 - (NSArray<ArgToken*> *) tokenizeDictionary:(NSDictionary *)dictionary error:(NSError **)error;
 - (NSArray<ArgToken*> *) tokenizeData:(NSData *)data error:(NSError **)error;

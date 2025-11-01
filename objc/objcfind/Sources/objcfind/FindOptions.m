@@ -20,12 +20,12 @@
 - (instancetype) init {
     self = [super init];
     if (self) {
-        self.findOptions = [self findOptionsFromJson];
         self.longArgDict = [self getLongArgDict];
         self.boolActionDict = [self getBoolActionDict];
         self.stringActionDict = [self getStringActionDict];
         self.integerActionDict = [self getIntegerActionDict];
-        self.argTokenizer = [self getArgTokenizer];
+        self.findOptions = [self findOptionsFromJson];
+        self.argTokenizer = [[ArgTokenizer alloc] initWithOptions:self.findOptions];
     }
     return self;
 }
@@ -57,9 +57,18 @@
                 NSString *lArg = findOptionDict[@"long"];
                 NSString *sArg = findOptionDict[@"short"];
                 NSString *desc = findOptionDict[@"desc"];
-                FindOption *so = [[FindOption alloc] initWithShortArg:sArg withLongArg:lArg withDesc:desc];
-                [findOptions addObject:(FindOption*)so];
+                ArgTokenType argType = ArgTokenTypeUnknown;
+                if (self.boolActionDict[lArg]) {
+                    argType = ArgTokenTypeBool;
+                } else if (self.stringActionDict[lArg] || [lArg isEqualToString:@"settings-file"]) {
+                    argType = ArgTokenTypeStr;
+                } else if (self.integerActionDict[lArg]) {
+                    argType = ArgTokenTypeInt;
+                }
+                [findOptions addObject:[[FindOption alloc] initWithShortArg:sArg withLongArg:lArg withDesc:desc withArgType:argType]];
             }
+            // Add path (not in JSON)
+            [findOptions addObject:[[FindOption alloc] initWithShortArg:nil withLongArg:@"path" withDesc:@"" withArgType:ArgTokenTypeStr]];
         }
     }
     NSArray *sortedOptions = [findOptions sortedArrayUsingComparator:^NSComparisonResult(FindOption *so1, FindOption *so2) {
@@ -184,34 +193,6 @@ typedef void (^IntegerActionBlockType)(NSInteger, FindSettings*);
     };
 }
 
-- (ArgTokenizer *) getArgTokenizer {
-    NSMutableDictionary *boolDict = [[NSMutableDictionary alloc] init];
-    NSMutableDictionary *stringDict = [[NSMutableDictionary alloc] init];
-    stringDict[@"path"] = @"path";
-    NSMutableDictionary *intDict = [[NSMutableDictionary alloc] init];
-    
-    for (FindOption *fo in self.findOptions) {
-        if (self.boolActionDict[fo.longArg]) {
-            boolDict[fo.longArg] = fo.longArg;
-            if (fo.shortArg) {
-                boolDict[fo.shortArg] = fo.longArg;
-            }
-        } else if (self.stringActionDict[fo.longArg]) {
-            stringDict[fo.longArg] = fo.longArg;
-            if (fo.shortArg) {
-                stringDict[fo.shortArg] = fo.longArg;
-            }
-        } else if (self.integerActionDict[fo.longArg]) {
-            intDict[fo.longArg] = fo.longArg;
-            if (fo.shortArg) {
-                intDict[fo.shortArg] = fo.longArg;
-            }
-        }
-    }
-
-    return [[ArgTokenizer alloc] initWithBoolDict:boolDict stringDict:stringDict intDict:intDict];
-}
-
 - (void) applyArgTokenToSettings:(ArgToken *)argToken settings:(FindSettings *)settings error:(NSError **)error {
     if (argToken.type == ArgTokenTypeBool) {
         if ([argToken.value isKindOfClass:[NSNumber class]]) {
@@ -330,26 +311,31 @@ typedef void (^IntegerActionBlockType)(NSInteger, FindSettings*);
     [s appendString:@" objcfind [options] <path> [<path> ...]\n\n"];
     [s appendString:@"Options:\n"];
     NSMutableArray *optStrings = [NSMutableArray array];
+    NSMutableArray *optDescs = [NSMutableArray array];
     long longest = 0;
-    for (FindOption *so in self.findOptions) {
-        NSMutableString *optString = [[NSMutableString alloc] init];
-        if (so.shortArg) {
-            [optString appendFormat:@"-%@,", so.shortArg];
+    for (FindOption *fo in self.findOptions) {
+        if ([fo.longArg isEqualToString:@"path"]) {
+            continue;
         }
-        [optString appendFormat:@"--%@", so.longArg];
+        NSMutableString *optString = [[NSMutableString alloc] init];
+        if (fo.shortArg) {
+            [optString appendFormat:@"-%@,", fo.shortArg];
+        }
+        [optString appendFormat:@"--%@", fo.longArg];
         if ([optString length] > longest) {
             longest = [optString length];
         }
         [optStrings addObject:optString];
+        [optDescs addObject:fo.desc];
     }
     // For some reason, length-specified fields don't work in NSString format strings,
     // so forced to use char * and sprintf
     char *metaString = " %%-%lus  %%s\n";
     char templateString[20];
     sprintf(templateString, metaString, longest);
-    for (int i=0; i < [self.findOptions count]; i++) {
+    for (int i=0; i < [optStrings count]; i++) {
         NSString *optString = optStrings[i];
-        NSString *optDesc = self.findOptions[i].desc;
+        NSString *optDesc = optDescs[i];
         long formatLen = [optString length] + [optDesc length] + 5;
         char formatString[formatLen];
         sprintf(formatString, templateString, [optString UTF8String], [optDesc UTF8String]);

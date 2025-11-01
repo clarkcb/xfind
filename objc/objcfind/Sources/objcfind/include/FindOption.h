@@ -3,13 +3,16 @@
 
 #import <Foundation/Foundation.h>
 
-@interface FindOption : NSObject
+#import "Option.h"
+
+@interface FindOption : NSObject <Option>
 
 @property NSString *shortArg;
 @property NSString *longArg;
 @property NSString *desc;
+@property ArgTokenType argType;
 
-- (instancetype) initWithShortArg:(NSString*)sArg withLongArg:(NSString*)lArg withDesc:(NSString*)desc;
+- (instancetype) initWithShortArg:(NSString*)sArg withLongArg:(NSString*)lArg withDesc:(NSString*)desc withArgType:(ArgTokenType)argType;
 
 - (NSString *) sortArg;
 
