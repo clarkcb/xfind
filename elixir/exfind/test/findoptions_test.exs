@@ -77,7 +77,8 @@ defmodule ExFindTest.FindOptionsTest do
       "includehidden": true
     }
     """
-    {status, settings} = FindOptions.get_settings_from_json(json)
+    find_options = FindOptions.new()
+    {status, settings} = FindOptions.get_settings_from_json(json, find_options.options)
     assert status == :ok
     assert settings.in_extensions == ["ex", "exs"]
     assert settings.paths == ["~/src/xfind/elixir/exfind"]
@@ -106,7 +107,8 @@ defmodule ExFindTest.FindOptionsTest do
       "includehidden": true,
     }
     """
-    {status, _value} = FindOptions.get_settings_from_json(json)
+    find_options = FindOptions.new()
+    {status, _value} = FindOptions.get_settings_from_json(json, find_options.options)
     assert status == :error
   end
 
@@ -121,7 +123,8 @@ defmodule ExFindTest.FindOptionsTest do
       "includehidden": true
     }
     """
-    settings = FindOptions.get_settings_from_json!(json)
+    find_options = FindOptions.new()
+    settings = FindOptions.get_settings_from_json!(json, find_options.options)
     assert settings.in_extensions == ["ex", "exs"]
     assert settings.paths == ["~/src/xfind/elixir/exfind"]
     # assert settings.out_dir_patterns == [~r/dep/]
@@ -147,14 +150,16 @@ defmodule ExFindTest.FindOptionsTest do
       "includehidden": true,
     }
     """
+    find_options = FindOptions.new()
     assert_raise ExFind.FindError, fn ->
-      _ = FindOptions.get_settings_from_json!(json)
+      _ = FindOptions.get_settings_from_json!(json, find_options.options)
     end
   end
 
   test "settings from non-existent file" do
     json_file = "/non/existent/file.json"
-    {status, _value} = FindOptions.get_settings_from_file(json_file)
+    find_options = FindOptions.new()
+    {status, _value} = FindOptions.get_settings_from_file(json_file, find_options.options)
     assert status == :error
   end
 end
