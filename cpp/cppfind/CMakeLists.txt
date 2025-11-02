@@ -50,6 +50,7 @@ target_sources(${PROJECT_NAME}
         include/StringUtil.h src/StringUtil.cpp
         include/FindException.h src/FindException.cpp
         include/ArgToken.h src/ArgToken.cpp
+        include/Option.h
         include/ArgTokenizer.h src/ArgTokenizer.cpp
         include/FindSettings.h src/FindSettings.cpp
         include/FileResult.h src/FileResult.cpp

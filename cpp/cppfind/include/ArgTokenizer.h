@@ -8,20 +8,19 @@
 #include "rapidjson/document.h"
 
 #include "ArgToken.h"
+#include "Option.h"
 
-#define ARG_TOKEN_TYPE_BOOL 0
-#define ARG_TOKEN_TYPE_STR  1
-#define ARG_TOKEN_TYPE_INT  2
-#define ARG_TOKEN_TYPE_LONG 3
+#define ARG_TOKEN_TYPE_UNKNOWN 0
+#define ARG_TOKEN_TYPE_BOOL    1
+#define ARG_TOKEN_TYPE_STR     2
+#define ARG_TOKEN_TYPE_INT     3
+#define ARG_TOKEN_TYPE_LONG    4
 
 namespace cppfind {
     class ArgTokenizer {
     public:
-        ArgTokenizer();
-        ArgTokenizer(const std::unordered_map<std::string, std::string> &bool_map,
-                     const std::unordered_map<std::string, std::string> &str_map,
-                     const std::unordered_map<std::string, std::string> &int_map,
-                     const std::unordered_map<std::string, std::string> &long_map);
+        ArgTokenizer() = delete;
+        explicit ArgTokenizer(const std::vector<std::unique_ptr<Option>>& options);
         [[nodiscard]] std::vector<ArgToken> tokenize_args(int &argc, char **argv) const;
         [[nodiscard]] std::vector<ArgToken> tokenize_json(std::string_view json) const;
         [[nodiscard]] std::vector<ArgToken> tokenize_file(const std::filesystem::path& file_path) const;

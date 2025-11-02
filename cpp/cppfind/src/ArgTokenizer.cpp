@@ -4,17 +4,35 @@
 
 #include "FileUtil.h"
 #include "FindException.h"
+#include "FindOption.h"
 #include "StringUtil.h"
 
 
 namespace cppfind {
-    ArgTokenizer::ArgTokenizer() = default;
-
-    ArgTokenizer::ArgTokenizer(const std::unordered_map<std::string, std::string> &bool_map,
-        const std::unordered_map<std::string, std::string> &str_map,
-        const std::unordered_map<std::string, std::string> &int_map,
-        const std::unordered_map<std::string, std::string> &long_map)
-    : m_bool_map{bool_map},  m_str_map{str_map},  m_int_map{int_map},  m_long_map{long_map} {
+    ArgTokenizer::ArgTokenizer(const std::vector<std::unique_ptr<Option>>& options) {
+        for (auto& option : options) {
+            if (option->arg_type() == ARG_TOKEN_TYPE_BOOL) {
+                m_bool_map[option->long_arg()] = option->long_arg();
+                if (!option->short_arg().empty()) {
+                    m_bool_map[option->short_arg()] = option->long_arg();
+                }
+            } else if (option->arg_type() == ARG_TOKEN_TYPE_STR) {
+                m_str_map[option->long_arg()] = option->long_arg();
+                if (!option->short_arg().empty()) {
+                    m_str_map[option->short_arg()] = option->long_arg();
+                }
+            } else if (option->arg_type() == ARG_TOKEN_TYPE_INT) {
+                m_int_map[option->long_arg()] = option->long_arg();
+                if (!option->short_arg().empty()) {
+                    m_int_map[option->short_arg()] = option->long_arg();
+                }
+            } else if (option->arg_type() == ARG_TOKEN_TYPE_LONG) {
+                m_long_map[option->long_arg()] = option->long_arg();
+                if (!option->short_arg().empty()) {
+                    m_long_map[option->short_arg()] = option->long_arg();
+                }
+            }
+        }
     }
 
     std::vector<ArgToken> ArgTokenizer::tokenize_args(int &argc, char **argv) const {
@@ -72,8 +90,7 @@ namespace cppfind {
                         arg_tokens.emplace_back(long_arg, ARG_TOKEN_TYPE_BOOL, true);
                     } else if (m_str_map.contains(next_arg)
                         || m_int_map.contains(next_arg)
-                        || m_long_map.contains(next_arg)
-                        || next_arg == "settings-file") {
+                        || m_long_map.contains(next_arg)) {
 
                         if (next_val.empty()) {
                             if (arg_deque.empty()) {
@@ -96,8 +113,9 @@ namespace cppfind {
                             const long long_val = std::stol(next_val);
                             arg_tokens.emplace_back(long_arg, ARG_TOKEN_TYPE_LONG, long_val);
                         } else {
-                            // settings-file
-                            arg_tokens.emplace_back(next_arg, ARG_TOKEN_TYPE_STR, next_val);
+                            std::string msg{"Invalid option: "};
+                            msg.append(next_arg);
+                            throw FindException(msg);
                         }
                     } else {
                         std::string msg{"Invalid option: "};
@@ -136,7 +154,7 @@ namespace cppfind {
                     std::string msg{"Invalid value for option: " + name};
                     throw FindException(msg);
                 }
-            } else if (m_str_map.contains(name) || name == "settings-file") {
+            } else if (m_str_map.contains(name)) {
                 if (it->value.IsString()) {
                     auto s = std::string(it->value.GetString());
                     arg_tokens.emplace_back(name, ARG_TOKEN_TYPE_STR, s);
