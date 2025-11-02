@@ -5,30 +5,42 @@ import 'package:dartfind/src/arg_tokenizer.dart';
 import 'package:dartfind/src/common.dart';
 import 'package:dartfind/src/config.dart' show findOptionsPath;
 import 'package:dartfind/src/file_types.dart';
-import 'package:dartfind/src/file_util.dart';
 import 'package:dartfind/src/find_exception.dart';
 import 'package:dartfind/src/find_settings.dart';
 
-class FindOption {
-  final String? shortArg;
-  final String longArg;
-  final String desc;
+class FindOption implements Option {
+  final String? _shortArg;
+  final String _longArg;
+  final String _desc;
+  final ArgTokenType _argType;
 
-  const FindOption(this.shortArg, this.longArg, this.desc);
+  const FindOption(this._shortArg, this._longArg, this._desc, this._argType);
+
+  @override
+  String? shortArg() => _shortArg;
+
+  @override
+  String longArg() => _longArg;
+
+  @override
+  String desc() => _desc;
+
+  @override
+  ArgTokenType argType() => _argType;
 
   String sortArg() {
-    if (shortArg == null) {
-      return longArg.toLowerCase();
+    if (_shortArg == null) {
+      return _longArg.toLowerCase();
     } else {
-      return '${shortArg!.toLowerCase()}@${longArg.toLowerCase()}';
+      return '${_shortArg!.toLowerCase()}@${_longArg.toLowerCase()}';
     }
   }
 
   String optString() {
-    if (shortArg == null) {
-      return '--$longArg';
+    if (_shortArg == null) {
+      return '--$_longArg';
     } else {
-      return '-$shortArg,--$longArg';
+      return '-$_shortArg,--$_longArg';
     }
   }
 }
@@ -38,14 +50,12 @@ class FindOptions {
   var boolActionMap = {};
   var stringActionMap = {};
   var intActionMap = {};
-  var longArgMap = {'path': 'path'};
   ArgTokenizer? argTokenizer;
   late Future ready;
 
   FindOptions() {
-    ready = loadFindOptionsFromJson()
-        .then((f) => setActionMaps())
-        .then((f) => setArgTokenizer());
+    setActionMaps();
+    ready = loadFindOptionsFromJson().then((f) => setArgTokenizer());
   }
 
   Future<void> loadFindOptionsFromJson() async {
@@ -55,15 +65,26 @@ class FindOptions {
       var soList = soMap['findoptions']! as List;
       for (var so in soList) {
         var longArg = (so as Map)['long']!;
-        longArgMap[longArg] = longArg;
         var desc = (so)['desc']!;
         String? shortArg;
         if ((so).containsKey('short')) {
           shortArg = (so)['short']!;
-          longArgMap[shortArg!] = longArg;
         }
-        findOptions.add(FindOption(shortArg, longArg, desc));
+        var argType = ArgTokenType.unknownType;
+        if (boolActionMap.containsKey(longArg)) {
+          argType = ArgTokenType.boolType;
+        } else if (stringActionMap.containsKey(longArg) ||
+            longArg == 'settings-file') {
+          argType = ArgTokenType.stringType;
+        } else if (intActionMap.containsKey(longArg)) {
+          argType = ArgTokenType.intType;
+        } else {
+          throw FindException('No action for option: $longArg');
+        }
+        findOptions.add(FindOption(shortArg, longArg, desc, argType));
       }
+      // Add path manually since it's not in findoptions.json
+      findOptions.add(FindOption(null, 'path', '', ArgTokenType.stringType));
     }
   }
 
@@ -139,28 +160,7 @@ class FindOptions {
   }
 
   void setArgTokenizer() {
-    Map<String, String> boolMap = {};
-    Map<String, String> stringMap = {'path': 'path'};
-    Map<String, String> intMap = {};
-    for (var o in findOptions) {
-      if (boolActionMap.containsKey(o.longArg)) {
-        boolMap[o.longArg] = o.longArg;
-        if (o.shortArg != null) {
-          boolMap[o.shortArg!] = o.longArg;
-        }
-      } else if (stringActionMap.containsKey(o.longArg)) {
-        stringMap[o.longArg] = o.longArg;
-        if (o.shortArg != null) {
-          stringMap[o.shortArg!] = o.longArg;
-        }
-      } else if (intActionMap.containsKey(o.longArg)) {
-        intMap[o.longArg] = o.longArg;
-        if (o.shortArg != null) {
-          intMap[o.shortArg!] = o.longArg;
-        }
-      }
-    }
-    argTokenizer = ArgTokenizer(boolMap, stringMap, intMap);
+    argTokenizer = ArgTokenizer(findOptions);
   }
 
   Future<void> updateSettingsFromArgTokens(
@@ -204,17 +204,8 @@ class FindOptions {
 
   Future<void> updateSettingsFromFile(
       FindSettings settings, String filePath) async {
-    var expandedPath = FileUtil.expandPath(filePath);
-    if (FileSystemEntity.typeSync(expandedPath) ==
-        FileSystemEntityType.notFound) {
-      throw FindException('Settings file not found: $filePath');
-    }
-    if (expandedPath.endsWith('.json')) {
-      var contents = await File(expandedPath).readAsString();
-      await updateSettingsFromJson(settings, contents);
-    } else {
-      throw FindException('Invalid settings file (must be JSON): $filePath');
-    }
+    List<ArgToken> argTokens = await argTokenizer!.tokenizeFile(filePath);
+    await updateSettingsFromArgTokens(settings, argTokens);
   }
 
   Future<void> updateSettingsFromArgs(
@@ -238,13 +229,14 @@ class FindOptions {
       var s = 'Usage:\n'
           ' dartfind [options] <path> [<path> ...]\n\n'
           'Options:\n';
+      findOptions.removeWhere((o) => o.longArg() == 'path');
       findOptions.sort((o1, o2) => o1.sortArg().compareTo(o2.sortArg()));
       var optStrings = findOptions.map((so) => so.optString()).toList();
       var longest = optStrings.reduce((value, optString) =>
           (optString.length > value.length) ? optString : value);
       for (var i = 0; i < findOptions.length; i++) {
         s += ' ${optStrings[i].padRight(longest.length + 2, ' ')}';
-        s += '${findOptions[i].desc}\n';
+        s += '${findOptions[i].desc()}\n';
       }
       return s;
     });

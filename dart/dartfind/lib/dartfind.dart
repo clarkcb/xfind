@@ -1,3 +1,4 @@
+export 'src/arg_tokenizer.dart';
 export 'src/common.dart';
 export 'src/config.dart';
 export 'src/console_color.dart';

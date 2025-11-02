@@ -1,12 +1,21 @@
 import 'dart:convert' show json;
 import 'dart:io';
 
+import 'package:dartfind/src/file_util.dart';
 import 'package:dartfind/src/find_exception.dart';
 
 enum ArgTokenType {
+  unknownType,
   boolType,
   stringType,
   intType,
+}
+
+abstract class Option {
+  String? shortArg();
+  String longArg();
+  String desc();
+  ArgTokenType argType();
 }
 
 class ArgToken {
@@ -22,8 +31,26 @@ class ArgTokenizer {
   var stringMap = {};
   var intMap = {};
 
-  ArgTokenizer(Map<String, String> this.boolMap,
-      Map<String, String> this.stringMap, Map<String, String> this.intMap) {}
+  ArgTokenizer(List<Option> options) {
+    for (var o in options) {
+      if (o.argType() == ArgTokenType.boolType) {
+        boolMap[o.longArg()] = o.longArg();
+        if (o.shortArg() != null) {
+          boolMap[o.shortArg()!] = o.longArg();
+        }
+      } else if (o.argType() == ArgTokenType.stringType) {
+        stringMap[o.longArg()] = o.longArg();
+        if (o.shortArg() != null) {
+          stringMap[o.shortArg()!] = o.longArg();
+        }
+      } else if (o.argType() == ArgTokenType.intType) {
+        intMap[o.longArg()] = o.longArg();
+        if (o.shortArg() != null) {
+          intMap[o.shortArg()!] = o.longArg();
+        }
+      }
+    }
+  }
 
   List<ArgToken> tokenizeArgs(List<String> args) {
     var argTokens = <ArgToken>[];
@@ -61,11 +88,9 @@ class ArgTokenizer {
 
         for (var argName in argNames) {
           if (boolMap.containsKey(argName)) {
-            argTokens
-                .add(ArgToken(argName, ArgTokenType.boolType, true));
+            argTokens.add(ArgToken(argName, ArgTokenType.boolType, true));
           } else if (stringMap.containsKey(argName) ||
-              intMap.containsKey(argName) ||
-              argName == 'settings-file') {
+              intMap.containsKey(argName)) {
             if (argVal == null) {
               if (it.moveNext()) {
                 argVal = it.current;
@@ -73,12 +98,11 @@ class ArgTokenizer {
                 throw FindException('Missing value for option $arg');
               }
             }
-            if (stringMap.containsKey(argName) || argName == 'settings-file') {
-              argTokens
-                  .add(ArgToken(argName, ArgTokenType.stringType, argVal));
+            if (stringMap.containsKey(argName)) {
+              argTokens.add(ArgToken(argName, ArgTokenType.stringType, argVal));
             } else {
-              argTokens
-                  .add(ArgToken(argName, ArgTokenType.intType, int.parse(argVal)));
+              argTokens.add(
+                  ArgToken(argName, ArgTokenType.intType, int.parse(argVal)));
             }
           } else {
             throw FindException('Invalid option: $arg');
@@ -93,55 +117,41 @@ class ArgTokenizer {
 
   List<ArgToken> tokenizeMap(Map<String, dynamic> argMap) {
     var argTokens = <ArgToken>[];
-      var keys = argMap.keys.toList();
-      // keys are sorted so that output is consistent across all versions
-      keys.sort();
-      for (var key in keys) {
-        var value = argMap[key];
-        if (boolMap.containsKey(key)) {
-          if (value is bool) {
-            argTokens.add(ArgToken(key, ArgTokenType.boolType, value));
-          } else {
-            throw FindException('Invalid value for option: $key');
-          }
-        } else if (stringMap.containsKey(key) || key == 'settings-file') {
-          if (value is String) {
-            argTokens.add(ArgToken(key, ArgTokenType.stringType, value));
-          } else if (value is List) {
-            for (var item in value) {
-              if (item is String) {
-                argTokens.add(ArgToken(key, ArgTokenType.stringType, item));
-              } else {
-                throw FindException('Invalid value for option: $key');
-              }
-            }
-          } else {
-            throw FindException('Invalid value for option: $key');
-          }
-        } else if (intMap.containsKey(key)) {
-          if (value is int) {
-            argTokens.add(ArgToken(key, ArgTokenType.intType, value));
-          } else {
-            throw FindException('Invalid value for option: $key');
-          }
-        // } else if (key == 'settings-file') {
-        //   if (value is String) {
-        //     await updateSettingsFromFile(settings, value);
-        //   } else if (value is List) {
-        //     for (var item in value) {
-        //       if (item is String) {
-        //         await updateSettingsFromFile(settings, item);
-        //       } else {
-        //         throw FindException('Invalid value for option: $key');
-        //       }
-        //     }
-        //   } else {
-        //     throw FindException('Invalid value for option: $key');
-        //   }
+    var keys = argMap.keys.toList();
+    // keys are sorted so that output is consistent across all versions
+    keys.sort();
+    for (var key in keys) {
+      var value = argMap[key];
+      if (boolMap.containsKey(key)) {
+        if (value is bool) {
+          argTokens.add(ArgToken(key, ArgTokenType.boolType, value));
         } else {
-          throw FindException('Invalid option: $key');
+          throw FindException('Invalid value for option: $key');
         }
+      } else if (stringMap.containsKey(key)) {
+        if (value is String) {
+          argTokens.add(ArgToken(key, ArgTokenType.stringType, value));
+        } else if (value is List) {
+          for (var item in value) {
+            if (item is String) {
+              argTokens.add(ArgToken(key, ArgTokenType.stringType, item));
+            } else {
+              throw FindException('Invalid value for option: $key');
+            }
+          }
+        } else {
+          throw FindException('Invalid value for option: $key');
+        }
+      } else if (intMap.containsKey(key)) {
+        if (value is int) {
+          argTokens.add(ArgToken(key, ArgTokenType.intType, value));
+        } else {
+          throw FindException('Invalid value for option: $key');
+        }
+      } else {
+        throw FindException('Invalid option: $key');
       }
+    }
     return argTokens;
   }
 
@@ -150,19 +160,17 @@ class ArgTokenizer {
     return tokenizeMap(jsonMap.cast<String, dynamic>());
   }
 
-  // Note: this method is async because it reads a file, but it returns
-  // a List<ArgToken> rather than a Future<List<ArgToken>> because
-  // List<ArgToken> tokenizeFile(String filePath) {
-  //   var expandedPath = FileUtil.expandPath(filePath);
-  //   if (FileSystemEntity.typeSync(expandedPath) ==
-  //       FileSystemEntityType.notFound) {
-  //     throw FindException('Settings file not found: $filePath');
-  //   }
-  //   if (expandedPath.endsWith('.json')) {
-  //     var contents = await File(expandedPath).readAsString();
-  //     return tokenizeJson(contents);
-  //   } else {
-  //     throw FindException('Invalid settings file (must be JSON): $filePath');
-  //   }
-  // }
+  Future<List<ArgToken>> tokenizeFile(String filePath) async {
+    var expandedPath = FileUtil.expandPath(filePath);
+    if (FileSystemEntity.typeSync(expandedPath) ==
+        FileSystemEntityType.notFound) {
+      throw FindException('Settings file not found: $filePath');
+    }
+    if (expandedPath.endsWith('.json')) {
+      var contents = await File(expandedPath).readAsString();
+      return tokenizeJson(contents);
+    } else {
+      throw FindException('Invalid settings file (must be JSON): $filePath');
+    }
+  }
 }
