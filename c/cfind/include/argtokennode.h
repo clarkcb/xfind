@@ -2,12 +2,12 @@
 #define ARGTOKENNODE_H
 
 #include <stdbool.h>
-#include <stdlib.h>
 
-#define ARG_TOKEN_TYPE_BOOL 0
-#define ARG_TOKEN_TYPE_STR  1
-#define ARG_TOKEN_TYPE_INT  2
-#define ARG_TOKEN_TYPE_LONG 3
+#define ARG_TOKEN_TYPE_UNKNOWN 0
+#define ARG_TOKEN_TYPE_BOOL    1
+#define ARG_TOKEN_TYPE_STR     2
+#define ARG_TOKEN_TYPE_INT     3
+#define ARG_TOKEN_TYPE_LONG    4
 
 union TokenValue {
     char *string_val;

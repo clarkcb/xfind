@@ -1,12 +1,11 @@
 #include <assert.h>
 #include <ctype.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <time.h>
 #include <cjson/cJSON.h>
 
-#include "argtokennode.h"
+#include "argtokenizer.h"
 #include "common.h"
 #include "config.h"
 #include "filetypes.h"
@@ -130,43 +129,24 @@ char **long_option_abbrs = (char *[]) {
     ""   // minsize
 };
 
-FindOption *new_find_option(const char *long_arg, const char *short_arg, const char *desc)
+FindOption *new_find_option(const char *long_arg, const char *short_arg, const char *desc, const int arg_type)
 {
-    FindOption *o = malloc(sizeof(FindOption));
-    assert(o != NULL);
-    o->long_arg = long_arg;
-    o->short_arg = short_arg;
-    o->description = desc;
-    return o;
+    return new_option(long_arg, short_arg, desc, arg_type);
 }
 
 FindOptions *empty_find_options(void)
 {
-    FindOptions *options = malloc(sizeof(FindOptions));
-    options->option = NULL;
-    options->next = NULL;
-    return options;
+    return empty_options();
 }
 
 FindOptions *new_find_options(FindOption *o)
 {
-    FindOptions *options = malloc(sizeof(FindOptions));
-    options->option = o;
-    options->next = NULL;
-    return options;
+    return new_options(o);
 }
 
 void add_to_find_options(FindOption *o, FindOptions *options)
 {
-    if (options->option == NULL) {
-        options->option = o;
-    } else {
-        FindOptions *temp = options;
-        while (temp->next != NULL) {
-            temp = temp->next;
-        }
-        temp->next = new_find_options(o);
-    }
+    add_to_options(o, options);
 }
 
 static error_t parse_find_options(const char * const findoptions_json_str, FindOptions *options)
@@ -188,6 +168,9 @@ static error_t parse_find_options(const char * const findoptions_json_str, FindO
 
     findoptions_json = cJSON_GetObjectItemCaseSensitive(file_json, "findoptions");
     cJSON_ArrayForEach(findoption_json, findoptions_json) {
+        if (err != E_OK) {
+            goto end;
+        }
         const cJSON *long_json = NULL;
         const cJSON *short_json = NULL;
         const cJSON *desc_json = NULL;
@@ -199,29 +182,58 @@ static error_t parse_find_options(const char * const findoptions_json_str, FindO
              && (cJSON_IsString(desc_json) && (desc_json->valuestring != NULL))) {
 
             size_t long_len = strnlen(long_json->valuestring, 100);
-            char *longarg = malloc((long_len + 1) * sizeof(char));
-            strncpy(longarg, long_json->valuestring, long_len);
-            longarg[long_len] = '\0';
+            char *long_arg = malloc((long_len + 1) * sizeof(char));
+            assert(long_arg != NULL);
+            strncpy(long_arg, long_json->valuestring, long_len);
+            long_arg[long_len] = '\0';
 
             size_t desc_len = strnlen(desc_json->valuestring, 1024);
             char *desc = malloc((desc_len + 1) * sizeof(char));
+            assert(desc != NULL);
             strncpy(desc, desc_json->valuestring, desc_len);
             desc[desc_len] = '\0';
 
-            char *shortarg = NULL;
+            char *short_arg = NULL;
             if (cJSON_IsString(short_json) && (short_json->valuestring != NULL)) {
-                shortarg = malloc(2);
-                strncpy(shortarg, short_json->valuestring, 1);
-                shortarg[1] = '\0';
+                short_arg = malloc(2);
+                assert(short_arg != NULL);
+                strncpy(short_arg, short_json->valuestring, 1);
+                short_arg[1] = '\0';
             }
 
-            FindOption *o = new_find_option(longarg, shortarg, desc);
+            int arg_type = ARG_TOKEN_TYPE_UNKNOWN;
+            const int bool_idx = index_of_string_in_array(long_arg, bool_option_names, bool_option_count);
+            if (bool_idx > -1) {
+                arg_type = ARG_TOKEN_TYPE_BOOL;
+            } else {
+                const int str_idx = index_of_string_in_array(long_arg, string_option_names, string_option_count);
+                if (str_idx > -1) {
+                    arg_type = ARG_TOKEN_TYPE_STR;
+                } else {
+                    const int int_idx = index_of_string_in_array(long_arg, int_option_names, int_option_count);
+                    if (int_idx > -1) {
+                        arg_type = ARG_TOKEN_TYPE_INT;
+                    } else {
+                        const int long_idx = index_of_string_in_array(long_arg, long_option_names, long_option_count);
+                        if (long_idx > -1) {
+                            arg_type = ARG_TOKEN_TYPE_LONG;
+                        } else {
+                            err = E_INVALID_OPTION;
+                        }
+                    }
+                }
+            }
+
+            FindOption *o = new_find_option(long_arg, short_arg, desc, arg_type);
             add_to_find_options(o, options);
         }
     }
 
 end:
     cJSON_Delete(file_json);
+    if (err != E_OK) {
+        destroy_find_options(options);
+    }
     return err;
 }
 
@@ -262,6 +274,17 @@ error_t get_find_options(FindOptions *options)
         free(full_path);
         return err;
     }
+
+    // Add path option (not in JSON)
+    char *path = malloc(5 * sizeof(char));
+    assert(path != NULL);
+    strncpy(path, "path", 4);
+    path[4] = '\0';
+    char *desc = malloc(1 * sizeof(char));
+    assert(desc != NULL);
+    desc[0] = '\0';
+    FindOption *o = new_find_option(path, NULL, desc, ARG_TOKEN_TYPE_STR);
+    add_to_find_options(o, options);
 
     err = parse_find_options(contents, options);
 
@@ -409,9 +432,8 @@ static error_t set_string_setting(const int str_idx, const char *str_val, FindSe
             memset(&tm, 0, sizeof(tm));
             if (strptime(str_val, "%Y-%m-%d", &tm) == NULL) {
                 return E_INVALID_DATESTRING;
-            } else {
-                settings->min_last_mod = mktime(&tm);
             }
+            settings->min_last_mod = mktime(&tm);
         } 
         break;
     case OUT_ARCHIVE_EXT:
@@ -467,13 +489,6 @@ static error_t set_string_setting(const int str_idx, const char *str_val, FindSe
             }
         }
         break;
-    case SETTINGS_FILE:
-        // this is just to wrap in an expression
-        if (str_val) {
-            const error_t err = settings_from_json_file(str_val, settings);
-            if (err != E_OK) return err;
-        }
-        break;
     case SORT_BY:
         // this is just to wrap in an expression
         if (str_val) {
@@ -515,159 +530,7 @@ static error_t set_long_setting(const int long_idx, const unsigned long long_val
     return E_OK;
 }
 
-error_t tokenize_args(const int argc, char *argv[], ArgTokenNode *arg_token_node)
-{
-    int i = 0;
-    while (i < argc) {
-        const size_t arglen = strnlen(argv[i], MAX_STRING_LENGTH);
-        if (arglen < 1) {
-            return E_INVALID_ARG;
-        }
-        if (argv[i][0] == '-') {
-            unsigned int c = 1;
-            while (c < arglen && argv[i][c] == '-') {
-                c++;
-            }
-            if (c == arglen) {
-                return E_INVALID_ARG;
-            }
-
-            // Adjust arg_name in case it includes '=' + val
-            size_t arg_name_len = arglen - c + 1;
-            const char *eq_ptr = strchr(argv[i], '=');
-            if (eq_ptr != NULL) {
-                arg_name_len = eq_ptr - argv[i] - c;
-            }
-            char arg_name[arg_name_len];
-            strncpy(arg_name, argv[i] + c, arg_name_len);
-            arg_name[arg_name_len] = '\0';
-
-            // If c == 2 then it's a long arg, else short arg
-            if (c == 2) {
-                const int bool_idx = index_of_string_in_array(arg_name, bool_option_names, bool_option_count);
-                if (bool_idx > -1) {
-                    ArgToken *a = new_bool_arg_token(arg_name, 1);
-                    add_arg_token_to_arg_token_node(a, arg_token_node);
-                    i++;
-                } else {
-                    // If eq_ptr != NULL, get arg_val from end of argv[i], else from argv[i+1]
-                    size_t arg_val_len = 0;
-                    char *arg_val = NULL;
-                    if (eq_ptr != NULL) {
-                        arg_val_len = strnlen(eq_ptr, MAX_STRING_LENGTH);
-                        char argv_val[arg_val_len];
-                        strncpy(argv_val, eq_ptr + 1, arg_val_len);
-                        argv_val[arg_val_len] = '\0';
-                        arg_val = strdup(argv_val);
-                        i += 1;
-                    } else if (i < argc - 1) {
-                        arg_val_len = strnlen(argv[i+1], MAX_STRING_LENGTH);
-                        if (arg_val_len > 0) {
-                            arg_val = strdup(argv[i+1]);
-                            i += 2;
-                        } else {
-                            return E_INVALID_ARG;
-                        }
-                    }
-
-                    // check str options
-                    const int str_idx = index_of_string_in_array(arg_name, string_option_names, string_option_count);
-                    if (str_idx > -1) {
-                        if (arg_val_len == 0) return E_MISSING_ARG_FOR_OPTION;
-                        ArgToken *a = new_str_arg_token(arg_name, arg_val);
-                        add_arg_token_to_arg_token_node(a, arg_token_node);
-                    } else {
-                        // check int options
-                        const int int_idx = index_of_string_in_array(arg_name, int_option_names, int_option_count);
-                        if (int_idx > -1) {
-                            if (arg_val_len == 0) return E_MISSING_ARG_FOR_OPTION;
-                            char *end_ptr = NULL;
-                            const int int_val = (int)strtol(arg_val, &end_ptr, 10);
-                            ArgToken *a = new_int_arg_token(arg_name, int_val);
-                            add_arg_token_to_arg_token_node(a, arg_token_node);
-                        } else {
-                            // check long options
-                            const int long_idx = index_of_string_in_array(arg_name, long_option_names, long_option_count);
-                            if (long_idx > -1) {
-                                if (arg_val_len == 0) return E_MISSING_ARG_FOR_OPTION;
-                                char *end_ptr = NULL;
-                                const long long_val = strtol(arg_val, &end_ptr, 10);
-                                ArgToken *a = new_long_arg_token(arg_name, long_val);
-                                add_arg_token_to_arg_token_node(a, arg_token_node);
-                            } else {
-                                return E_INVALID_OPTION;
-                            }
-                        }
-                    }
-                }
-            } else {
-                // Process short args, each char separately
-                for (int j = 1; j < arg_name_len; j++) {
-                    char short_arg[2];
-                    short_arg[0] = argv[i][j];
-                    short_arg[1] = '\0';
-
-                    const int bool_idx = index_of_string_in_array(short_arg, bool_option_abbrs, bool_option_count);
-                    if (bool_idx > -1) {
-                        const char *long_name = bool_option_names[bool_idx];
-                        ArgToken *a = new_bool_arg_token(long_name, 1);
-                        add_arg_token_to_arg_token_node(a, arg_token_node);
-                    } else {
-                        char *arg_val = NULL;
-                        if (i < argc - 1) {
-                            if (strnlen(argv[i+1], MAX_STRING_LENGTH) > 0) {
-                                arg_val = argv[i+1];
-                                i += 1;
-                            } else {
-                                return E_INVALID_ARG;
-                            }
-                        }
-
-                        const int str_idx = index_of_string_in_array(short_arg, string_option_abbrs, string_option_count);
-                        if (str_idx > -1) {
-                            if (arg_val == NULL) return E_MISSING_ARG_FOR_OPTION;
-                            const char *long_name = string_option_names[str_idx];
-                            ArgToken *a = new_str_arg_token(long_name, arg_val);
-                            add_arg_token_to_arg_token_node(a, arg_token_node);
-                        } else {
-                            // check int options
-                            const int int_idx = index_of_string_in_array(short_arg, int_option_abbrs, int_option_count);
-                            if (int_idx > -1) {
-                                if (arg_val == NULL) return E_MISSING_ARG_FOR_OPTION;
-                                char *end_ptr = NULL;
-                                const int int_val = (int)strtol(arg_val, &end_ptr, 10);
-                                const char *long_name = int_option_names[int_idx];
-                                ArgToken *a = new_int_arg_token(long_name, int_val);
-                                add_arg_token_to_arg_token_node(a, arg_token_node);
-                            } else {
-                                // check long options
-                                const int long_idx = index_of_string_in_array(short_arg, long_option_abbrs, long_option_count);
-                                if (long_idx > -1) {
-                                    if (arg_val == NULL) return E_MISSING_ARG_FOR_OPTION;
-                                    char *end_ptr = NULL;
-                                    const long long_val = strtol(arg_val, &end_ptr, 10);
-                                    const char *long_name = long_option_names[long_idx];
-                                    ArgToken *a = new_long_arg_token(long_name, long_val);
-                                    add_arg_token_to_arg_token_node(a, arg_token_node);
-                                } else {
-                                    return E_INVALID_OPTION;
-                                }
-                            }
-                        }
-                    }
-                }
-                i++;
-            }
-        } else {
-            ArgToken *a = new_str_arg_token("path", argv[i]);
-            add_arg_token_to_arg_token_node(a, arg_token_node);
-            i++;
-        }
-    }
-    return E_OK;
-}
-
-error_t update_settings_from_arg_token_node(const ArgTokenNode *arg_token_node, FindSettings *settings)
+error_t update_settings_from_arg_token_node(const ArgTokenNode *arg_token_node, FindOptions *options, FindSettings *settings)
 {
     const ArgTokenNode *temp = arg_token_node;
     while (temp != NULL && temp->token != NULL) {
@@ -680,12 +543,17 @@ error_t update_settings_from_arg_token_node(const ArgTokenNode *arg_token_node, 
                 return E_INVALID_OPTION;
             }
         } else if (temp->token->token_type == ARG_TOKEN_TYPE_STR) {
-            const int str_idx = index_of_string_in_array(temp->token->name, string_option_names, string_option_count);
-            if (str_idx > -1) {
-                const error_t e = set_string_setting(str_idx, temp->token->value.string_val, settings);
+            if (strcmp(temp->token->name, "settings-file") == 0) {
+                const error_t e = settings_from_json_file(temp->token->value.string_val, options, settings);
                 if (e != E_OK) return e;
             } else {
-                return E_INVALID_OPTION;
+                const int str_idx = index_of_string_in_array(temp->token->name, string_option_names, string_option_count);
+                if (str_idx > -1) {
+                    const error_t e = set_string_setting(str_idx, temp->token->value.string_val, settings);
+                    if (e != E_OK) return e;
+                } else {
+                    return E_INVALID_OPTION;
+                }
             }
         } else if (temp->token->token_type == ARG_TOKEN_TYPE_INT) {
             const int int_idx = index_of_string_in_array(temp->token->name, int_option_names, int_option_count);
@@ -709,232 +577,95 @@ error_t update_settings_from_arg_token_node(const ArgTokenNode *arg_token_node, 
     return E_OK;
 }
 
-error_t settings_from_args(const int argc, char *argv[], FindSettings *settings)
+error_t settings_from_args(const int argc, char *argv[], FindOptions *options, FindSettings *settings)
 {
     ArgTokenNode *arg_token_node = empty_arg_token_node();
-    error_t err = tokenize_args(argc, argv, arg_token_node);
+    error_t err = tokenize_args(argc, argv, options, arg_token_node);
     if (err != E_OK) return err;
     settings->print_files = 1;
-    err = update_settings_from_arg_token_node(arg_token_node, settings);
+    err = update_settings_from_arg_token_node(arg_token_node, options, settings);
     destroy_arg_token_node(arg_token_node);
     return err;
 }
 
-error_t tokenize_json_obj(const cJSON *settings_json, ArgTokenNode *arg_token_node)
-{
-    const cJSON *setting_json = NULL;
-
-    cJSON_ArrayForEach(setting_json, settings_json) {
-        int idx = index_of_string_in_array(setting_json->string, string_option_names, STRING_OPTION_COUNT);
-        if (idx > -1) {
-            if (cJSON_IsString(setting_json) && setting_json->valuestring != NULL) {
-                ArgToken *a = new_str_arg_token(setting_json->string, setting_json->valuestring);
-                add_arg_token_to_arg_token_node(a, arg_token_node);
-            } else if (cJSON_IsArray(setting_json)) {
-                // Add each element of array
-                const cJSON *elem_json = NULL;
-                cJSON_ArrayForEach(elem_json, setting_json) {
-                    if (cJSON_IsString(elem_json) && elem_json->valuestring != NULL) {
-                        ArgToken *a = new_str_arg_token(setting_json->string, elem_json->valuestring);
-                        add_arg_token_to_arg_token_node(a, arg_token_node);
-                    }
-                }
-            } else {
-                return E_INVALID_ARG_FOR_OPTION;
-            }
-        } else {
-            idx = index_of_string_in_array(setting_json->string, bool_option_names, BOOL_OPTION_COUNT);
-            if (idx > -1) {
-                if (cJSON_IsBool(setting_json)) {
-                    const int flag = cJSON_IsTrue(setting_json) ? 1 : 0;
-                    ArgToken *a = new_bool_arg_token(setting_json->string, flag);
-                    add_arg_token_to_arg_token_node(a, arg_token_node);
-                } else {
-                    return E_INVALID_ARG_FOR_OPTION;
-                }
-            } else {
-                idx = index_of_string_in_array(setting_json->string, int_option_names, INT_OPTION_COUNT);
-                if (idx > -1) {
-                    if (cJSON_IsNumber(setting_json)) {
-                        ArgToken *a = new_int_arg_token(setting_json->string, setting_json->valueint);
-                        add_arg_token_to_arg_token_node(a, arg_token_node);
-                    } else {
-                        return E_INVALID_ARG_FOR_OPTION;
-                    }
-                } else {
-                    idx = index_of_string_in_array(setting_json->string, long_option_names, LONG_OPTION_COUNT);
-                    if (idx > -1) {
-                        if (cJSON_IsNumber(setting_json)) {
-                            ArgToken *a = new_long_arg_token(setting_json->string, setting_json->valueint);
-                            add_arg_token_to_arg_token_node(a, arg_token_node);
-                        } else {
-                            return E_INVALID_ARG_FOR_OPTION;
-                        }
-                    } else {
-                        return E_INVALID_OPTION;
-                    }
-                }
-            }
-        }
-    }
-
-    return E_OK;
-}
-
-error_t settings_from_json_obj(const cJSON *settings_json, FindSettings *settings)
+error_t settings_from_json_obj(const cJSON *settings_json, FindOptions *options, FindSettings *settings)
 {
     ArgTokenNode *arg_token_node = empty_arg_token_node();
-    error_t err = tokenize_json_obj(settings_json, arg_token_node);
+    error_t err = tokenize_json_obj(settings_json, options, arg_token_node);
     if (err != E_OK) return err;
-    err = update_settings_from_arg_token_node(arg_token_node, settings);
+    err = update_settings_from_arg_token_node(arg_token_node, options, settings);
     destroy_arg_token_node(arg_token_node);
     return err;
 }
 
-error_t settings_from_json_string(const char *settings_json_str, FindSettings *settings)
+error_t settings_from_json_string(const char *settings_json_str, FindOptions *options, FindSettings *settings)
 {
-    cJSON *settings_json = NULL;
-
-    error_t err = E_OK;
-
-    settings_json = cJSON_Parse(settings_json_str);
-    if (settings_json == NULL || cJSON_IsInvalid(settings_json)) {
-        // const char *error_ptr = cJSON_GetErrorPtr();
-        // if (error_ptr != NULL) {
-        //     fprintf(stderr, "Error before: %s\n", error_ptr);
-        // }
-        err = E_JSON_PARSE_ERROR;
-        goto end;
-    }
-
-    // Verify that settings_json is an object
-    if (!cJSON_IsObject(settings_json)) {
-        err = E_INVALID_ARG;
-        goto end;
-    }
-
-    err = settings_from_json_obj(settings_json, settings);
-
-end:
-    cJSON_Delete(settings_json);
+    ArgTokenNode *arg_token_node = empty_arg_token_node();
+    error_t err = tokenize_json_string(settings_json_str, options, arg_token_node);
+    if (err != E_OK) return err;
+    err = update_settings_from_arg_token_node(arg_token_node, options, settings);
+    destroy_arg_token_node(arg_token_node);
     return err;
 }
 
-error_t settings_from_json_file(const char *settings_json_file_path, FindSettings *settings) {
-    error_t err = E_OK;
-
-    // TODO: expand path before checking if exists
-    const size_t path_len = strnlen(settings_json_file_path, MAX_PATH_LENGTH);
-    char *expanded_path = malloc(path_len * 2 + 1);
-    expanded_path[0] = '\0';
-    expand_path(settings_json_file_path, &expanded_path);
-
-    if (!dir_or_file_exists(expanded_path)) {
-        err = E_FILE_NOT_FOUND;
-        free(expanded_path);
-        return err;
-    }
-
-    // Verify json file (has .json extension)
-    const size_t file_path_len = strlen(settings_json_file_path);
-    if (file_path_len < 6 || strcmp(settings_json_file_path + file_path_len - 5, ".json") != 0) {
-        err = E_INVALID_ARG;
-        free(expanded_path);
-        return err;
-    }
-
-    // load the file
-    const long fsize = file_size(expanded_path);
-    // 5096 would be a big settings file, should be large enough for most cases
-    assert(fsize <= 5096);
-    char contents[fsize];
-    contents[0] = '\0';
-    FILE *fp = fopen(expanded_path, "r");
-    int c;
-    if (fp != NULL) {
-        while((c = getc(fp)) != EOF) {
-            strcat(contents, (char *)&c);
-        }
-        fclose(fp);
-    } else {
-        size_t err_size = 16 + strnlen(expanded_path, MAX_PATH_LENGTH) * sizeof(char);
-        char err_msg[err_size];
-        err_msg[0] = '\0';
-        sprintf(err_msg, "Unable to load %s", settings_json_file_path);
-        err = E_UNKNOWN_ERROR;
-        free(expanded_path);
-        return err;
-    }
-
-    free(expanded_path);
-    return settings_from_json_string(contents, settings);
+error_t settings_from_json_file(const char *settings_json_file_path, FindOptions *options, FindSettings *settings) {
+    ArgTokenNode *arg_token_node = empty_arg_token_node();
+    error_t err = tokenize_json_file(settings_json_file_path, options, arg_token_node);
+    if (err != E_OK) return err;
+    err = update_settings_from_arg_token_node(arg_token_node, options, settings);
+    destroy_arg_token_node(arg_token_node);
+    return err;
 }
 
 size_t find_options_count(FindOptions *options)
 {
-    FindOptions *temp = options;
-    size_t optcount = 0;
-    while (temp != NULL && temp->option != NULL) {
-        optcount++;
-        temp = temp->next;
-    }
-    return optcount;
+    return options_count(options);
 }
 
-// get the "opt" ("-s,--long") strnlen for the option
-static size_t get_option_opt_strlen(const FindOption *o)
+// get the "args" ("-s,--long") strnlen for the option
+static size_t find_option_args_strlen(const FindOption *o)
 {
     // + 2 for leading --
     size_t opt_len = strnlen(o->long_arg, 100) + 2;
     if (o->short_arg != NULL) {
+        // 3 for - + short_arg + ,
         opt_len += 3;
     }
     return opt_len;
 }
 
-static size_t get_longest_opt_strlen(FindOptions *options)
+static size_t get_longest_find_option_args_strlen(FindOptions *options)
 {
     FindOptions *temp = options;
     size_t longest_len = 0;
     while (temp != NULL && temp->option != NULL) {
-        // + 2 for leading --
-        size_t long_len = strnlen(temp->option->long_arg, 100) + 2;
-        if (temp->option->short_arg != NULL) {
-            // + 2 for leading - and ,
-            long_len += strnlen(temp->option->short_arg, 2) + 1;
-        }
-        if (long_len > longest_len) {
-            longest_len = long_len;
+        const size_t args_len = find_option_args_strlen(temp->option);
+        if (args_len > longest_len) {
+            longest_len = args_len;
         }
         temp = temp->next;
     }
     return longest_len;
 }
 
-static size_t find_option_strlen(FindOption *o)
+static size_t find_option_strlen(const FindOption *o)
 {
-    size_t optlen = strnlen(o->long_arg, 100) + strnlen(o->description, MAX_STRING_LENGTH);
-    if (o->short_arg != NULL) {
-        optlen += strnlen(o->short_arg, 2);
-    }
-    return optlen;
+    return find_option_args_strlen(o) + strnlen(o->description, MAX_STRING_LENGTH);
 }
 
-size_t find_option_usage_strlen(FindOption *o, size_t longest_opt_len)
+size_t find_option_usage_strlen(const FindOption *o, const size_t longest_args_len)
 {
-    // + 2 for two spaces between opt and description
-    size_t option_len = longest_opt_len + 2 + strnlen(o->description, MAX_STRING_LENGTH);
-    return option_len;
+    return longest_args_len + strnlen(o->description, MAX_STRING_LENGTH);
 }
 
 size_t find_options_usage_strlen(FindOptions *options)
 {
-    size_t longest_opt_len = get_longest_opt_strlen(options);
+    const size_t longest_args_len = get_longest_find_option_args_strlen(options);
     size_t usage_len = 0;
     FindOptions *temp = options;
     while (temp != NULL && temp->option != NULL) {
         // +2 for leading space + \n
-        usage_len += find_option_usage_strlen(temp->option, longest_opt_len) + 2;
+        usage_len += find_option_usage_strlen(temp->option, longest_args_len) + 2;
         temp = temp->next;
     }
     return usage_len;
@@ -970,13 +701,16 @@ static int cmp_find_option(const void *a, const void *b)
 // sort a FindOption array
 static void sort_find_option_array(FindOption **arr, size_t n)
 {
+    assert(arr != NULL);
     qsort(arr, n, sizeof(FindOption*), cmp_find_option);
 }
 
 void find_options_to_usage_string(FindOptions *options, char *s)
 {
+    assert(options != NULL);
     size_t options_count = find_options_count(options);
     FindOption **option_array = malloc(options_count * sizeof(FindOption *));
+    assert(option_array != NULL);
     FindOptions *temp = options;
     int i = 0;
     while (temp != NULL && temp->option != NULL) {
@@ -985,12 +719,15 @@ void find_options_to_usage_string(FindOptions *options, char *s)
     }
     sort_find_option_array(option_array, options_count);
 
-    size_t longest_len = get_longest_opt_strlen(options);
+    const size_t longest_len = get_longest_find_option_args_strlen(options);
     char line_format[16];
     snprintf(line_format, 16, " %%1$-%ds  %%2$s\n", (int)longest_len);
 
     for (i = 0; i < options_count; i++) {
-        size_t opt_len = get_option_opt_strlen(option_array[i]) + 1;
+        if (strcmp(option_array[i]->long_arg, "path") == 0) {
+            continue;
+        }
+        size_t opt_len = find_option_strlen(option_array[i]) + 1;
         char opt_buff[opt_len];
         if (option_array[i]->short_arg != NULL) {
             snprintf(opt_buff, opt_len, "-%s,--%s", option_array[i]->short_arg, option_array[i]->long_arg);
@@ -1010,14 +747,9 @@ void find_options_to_usage_string(FindOptions *options, char *s)
 
 }
 
-void print_usage(void)
+void print_usage_for_options(FindOptions *options)
 {
-    FindOptions *options = empty_find_options();
-    error_t err = get_find_options(options);
-    if (err) {
-        handle_error(err);
-    }
-    size_t options_len = find_options_usage_strlen(options) + 1;
+    const size_t options_len = find_options_usage_strlen(options) + 1;
     char *usage_str = malloc((options_len + 1) * sizeof(char));
     find_options_to_usage_string(options, usage_str);
     log_msg("\nUsage:\n cfind [options] <path> [<path> ...]\n\nOptions:");
@@ -1026,25 +758,24 @@ void print_usage(void)
     free(usage_str);
 }
 
+void print_usage(void)
+{
+    FindOptions *options = empty_find_options();
+    const error_t err = get_find_options(options);
+    if (err) {
+        handle_error(err);
+        destroy_find_options(options);
+        exit(EXIT_FAILURE);
+    }
+    print_usage_for_options(options);
+}
+
 void destroy_find_option(FindOption *o)
 {
-    if (o->short_arg != NULL) {
-        free(o->short_arg);
-    }
-    free(o->long_arg);
-    free(o->description);
-    free(o);
+    destroy_option(o);
 }
 
 void destroy_find_options(FindOptions *options)
 {
-    if (options != NULL) {
-        FindOptions *current = options;
-        while (current != NULL) {
-            destroy_find_option(current->option);
-            FindOptions *next = current->next;
-            free(current);
-            current = next;
-        }
-    }
+    destroy_options(options);
 }

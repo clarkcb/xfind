@@ -13,8 +13,16 @@ int main(int argc, char *argv[])
         return E_STARTPATH_NOT_DEFINED;
     }
 
+    FindOptions *options = empty_find_options();
+    error_t err = get_find_options(options);
+    if (err) {
+        handle_error(err);
+        destroy_find_options(options);
+        exit(EXIT_FAILURE);
+    }
+
     FindSettings *settings = default_settings();
-    error_t err = settings_from_args(argc - 1, ++argv, settings);
+    err = settings_from_args(argc - 1, ++argv, options, settings);
     if (err != E_OK) {
         handle_error(err);
         print_usage();

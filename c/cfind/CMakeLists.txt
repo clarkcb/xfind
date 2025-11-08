@@ -43,11 +43,13 @@ target_sources(${PROJECT_NAME}
         include/common.h src/common.c
         include/config.h src/config.c
         include/argtokennode.h src/argtokennode.c
+        include/options.h src/options.c
         include/pathnode.h src/pathnode.c
         include/fileresults.h src/fileresults.c
         include/filetypes.h src/filetypes.c
         include/fileutil.h src/fileutil.c
         include/finderr.h src/finderr.c
+        include/argtokenizer.h src/argtokenizer.c
         include/findoptions.h src/findoptions.c
         include/findsettings.h src/findsettings.c
         include/intnode.h src/intnode.c

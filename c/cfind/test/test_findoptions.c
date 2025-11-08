@@ -6,6 +6,7 @@
 #include "test_findoptions.h"
 
 #include "color.h"
+#include "findoptions.h"
 
 void test_settings_from_args(void)
 {
@@ -19,8 +20,12 @@ void test_settings_from_args(void)
 
     printf("argv: [\"-x\", \"c\", \".\"]\n");
 
+    FindOptions *options = empty_find_options();
+    error_t err = get_find_options(options);
+    assert(err == E_OK);
+
     FindSettings *settings = default_settings();
-    const error_t err = settings_from_args(argc, argv, settings);
+    err = settings_from_args(argc, argv, options, settings);
     assert(err == E_OK);
 
     assert(settings->in_extensions != NULL);
@@ -57,8 +62,12 @@ void test_settings_from_json_string(void) {
         "  \"followsymlinks\": true,\n"
         "  \"includehidden\": false\n"
         "}";
+    FindOptions *options = empty_find_options();
+    error_t err = get_find_options(options);
+    assert(err == E_OK);
+
     FindSettings *settings = default_settings();
-    const error_t err = settings_from_json_string(json_string, settings);
+    err = settings_from_json_string(json_string, options, settings);
     assert(err == E_OK);
 
     assert(settings->paths != NULL);
@@ -99,7 +108,11 @@ void test_settings_from_json_string(void) {
 void test_settings_from_json_file(void) {
     printf("\ntest_settings_from_json_file()\n");
     const char *json_file = "/Users/cary/src/xfind/shared/settings.json";
+    FindOptions *options = empty_find_options();
+    error_t err = get_find_options(options);
+    assert(err == E_OK);
+
     FindSettings *settings = default_settings();
-    const error_t err = settings_from_json_file(json_file, settings);
+    err = settings_from_json_file(json_file, options, settings);
     assert(err == E_OK);
 }

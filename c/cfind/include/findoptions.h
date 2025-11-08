@@ -5,17 +5,11 @@
 #include <stddef.h>
 
 #include "findsettings.h"
+#include "options.h"
 
-typedef struct FindOption {
-    const char *long_arg;
-    const char *short_arg;
-    const char *description;
-} FindOption;
-
-typedef struct FindOptions {
-    FindOption *option;
-    struct FindOptions *next;
-} FindOptions;
+// semantic aliases (they're equivalent to the Option/Options versions
+typedef Option FindOption;
+typedef Options FindOptions;
 
 typedef enum {
     ARCHIVES_ONLY         = 0,
@@ -73,7 +67,7 @@ typedef enum {
     MIN_SIZE                 = 1
 } SettingsLongType;
 
-FindOption *new_find_option(const char *long_arg, const char *short_arg, const char *desc);
+FindOption *new_find_option(const char *long_arg, const char *short_arg, const char *desc, int arg_type);
 
 FindOptions *empty_find_options(void);
 
@@ -85,17 +79,19 @@ error_t get_find_options(FindOptions *options);
 
 error_t settings_from_args(int argc, char *argv[], FindSettings *settings);
 
-error_t settings_from_json_string(const char *settings_json_str, FindSettings *settings);
+error_t settings_from_json_string(const char *settings_json_str, FindOptions *options, FindSettings *settings);
 
-error_t settings_from_json_file(const char *settings_json_file_path, FindSettings *settings);
+error_t settings_from_json_file(const char *settings_json_file_path, FindOptions *options, FindSettings *settings);
 
 size_t find_options_count(FindOptions *options);
 
-size_t find_option_usage_strlen(FindOption *o, size_t longest_opt_len);
+size_t find_option_usage_strlen(const FindOption *o, size_t longest_opt_len);
 
 size_t find_options_usage_strlen(FindOptions *options);
 
 void find_options_to_usage_string(FindOptions *options, char *s);
+
+void print_usage_for_options(FindOptions *options);
 
 void print_usage(void);
 

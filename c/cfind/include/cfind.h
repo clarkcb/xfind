@@ -13,6 +13,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <cjson/cJSON.h>
 #include <sys/stat.h>
 
 #include "regex.h"
@@ -539,12 +540,104 @@ void destroy_file_result(FileResult *r);
 void destroy_file_results(FileResults *results);
 
 
+// options.h
+
+typedef struct Option {
+    const char *long_arg;
+    const char *short_arg;
+    const char *description;
+    int arg_type;
+} Option;
+
+typedef struct Options {
+    Option *option;
+    struct Options *next;
+} Options;
+
+Option *new_option(const char *long_arg, const char *short_arg, const char *desc, int arg_type);
+
+Options *empty_options(void);
+
+Options *new_options(Option *o);
+
+void add_to_options(Option *o, Options *options);
+
+Option *find_option_for_long_arg(const char *arg_name, Options *options);
+
+Option *find_option_for_short_arg(const char *arg_name, Options *options);
+
+size_t options_count(Options *options);
+
+void destroy_option(Option *o);
+
+void destroy_options(Options *options);
+
+
+// argtokennode.h
+
+#define ARG_TOKEN_TYPE_UNKNOWN 0
+#define ARG_TOKEN_TYPE_BOOL    1
+#define ARG_TOKEN_TYPE_STR     2
+#define ARG_TOKEN_TYPE_INT     3
+#define ARG_TOKEN_TYPE_LONG    4
+
+union TokenValue {
+    char *string_val;
+    int int_val; // use for bool and int
+    long long_val;
+};
+
+typedef struct ArgToken {
+    char *name;
+    int token_type;
+    union TokenValue value;
+} ArgToken;
+
+typedef struct ArgTokenNode {
+    ArgToken *token;
+    struct ArgTokenNode *next;
+} ArgTokenNode;
+
+ArgToken *new_arg_token(const char *name, int token_type, union TokenValue value);
+
+ArgToken *new_str_arg_token(const char *name, const char *str_val);
+
+ArgToken *new_bool_arg_token(const char *name, int bool_val);
+
+ArgToken *new_int_arg_token(const char *name, int int_val);
+
+ArgToken *new_long_arg_token(const char *name, long long_val);
+
+void destroy_arg_token(ArgToken *a);
+
+ArgTokenNode *empty_arg_token_node(void);
+
+ArgTokenNode *new_arg_token_node(ArgToken *a);
+
+void add_arg_token_to_arg_token_node(ArgToken *a, ArgTokenNode *arg_token_node);
+
+bool is_null_or_empty_arg_token_node(const ArgTokenNode *arg_token_node);
+
+size_t arg_token_node_count(ArgTokenNode *arg_token_node);
+
+void destroy_arg_token_node(ArgTokenNode *arg_token_node);
+
+
+// argtokenizer.h
+
+error_t tokenize_args(int argc, char *argv[], Options *options, ArgTokenNode *arg_token_node);
+error_t tokenize_json_obj(const cJSON *settings_json, Options *options, ArgTokenNode *arg_token_node);
+error_t tokenize_json_string(const char *settings_json_str, Options *options, ArgTokenNode *arg_token_node);
+error_t tokenize_json_file(const char *json_file_path, Options *options, ArgTokenNode *arg_token_node);
+
+
 // findoptions.h
 
 typedef struct FindOption {
     const char *long_arg;
     const char *short_arg;
     const char *description;
+    int arg_type;
 } FindOption;
 
 typedef struct FindOptions {
@@ -608,7 +701,7 @@ typedef enum {
     MIN_SIZE                 = 1
 } SettingsLongType;
 
-FindOption *new_find_option(const char *long_arg, const char *short_arg, const char *desc);
+FindOption *new_find_option(const char *long_arg, const char *short_arg, const char *desc, int arg_type);
 
 FindOptions *empty_find_options(void);
 
@@ -665,6 +758,5 @@ error_t filter_paths_to_file_results(const Finder *finder, const PathNode *file_
 error_t find(const FindSettings *settings, FileResults *results);
 
 void destroy_finder(Finder *finder);
-
 
 #endif // CFIND_H
