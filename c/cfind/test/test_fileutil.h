@@ -1,6 +1,8 @@
 #ifndef TEST_FILEUTIL_H
 #define TEST_FILEUTIL_H
 
+#include "fileutil.h"
+
 void test_dir_or_file_exists(void);
 
 void test_get_extension(void);

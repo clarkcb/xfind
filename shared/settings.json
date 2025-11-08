@@ -1,6 +1,7 @@
 {
   "path": ["~/src/xfind/javascript/", "~/src/xfind/typescript/"],
   "in-ext": ["js", "ts"],
+  "in-archiveext": "zip",
   "out-dirpattern": [
     "_", "ansible", "bak", "build", "chef", "dist", "node_module", "target", "test", "typings", "vendor", "venv"
   ],

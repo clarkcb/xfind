@@ -17,8 +17,6 @@
 
 #include "regex.h"
 
-#include "rapidjson/document.h"
-
 
 // common.h
 

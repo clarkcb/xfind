@@ -1,6 +1,8 @@
 #ifndef TEST_SEARCHSETTINGS_H
 #define TEST_SEARCHSETTINGS_H
 
+#include "findsettings.h"
+
 void test_default_settings(void);
 
 void test_add_extensions_to_settings(void);

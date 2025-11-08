@@ -2,6 +2,7 @@
 #define PATHNODE_H
 
 #include <stdbool.h>
+#include <stddef.h>
 
 typedef struct Path {
     const char *dir;

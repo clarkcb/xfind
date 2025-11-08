@@ -1,6 +1,9 @@
 #ifndef FINDOPTIONS_H
 #define FINDOPTIONS_H
 
+#include <errno.h>
+#include <stddef.h>
+
 #include "findsettings.h"
 
 typedef struct FindOption {
@@ -80,7 +83,7 @@ void add_to_find_options(FindOption *o, FindOptions *options);
 
 error_t get_find_options(FindOptions *options);
 
-error_t settings_from_args(const int argc, char *argv[], FindSettings *settings);
+error_t settings_from_args(int argc, char *argv[], FindSettings *settings);
 
 error_t settings_from_json_string(const char *settings_json_str, FindSettings *settings);
 

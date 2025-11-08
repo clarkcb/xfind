@@ -1,6 +1,8 @@
 #ifndef TEST_FINDER_H
 #define TEST_FINDER_H
 
+#include "finder.h"
+
 void test_validate_settings(void);
 
 void test_is_matching_dir(void);
