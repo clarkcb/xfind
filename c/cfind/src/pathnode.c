@@ -1,10 +1,11 @@
 #include <assert.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
 
-#include "pathnode.h"
 #include "common.h"
 #include "fileutil.h"
+#include "pathnode.h"
 
 Path *new_path(const char *file_path)
 {

@@ -42,7 +42,7 @@ int char_count_in_string(const char c, const char *s)
 
 int index_of_char_in_string(const char c, const char *s)
 {
-    char *p = strchr(s, c);
+    const char *p = strchr(s, c);
     if (p)
         return p - s;
     return -1;
@@ -50,7 +50,7 @@ int index_of_char_in_string(const char c, const char *s)
 
 int last_index_of_char_in_string(const char c, const char *s)
 {
-    char *p = strrchr(s, c);
+    const char *p = strrchr(s, c);
     if (p)
         return (int)(p - s);
     return -1;

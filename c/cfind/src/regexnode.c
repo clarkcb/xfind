@@ -17,7 +17,7 @@ Regex *new_regex(const char *pat)
     return regex;
 }
 
-size_t regex_strlen(Regex *regex)
+size_t regex_strlen(const Regex *regex)
 {
     return strnlen(regex->pattern, 1024) + 2; // for ""
 }

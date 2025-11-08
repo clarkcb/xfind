@@ -5,6 +5,8 @@
 #include "test_fileutil.h"
 
 #include "color.h"
+#include "config.h"
+#include "fileutil.h"
 
 void test_dir_or_file_exists(void)
 {

@@ -1,11 +1,6 @@
 #ifndef TEST_FINDER_H
 #define TEST_FINDER_H
 
-#include "../include/config.h"
-#include "../include/finder.h"
-
-#include "test_common.h"
-
 void test_validate_settings(void);
 
 void test_is_matching_dir(void);

@@ -83,7 +83,7 @@ void set_debug(FindSettings *settings, unsigned short debug);
 
 SortBy sort_by_from_name(const char *name);
 
-void sort_by_to_name(const SortBy sort_by, char *name);
+void sort_by_to_name(SortBy sort_by, char *name);
 
 bool need_stat(const FindSettings *settings);
 

@@ -4,6 +4,7 @@
 #include "test_findsettings.h"
 
 #include "color.h"
+#include "findsettings.h"
 
 void test_default_settings(void)
 {
@@ -213,18 +214,18 @@ void test_add_patterns_to_settings(void)
     assert(settings->in_archive_file_patterns != NULL);
     printf("Adding in-archive-file-pattern: \"bar\"\n");
     add_string_to_regex_node("bar", settings->in_archive_file_patterns);
-    const int res1 = regex_node_count(settings->in_archive_file_patterns);
+    const size_t res1 = regex_node_count(settings->in_archive_file_patterns);
     const char* color = res1 == 2 ? COLOR_GREEN : COLOR_RED;
-    printf("%sregex_node_count(settings->in_archive_file_patterns): %d%s\n", color, res1, COLOR_RESET);
+    printf("%sregex_node_count(settings->in_archive_file_patterns): %lu%s\n", color, res1, COLOR_RESET);
     assert(res1 == 2);
 
     printf("Adding out-archive-file-pattern: \"baz\"\n");
     assert(settings->out_archive_file_patterns == NULL);
     settings->out_archive_file_patterns = new_regex_node_from_string("baz");
     assert(settings->out_archive_file_patterns != NULL);
-    const int res2 = regex_node_count(settings->out_archive_file_patterns);
+    const size_t res2 = regex_node_count(settings->out_archive_file_patterns);
     color = res2 == 1 ? COLOR_GREEN : COLOR_RED;
-    printf("%sregex_node_count(settings->out_archive_file_patterns): %d%s\n", color, res2, COLOR_RESET);
+    printf("%sregex_node_count(settings->out_archive_file_patterns): %lu%s\n", color, res2, COLOR_RESET);
     assert(res2 == 1);
 
     printf("Adding in-dir-pattern: \"foo\"\n");
@@ -233,18 +234,18 @@ void test_add_patterns_to_settings(void)
     assert(settings->in_dir_patterns != NULL);
     printf("Adding in-dir-pattern: \"bar\"\n");
     add_string_to_regex_node("bar", settings->in_dir_patterns);
-    const int res3 = regex_node_count(settings->in_dir_patterns);
+    const size_t res3 = regex_node_count(settings->in_dir_patterns);
     color = res3 == 2 ? COLOR_GREEN : COLOR_RED;
-    printf("%sregex_node_count(settings->in_dir_patterns): %d%s\n", color, res3, COLOR_RESET);
+    printf("%sregex_node_count(settings->in_dir_patterns): %lu%s\n", color, res3, COLOR_RESET);
     assert(res3 == 2);
 
     printf("Adding out-dir-pattern: \"baz\"\n");
     assert(settings->out_dir_patterns == NULL);
     settings->out_dir_patterns = new_regex_node_from_string("baz");
     assert(settings->out_dir_patterns != NULL);
-    const int res4 = regex_node_count(settings->out_dir_patterns);
+    const size_t res4 = regex_node_count(settings->out_dir_patterns);
     color = res4 == 1 ? COLOR_GREEN : COLOR_RED;
-    printf("%sregex_node_count(settings->out_dir_patterns): %d%s\n", color, res4, COLOR_RESET);
+    printf("%sregex_node_count(settings->out_dir_patterns): %lu%s\n", color, res4, COLOR_RESET);
     assert(res4 == 1);
 
     printf("Adding in-file-pattern: \"foo\"\n");
@@ -253,18 +254,18 @@ void test_add_patterns_to_settings(void)
     assert(settings->in_file_patterns != NULL);
     printf("Adding in-file-pattern: \"bar\"\n");
     add_string_to_regex_node("bar", settings->in_file_patterns);
-    const int res5 = regex_node_count(settings->in_file_patterns);
+    const size_t res5 = regex_node_count(settings->in_file_patterns);
     color = res5 == 2 ? COLOR_GREEN : COLOR_RED;
-    printf("%sregex_node_count(settings->in_file_patterns): %d%s\n", color, res5, COLOR_RESET);
+    printf("%sregex_node_count(settings->in_file_patterns): %lu%s\n", color, res5, COLOR_RESET);
     assert(res5 == 2);
 
     printf("Adding out-file-pattern: \"baz\"\n");
     assert(settings->out_file_patterns == NULL);
     settings->out_file_patterns = new_regex_node_from_string("baz");
     assert(settings->out_file_patterns != NULL);
-    const int res6 = regex_node_count(settings->out_file_patterns);
+    const size_t res6 = regex_node_count(settings->out_file_patterns);
     color = res6 == 1 ? COLOR_GREEN : COLOR_RED;
-    printf("%sregex_node_count(settings->out_file_patterns): %d%s\n", color, res6, COLOR_RESET);
+    printf("%sregex_node_count(settings->out_file_patterns): %lu%s\n", color, res6, COLOR_RESET);
     assert(res6 == 1);
 
     destroy_settings(settings);

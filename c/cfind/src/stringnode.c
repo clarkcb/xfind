@@ -48,7 +48,7 @@ void add_string_to_string_node(const char *s, StringNode *string_node)
 void add_char_split_to_string_node(const char c, const char *s, StringNode *string_node)
 {
     if (s == NULL) return;
-    size_t slen = strnlen(s, 1024);
+    const size_t slen = strnlen(s, 1024);
     if (slen == 0) return;
     if (char_in_string(c, s) == 0) {
         add_string_to_string_node(s, string_node);

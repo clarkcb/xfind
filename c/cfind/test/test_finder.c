@@ -2,10 +2,15 @@
 
 #include "test_finder.h"
 
+#include <assert.h>
 #include <string.h>
 #include <sys/stat.h>
 
 #include "color.h"
+#include "config.h"
+#include "finder.h"
+#include "finderr.h"
+#include "findsettings.h"
 
 
 void test_validate_settings(void)

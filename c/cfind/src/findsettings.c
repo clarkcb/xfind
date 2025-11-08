@@ -1,7 +1,6 @@
 #include <assert.h>
 #include <ctype.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
 #include "common.h"
@@ -154,16 +153,16 @@ size_t settings_strlen(const FindSettings *settings)
 void settings_to_string(const FindSettings *settings, char *s)
 {
     // assumes s has correct allocation size
-    char *archives_only_s = settings->archives_only == false ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
+    const char *archives_only_s = settings->archives_only == false ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
     char *in_archive_extensions_s = malloc(string_node_strlen(settings->in_archive_extensions) + 1);
     in_archive_extensions_s[0] = '\0';
     string_node_to_string(settings->in_archive_extensions, in_archive_extensions_s);
     char *in_archive_file_patterns_s = malloc(regex_node_strlen(settings->in_archive_file_patterns) + 1);
     in_archive_file_patterns_s[0] = '\0';
     regex_node_to_string(settings->in_archive_file_patterns, in_archive_file_patterns_s);
-    char *colorize_s = settings->colorize == false ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
-    char *debug_s = settings->debug == false ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
-    char *follow_symlinks_s = settings->follow_symlinks == false ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
+    const char *colorize_s = settings->colorize == false ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
+    const char *debug_s = settings->debug == false ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
+    const char *follow_symlinks_s = settings->follow_symlinks == false ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
     char *in_dir_patterns_s = malloc(regex_node_strlen(settings->in_dir_patterns) + 1);
     in_dir_patterns_s[0] = '\0';
     regex_node_to_string(settings->in_dir_patterns, in_dir_patterns_s);
@@ -176,10 +175,10 @@ void settings_to_string(const FindSettings *settings, char *s)
     char *in_file_types_s = malloc(file_type_node_strlen(settings->in_file_types) + 1);
     in_file_types_s[0] = '\0';
     file_type_node_to_string(settings->in_file_types, in_file_types_s);
-    char *include_archives_s = settings->include_archives == false ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
-    char *include_hidden_s = settings->include_hidden == false ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
+    const char *include_archives_s = settings->include_archives == false ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
+    const char *include_hidden_s = settings->include_hidden == false ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
 
-    size_t max_last_mod_strlen = last_mod_strlen(settings->max_last_mod);
+    const size_t max_last_mod_strlen = last_mod_strlen(settings->max_last_mod);
     char *max_last_mod_s = malloc(max_last_mod_strlen + 1);
     max_last_mod_s[0] = '\0';
     time_to_datestring(settings->max_last_mod, max_last_mod_s);
@@ -190,7 +189,7 @@ void settings_to_string(const FindSettings *settings, char *s)
         max_last_mod_s = quoted_max_last_mod_s;
     }
 
-    size_t min_last_mod_strlen = last_mod_strlen(settings->min_last_mod);
+    const size_t min_last_mod_strlen = last_mod_strlen(settings->min_last_mod);
     char *min_last_mod_s = malloc(min_last_mod_strlen + 1);
     min_last_mod_s[0] = '\0';
     time_to_datestring(settings->min_last_mod, min_last_mod_s);

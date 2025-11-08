@@ -18,7 +18,7 @@ void test_file_type_from_name(void)
         "Binary",
         "binary"
     };
-    size_t arrlen = 6;
+    const size_t arrlen = 6;
     FileType expected[6] = {
         TEXT,
         TEXT,
@@ -59,7 +59,7 @@ void test_get_file_type_for_ext(void)
         "xml",
         "dunno"
     };
-    size_t arrlen = 10;
+    const size_t arrlen = 10;
     FileType expected[10] = {
         ARCHIVE,
         AUDIO,
@@ -106,7 +106,7 @@ void test_is_file_type_for_ext(void)
         "xml",
         "dunno"
     };
-    size_t arrlen = 10;
+    const size_t arrlen = 10;
     FileType expected[10] = {
         ARCHIVE,
         AUDIO,

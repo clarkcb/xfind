@@ -15,6 +15,7 @@
 FileTypes *new_file_types(void)
 {
     FileTypes *file_types = malloc(sizeof(FileTypes));
+    assert(file_types != NULL);
     file_types->archive_extensions = NULL;
     file_types->archive_names = NULL;
     file_types->audio_extensions = NULL;
