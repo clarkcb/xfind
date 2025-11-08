@@ -298,7 +298,7 @@ class FindOptions:
             ' pyfind [options] <path> [<path> ...]\n\nOptions:\n')
         opt_pairs = []
         longest = 0
-        for opt in sorted(self.options, key=lambda o: o.sort_arg):
+        for opt in sorted([o for o in self.options if o.long_arg != 'path'], key=lambda o: o.sort_arg):
             opt_string = ''
             if opt.short_arg:
                 opt_string += f'-{opt.short_arg},'
