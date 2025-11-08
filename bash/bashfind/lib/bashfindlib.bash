@@ -102,6 +102,8 @@ NUM_OPTS=(maxdepth maxlastmod maxsize mindepth minlastmod minsize)
 STR_OPTS=(in-archiveext in-archivefilepattern in-dirpattern in-ext in-filepattern in-filetype out-archiveext out-archivefilepattern out-dirpattern out-ext
           out-filepattern out-filetype path settings-file sort-by)
 
+ARG_TYPES=(unknown bool num str)
+
 FILE_RESULTS=()
 
 
@@ -115,6 +117,39 @@ exit_with_error () {
         echo -e "\nERROR: $error"
     fi
     usage
+}
+
+get_arg_type () {
+    local arg_name="$1"
+
+    if [[ " ${BOOL_OPTS[*]} " =~ [[:space:]]${arg_name}[[:space:]] ]]
+    then
+        echo 'bool'
+    else
+        if [[ " ${STR_OPTS[*]} " =~ [[:space:]]${arg_name}[[:space:]] ]]
+        then
+            echo 'str'
+        else
+            if [[ " ${NUM_OPTS[*]} " =~ [[:space:]]${arg_name}[[:space:]] ]]
+            then
+                echo 'num'
+            else
+                echo 'unknown'
+            fi
+        fi
+    fi
+}
+
+is_arg_type () {
+    local arg_type="$1"
+    local arg_name="$2"
+
+    local atype=$(get_arg_type "$arg_name")
+    if [ "$atype" == "$arg_type" ]
+    then
+        return 1
+    fi
+    return 0
 }
 
 is_file_type () {
@@ -1577,66 +1612,72 @@ update_settings_from_json () {
     local array_keys=( $(echo "$json" | jq -S -r 'with_entries(select(.value | type == "array")) | keys | .[]') )
     for k in ${array_keys[*]}
     do
-        local arr=( $(echo "$json" | jq -r ".\"$k\" | .[]") )
-        local arr_args=()
-        for a in ${arr[*]}
-        do
-            arr_args+=("--$k")
-            arr_args+=("$a")
-        done
-        settings_from_args ${arr_args[*]}
-    done
-    local other_keys=( $(echo "$json" | jq -S -r 'with_entries(select(.value | type != "array")) | keys | .[]') )
-    local other_args=()
-    # first check for invalid keys
-    for k in ${other_keys[*]}
-    do
-        if [[ ! " ${BOOL_OPTS[*]} ${NUM_OPTS[*]} ${STR_OPTS[*]}" =~ [[:space:]]${k}[[:space:]] ]]
+        # Only string array options are supported
+        if [[ " ${STR_OPTS[*]} " =~ [[:space:]]${k}[[:space:]] ]]
         then
+            local arr=( $(echo "$json" | jq -r ".\"$k\" | .[]") )
+            local arr_args=()
+            for a in ${arr[*]}
+            do
+                arr_args+=("--$k")
+                arr_args+=("$a")
+            done
+            settings_from_args ${arr_args[*]}
+        else
             exit_with_error "Invalid option: $k"
         fi
     done
+    local other_keys=( $(echo "$json" | jq -S -r 'with_entries(select(.value | type != "array")) | keys | .[]') )
+    local other_args=()
     for k in ${other_keys[*]}
     do
-        local v=$(echo "$json" | jq -r ".$k")
-
-        if [[ " ${BOOL_OPTS[*]} " =~ [[:space:]]${k}[[:space:]] ]]
+        local arg_type=$(get_arg_type $k)
+        if [ "$arg_type" == "unknown" ]
         then
-            if [ "$v" == "true" -o "$v" == "false" ]
-            then
-                if [ "$v" == "true" ]
-                then
-                    other_args+=("--$k")
-                else
-                    k=$(negate_key $k)
-                    other_args+=("--$k")
-                fi
-            else
-                exit_with_error "Invalid value for option: $k"
-            fi
+            exit_with_error "Invalid option: $k"
         else
-            if [[ " ${NUM_OPTS[*]} " =~ [[:space:]]${k}[[:space:]] ]]
+            local v=$(echo "$json" | jq -r ".\"$k\"")
+            if [ "$arg_type" == "bool" ]
             then
-                if [[ -n "$v" ]] && [[ -z "${v//[0-9]}" ]]
+                if [ "$v" == "true" -o "$v" == "false" ]
                 then
-                    other_args+=("--$k")
-                    other_args+=("$v")
+                    if [ "$v" == "true" ]
+                    then
+                        other_args+=("--$k")
+                    else
+                        k=$(negate_key $k)
+                        other_args+=("--$k")
+                    fi
                 else
                     exit_with_error "Invalid value for option: $k"
                 fi
             else
-                if [[ " ${STR_OPTS[*]} " =~ [[:space:]]${k}[[:space:]] ]]
+                if [ "$arg_type" == "num" ]
                 then
-                    # we can't really determine whether value is a string, so we just assume it is
-                    other_args+=("--$k")
-                    other_args+=("$v")
+                    if [[ -n "$v" ]] && [[ -z "${v//[0-9]}" ]]
+                    then
+                        other_args+=("--$k")
+                        other_args+=("$v")
+                    else
+                        exit_with_error "Invalid value for option: $k"
+                    fi
                 else
-                    exit_with_error "Invalid option: $k"
+                    if [ "$arg_type" == "str" ]
+                    then
+                        # we can't really determine whether value is a string, so we just assume it is
+                        other_args+=("--$k")
+                        other_args+=("$v")
+                    else
+                        exit_with_error "Invalid option: $k"
+                    fi
                 fi
             fi
         fi
     done
-    settings_from_args ${other_args[*]}
+    if [ ${#other_args[@]} -gt 0 ]
+    then
+        settings_from_args ${other_args[*]}
+    fi
 }
 
 update_settings_from_file () {
