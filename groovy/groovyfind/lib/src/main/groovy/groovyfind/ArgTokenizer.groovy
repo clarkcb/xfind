@@ -1,5 +1,7 @@
 package groovyfind
 
+import groovy.transform.CompileStatic
+
 import java.nio.file.Files
 import java.nio.file.Paths
 
@@ -7,6 +9,7 @@ import groovy.json.JsonSlurper
 
 import java.util.stream.Collectors
 
+@CompileStatic
 class ArgTokenizer {
     private Map<String, String> boolMap = new HashMap<>()
     private Map<String, String> strMap = new HashMap<>()

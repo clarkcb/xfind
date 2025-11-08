@@ -1,5 +1,8 @@
 package groovyfind
 
+import groovy.transform.CompileStatic
+
+@CompileStatic
 enum FindError {
     STARTPATH_NOT_DEFINED("Startpath not defined"),
     STARTPATH_NOT_FOUND("Startpath not found"),

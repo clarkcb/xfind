@@ -2,6 +2,7 @@ package groovyfind
 
 import groovy.json.JsonSlurper
 import groovy.transform.CompileStatic
+import groovy.transform.TypeCheckingMode
 
 interface Option {
     String shortArg()
@@ -53,6 +54,7 @@ class FindOption implements Option {
     }
 }
 
+@CompileStatic(TypeCheckingMode.SKIP)
 class FindOptions {
     private static final String FIND_OPTIONS_JSON_PATH = '/findoptions.json'
     private final List<FindOption> options
@@ -61,7 +63,7 @@ class FindOptions {
     FindOptions() throws IOException {
         options = []
         setOptionsFromJson()
-        argTokenizer = new ArgTokenizer(options)
+        argTokenizer = new ArgTokenizer(options as List<Option>)
     }
 
     @FunctionalInterface

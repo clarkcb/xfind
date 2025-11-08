@@ -1,5 +1,8 @@
 package groovyfind
 
+import groovy.transform.CompileStatic
+
+@CompileStatic
 class ArgToken {
     final String name
     final ArgTokenType type

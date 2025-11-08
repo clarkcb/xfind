@@ -1,11 +1,13 @@
 package groovyfind
 
+import groovy.transform.CompileStatic
 
 import java.nio.file.Path
 import java.nio.file.attribute.FileTime
 import java.util.function.Function
 import java.util.regex.Matcher
 
+@CompileStatic
 class FileResult {
 
     static final String CONTAINER_SEPARATOR = '!'
