@@ -1121,6 +1121,7 @@ usage () {
     s+="\n --noprintfiles            $(get_option_desc 'noprintfiles')"
     s+="\n --out-archiveext          $(get_option_desc 'out-archiveext')"
     s+="\n --out-archivefilepattern  $(get_option_desc 'out-archivefilepattern')"
+    s+="\n --path                    $(get_option_desc 'path')"
     s+="\n --printdirs               $(get_option_desc 'printdirs')"
     s+="\n --printfiles              $(get_option_desc 'printfiles')"
     s+="\n -R,--norecursive          $(get_option_desc 'norecursive')"

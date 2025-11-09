@@ -161,6 +161,10 @@
       "desc": "File type not to find (text, binary)"
     },
     {
+      "long": "path",
+      "desc": "A starting path for finding files"
+    },
+    {
       "long": "printdirs",
       "desc": "Print matching directories after finding"
     },

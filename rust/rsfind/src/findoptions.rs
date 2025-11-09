@@ -250,9 +250,6 @@ impl FindOptions {
     fn get_sort_opt_map(&self) -> HashMap<String, &FindOption> {
         let mut map = HashMap::with_capacity(self.find_options.len());
         for so in self.find_options.iter() {
-            if so.long == "path" {
-                continue;
-            }
             let sort_key = match &so.short {
                 Some(short) => String::from(format!("{}@{}", short.to_ascii_lowercase(), &so.long)),
                 None => String::from(&so.long),
@@ -581,7 +578,6 @@ fn json_options_to_find_options(json_options: &Vec<JsonFindOption>,
         }
         find_options.push(FindOption { long: long_arg, short: short_arg, desc, arg_type });
     }
-    find_options.push(FindOption { long: "path".to_string(), short: None, desc: "".to_string(), arg_type: ArgTokenType::String });
     find_options
 }
 

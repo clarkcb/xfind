@@ -130,9 +130,7 @@ class FindOptions {
             val desc = findOptionObj.getString("desc")
             options.add(FindOption(shortArg, longArg, desc, argType))
         }
-        // Add path option (not in JSON)
-        options.add(FindOption(null, "path", "", ArgTokenType.STR))
-        return options.toList().sortedBy { it.sortArg }
+        return options.toList()
     }
 
     init {
@@ -236,7 +234,7 @@ class FindOptions {
             return (if (so.shortArg == null) "" else "-${so.shortArg},") + "--${so.longArg}"
         }
 
-        val optPairs = findOptions.filterNot { it.longArg == "path" }.map { Pair(getOptString(it), it.desc) }
+        val optPairs = findOptions.sortedBy { it.sortArg }.map { Pair(getOptString(it), it.desc) }
         val longest = optPairs.maxOfOrNull { it.first.length }
         val format = " %1$-${longest}s  %2${'$'}s\n"
         for (o in optPairs) {

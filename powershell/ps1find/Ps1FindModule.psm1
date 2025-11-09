@@ -944,9 +944,7 @@ class FindOptions {
             }
             [FindOption]::new($ShortArg, $LongArg, $Desc, $ArgType)
         })
-        # Add path (not in JSON)
-        $opts += [FindOption]::new('', 'path', '', [ArgTokenType]::Str)
-        return $opts | Sort-Object -Property SortArg
+        return $opts
     }
 
     [void]UpdateSettingsFromArgTokens([FindSettings]$settings, [ArgToken[]]$argTokens) {
@@ -1015,7 +1013,8 @@ class FindOptions {
         $optStrs = @()
         $optMap = @{}
         $longest = 0
-        $options = $this.FindOptions | Where-Object { $_.LongArg -ne 'path' }
+        $options = $this.FindOptions | Sort-Object -Property SortArg
+
         foreach ($option in $options) {
             $optStr = ''
             if ($option.ShortArg) {

@@ -32,8 +32,6 @@ struct FindOption: Option {
 public class FindOptions {
     private var config: FindConfig
     private var findOptions = [FindOption]()
-    // Add path here because it isn't included in findoptions.json
-    private var longArgDict: [String: String] = ["path": "path"]
     private var argTokenizer: ArgTokenizer?
 
     public init() {
@@ -63,14 +61,6 @@ public class FindOptions {
                             argType = ArgTokenType.long
                         }
                         findOptions.append(FindOption(shortArg: shortArg, longArg: longArg, desc: desc, argType: argType))
-                    }
-                    // Add path
-                    findOptions.append(FindOption(shortArg: nil, longArg: "path", desc: "", argType: ArgTokenType.str))
-                    for opt in findOptions {
-                        longArgDict[opt.longArg] = opt.longArg
-                        if opt.shortArg != nil, !opt.shortArg!.isEmpty {
-                            longArgDict[opt.shortArg!] = opt.longArg
-                        }
                     }
                 }
             }
@@ -298,8 +288,7 @@ public class FindOptions {
     func getUsageString() -> String {
         var str = "\nUsage:\n swiftfind [options] <path> [<path> ...]\n\n"
         str += "Options:\n"
-        var options = findOptions.filter {$0.longArg != "path"}
-        options.sort(by: { $0.sortArg < $1.sortArg })
+        var options = findOptions.sorted(by: { $0.sortArg < $1.sortArg })
 
         let optStrings = options.map {
             switch ($0.shortArg, $0.longArg) {

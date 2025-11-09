@@ -29,8 +29,8 @@ namespace cppfind {
         }
 
         const uint64_t file_size = std::filesystem::file_size(find_options_path);
-        // current size is 5178, make sure it's not dramatically bigger than that
-        if (file_size > 5200) {
+        // current size is 5263, make sure it's not dramatically bigger than that
+        if (file_size > 5300) {
             throw FindException("Invalid findoptions file");
         }
 
@@ -79,8 +79,6 @@ namespace cppfind {
             }
             options.push_back(std::make_unique<FindOption>(short_arg, long_arg, desc, arg_type));
         }
-        // Add path (not in JSON)
-        options.push_back(std::make_unique<FindOption>("", "path", "", ARG_TOKEN_TYPE_STR));
         return options;
     }
 
@@ -182,7 +180,6 @@ namespace cppfind {
         // filter out path
         auto options = std::vector<FindOption>{};
         for (auto const& o : m_options) {
-            if (o->long_arg() == "path") continue;
             options.emplace_back(o->short_arg(), o->long_arg(), o->description(), o->arg_type());
         }
 

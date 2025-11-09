@@ -56,7 +56,7 @@ getArgTokenizer jsonOpts =
     }
   where
     boolMap = boolShortMap ++ boolLongMap
-    stringMap = stringShortMap ++ stringLongMap ++ [("path", "path"), ("settings-file", "settings-file")]
+    stringMap = stringShortMap ++ stringLongMap ++ [("settings-file", "settings-file")]
     intMap = intShortMap ++ intLongMap
     boolLongMap :: [(String, String)]
     boolLongMap = [(long o, long o) | o <- jsonOpts, isBoolOption o]

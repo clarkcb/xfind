@@ -83,8 +83,6 @@ class FindOptions {
         }
         findOptions.add(FindOption(shortArg, longArg, desc, argType));
       }
-      // Add path manually since it's not in findoptions.json
-      findOptions.add(FindOption(null, 'path', '', ArgTokenType.stringType));
     }
   }
 
@@ -229,7 +227,6 @@ class FindOptions {
       var s = 'Usage:\n'
           ' dartfind [options] <path> [<path> ...]\n\n'
           'Options:\n';
-      findOptions.removeWhere((o) => o.longArg() == 'path');
       findOptions.sort((o1, o2) => o1.sortArg().compareTo(o2.sortArg()));
       var optStrings = findOptions.map((so) => so.optString()).toList();
       var longest = optStrings.reduce((value, optString) =>

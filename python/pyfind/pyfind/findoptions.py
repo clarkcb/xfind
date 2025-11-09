@@ -209,8 +209,6 @@ class FindOptions:
             else:
                 raise FindException(f'Unknown find option: {long_arg}')
             self.options.append(FindOption(short_arg, long_arg, desc, arg_type))
-        # Add path option (not in json)
-        self.options.append(FindOption('', 'path', '', ArgTokenType.STR))
 
     def update_settings_from_arg_tokens(self, settings: FindSettings, arg_tokens: list[ArgToken]):
         """Update settings from a list of arg tokens"""
@@ -298,7 +296,7 @@ class FindOptions:
             ' pyfind [options] <path> [<path> ...]\n\nOptions:\n')
         opt_pairs = []
         longest = 0
-        for opt in sorted([o for o in self.options if o.long_arg != 'path'], key=lambda o: o.sort_arg):
+        for opt in sorted(self.options, key=lambda o: o.sort_arg):
             opt_string = ''
             if opt.short_arg:
                 opt_string += f'-{opt.short_arg},'

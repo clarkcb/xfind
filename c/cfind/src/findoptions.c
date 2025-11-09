@@ -275,17 +275,6 @@ error_t get_find_options(FindOptions *options)
         return err;
     }
 
-    // Add path option (not in JSON)
-    char *path = malloc(5 * sizeof(char));
-    assert(path != NULL);
-    strncpy(path, "path", 4);
-    path[4] = '\0';
-    char *desc = malloc(1 * sizeof(char));
-    assert(desc != NULL);
-    desc[0] = '\0';
-    FindOption *o = new_find_option(path, NULL, desc, ARG_TOKEN_TYPE_STR);
-    add_to_find_options(o, options);
-
     err = parse_find_options(contents, options);
 
     free(full_path);
@@ -724,9 +713,6 @@ void find_options_to_usage_string(FindOptions *options, char *s)
     snprintf(line_format, 16, " %%1$-%ds  %%2$s\n", (int)longest_len);
 
     for (i = 0; i < options_count; i++) {
-        if (strcmp(option_array[i]->long_arg, "path") == 0) {
-            continue;
-        }
         size_t opt_len = find_option_strlen(option_array[i]) + 1;
         char opt_buff[opt_len];
         if (option_array[i]->short_arg != NULL) {

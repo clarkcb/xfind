@@ -103,9 +103,8 @@
 
 (defn get-find-options-from-json []
   (let [contents (slurp (io/resource "findoptions.json"))
-        find-options-objs (:findoptions (json/read-str contents :key-fn keyword))
-        find-options (map #(->FindOption (get % :short "") (get % :long) (get % :desc) (get-action-arg-type (get % :long))) find-options-objs)]
-    (conj find-options (->FindOption "" "path" "" :string))))
+        find-options-objs (:findoptions (json/read-str contents :key-fn keyword))]
+    (map #(->FindOption (get % :short "") (get % :long) (get % :desc) (get-action-arg-type (get % :long))) find-options-objs)))
 
 (def ^:const FIND-OPTIONS (get-find-options-from-json))
 
@@ -231,7 +230,7 @@
     (format (str "%-" longest "s %s") opt-string d)))
 
 (defn usage-string ^String []
-  (let [options (sort-by get-sort-arg (filter #(not (= (:long-arg %) "path")) FIND-OPTIONS))
+  (let [options (sort-by get-sort-arg FIND-OPTIONS)
         longest (longest-length options)]
     (str
      "Usage:\n"

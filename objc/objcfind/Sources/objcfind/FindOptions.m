@@ -67,15 +67,10 @@
                 }
                 [findOptions addObject:[[FindOption alloc] initWithShortArg:sArg withLongArg:lArg withDesc:desc withArgType:argType]];
             }
-            // Add path (not in JSON)
-            [findOptions addObject:[[FindOption alloc] initWithShortArg:nil withLongArg:@"path" withDesc:@"" withArgType:ArgTokenTypeStr]];
         }
     }
-    NSArray *sortedOptions = [findOptions sortedArrayUsingComparator:^NSComparisonResult(FindOption *so1, FindOption *so2) {
-        return [[so1 sortArg] compare:[so2 sortArg]];
-    }];
-
-    return sortedOptions;
+    
+    return [NSArray arrayWithArray:findOptions];
 }
 
 - (NSDictionary<NSString*,NSString*>*) getLongArgDict {
@@ -313,10 +308,10 @@ typedef void (^IntegerActionBlockType)(NSInteger, FindSettings*);
     NSMutableArray *optStrings = [NSMutableArray array];
     NSMutableArray *optDescs = [NSMutableArray array];
     long longest = 0;
-    for (FindOption *fo in self.findOptions) {
-        if ([fo.longArg isEqualToString:@"path"]) {
-            continue;
-        }
+    NSArray *sortedOptions = [self.findOptions sortedArrayUsingComparator:^NSComparisonResult(FindOption *so1, FindOption *so2) {
+        return [[so1 sortArg] compare:[so2 sortArg]];
+    }];
+    for (FindOption *fo in sortedOptions) {
         NSMutableString *optString = [[NSMutableString alloc] init];
         if (fo.shortArg) {
             [optString appendFormat:@"-%@,", fo.shortArg];

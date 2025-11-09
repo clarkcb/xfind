@@ -237,8 +237,6 @@ sub set_options_from_json {
             $options_hash->{$short} = $options_hash->{$long};
         }
     }
-    # Add path (not in JSON)
-    $options_hash->{'path'} = plfind::FindOption->new('', 'path', '', plfind::ArgTokenType->STR);
     return $options_hash;
 }
 
@@ -344,9 +342,6 @@ sub get_usage_string {
     foreach my $opt_key (keys %{$self->{options}}) {
         my $option = $self->{options}->{$opt_key};
         my $long_arg = $option->{long_arg};
-        if ($long_arg eq 'path') {
-            next;
-        }
         my $short_arg = $option->{short_arg};
         my $sort_arg = $long_arg;
         if (defined $short_arg) {

@@ -157,8 +157,6 @@ export class FindOptions {
                 const desc = fo['desc'];
                 this.options.push(new FindOption(shortArg, longArg, desc, argType));
             });
-            // add the path option (not in the json file)
-            this.options.push(new FindOption('', 'path', '', ArgTokenType.Str));
         } else throw new Error(`Invalid findoptions file: ${config.FIND_OPTIONS_JSON_PATH}`);
         this.options.sort(FindOptions.optCmp);
     }
@@ -241,8 +239,6 @@ export class FindOptions {
         const optDescs: string[] = [];
         let longest = 0;
         this.options.forEach((opt: FindOption) => {
-            if (opt.longArg === 'path')
-                return;
             let optString = ' ';
             if (opt.shortArg)
                 optString += '-' + opt.shortArg + ',';

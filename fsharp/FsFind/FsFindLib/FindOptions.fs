@@ -73,18 +73,16 @@ module FindOptions =
     let OptionsFromJson (jsonString : string) : FindOption list =
         let findOptionsDict = JsonSerializer.Deserialize<FindOptionsDictionary>(jsonString)
         let optionDicts = findOptionsDict["findoptions"]
-        let options =
-            [ for optionDict in optionDicts do
-                let longArg = optionDict["long"]
-                let shortArg = if optionDict.ContainsKey("short") then optionDict["short"] else ""
-                let desc = optionDict["desc"]
-                let argType =
-                    if boolActionMap.ContainsKey(longArg) then ArgTokenType.Bool
-                    elif stringActionMap.ContainsKey(longArg) then ArgTokenType.Str
-                    elif intActionMap.ContainsKey(longArg) then ArgTokenType.Int
-                    else ArgTokenType.Unknown
-                yield { ShortArg=shortArg; LongArg=longArg; Description=desc; ArgType=argType } ]
-        List.append options [{ ShortArg=""; LongArg="path"; Description=""; ArgType=ArgTokenType.Str }]
+        [ for optionDict in optionDicts do
+            let longArg = optionDict["long"]
+            let shortArg = if optionDict.ContainsKey("short") then optionDict["short"] else ""
+            let desc = optionDict["desc"]
+            let argType =
+                if boolActionMap.ContainsKey(longArg) then ArgTokenType.Bool
+                elif stringActionMap.ContainsKey(longArg) then ArgTokenType.Str
+                elif intActionMap.ContainsKey(longArg) then ArgTokenType.Int
+                else ArgTokenType.Unknown
+            yield { ShortArg=shortArg; LongArg=longArg; Description=desc; ArgType=argType } ]
 
     let _findOptionsResource = EmbeddedResource.GetResourceFileContents("FsFindLib.Resources.findoptions.json");
     let options = OptionsFromJson(_findOptionsResource)
@@ -180,7 +178,6 @@ module FindOptions =
 
     let GetUsageString () : string =
         let sortedOptions = options
-                            |> List.where (fun o -> not (o.LongArg.Equals("path")))
                             |> List.sortWith SortOption
         let optStringMap =
             [ for opt in sortedOptions do

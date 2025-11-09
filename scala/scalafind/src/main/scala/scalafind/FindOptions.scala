@@ -21,14 +21,10 @@ object FindOptions {
   private val _findOptions = mutable.ListBuffer.empty[FindOption]
 
   private def findOptions: List[FindOption] = {
-    val opts =
-      if (_findOptions.isEmpty) {
-        loadFindOptionsFromJson()
-        _findOptions.sortWith(_.sortArg < _.sortArg)
-      } else {
-        _findOptions
-      }
-    List.empty[FindOption] ++ opts
+    if (_findOptions.isEmpty) {
+      loadFindOptionsFromJson()
+    }
+    List.empty[FindOption] ++ _findOptions
   }
 
   private var _longArgMap = Map.empty[String, String]
@@ -71,8 +67,6 @@ object FindOptions {
           }
         _findOptions += FindOption(shortArg, longArg, desc, argType)
       }
-      // Add path option (not in JSON file)
-      _findOptions += FindOption(None, "path", "", ArgTokenType.Str)
     } catch {
       case e: IOException =>
         print(e.getMessage)
@@ -247,7 +241,7 @@ object FindOptions {
     sb.append("Usage:\n")
     sb.append(" scalafind [options] <path> [<path> ...]\n\n")
     sb.append("Options:\n")
-    val optPairs = findOptions.filterNot(_.longArg == "path").map { fo =>
+    val optPairs = findOptions.sortWith(_.sortArg < _.sortArg).map { fo =>
       val opts = fo.shortArg match {
         case Some(sa) => s"-$sa,--${fo.longArg}"
         case None => s"--${fo.longArg}"

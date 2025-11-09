@@ -131,7 +131,6 @@ public class FindOptions
 			var option = new FindOption(shortArg, longArg, desc, argType);
 			Options.Add(option);
 		}
-		Options.Add(new FindOption(null, "path", "", ArgTokenType.String));
 	}
 
 	private void ApplyArgTokenToSettings(ArgToken argToken, FindSettings settings)
@@ -320,7 +319,6 @@ public class FindOptions
 		var longest = 0;
 		foreach (var opt in Options.OrderBy(o => o.SortArg))
 		{
-			if (opt.LongArg == "path") continue;
 			var optString = new StringBuilder();
 			if (!string.IsNullOrWhiteSpace(opt.ShortArg))
 			{

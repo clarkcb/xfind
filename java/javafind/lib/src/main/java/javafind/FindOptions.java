@@ -142,8 +142,6 @@ public class FindOptions {
             }
             options.add(new FindOption(shortArg, longArg, desc, argType));
         }
-        // Add path option, which is not in the json file
-        options.add(new FindOption("", "path", "", ArgTokenType.STR));
     }
 
     private void applyArgTokenToSettings(final ArgToken argToken, FindSettings settings)
@@ -259,9 +257,6 @@ public class FindOptions {
         var optDescs = new ArrayList<>();
         int longest = 0;
         for (var opt : this.options) {
-            if (opt.longArg().equals("path")) {
-                continue;
-            }
             var optString = new StringBuilder();
             var shortArg = opt.shortArg();
             if (null != shortArg && !shortArg.isEmpty()) {

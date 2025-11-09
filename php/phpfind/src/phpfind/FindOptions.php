@@ -135,8 +135,6 @@ class FindOptions
                         }
                         $this->options[] = new FindOption($short, $long, $desc, $arg_type);
                     }
-                    // Add path (not in JSON)
-                    $this->options[] = new FindOption('', 'path', '', ArgTokenType::Str);
                     usort($this->options, array('phpfind\FindOptions', 'cmp_find_options'));
                 }
             } catch (\JsonException $e) {
@@ -261,7 +259,6 @@ class FindOptions
         $opt_map = [];
         $longest = 0;
         foreach ($this->options as $option) {
-            if ($option->long_arg == 'path') continue;
             $opt_str = '';
             if ($option->short_arg) {
                 $opt_str = '-' . $option->short_arg . ',';

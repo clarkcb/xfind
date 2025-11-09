@@ -171,8 +171,6 @@ class FindOptions {
             }
             options.add(new FindOption(shortArg, longArg, desc, argType))
         }
-        // Add path (not in JSON)
-        options.add(new FindOption('', 'path', '', ArgTokenType.STR))
     }
 
     private void applyArgTokenToSetting(final ArgToken argToken, FindSettings settings)
@@ -281,9 +279,6 @@ class FindOptions {
         List<String> optDescs = []
         int longest = 0
         this.options.each { opt ->
-            if (opt.longArg == 'path') {
-                return
-            }
             StringBuilder optString = new StringBuilder()
             String shortArg = opt.shortArg
             if (null != shortArg && !shortArg.isEmpty()) {

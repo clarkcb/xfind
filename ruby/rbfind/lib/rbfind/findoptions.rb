@@ -62,7 +62,6 @@ module RbFind
       opt_descs = []
       longest = 0
       @options.each do |opt|
-        next if opt.long_arg == 'path'
         if opt.short_arg.empty?
           opt_string = "--#{opt.long_arg}"
         else
@@ -162,8 +161,6 @@ module RbFind
         end
         @options.push(FindOption.new(short, long, desc, arg_type))
       end
-      # add path option (not in JSON)
-      @options.push(FindOption.new('', 'path', '', ArgTokenType::STR))
     rescue StandardError => e
       raise FindError, "#{e} (file: #{find_options_json_path})"
     ensure

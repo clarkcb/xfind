@@ -77,7 +77,7 @@ void add_to_find_options(FindOption *o, FindOptions *options);
 
 error_t get_find_options(FindOptions *options);
 
-error_t settings_from_args(int argc, char *argv[], FindSettings *settings);
+error_t settings_from_args(int argc, char *argv[], FindOptions *options, FindSettings *settings);
 
 error_t settings_from_json_string(const char *settings_json_str, FindOptions *options, FindSettings *settings);
 

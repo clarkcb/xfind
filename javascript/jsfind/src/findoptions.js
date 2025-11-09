@@ -137,8 +137,6 @@ class FindOptions {
                     let desc = fo.desc;
                     this.options.push(new FindOption(shortArg, longArg, desc, argType));
                 });
-                // add the path option (not in the json file)
-                this.options.push(new FindOption('', 'path', '', ArgTokenType.Str));
             } else throw new FindError(`Invalid findoptions file: ${config.FIND_OPTIONS_JSON_PATH}`);
             this.options.sort(this.optCmp);
             this.argTokenizer = new ArgTokenizer(this.options);
@@ -229,8 +227,6 @@ class FindOptions {
         let optDescs = [];
         let longest = 0;
         this.options.forEach(opt => {
-            if (opt.longArg === 'path')
-                return;
             let optString = ' ';
             if (opt.shortArg)
                 optString += '-' + opt.shortArg + ',';
