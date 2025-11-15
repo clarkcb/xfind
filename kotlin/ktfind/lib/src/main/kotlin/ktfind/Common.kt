@@ -9,7 +9,7 @@ fun log(message: String) {
 
 fun logError(message: String, colorize: Boolean = true) {
     if (colorize) {
-        System.err.println(Color.BOLD_RED.value +"ERROR: $message" + Color.RESET.value)
+        System.err.println(ConsoleColor.BOLD_RED.value +"ERROR: $message" + ConsoleColor.RESET.value)
     } else {
         System.err.println("ERROR: $message")
     }

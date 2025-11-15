@@ -10,7 +10,7 @@
 
 require 'pathname'
 
-require_relative 'color'
+require_relative 'console_color'
 
 module RbFind
   # FileResultFormatter - formats file result instances

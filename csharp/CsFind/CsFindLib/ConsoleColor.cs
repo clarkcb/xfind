@@ -1,6 +1,6 @@
 namespace CsFindLib;
 
-public static class Color
+public static class ConsoleColor
 {
     public const string Reset   = "\e[0m";
     public const string Black   = "\e[0;30m";

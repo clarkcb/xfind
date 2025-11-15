@@ -1,4 +1,4 @@
-#import "color.h"
+#import "consolecolor.h"
 #import "common.h"
 #import "Regex.h"
 

@@ -22,9 +22,9 @@ $findOptionsPath = Join-Path -Path $sharedPath -ChildPath 'findoptions.json'
 #endregion
 
 
-#region Color
+#region ConsoleColor
 ########################################
-# Color
+# ConsoleColor
 ########################################
 #$esc = "`e" # Escape character
 $esc = [char]27

@@ -43,9 +43,9 @@ public class FileResultFormatter
         }
         var matchLength = matchEndIndex - matchStartIndex;
         return prefix +
-               Color.Green + 
+               ConsoleColor.Green + 
                s.Substring(matchStartIndex, matchLength) +
-               Color.Reset + 
+               ConsoleColor.Reset + 
                suffix;
     }
 

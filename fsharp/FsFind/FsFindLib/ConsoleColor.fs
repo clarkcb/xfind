@@ -1,6 +1,6 @@
 namespace FsFindLib
 
-module Color =
+module ConsoleColor =
     let Reset   = "\u001B[0m"
     let Black   = "\u001B[0;30m"
     let Red     = "\u001B[0;31m"

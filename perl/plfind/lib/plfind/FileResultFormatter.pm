@@ -13,7 +13,7 @@ use warnings;
 
 use Path::Class;
 
-use plfind::Color;
+use plfind::ConsoleColor;
 
 sub new {
     my $class = shift;
@@ -42,7 +42,7 @@ sub colorize {
         $prefix = substr($s, 0, $match_start_index);
     }
     my $match_length = $match_end_index - $match_start_index;
-    my $colorized = plfind::Color->GREEN . substr($s, $match_start_index, $match_length) . plfind::Color->RESET;
+    my $colorized = plfind::ConsoleColor->GREEN . substr($s, $match_start_index, $match_length) . plfind::ConsoleColor->RESET;
     my $suffix = '';
     # if ($match_end_index < length($s) - 1) {
     if ($match_end_index < length($s)) {

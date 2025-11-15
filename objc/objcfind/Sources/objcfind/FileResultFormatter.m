@@ -6,6 +6,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "consolecolor.h"
 #import "FileResultFormatter.h"
 #import "FileUtil.h"
 

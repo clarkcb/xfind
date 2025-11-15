@@ -3,7 +3,7 @@
  *
  * FileResultFormatter class provides formatting of search result instances
  */
-const {COLORS} = require('./color');
+const {ConsoleColor} = require('./consolecolor');
 const path = require('path');
 
 class FileResultFormatter {
@@ -35,9 +35,9 @@ class FileResultFormatter {
       suffix = s.slice(matchEndIndex);
     }
     return prefix +
-      COLORS.GREEN +
+      ConsoleColor.GREEN +
       s.slice(matchStartIndex, matchEndIndex) +
-      COLORS.RESET +
+      ConsoleColor.RESET +
       suffix;
   }
 

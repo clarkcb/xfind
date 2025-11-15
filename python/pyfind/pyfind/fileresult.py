@@ -13,7 +13,7 @@ import os.path
 from io import StringIO
 from pathlib import Path
 
-from .color import ConsoleColor
+from .consolecolor import ConsoleColor
 from .filetypes import FileType
 from .findsettings import FindSettings, SortBy
 

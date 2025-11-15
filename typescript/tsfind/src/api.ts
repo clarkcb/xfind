@@ -1,5 +1,5 @@
 
-export {COLORS} from './color';
+export {ConsoleColor} from './consolecolor';
 export {FileResult} from './fileresult';
 export {FileResultFormatter} from './fileresultformatter';
 export {FileResultSorter} from './fileresultsorter';

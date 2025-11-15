@@ -42,7 +42,7 @@ target_sources(${PROJECT_NAME}
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/cppfind.h>
         $<INSTALL_INTERFACE:include/cppfind.h>
         PRIVATE
-        include/color.h
+        include/consolecolor.h
         include/common.h src/common.cpp
         include/FindConfig.h src/FindConfig.cpp
         include/FileTypes.h src/FileTypes.cpp

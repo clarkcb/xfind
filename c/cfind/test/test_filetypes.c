@@ -4,7 +4,7 @@
 #include "filetypes.h"
 #include "test_filetypes.h"
 
-#include "color.h"
+#include "consolecolor.h"
 
 void test_file_type_from_name(void)
 {

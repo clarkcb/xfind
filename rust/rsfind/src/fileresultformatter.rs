@@ -1,4 +1,4 @@
-use crate::color::{GREEN, RESET};
+use crate::consolecolor::{GREEN, RESET};
 use crate::fileresult::FileResult;
 use crate::findsettings::FindSettings;
 use std::path::PathBuf;

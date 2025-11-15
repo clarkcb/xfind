@@ -1,13 +1,13 @@
 //
-//  color.h
+//  consolecolor.h
 //  objcfind
 //
 //  Created by Cary Clark on 10/15/25.
 //  Copyright © 2025 Cary Clark. All rights reserved.
 //
 
-#ifndef color_h
-#define color_h
+#ifndef consolecolor_h
+#define consolecolor_h
 
 #define ANSI_RESET   "\033[0m"
 #define ANSI_BLACK   "\033[0;30m"
@@ -28,4 +28,4 @@
 #define BOLD_CYAN    "\033[1;36m"
 #define BOLD_WHITE   "\033[1;37m"
 
-#endif /* color_h */
+#endif /* consolecolor_h */

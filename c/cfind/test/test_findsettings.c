@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include "test_findsettings.h"
 
-#include "color.h"
+#include "consolecolor.h"
 #include "findsettings.h"
 
 void test_default_settings(void)

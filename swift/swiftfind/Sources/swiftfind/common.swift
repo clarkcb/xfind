@@ -18,7 +18,7 @@ public func logMsg(_ str: String) {
 
 public func logError(_ str: String, colorize: Bool = true) {
     if colorize {
-        fputs("\(Color.BOLD_RED)ERROR: \(str)\(Color.RESET)\n", stderr)
+        fputs("\(ConsoleColor.BOLD_RED)ERROR: \(str)\(ConsoleColor.RESET)\n", stderr)
     } else {
         fputs("ERROR: \(str)\n", stderr)
     }

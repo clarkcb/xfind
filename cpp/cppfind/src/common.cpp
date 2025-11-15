@@ -2,7 +2,7 @@
 
 #include "common.h"
 
-#include "color.h"
+#include "consolecolor.h"
 
 namespace cppfind {
     void log_msg(const std::string_view msg) {

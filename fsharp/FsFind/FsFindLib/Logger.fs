@@ -8,7 +8,7 @@ module Logger =
 
     let LogErrorColor (msg : string) (colorize : bool) : unit =
         let err =
-            if colorize then $"%s{Color.BoldRed}ERROR: %s{msg}%s{Color.Reset}"
+            if colorize then $"%s{ConsoleColor.BoldRed}ERROR: %s{msg}%s{ConsoleColor.Reset}"
             else $"ERROR: %s{msg}"
         Console.Error.WriteLine err
 

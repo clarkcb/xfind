@@ -33,9 +33,9 @@ public class FileResultFormatter {
             suffix = s.substring(matchEndIndex);
         }
         return prefix +
-                Color.GREEN.getValue() +
+                ConsoleColor.GREEN.getValue() +
                 s.substring(matchStartIndex, matchEndIndex) +
-                Color.RESET.getValue() +
+                ConsoleColor.RESET.getValue() +
                 suffix;
     }
 

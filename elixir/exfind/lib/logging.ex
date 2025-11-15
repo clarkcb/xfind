@@ -3,7 +3,7 @@ defmodule ExFind.Logging do
   Documentation for `ExFind.Logging`.
   """
 
-  alias ExFind.Color
+  alias ExFind.ConsoleColor
 
   def log(message) do
     IO.puts(message)
@@ -11,7 +11,7 @@ defmodule ExFind.Logging do
 
   def log_error(message, colorize \\ true) do
     if colorize do
-      IO.puts(:stderr, Color.bold_red <> message <> Color.reset)
+      IO.puts(:stderr, ConsoleColor.bold_red <> message <> ConsoleColor.reset)
     else
       IO.puts(:stderr, message)
     end

@@ -1,5 +1,5 @@
 (ns cljfind.common
-  (:use [cljfind.color :only (BOLD_RED RESET)]))
+  (:use [cljfind.consolecolor :only (BOLD_RED RESET)]))
 
 (defn log-msg [^String msg & msgs]
   (println msg)

@@ -25,7 +25,7 @@ import Data.Time (UTCTime)
 import System.FilePath ((</>), dropFileName, splitPath, takeDirectory, takeFileName)
 import Text.Regex.PCRE
 
-import HsFind.Color (colorGreen, colorReset)
+import HsFind.ConsoleColor (colorGreen, colorReset)
 import HsFind.FileTypes
 import HsFind.FindSettings
 import HsFind.FileUtil (getExtensionIndex)

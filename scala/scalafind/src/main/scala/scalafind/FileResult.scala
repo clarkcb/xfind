@@ -133,9 +133,9 @@ class FileResultFormatter(val settings: FindSettings) {
       ""
     }
     prefix +
-      Color.GREEN.toString +
+      ConsoleColor.GREEN.toString +
       s.substring(matchStartIndex, matchEndIndex) +
-      Color.RESET.toString +
+      ConsoleColor.RESET.toString +
       suffix
   }
 

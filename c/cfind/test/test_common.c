@@ -3,7 +3,7 @@
 
 #include <assert.h>
 
-#include "color.h"
+#include "consolecolor.h"
 #include "common.h"
 #include "test_common.h"
 

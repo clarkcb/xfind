@@ -1,12 +1,12 @@
 /*
- * color.js
+ * consolecolor.js
  *
- * Define a colors enum for use in colorized console output
+ * Define a console color enum for use in colorized console output
  */
 
 'use strict'
 
-export const COLORS = {
+export const ConsoleColor = {
     RESET: '\u001b[0m',
     BLACK: '\u001b[0;30m',
     RED: '\u001b[0;31m',

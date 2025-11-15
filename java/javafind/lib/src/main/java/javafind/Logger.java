@@ -11,7 +11,7 @@ public class Logger {
 
     public static void logError(final String message, final boolean colorize) {
         if (colorize) {
-            System.err.println(Color.BOLD_RED.getValue() + "ERROR: " + message + Color.RESET.getValue());
+            System.err.println(ConsoleColor.BOLD_RED.getValue() + "ERROR: " + message + ConsoleColor.RESET.getValue());
         } else {
             System.err.println("ERROR: " + message);
         }

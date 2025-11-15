@@ -4,7 +4,7 @@
  * SearchResult class represents a search result
  */
 
-import {COLORS} from './color';
+import {ConsoleColor} from './consolecolor';
 import {FileResult} from './fileresult';
 import {FindSettings} from './findsettings';
 import path from "path";
@@ -40,9 +40,9 @@ export class FileResultFormatter {
             suffix = s.slice(matchEndIndex);
         }
         return prefix +
-            COLORS.GREEN +
+            ConsoleColor.GREEN +
             s.slice(matchStartIndex, matchEndIndex) +
-            COLORS.RESET +
+            ConsoleColor.RESET +
             suffix;
     }
 

@@ -1,4 +1,4 @@
-module HsFind.Color
+module HsFind.ConsoleColor
   (
       colorReset
     , colorBlack

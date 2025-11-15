@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "color.h"
+#include "consolecolor.h"
 #include "common.h"
 #include "fileresults.h"
 #include "fileutil.h"

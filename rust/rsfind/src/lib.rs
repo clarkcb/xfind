@@ -2,7 +2,7 @@
 #![crate_type = "rlib"]
 
 pub mod argtokenizer;
-pub mod color;
+pub mod consolecolor;
 pub mod common;
 pub mod config;
 pub mod filetypes;

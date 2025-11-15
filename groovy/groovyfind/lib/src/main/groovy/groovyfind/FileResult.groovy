@@ -136,9 +136,9 @@ class FileResultFormatter {
             suffix = s.substring(matchEndIndex)
         }
         return prefix +
-                Color.GREEN.value +
+                ConsoleColor.GREEN.value +
                 s.substring(matchStartIndex, matchEndIndex) +
-                Color.RESET.value +
+                ConsoleColor.RESET.value +
                 suffix;
     }
 

@@ -2,7 +2,7 @@
 #include <string.h>
 #include <time.h>
 
-#include "color.h"
+#include "consolecolor.h"
 #include "common.h"
 
 void log_msg(const char *msg)

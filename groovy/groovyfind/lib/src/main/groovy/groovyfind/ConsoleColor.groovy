@@ -1,6 +1,6 @@
 package groovyfind
 
-enum Color {
+enum ConsoleColor {
     RESET("\u001B[0m"),
     BLACK("\u001B[0;30m"),
     RED("\u001B[0;31m"),
@@ -22,7 +22,7 @@ enum Color {
 
     private final String value
 
-    Color(final String value) {
+    ConsoleColor(final String value) {
         this.value = value
     }
 

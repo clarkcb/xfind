@@ -28,7 +28,7 @@ FIND_OPTIONS_PATH="$XFIND_PATH/shared/findoptions.json"
 # this will be contain the contents of FIND_OPTIONS_PATH if needed
 FIND_OPTIONS_JSON=
 
-source "$BASHFIND_PATH/lib/color.sh"
+source "$BASHFIND_PATH/lib/consolecolor.sh"
 
 
 # File Types

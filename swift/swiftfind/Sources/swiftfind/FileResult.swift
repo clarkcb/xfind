@@ -59,9 +59,9 @@ public class FileResultFormatter {
             suffix = String(s[strMatchEndIndex...])
         }
         return prefix +
-        Color.GREEN +
+        ConsoleColor.GREEN +
         String(s[strMatchStartIndex ..< strMatchEndIndex]) +
-        Color.RESET +
+        ConsoleColor.RESET +
         suffix
     }
 

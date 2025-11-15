@@ -7,7 +7,7 @@
 // Requirements
 //-----------------------------------------------------------------------------
 
-const {COLORS} = require('./color');
+const {ConsoleColor} = require('./consolecolor');
 const common = require('./common');
 const {FileResult} = require('./fileresult');
 const {FileResultFormatter} = require('./fileresultformatter');
@@ -27,7 +27,7 @@ const {SortBy, nameToSortBy, sortByToName} = require('./sortby');
 //-----------------------------------------------------------------------------
 
 module.exports = {
-  COLORS,
+  COLORS: ConsoleColor,
   common,
   FileResult,
   FileResultFormatter,

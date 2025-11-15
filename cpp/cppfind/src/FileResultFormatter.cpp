@@ -1,5 +1,5 @@
 #include <regex>
-#include "color.h"
+#include "consolecolor.h"
 #include "FileResultFormatter.h"
 
 namespace cppfind {

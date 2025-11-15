@@ -4,7 +4,7 @@
  * Some common functions, etc.
  */
 
-const {COLORS} = require('./color');
+const {ConsoleColor} = require('./consolecolor');
 
 // add a startsWith method to String type
 if (typeof String.prototype.startsWith !== 'function') {
@@ -17,7 +17,7 @@ const log = (message) => console.log(message);
 
 const logError = (message, colorize = true) => {
     if (colorize) {
-        process.stderr.write(`${COLORS.BOLD_RED}${message}${COLORS.RESET}\n`);
+        process.stderr.write(`${ConsoleColor.BOLD_RED}${message}${ConsoleColor.RESET}\n`);
     } else {
         process.stderr.write(message + "\n");
     }

@@ -1,12 +1,12 @@
 ;;; ############################################################################
 ;;;
-;;; color.clj
+;;; consolecolor.clj
 ;;;
 ;;; Console colors
 ;;;
 ;;; ############################################################################
 
-(ns cljfind.color)
+(ns cljfind.consolecolor)
 
 (def ^:const ^String RESET "\u001B[0m")
 (def ^:const ^String BLACK "\u001B[0;30m")

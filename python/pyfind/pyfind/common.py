@@ -12,7 +12,7 @@ import sys
 from datetime import datetime
 from dateutil.parser import parse, ParserError
 
-from .color import ConsoleColor
+from .consolecolor import ConsoleColor
 from .findexception import FindException
 
 

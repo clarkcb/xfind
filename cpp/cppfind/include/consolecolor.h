@@ -1,8 +1,5 @@
-#ifndef CFIND_COLOR_H
-#define CFIND_COLOR_H
-
-// Add this to string length to give room for color and reset
-#define COLOR_LENGTH  12
+#ifndef CPPFIND_CONSOLECOLOR_H
+#define CPPFIND_CONSOLECOLOR_H
 
 #define COLOR_RESET   "\033[0m"
 #define COLOR_BLACK   "\033[0;30m"
@@ -23,4 +20,4 @@
 #define BOLD_CYAN     "\033[1;36m"
 #define BOLD_WHITE    "\033[1;37m"
 
-#endif //CFIND_COLOR_H
+#endif //CPPFIND_CONSOLECOLOR_H

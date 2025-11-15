@@ -1,6 +1,6 @@
 package ktfind
 
-enum class Color(val value: String) {
+enum class ConsoleColor(val value: String) {
     RESET("\u001B[0m"),
     BLACK("\u001B[0;30m"),
     RED("\u001B[0;31m"),

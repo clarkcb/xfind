@@ -13,7 +13,7 @@
   (:import (cljfind.findsettings FindSettings)
            (java.nio.file Paths Path Files))
   (:use [clojure.string :as string :only (join lower-case)]
-        [cljfind.color :only (GREEN RESET)]
+        [cljfind.consolecolor :only (GREEN RESET)]
         [cljfind.filetypes :only (to-name)]
         [cljfind.fileutil :only (get-path-name get-parent-name)]
         ))

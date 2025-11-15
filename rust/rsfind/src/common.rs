@@ -2,7 +2,7 @@ use chrono::NaiveDate;
 use chrono::format::ParseResult;
 use regex::Regex;
 
-use crate::color::{BOLD_RED, RESET};
+use crate::consolecolor::{BOLD_RED, RESET};
 
 // logging
 pub fn log(message: &str) {

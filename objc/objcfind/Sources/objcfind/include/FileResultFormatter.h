@@ -2,7 +2,6 @@
 #define FileResultFormatter_h
 
 #import <Foundation/Foundation.h>
-#import "color.h"
 #import "FileResult.h"
 #import "FindSettings.h"
 

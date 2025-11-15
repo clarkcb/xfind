@@ -6,7 +6,7 @@
 #include <string.h>
 #include <sys/stat.h>
 
-#include "color.h"
+#include "consolecolor.h"
 #include "config.h"
 #include "finder.h"
 #include "finderr.h"

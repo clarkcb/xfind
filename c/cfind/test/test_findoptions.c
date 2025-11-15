@@ -5,7 +5,7 @@
 #include "finderr.h"
 #include "test_findoptions.h"
 
-#include "color.h"
+#include "consolecolor.h"
 #include "findoptions.h"
 
 void test_settings_from_args(void)

@@ -3,7 +3,7 @@ module Main (main) where
 import System.Environment (getArgs)
 import System.IO (hPutStr, stderr)
 
-import HsFind.Color (boldRed, colorReset)
+import HsFind.ConsoleColor (boldRed, colorReset)
 import HsFind.FindOptions (getFindOptions, getUsage, settingsFromArgs)
 import HsFind.Finder (doFind, formatMatchingDirs, formatMatchingFiles, getFinder, validateFindSettings)
 import HsFind.FindSettings (FindSettings(..), findSettingsToString)

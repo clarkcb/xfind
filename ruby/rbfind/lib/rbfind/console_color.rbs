@@ -1,4 +1,4 @@
-module Color
+module ConsoleColor
   RESET: 0
   BLACK: 30
   RED: 31

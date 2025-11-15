@@ -6,7 +6,7 @@
 
 'use strict';
 
-import {COLORS} from './color';
+import {ConsoleColor} from './consolecolor';
 
 export interface String {
     startsWith(str: string): boolean;
@@ -25,7 +25,7 @@ export function log(message: string): void {
 
 export function logError(message: string, colorize: boolean = true): void {
     if (colorize) {
-        console.error(`${COLORS.BOLD_RED}${message}${COLORS.RESET}`);
+        console.error(`${ConsoleColor.BOLD_RED}${message}${ConsoleColor.RESET}`);
     } else {
         console.error(message);
     }

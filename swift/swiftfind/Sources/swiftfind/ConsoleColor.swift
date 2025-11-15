@@ -8,7 +8,7 @@
 
 import Foundation
 
-public enum Color {
+public enum ConsoleColor {
     public static let RESET = "\u{001B}[0m"
     public static let BLACK = "\u{001B}[0;30m"
     public static let RED = "\u{001B}[0;31m"

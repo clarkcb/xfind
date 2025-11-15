@@ -7,7 +7,7 @@ object Common {
 
   def logError(message: String, colorize: Boolean = true): Unit = {
     if (colorize) {
-      System.err.println(Color.BOLD_RED.toString +"ERROR: " + message + Color.RESET.toString)
+      System.err.println(ConsoleColor.BOLD_RED.toString +"ERROR: " + message + ConsoleColor.RESET.toString)
     } else {
       System.err.println("ERROR: " + message)
     }

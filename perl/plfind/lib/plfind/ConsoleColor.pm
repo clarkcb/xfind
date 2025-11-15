@@ -1,12 +1,12 @@
 ###############################################################################
 #
-# Color.pm
+# ConsoleColor.pm
 #
-# Enum of (console) color values
+# Enum of console color values
 #
 ###############################################################################
 
-package plfind::Color;
+package plfind::ConsoleColor;
 
 use strict;
 use warnings;

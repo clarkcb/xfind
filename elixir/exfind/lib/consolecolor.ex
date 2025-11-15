@@ -1,6 +1,6 @@
-defmodule ExFind.Color do
+defmodule ExFind.ConsoleColor do
   @moduledoc """
-  Documentation for `ExFind.Color`.
+  Documentation for `ExFind.ConsoleColor`.
 
   Using this instead of IO.ANSI so we can control the exact escape sequences and match with other language versions
   """

@@ -4,7 +4,7 @@
 #include <string.h>
 #include "test_fileutil.h"
 
-#include "color.h"
+#include "consolecolor.h"
 #include "config.h"
 #include "fileutil.h"
 
