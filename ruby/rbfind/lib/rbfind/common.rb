@@ -14,7 +14,11 @@ module RbFind
     STDOUT.puts(message)
   end
 
-  def log_err(message)
-    STDERR.puts("ERROR: #{message}")
+  def log_err(message, colorize = true)
+    err = "ERROR: #{message}"
+    if colorize
+      err = err.bold_red
+    end
+    STDERR.puts(err)
   end
 end

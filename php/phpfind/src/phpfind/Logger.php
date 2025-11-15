@@ -21,9 +21,13 @@ class Logger
      * @param string $msg
      * @return void
      */
-    public static function log_err(string $msg): void
+    public static function log_err(string $msg, bool $colorize = true): void
     {
-        fwrite(STDERR, "ERROR: $msg\n");
+        $err = "ERROR: $msg";
+        if ($colorize) {
+            $err = ConsoleColor::BoldRed->value . $err . ConsoleColor::Reset->value;
+        }
+        fwrite(STDERR, "$err\n");
         flush();
     }
 }

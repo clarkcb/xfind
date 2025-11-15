@@ -4,9 +4,9 @@ open FsFindLib
 
 module Main =
 
-    let HandleError (err : string) : unit =
+    let HandleError (err : string) (colorize : bool) : unit =
         Logger.Log("");
-        Logger.LogError err
+        Logger.LogErrorColor err colorize
         FindOptions.Usage(1)
 
     let Find (settings : FindSettings) : unit =
@@ -14,7 +14,7 @@ module Main =
 
         let errs = finder.ValidateSettings()
         if errs.Length > 0 then
-            HandleError errs.Head
+            HandleError errs.Head settings.Colorize
 
         let files = finder.Find()
         let formatter = FileResultFormatter(settings)
@@ -28,18 +28,15 @@ module Main =
 
     [<EntryPoint>]
     let Main (args : string[]) = 
-        match (Array.toList args) with
-        | [] -> HandleError "Startpath not defined"
-        | _ ->
-            match FindOptions.SettingsFromArgs(args) with
-            | Ok settings ->
-                if settings.Debug then
-                    Logger.Log settings.ToString
-                if settings.PrintUsage then
-                    FindOptions.Usage(0)
-                else
-                    Find settings
-            | Error e -> HandleError e
+        match FindOptions.SettingsFromArgs(args) with
+        | Ok settings ->
+            if settings.Debug then
+                Logger.Log settings.ToString
+            if settings.PrintUsage then
+                FindOptions.Usage(0)
+            else
+                Find settings
+        | Error e -> HandleError e true
 
         // main entry point return
         0;;

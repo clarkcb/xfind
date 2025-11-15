@@ -7,8 +7,12 @@ fun log(message: String) {
     println(message)
 }
 
-fun logError(message: String) {
-    System.err.println("ERROR: $message")
+fun logError(message: String, colorize: Boolean = true) {
+    if (colorize) {
+        System.err.println(Color.BOLD_RED.value +"ERROR: $message" + Color.RESET.value)
+    } else {
+        System.err.println("ERROR: $message")
+    }
 }
 
 enum class FindError(val message: String) {

@@ -16,8 +16,12 @@ public func logMsg(_ str: String) {
     print(str)
 }
 
-public func logError(_ str: String) {
-    fputs("ERROR: \(str)\n", stderr)
+public func logError(_ str: String, colorize: Bool = true) {
+    if colorize {
+        fputs("\(Color.BOLD_RED)ERROR: \(str)\(Color.RESET)\n", stderr)
+    } else {
+        fputs("ERROR: \(str)\n", stderr)
+    }
 }
 
 // from http://ijoshsmith.com/2014/06/18/create-a-swift-dictionary-from-an-array/

@@ -13,9 +13,12 @@ use phpfind\FindException;
 
 function main($argv): void
 {
+    $colorize = true;
     $find_options = new FindOptions();
     try {
         $settings = $find_options->settings_from_args(array_slice($argv, 1));
+        $colorize = $settings->colorize;
+
         if ($settings->debug) {
             Logger::log_msg("settings: $settings");
         }
@@ -40,7 +43,7 @@ function main($argv): void
         }
     } catch (FindException $e) {
         Logger::log_msg('');
-        Logger::log_err($e->getMessage() . "\n");
+        Logger::log_err($e->getMessage() . "\n", $colorize);
         $find_options->usage_and_exit(1);
     }
 }

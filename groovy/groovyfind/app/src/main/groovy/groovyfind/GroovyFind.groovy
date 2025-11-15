@@ -1,8 +1,5 @@
 package groovyfind
 
-import java.nio.file.Path
-import java.util.stream.Collectors
-
 class GroovyFind {
 
     private static void handleError(final String message) {
@@ -10,18 +7,20 @@ class GroovyFind {
         Logger.logError(message)
     }
 
-    private static void handleError(final String message, final FindOptions options) {
+    private static void handleError(final String message, final boolean colorize, final FindOptions options) {
         Logger.log('')
-        Logger.logError(message + '\n')
+        Logger.logError(message + '\n', colorize)
         options.usage(1)
     }
 
     static void main(final String[] args) {
+        var colorize = true
         try {
             FindOptions options = new FindOptions()
 
             try {
                 FindSettings settings = options.settingsFromArgs(args)
+                colorize = settings.colorize
 
                 if (settings.debug) {
                     Logger.log('\nsettings: ' + settings.toString() + '\n')
@@ -44,7 +43,7 @@ class GroovyFind {
                     Finder.printMatchingFiles(fileResults, formatter)
                 }
             } catch (FindException e) {
-                handleError(e.message, options)
+                handleError(e.message, colorize, options)
             }
         } catch (IOException e) {
             handleError(e.message)

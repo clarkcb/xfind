@@ -45,9 +45,9 @@ def find_main
   find(options, settings)
 end
 
-def handle_find_error(err, options)
+def handle_find_error(err, options, settings)
   RbFind::log('')
-  RbFind::log_err("#{err.message}\n\n")
+  RbFind::log_err("#{err.message}\n", settings.colorize)
   options.usage
 end
 
@@ -56,9 +56,9 @@ def find(options, settings)
     begin
       RbFind::Finder.new(settings)
     rescue RbFind::FindError => e
-      handle_find_error(e, options)
+      handle_find_error(e, options, settings)
     rescue => e
-      handle_find_error(e, options)
+      handle_find_error(e, options, settings)
     end
   file_results = finder.find
   formatter = RbFind::FileResultFormatter.new(settings)

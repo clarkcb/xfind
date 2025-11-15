@@ -2,13 +2,23 @@ use chrono::NaiveDate;
 use chrono::format::ParseResult;
 use regex::Regex;
 
+use crate::color::{BOLD_RED, RESET};
+
 // logging
 pub fn log(message: &str) {
     println!("{}", message);
 }
 
 pub fn log_err(message: &str) {
-    eprintln!("ERROR: {}", message);
+    log_err_color(message, true)
+}
+
+pub fn log_err_color(message: &str, colorize: bool) {
+    if colorize {
+        eprintln!("{}ERROR: {}{}", BOLD_RED, message, RESET);
+    } else {
+        eprintln!("ERROR: {}", message);
+    }
 }
 
 pub fn date_from_string(s: &str) -> ParseResult<NaiveDate> {

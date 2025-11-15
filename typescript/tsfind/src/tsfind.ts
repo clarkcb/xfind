@@ -12,9 +12,9 @@ import {FindSettings} from './findsettings';
 import {Finder} from './finder';
 import {FileResultFormatter} from "./fileresultformatter";
 
-function handleError(err: Error | any, findOptions: FindOptions) {
+function handleError(err: Error | any, colorize: boolean, findOptions: FindOptions) {
     const errMsg: string = 'ERROR: ' + err.message;
-    common.logError('\n' + errMsg + '\n');
+    common.logError('\n' + errMsg + '\n', colorize);
     findOptions.usageWithCode(1);
 }
 
@@ -24,7 +24,7 @@ function findMain() {
 
     findOptions.settingsFromArgs(args, async (err: Error | void, settings: FindSettings) => {
         if (err) {
-            handleError(err, findOptions);
+            handleError(err, true, findOptions);
         }
 
         if (settings.debug)
@@ -53,7 +53,7 @@ function findMain() {
             }
 
         } catch (err2) {
-            handleError(err2 as Error, findOptions);
+            handleError(err2 as Error, settings.colorize, findOptions);
         }
     });
 }

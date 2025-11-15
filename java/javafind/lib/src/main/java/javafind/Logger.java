@@ -6,6 +6,14 @@ public class Logger {
     }
 
     public static void logError(final String message) {
-        System.err.println("ERROR: " + message);
+        logError(message, true);
+    }
+
+    public static void logError(final String message, final boolean colorize) {
+        if (colorize) {
+            System.err.println(Color.BOLD_RED.getValue() + "ERROR: " + message + Color.RESET.getValue());
+        } else {
+            System.err.println("ERROR: " + message);
+        }
     }
 }

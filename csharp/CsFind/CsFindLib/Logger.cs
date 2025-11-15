@@ -9,8 +9,9 @@ public static class Logger
 		Console.WriteLine(message);
 	}
 
-	public static void LogError(string message)
+	public static void LogError(string message, bool colorize = true)
 	{
-		Console.Error.WriteLine($"ERROR: {message}");
+		var err = colorize ? $"{Color.BoldRed}ERROR: {message}{Color.Reset}" : $"ERROR: {message}";
+		Console.Error.WriteLine(err);
 	}
 }

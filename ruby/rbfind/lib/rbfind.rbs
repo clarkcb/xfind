@@ -1,7 +1,7 @@
 class Object
   def find_main: () -> void
 
-  def handle_find_error: (StandardError err, RbFind::FindOptions options) -> void
+  def handle_find_error: (StandardError err, RbFind::FindOptions options, RbFind::FindSettings settings) -> void
 
   def find: (RbFind::FindOptions options, RbFind::FindSettings settings) -> void
 end

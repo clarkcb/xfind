@@ -6,10 +6,13 @@ static class Program
 {
 	public static void Main(string[] args)
 	{
-		var options = new FindOptions();
+		var colorize = true;
+		FindOptions? options =  null;
 		try
 		{
+			options = new FindOptions();
 			var settings = options.SettingsFromArgs(args);
+			colorize = settings.Colorize;
 
 			if (settings.Debug)
 			{
@@ -38,8 +41,8 @@ static class Program
 		catch (FindException e)
 		{
 			Logger.Log("");
-			Logger.LogError(e.Message);
-			options.Usage(1);
+			Logger.LogError(e.Message, colorize);
+			options?.Usage(1);
 		}
 	}
 }

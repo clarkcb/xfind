@@ -62,6 +62,7 @@ typedef enum {
 // common functions
 void logMsg(NSString *s);
 void logError(NSString *s);
+void logErrorColor(NSString *s, BOOL colorize);
 void setError(NSError **e, NSString *msg);
 NSString * boolToNSString(BOOL b);
 NSString * arrayToNSString(NSArray *arr);

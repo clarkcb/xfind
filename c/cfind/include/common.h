@@ -22,6 +22,8 @@ void log_msg(const char *msg);
 
 void log_err(const char *msg);
 
+void log_err_color(const char *msg);
+
 bool is_null_or_empty_string(const char *s);
 
 int char_in_string(char c, const char *s);

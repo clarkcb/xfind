@@ -1,18 +1,25 @@
 #include <stdio.h>
+#include <string.h>
 
+#include "common.h"
 #include "fileresults.h"
 #include "findoptions.h"
 #include "finder.h"
 
+void main_handle_error(const error_t err, const FindSettings *settings)
+{
+    char err_msg[100];
+    err_msg[0] = '\0';
+    get_error_message(err, err_msg);
+    if (settings->colorize) {
+        log_err_color(err_msg);
+    } else {
+        log_err(err_msg);
+    }
+}
 
 int main(int argc, char *argv[])
 {
-    if (argc < 2) {
-        handle_error(E_STARTPATH_NOT_DEFINED);
-        print_usage();
-        return E_STARTPATH_NOT_DEFINED;
-    }
-
     FindOptions *options = empty_find_options();
     error_t err = get_find_options(options);
     if (err) {
@@ -24,7 +31,7 @@ int main(int argc, char *argv[])
     FindSettings *settings = default_settings();
     err = settings_from_args(argc - 1, ++argv, options, settings);
     if (err != E_OK) {
-        handle_error(err);
+        main_handle_error(err, settings);
         print_usage();
         return (int) err;
     }
@@ -55,7 +62,7 @@ int main(int argc, char *argv[])
                 }
             }
         } else {
-            handle_error(err);
+            main_handle_error(err, settings);
             print_usage();
         }
     }

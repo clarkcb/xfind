@@ -112,7 +112,7 @@ exit_with_error () {
     local color="$BRED"
     if [ "$COLORIZE" == true ]
     then
-        echo -e "\n${color}ERROR: $error${COLOR_RESET}"
+        echo -e "\n${color}ERROR: $error${COLOR_RESET}" 1>&2
     else
         echo -e "\nERROR: $error"
     fi

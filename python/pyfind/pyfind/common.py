@@ -12,6 +12,7 @@ import sys
 from datetime import datetime
 from dateutil.parser import parse, ParserError
 
+from .color import ConsoleColor
 from .findexception import FindException
 
 
@@ -20,9 +21,12 @@ def log(message: str):
     print(message)
 
 
-def log_error(message: str):
+def log_error(message: str, colorize: bool = True):
     """log an error message (for now just print to stderr)"""
-    print(f"ERROR: {message}", file=sys.stderr)
+    if colorize:
+        print(f"{ConsoleColor.BOLD_RED}ERROR: {message}{ConsoleColor.RESET}", file=sys.stderr)
+    else:
+        print(f"ERROR: {message}", file=sys.stderr)
 
 
 def get_text(nodelist):

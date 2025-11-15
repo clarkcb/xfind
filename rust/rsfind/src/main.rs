@@ -2,7 +2,7 @@ use core::slice::Iter;
 use std::env;
 use std::process;
 
-use crate::common::{log, log_err};
+use crate::common::{log, log_err, log_err_color};
 use crate::fileresultformatter::FileResultFormatter;
 use crate::finder::{print_matching_dirs, print_matching_files};
 use crate::finderror::FindError;
@@ -22,14 +22,14 @@ pub mod findoptions;
 pub mod findsettings;
 pub mod sortby;
 
-fn print_error(error: FindError, options: &findoptions::FindOptions) {
+fn print_error(error: FindError, colorize: bool, options: &findoptions::FindOptions) {
     log("");
-    log_err(error.description.as_str());
+    log_err_color(error.description.as_str(), colorize);
     options.print_usage();
 }
 
-fn error_and_exit(error: FindError, options: &findoptions::FindOptions) {
-    print_error(error, options);
+fn error_and_exit(error: FindError, colorize: bool, options: &findoptions::FindOptions) {
+    print_error(error, colorize, options);
     process::exit(1);
 }
 
@@ -56,10 +56,12 @@ fn find(args: Iter<String>) {
                 process::exit(0);
             }
 
+            let colorize = settings.colorize();
+
             let finder = match finder::Finder::new(settings) {
                 Ok(finder) => finder,
                 Err(error) => {
-                    print_error(error, &options);
+                    print_error(error, colorize, &options);
                     process::exit(1);
                 }
             };
@@ -75,11 +77,11 @@ fn find(args: Iter<String>) {
                         print_matching_files(&file_results, &formatter);
                     }
                 }
-                Err(error) => error_and_exit(error, &options),
+                Err(error) => error_and_exit(error, colorize, &options),
             }
         }
         Err(error) => {
-            error_and_exit(error, &options);
+            error_and_exit(error, true, &options);
         }
     }
 }

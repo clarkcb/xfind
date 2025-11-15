@@ -2,9 +2,10 @@ package gofind
 
 import (
 	"fmt"
-	"github.com/pmylund/sortutil"
 	"os"
 	"sort"
+
+	"github.com/pmylund/sortutil"
 )
 
 func Log(message string) {
@@ -13,6 +14,14 @@ func Log(message string) {
 
 func LogError(message string) {
 	_, err := fmt.Fprintln(os.Stderr, fmt.Sprintf("ERROR: %s", message))
+	if err != nil {
+		return
+	}
+}
+
+func LogErrorColor(message string) {
+	errMsg := fmt.Sprintf("%sERROR: %s%s", BoldRed, message, ColorReset)
+	_, err := fmt.Fprintln(os.Stderr, errMsg)
 	if err != nil {
 		return
 	}

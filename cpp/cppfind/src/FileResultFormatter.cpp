@@ -31,7 +31,7 @@ namespace cppfind {
     std::string FileResultFormatter::colorize(const std::string& s, const unsigned long match_start_idx,
         const unsigned long match_end_idx) {
         std::string colorized;
-        colorized.reserve(s.length() + 8);
+        colorized.reserve(s.length() + 12);
         if (match_start_idx > 0) {
             colorized.append(s.substr(0, match_start_idx));
         }

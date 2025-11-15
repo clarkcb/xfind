@@ -62,23 +62,23 @@ my $bool_action_hash = {
     },
     'nocolorize' => sub {
         my ($bool, $settings) = @_;
-        $settings->set_property('colorize', !$bool);
+        $settings->set_property('colorize', plfind::common::neg_bool($bool));
     },
     'nofollowsymlinks' => sub {
         my ($bool, $settings) = @_;
-        $settings->set_property('follow_symlinks', !$bool);
+        $settings->set_property('follow_symlinks', plfind::common::neg_bool($bool));
     },
     'noprintdirs' => sub {
         my ($bool, $settings) = @_;
-        $settings->set_property('print_dirs', !$bool);
+        $settings->set_property('print_dirs', plfind::common::neg_bool($bool));
     },
     'noprintfiles' => sub {
         my ($bool, $settings) = @_;
-        $settings->set_property('print_files', !$bool);
+        $settings->set_property('print_files', plfind::common::neg_bool($bool));
     },
     'norecursive' => sub {
         my ($bool, $settings) = @_;
-        $settings->set_property('recursive', !$bool);
+        $settings->set_property('recursive', plfind::common::neg_bool($bool));
     },
     'printdirs' => sub {
         my ($bool, $settings) = @_;

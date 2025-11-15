@@ -28,6 +28,7 @@
 
 typedef unsigned int error_t;
 
+void get_error_message(error_t err, char *err_msg);
 void handle_error(error_t err);
 
 #endif

@@ -1,3 +1,4 @@
+#import "color.h"
 #import "common.h"
 #import "Regex.h"
 
@@ -8,7 +9,20 @@ void logMsg(NSString *s) {
 
 void logError(NSString *s) {
     //NSLog(@"ERROR: %@", s);
-    printf("ERROR: %s\n", [s UTF8String]);
+    fprintf(stderr, "ERROR: %s\n", [s UTF8String]);
+}
+
+void logErrorColor(NSString *s, BOOL colorize) {
+    if (colorize) {
+        NSMutableString *err = [NSMutableString string];
+        [err appendFormat:@"%s", BOLD_RED];
+        [err appendString:@"ERROR: "];
+        [err appendString:s];
+        [err appendFormat:@"%s", ANSI_RESET];
+        fprintf(stderr, "%s\n", [err UTF8String]);
+    } else {
+        fprintf(stderr, "ERROR: %s\n", [s UTF8String]);
+    }
 }
 
 void setError(NSError **error, NSString *msg) {

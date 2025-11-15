@@ -11,7 +11,23 @@
         {
             "group": "colorize",
             "name": "colorize in usage",
-            "args": ["-h" ],
+            "args": ["-h"],
+            "replace_xfind_name": true,
+            "common_args": [
+            ]
+        },
+        {
+            "group": "colorize",
+            "name": "colorize error",
+            "args": ["-c"],
+            "replace_xfind_name": true,
+            "common_args": [
+            ]
+        },
+        {
+            "group": "colorize",
+            "name": "no colorize error",
+            "args": ["-C"],
             "replace_xfind_name": true,
             "common_args": [
             ]

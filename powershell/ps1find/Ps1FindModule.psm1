@@ -60,10 +60,21 @@ function LogMsg {
 }
 
 function LogError {
-    param([string]$msg)
+    [OutputType([string])]
+    param([string]$err)
 
-    # Write-Output "ERROR: $msg`n"
-    Write-Host "`nERROR: $msg" -ForegroundColor Red
+    # Write-Error adds a stack trace, which we don't want
+    # Write-Error "`nERROR: ${msg}"
+    $host.UI.WriteErrorLine("`nERROR: ${err}")
+}
+
+function LogErrorColor {
+    [OutputType([string])]
+    param([string]$err)
+
+    # Write-Error adds a stack trace, which we don't want
+    # Write-Error "`n${BoldRed}ERROR: ${msg}${Reset}"
+    $host.UI.WriteErrorLine("`n${BoldRed}ERROR: ${err}${Reset}")
 }
 #endregion
 

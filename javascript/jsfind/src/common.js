@@ -4,6 +4,8 @@
  * Some common functions, etc.
  */
 
+const {COLORS} = require('./color');
+
 // add a startsWith method to String type
 if (typeof String.prototype.startsWith !== 'function') {
     String.prototype.startsWith = (str) => {
@@ -13,7 +15,13 @@ if (typeof String.prototype.startsWith !== 'function') {
 
 const log = (message) => console.log(message);
 
-const logError = (message) => console.error(message);
+const logError = (message, colorize = true) => {
+    if (colorize) {
+        process.stderr.write(`${COLORS.BOLD_RED}${message}${COLORS.RESET}\n`);
+    } else {
+        process.stderr.write(message + "\n");
+    }
+}
 
 const boolHashFromArray = (arr) => {
     const hash = {};

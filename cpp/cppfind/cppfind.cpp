@@ -7,10 +7,11 @@
 using namespace cppfind;
 
 int main(int argc, char *argv[]) {
-    std::unique_ptr<FindOptions> options;
+    std::unique_ptr<FindOptions> options_ptr;
+    std::unique_ptr<FindSettings> settings_ptr;
 
     try {
-        options = std::make_unique<FindOptions>();
+        options_ptr = std::make_unique<FindOptions>();
     } catch (const FindException& e) {
         log_msg("");
         log_error(e.what());
@@ -18,17 +19,17 @@ int main(int argc, char *argv[]) {
     }
 
     try {
-        const auto settings = options->settings_from_args(argc, argv);
+        const auto settings = options_ptr->settings_from_args(argc, argv);
 
         if (settings.debug()) {
             log_msg(settings.string());
         }
 
         if (settings.print_usage()) {
-            options->usage();
+            options_ptr->usage();
         }
 
-        const auto settings_ptr = std::make_unique<FindSettings>(settings);
+        settings_ptr = std::make_unique<FindSettings>(settings);
 
         const auto finder = Finder(settings_ptr);
 
@@ -45,8 +46,8 @@ int main(int argc, char *argv[]) {
         }
     } catch (const FindException& e) {
         log_msg("");
-        log_error(e.what());
-        options->usage();
+        log_error_color(e.what(), settings_ptr->colorize());
+        options_ptr->usage();
     }
 
     return 0;

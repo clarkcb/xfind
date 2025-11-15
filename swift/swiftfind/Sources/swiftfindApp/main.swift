@@ -9,19 +9,21 @@
 import Foundation
 import swiftfind
 
-func handleError(_ error: FindError, _ options: FindOptions) {
+func handleError(_ error: FindError, _ colorize: Bool, _ options: FindOptions) {
     logMsg("")
-    logError(error.msg)
+    logError(error.msg, colorize: colorize)
     options.usage(1)
 }
 
 func main() {
+    var colorize = true
     let options = FindOptions()
 
     let args: [String] = [] + CommandLine.arguments.dropFirst()
 
     do {
         let settings = try options.settingsFromArgs(args)
+        colorize = settings.colorize
 
         if settings.debug {
             logMsg("\nsettings: \(settings)")
@@ -44,7 +46,7 @@ func main() {
             finder.printMatchingFiles(fileResults, formatter)
         }
     } catch let error as FindError {
-        handleError(error, options)
+        handleError(error, colorize, options)
     } catch {
         logError("Unknown error occurred")
     }

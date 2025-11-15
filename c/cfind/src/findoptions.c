@@ -255,8 +255,8 @@ error_t get_find_options(FindOptions *options)
 
     // load the file
     const long fsize = file_size(full_path);
-    // current size is 4732, make sure it's not dramatically bigger than that
-    assert(fsize <= 5200);
+    // current size is 5263, make sure it's not dramatically bigger than that
+    assert(fsize <= 5300);
     char contents[fsize];
     contents[0] = '\0';
     FILE *fp = fopen(full_path, "r");

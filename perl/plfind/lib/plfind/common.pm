@@ -20,7 +20,15 @@ sub log_msg {
 
 sub log_err {
     my $msg = shift;
-    print STDERR 'ERROR: ' . $msg . "\n";
+    my $colorize = shift;
+    if (!defined($colorize)) {
+        $colorize = $1;
+    }
+    my $err = 'ERROR: ' . $msg;
+    if ($colorize == 1) {
+        $err = plfind::Color->BOLD_RED . $err . plfind::Color->RESET;
+    }
+    print STDERR $err . "\n";
 }
 
 sub trim {
@@ -65,6 +73,23 @@ sub uniq {
 sub is_bool {
     my $bool = shift;
     return $bool =~ /^(0|1|true|false)$/;
+}
+
+sub to_bool {
+    my $bool = shift;
+    if (!defined($bool) || $bool == 0 || $bool eq '') {
+        return 0;
+    }
+    return 1;
+}
+
+sub neg_bool {
+    my $bool = shift;
+    $bool = to_bool($bool);
+    if ($bool == 0) {
+        return 1;
+    }
+    return 0;
 }
 
 sub bool_to_string {

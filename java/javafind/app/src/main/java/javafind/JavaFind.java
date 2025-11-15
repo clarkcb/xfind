@@ -17,23 +17,25 @@ import static javafind.Logger.logError;
 
 public class JavaFind {
 
-    private static void handleError(final String message) {
+    private static void handleError(final String message, final boolean colorize) {
         log("");
-        logError(message);
+        logError(message, colorize);
     }
 
-    private static void handleError(final String message, final FindOptions options) {
+    private static void handleError(final String message, final boolean colorize, final FindOptions options) {
         log("");
-        logError(message + "\n");
+        logError(message + "\n", colorize);
         options.usage(1);
     }
 
     public static void main(final String[] args) {
+        var colorize = true;
         try {
             var options = new FindOptions();
 
             try {
                 var settings = options.settingsFromArgs(args);
+                colorize = settings.getColorize();
 
                 if (settings.getDebug()) {
                     log("\nsettings: " + settings + "\n");
@@ -57,11 +59,11 @@ public class JavaFind {
                 }
 
             } catch (FindException e) {
-                handleError(e.getMessage(), options);
+                handleError(e.getMessage(), colorize, options);
             }
 
         } catch (IOException e) {
-            handleError(e.getMessage());
+            handleError(e.getMessage(), colorize);
         }
     }
 }

@@ -436,10 +436,10 @@ void print_dir_results(const FileResults *results, const FindSettings *settings)
         if (settings->colorize && is_null_or_empty_regex_node(settings->in_dir_patterns) == 0) {
             for (i = 0; i < dir_count; i++) {
                 size_t dlen = strnlen(dir_array[i], MAX_PATH_LENGTH);
-                char dstr[dlen + 10];
+                char dstr[dlen + COLOR_LENGTH + 1];
                 dstr[0] = '\0';
                 format_dir(dir_array[i], settings, dstr);
-                dstr[dlen + 10] = '\0';
+                dstr[dlen + COLOR_LENGTH + 1] = '\0';
                 log_msg(dstr);
             }
 

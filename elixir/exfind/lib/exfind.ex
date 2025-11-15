@@ -9,8 +9,8 @@ defmodule ExFind.App do
   alias ExFind.FindOptions
   alias ExFind.Logging
 
-  def handle_error(message, find_options) do
-    Logging.log_error("\nERROR: #{message}")
+  def handle_error(message, colorize, find_options) do
+    Logging.log_error("\nERROR: #{message}", colorize)
     FindOptions.usage(find_options.options)
   end
 
@@ -38,7 +38,7 @@ defmodule ExFind.App do
     else
       finder = Finder.new(settings)
       case Finder.find(finder) do
-        {:error, message} -> handle_error(message, find_options)
+        {:error, message} -> handle_error(message, settings.colorize, find_options)
         {:ok, results} -> handle_results(results, settings)
       end
     end
@@ -48,11 +48,11 @@ defmodule ExFind.App do
     find_options = FindOptions.new()
     try do
       case FindOptions.get_settings_from_args(args, find_options.options) do
-        {:error, message} -> handle_error(message, find_options)
+        {:error, message} -> handle_error(message, true, find_options)
         {:ok, settings} -> find(settings, find_options)
       end
     rescue
-      e in FindError -> handle_error(e.message, find_options)
+      e in FindError -> handle_error(e.message, true, find_options)
     end
   end
 end

@@ -29,6 +29,8 @@ void log_msg(const char *msg);
 
 void log_err(const char *msg);
 
+void log_err_color(const char *msg);
+
 bool is_null_or_empty_string(const char *s);
 
 int char_in_string(char c, const char *s);
@@ -116,6 +118,7 @@ void get_find_options_path(char *dest);
 
 typedef unsigned int error_t;
 
+void get_error_message(error_t err, char *err_msg);
 void handle_error(error_t err);
 
 

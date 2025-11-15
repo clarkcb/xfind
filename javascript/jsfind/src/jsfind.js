@@ -12,9 +12,9 @@ const {FileResultFormatter} = require('./fileresultformatter');
 const {Finder} = require('./finder');
 const {FindOptions} = require('./findoptions');
 
-function handleError(err, findOptions) {
+function handleError(err, colorize, findOptions) {
     const errMsg = 'ERROR: ' + err.message;
-    common.logError('\n' + errMsg + '\n');
+    common.logError('\n' + errMsg + '\n', colorize);
     findOptions.usageWithCode(1);
 }
 
@@ -24,7 +24,7 @@ const findMain = async () => {
 
     findOptions.settingsFromArgs(args, async (err, settings) => {
         if (err) {
-            handleError(err, findOptions);
+            handleError(err, true, findOptions);
         }
 
         if (settings.debug)
@@ -53,12 +53,12 @@ const findMain = async () => {
             }
 
         } catch (err2) {
-            handleError(err2, findOptions);
+            handleError(err2, settings.colorize, findOptions);
         }
     });
 };
 
 // node.js equivalent of python's if __name__ == '__main__'
 if (require.main === module) {
-    findMain().catch((err) => common.log(err));
+    findMain().catch((err) => common.logError(err));
 }

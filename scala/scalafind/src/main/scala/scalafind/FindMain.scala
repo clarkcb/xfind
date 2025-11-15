@@ -3,8 +3,10 @@ package scalafind
 object FindMain {
 
   def main(args: Array[String]): Unit = {
+    var colorize = true
     try {
       val settings = FindOptions.settingsFromArgs(args)
+      colorize = settings.colorize
 
       if (settings.debug) {
         Common.log("settings: " + settings)
@@ -25,7 +27,7 @@ object FindMain {
     } catch {
       case e: FindException =>
         Common.log("")
-        Common.logError(e.getMessage + "\n")
+        Common.logError(e.getMessage + "\n", colorize)
         FindOptions.usage(1)
     }
   }

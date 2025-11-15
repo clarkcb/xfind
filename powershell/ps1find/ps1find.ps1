@@ -16,10 +16,12 @@ function Main {
         [string[]]$_args
     )
 
+    $colorize = $true
     $options = [FindOptions]::new()
 
     try {
         $settings = $options.SettingsFromArgs($_args)
+        $colorize = $settings.Colorize
 
         if ($settings.Debug) {
             # Set-LogConfiguration -LogLevel Debug
@@ -45,7 +47,12 @@ function Main {
         }
     }
     catch {
-        LogError($_)
+        $errMsg = $_.Exception.Message
+        if ($colorize) {
+            LogErrorColor($errMsg)
+        } else {
+            LogError($errMsg)
+        }
         LogMsg($options.GetUsageString())
     }
 }

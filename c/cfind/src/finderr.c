@@ -2,158 +2,173 @@
 #include "errno.h"
 #include "finderr.h"
 
-void handle_error(const error_t err)
+#include <string.h>
+
+void get_error_message(const error_t err, char *err_msg)
 {
+    char err_buf[100];
+    err_buf[0] = '\0';
     switch (err) {
     case EPERM:
-        log_err("Operation not permitted");
+        strncpy(err_buf, "Operation not permitted", 100);
         break;
     case ENOENT:
-        log_err("No such file or directory");
+        strncpy(err_buf, "No such file or directory", 100);
         break;
     case ESRCH:
-        log_err("No such process");
+        strncpy(err_buf, "No such process", 100);
         break;
     case EINTR:
-        log_err("Interrupted system call");
+        strncpy(err_buf, "Interrupted system call", 100);
         break;
     case EIO:
-        log_err("Input/output error");
+        strncpy(err_buf, "Input/output error", 100);
         break;
     case ENXIO:
-        log_err("Device not configured");
+        strncpy(err_buf, "Device not configured", 100);
         break;
     case E2BIG:
-        log_err("Argument list too long");
+        strncpy(err_buf, "Argument list too long", 100);
         break;
     case ENOEXEC:
-        log_err("Exec format error");
+        strncpy(err_buf, "Exec format error", 100);
         break;
     case EBADF:
-        log_err("Bad file descriptor");
+        strncpy(err_buf, "Bad file descriptor", 100);
         break;
     case ECHILD:
-        log_err("No child processes");
+        strncpy(err_buf, "No child processes", 100);
         break;
     case EDEADLK:
-        log_err("Resource deadlock avoided");
+        strncpy(err_buf, "Resource deadlock avoided", 100);
         break;
     case ENOMEM:
-        log_err("Cannot allocate memory");
+        strncpy(err_buf, "Cannot allocate memory", 100);
         break;
     case EACCES:
-        log_err("Permission denied");
+        strncpy(err_buf, "Permission denied", 100);
         break;
     case EFAULT:
-        log_err("Bad address");
+        strncpy(err_buf, "Bad address", 100);
         break;
     case EBUSY:
-        log_err("Device / Resource busy");
+        strncpy(err_buf, "Device / Resource busy", 100);
         break;
     case EEXIST:
-        log_err("File exists");
+        strncpy(err_buf, "File exists", 100);
         break;
     case EXDEV:
-        log_err("Cross-device link");
+        strncpy(err_buf, "Cross-device link", 100);
         break;
     case ENODEV:
-        log_err("Operation not supported by device");
+        strncpy(err_buf, "Operation not supported by device", 100);
         break;
     case ENOTDIR:
-        log_err("Not a directory");
+        strncpy(err_buf, "Not a directory", 100);
         break;
     case EISDIR:
-        log_err("Is a directory");
+        strncpy(err_buf, "Is a directory", 100);
         break;
     case EINVAL:
-        log_err("Invalid argument");
+        strncpy(err_buf, "Invalid argument", 100);
         break;
     case ENFILE:
-        log_err("Too many open files in system");
+        strncpy(err_buf, "Too many open files in system", 100);
         break;
     case EMFILE:
-        log_err("Too many open files");
+        strncpy(err_buf, "Too many open files", 100);
         break;
     case ENOTTY:
-        log_err("Inappropriate ioctl for device");
+        strncpy(err_buf, "Inappropriate ioctl for device", 100);
         break;
     case ETXTBSY:
-        log_err("Text file busy");
+        strncpy(err_buf, "Text file busy", 100);
         break;
     case EFBIG:
-        log_err("File too large");
+        strncpy(err_buf, "File too large", 100);
         break;
     case ENOSPC:
-        log_err("No space left on device");
+        strncpy(err_buf, "No space left on device", 100);
         break;
     case ESPIPE:
-        log_err("Illegal seek");
+        strncpy(err_buf, "Illegal seek", 100);
         break;
     case EROFS:
-        log_err("Read-only file system");
+        strncpy(err_buf, "Read-only file system", 100);
         break;
     case EMLINK:
-        log_err("Too many links");
+        strncpy(err_buf, "Too many links", 100);
         break;
     case EPIPE:
-        log_err("Broken pipe");
+        strncpy(err_buf, "Broken pipe", 100);
         break;
     case E_STARTPATH_NOT_DEFINED:
-        log_err("Startpath not defined");
+        strncpy(err_buf, "Startpath not defined", 100);
         break;
     case E_STARTPATH_NOT_FOUND:
-        log_err("Startpath not found");
+        strncpy(err_buf, "Startpath not found", 100);
         break;
     case E_STARTPATH_NOT_READABLE:
-        log_err("Startpath not readable");
+        strncpy(err_buf, "Startpath not readable", 100);
         break;
     case E_STARTPATH_STAT_FAILED:
-        log_err("An unknown error occurred trying to read startpath");
+        strncpy(err_buf, "An unknown error occurred trying to read startpath", 100);
         break;
     case E_STARTPATH_NON_MATCHING:
-        log_err("Startpath does not match find criteria");
+        strncpy(err_buf, "Startpath does not match find criteria", 100);
         break;
     case E_STARTPATH_UNSUPPORTED_FILETYPE:
-        log_err("Startpath is an unsupported file type");
+        strncpy(err_buf, "Startpath is an unsupported file type", 100);
         break;
     case E_INVALID_OPTION:
-        log_err("Invalid option");
+        strncpy(err_buf, "Invalid option", 100);
         break;
     case E_INVALID_ARG:
-        log_err("Invalid arg");
+        strncpy(err_buf, "Invalid arg", 100);
         break;
     case E_INVALID_ARG_FOR_OPTION:
-            log_err("Invalid value for option");
+            strncpy(err_buf, "Invalid value for option", 100);
         break;
     case E_MISSING_ARG_FOR_OPTION:
-        log_err("Missing value for option");
+        strncpy(err_buf, "Missing value for option", 100);
         break;
     case E_DIRECTORY_NOT_FOUND:
-        log_err("Directory not found");
+        strncpy(err_buf, "Directory not found", 100);
         break;
     case E_FILE_NOT_FOUND:
-        log_err("File not found");
+        strncpy(err_buf, "File not found", 100);
         break;
     case E_FILENAME_TOO_LONG:
-        log_err("Filename is too long");
+        strncpy(err_buf, "Filename is too long", 100);
         break;
     case E_INVALID_DATESTRING:
-        log_err("Invalid date string");
+        strncpy(err_buf, "Invalid date string", 100);
         break;
     case E_INVALID_DEPTH_RANGE:
-        log_err("Invalid range for mindepth and maxdepth");
+        strncpy(err_buf, "Invalid range for mindepth and maxdepth", 100);
         break;
     case E_INVALID_LASTMOD_RANGE:
-        log_err("Invalid range for minlastmod and maxlastmod");
+        strncpy(err_buf, "Invalid range for minlastmod and maxlastmod", 100);
         break;
     case E_INVALID_SIZE_RANGE:
-        log_err("Invalid range for minsize and maxsize");
+        strncpy(err_buf, "Invalid range for minsize and maxsize", 100);
         break;
     case E_JSON_PARSE_ERROR:
-        log_err("Unable to parse JSON");
+        strncpy(err_buf, "Unable to parse JSON", 100);
         break;
     default:
-        log_err("Unknown error occurred");
+        strncpy(err_buf, "Unknown error occurred", 100);
         break;
     }
+    size_t eb_len = strnlen(err_buf, 100);
+    strncpy(err_msg, err_buf, eb_len);
+    err_msg[eb_len] = '\0';
+}
+
+void handle_error(const error_t err)
+{
+    char err_msg[100];
+    err_msg[0] = '\0';
+    get_error_message(err, err_msg);
+    log_err(err_msg);
 }

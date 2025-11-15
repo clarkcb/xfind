@@ -50,7 +50,7 @@ sub main {
 
     if (scalar @$errs2) {
         plfind::common::log_msg('');
-        plfind::common::log_err($errs2->[0]);
+        plfind::common::log_err($errs2->[0], $settings->{colorize});
         plfind::common::log_msg('');
         $find_options->usage();
         plfind::common::log_msg('');

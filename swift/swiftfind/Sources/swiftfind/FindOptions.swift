@@ -288,7 +288,7 @@ public class FindOptions {
     func getUsageString() -> String {
         var str = "\nUsage:\n swiftfind [options] <path> [<path> ...]\n\n"
         str += "Options:\n"
-        var options = findOptions.sorted(by: { $0.sortArg < $1.sortArg })
+        let options = findOptions.sorted(by: { $0.sortArg < $1.sortArg })
 
         let optStrings = options.map {
             switch ($0.shortArg, $0.longArg) {

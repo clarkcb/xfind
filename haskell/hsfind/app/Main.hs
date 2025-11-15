@@ -3,6 +3,7 @@ module Main (main) where
 import System.Environment (getArgs)
 import System.IO (hPutStr, stderr)
 
+import HsFind.Color (boldRed, colorReset)
 import HsFind.FindOptions (getFindOptions, getUsage, settingsFromArgs)
 import HsFind.Finder (doFind, formatMatchingDirs, formatMatchingFiles, getFinder, validateFindSettings)
 import HsFind.FindSettings (FindSettings(..), findSettingsToString)
@@ -13,6 +14,12 @@ logMsg = putStr
 
 logErr :: String -> IO ()
 logErr s = hPutStr stderr $ "ERROR: " ++ s
+
+logErrColor :: FindSettings -> String -> IO ()
+logErrColor settings s =
+  if colorize settings
+    then hPutStr stderr $ boldRed ++ "ERROR: " ++ s ++ colorReset ++ "\n"
+    else hPutStr stderr $ "ERROR: " ++ s ++ "\n"
 
 main :: IO ()
 main = do
@@ -36,7 +43,7 @@ main = do
           case validateFindSettings settings of
             Just errMsg -> do
               logMsg "\n"
-              logErr $ errMsg ++ "\n"
+              logErrColor settings errMsg
               logMsg $ "\n" ++ getUsage findOptions ++ "\n"
             Nothing -> do
               if printUsage settings
@@ -47,7 +54,7 @@ main = do
                   case findResultsEither of
                     Left errMsg -> do
                       logMsg "\n"
-                      logErr $ errMsg ++ "\n"
+                      logErrColor settings errMsg
                       logMsg $ "\n" ++ getUsage findOptions ++ "\n"
                     Right fileResults -> do
                       logMsg $ if printDirs settings

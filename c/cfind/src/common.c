@@ -2,6 +2,7 @@
 #include <string.h>
 #include <time.h>
 
+#include "color.h"
 #include "common.h"
 
 void log_msg(const char *msg)
@@ -13,6 +14,17 @@ void log_msg(const char *msg)
 void log_err(const char *msg)
 {
     fprintf(stderr, "\nERROR: %s\n", msg);
+}
+
+void log_err_color(const char *msg)
+{
+    char msg2[150];
+    msg2[0] = '\0';
+    strcpy(msg2, BOLD_RED);
+    strcat(msg2, "ERROR: ");
+    strcat(msg2, msg);
+    strcat(msg2, COLOR_RESET);
+    fprintf(stderr, "\n%s\n", msg2);
 }
 
 bool is_null_or_empty_string(const char *s)
