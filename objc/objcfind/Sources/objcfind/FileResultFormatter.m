@@ -40,7 +40,7 @@
     long matchLength = matchEndIndex - matchStartIndex;
     [c appendFormat:@"%s", ANSI_GREEN];
     [c appendString:[s substringWithRange:NSMakeRange(matchStartIndex, matchLength)]];
-    [c appendString:ANSI_RESET];
+    [c appendFormat:@"%s", ANSI_RESET];
 
     if (matchEndIndex < [s length]) {
         [c appendString:[s substringFromIndex:matchEndIndex]];

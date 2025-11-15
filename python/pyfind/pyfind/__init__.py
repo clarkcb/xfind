@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from .argtokenizer import ArgToken, ArgTokenType, ArgTokenizer
-from .color import Color
+from .color import ConsoleColor
 from .common import log, log_error, parse_datetime_str, get_text, list_to_str
 from .config import XFIND_PATH, SHARED_PATH
 from .fileresult import FileResult, FileResultFormatter, FileResultSorter

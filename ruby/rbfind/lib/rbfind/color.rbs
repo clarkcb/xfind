@@ -1,17 +1,45 @@
+module Color
+  RESET: 0
+  BLACK: 30
+  RED: 31
+  GREEN: 32
+  YELLOW: 33
+  BLUE: 34
+  MAGENTA: 35
+  CYAN: 36
+  WHITE: 37
+end
+
 class String
   def black: () -> ::String
 
+  def bold_black: () -> ::String
+
   def red: () -> ::String
+
+  def bold_red: () -> ::String
 
   def green: () -> ::String
 
-  def brown: () -> ::String
+  def bold_green: () -> ::String
+
+  def yellow: () -> ::String
+
+  def bold_yellow: () -> ::String
 
   def blue: () -> ::String
 
+  def bold_blue: () -> ::String
+
   def magenta: () -> ::String
+
+  def bold_magenta: () -> ::String
 
   def cyan: () -> ::String
 
-  def gray: () -> ::String
+  def bold_cyan: () -> ::String
+
+  def white: () -> ::String
+
+  def bold_white: () -> ::String
 end

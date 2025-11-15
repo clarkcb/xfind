@@ -17,7 +17,7 @@ RED='\033[0;31m'          # Red
 GREEN='\033[0;32m'        # Green
 YELLOW='\033[0;33m'       # Yellow
 BLUE='\033[0;34m'         # Blue
-PURPLE='\033[0;35m'       # Purple
+MAGENTA='\033[0;35m'      # Magenta
 CYAN='\033[0;36m'         # Cyan
 WHITE='\033[0;37m'        # White
 
@@ -27,7 +27,7 @@ BRED='\033[1;31m'         # Red
 BGREEN='\033[1;32m'       # Green
 BYELLOW='\033[1;33m'      # Yellow
 BBLUE='\033[1;34m'        # Blue
-BPURPLE='\033[1;35m'      # Purple
+BMAGENTA='\033[1;35m'     # Magenta
 BCYAN='\033[1;36m'        # Cyan
 BWHITE='\033[1;37m'       # White
 
@@ -37,7 +37,7 @@ URED='\033[4;31m'         # Red
 UGREEN='\033[4;32m'       # Green
 UYELLOW='\033[4;33m'      # Yellow
 UBLUE='\033[4;34m'        # Blue
-UPURPLE='\033[4;35m'      # Purple
+UMAGENTA='\033[4;35m'     # Magenta
 UCYAN='\033[4;36m'        # Cyan
 UWHITE='\033[4;37m'       # White
 
@@ -47,7 +47,7 @@ ON_RED='\033[41m'         # Red
 ON_GREEN='\033[42m'       # Green
 ON_YELLOW='\033[43m'      # Yellow
 ON_BLUE='\033[44m'        # Blue
-ON_PURPLE='\033[45m'      # Purple
+ON_MAGENTA='\033[45m'     # Magenta
 ON_CYAN='\033[46m'        # Cyan
 ON_WHITE='\033[47m'       # White
 
@@ -57,7 +57,7 @@ IRED='\033[0;91m'         # Red
 IGREEN='\033[0;92m'       # Green
 IYELLOW='\033[0;93m'      # Yellow
 IBLUE='\033[0;94m'        # Blue
-IPURPLE='\033[0;95m'      # Purple
+IMAGENTA='\033[0;95m'     # Magenta
 ICYAN='\033[0;96m'        # Cyan
 IWHITE='\033[0;97m'       # White
 
@@ -67,7 +67,7 @@ BIRED='\033[1;91m'        # Red
 BIGREEN='\033[1;92m'      # Green
 BIYELLOW='\033[1;93m'     # Yellow
 BIBLUE='\033[1;94m'       # Blue
-BIPURPLE='\033[1;95m'     # Purple
+BIMAGENTA='\033[1;95m'    # Magenta
 BICYAN='\033[1;96m'       # Cyan
 BIWHITE='\033[1;97m'      # White
 
@@ -77,6 +77,6 @@ ON_IRED='\033[0;101m'     # Red
 ON_IGREEN='\033[0;102m'   # Green
 ON_IYELLOW='\033[0;103m'  # Yellow
 ON_IBLUE='\033[0;104m'    # Blue
-ON_IPURPLE='\033[0;105m'  # Purple
+ON_IMAGENTA='\033[0;105m' # Magenta
 ON_ICYAN='\033[0;106m'    # Cyan
 ON_IWHITE='\033[0;107m'   # White

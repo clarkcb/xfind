@@ -302,7 +302,7 @@ void colorize_string(const char *s, const size_t start_idx, const size_t end_idx
         suffix[suffix_len] = '\0';
         strcat(colorized, suffix);
     }
-    colorized[s_len + 10] = '\0';
+    colorized[s_len + COLOR_LENGTH + 1] = '\0';
 }
 
 void format_dir(const char *dir, const FindSettings *settings, char *formatted) {
@@ -339,10 +339,10 @@ void format_file_name(const char *file_name, const FindSettings *settings, char 
         size_t ext_len = strnlen(ext, file_name_len);
 
         if (string_matches_regex_node_with_matches(name_only, settings->in_file_patterns, nmatch, pmatch) > 0) {
-            char colorized_name_only[file_name_len + 10];
+            char colorized_name_only[file_name_len + COLOR_LENGTH + 1];
             colorized_name_only[0] = '\0';
             colorize_string(name_only, pmatch[0].rm_so, pmatch[0].rm_eo, colorized_name_only);
-            name_only_len += 9;
+            name_only_len += COLOR_LENGTH;
             colorized_name_only[name_only_len] = '\0';
             strncat(formatted, colorized_name_only, name_only_len);
         } else {
@@ -350,10 +350,10 @@ void format_file_name(const char *file_name, const FindSettings *settings, char 
         }
         strncat(formatted, ".", 1);
         if (is_null_or_empty_string_node(settings->in_extensions) == 0) {
-            char colorized_ext[file_name_len + 10];
+            char colorized_ext[file_name_len + COLOR_LENGTH + 1];
             colorized_ext[0] = '\0';
             colorize_string(ext, 0, ext_len, colorized_ext);
-            ext_len += 9;
+            ext_len += COLOR_LENGTH;
             colorized_ext[ext_len] = '\0';
             strncat(formatted, colorized_ext, ext_len);
         } else {
@@ -377,7 +377,7 @@ void format_file_result(const FileResult *fr, const FindSettings *settings, char
     // colorized dir_len
     size_t cdir_len = dir_len;
     if (settings->colorize && is_null_or_empty_regex_node(settings->in_dir_patterns) == 0) {
-        cdir_len += 9;
+        cdir_len += COLOR_LENGTH;
     }
 
     char dir_str[cdir_len + 1];
@@ -393,10 +393,10 @@ void format_file_result(const FileResult *fr, const FindSettings *settings, char
     size_t cfile_name_len = file_name_len;
     if (settings->colorize) {
         if (is_null_or_empty_string_node(settings->in_extensions) == 0) {
-            cfile_name_len += 9;
+            cfile_name_len += COLOR_LENGTH;
         }
         if (is_null_or_empty_regex_node(settings->in_file_patterns) == 0) {
-            cfile_name_len += 9;
+            cfile_name_len += COLOR_LENGTH;
         }
     }
 

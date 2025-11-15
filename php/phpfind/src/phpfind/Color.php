@@ -1,18 +1,19 @@
 <?php
 
-declare(strict_types=1);
-
 namespace phpfind;
 
 /**
  * Enum Color
  */
-enum Color: string
+enum Color: int
 {
-    case Grey = "\033[30m";
-    case Red = "\033[31m";
-    case Green = "\033[32m";
-    case Yellow = "\033[33m";
-    case Blue = "\033[34m";
-    case Reset = "\033[0m";
+    case Reset = 0;
+    case Black = 30;
+    case Red = 31;
+    case Green = 32;
+    case Yellow = 33;
+    case Blue = 34;
+    case Magenta = 35;
+    case Cyan = 36;
+    case White = 37;
 }

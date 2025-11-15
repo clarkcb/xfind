@@ -1,13 +1,22 @@
 package gofind
 
 const (
-	COLOR_RESET  = "\033[0m"
-	COLOR_BLACK  = "\033[30m"
-	COLOR_RED    = "\033[31m"
-	COLOR_GREEN  = "\033[32m"
-	COLOR_YELLOW = "\033[33m"
-	COLOR_BLUE   = "\033[34m"
-	COLOR_PURPLE = "\033[35m"
-	COLOR_CYAN   = "\033[36m"
-	COLOR_WHITE  = "\033[37m"
+	ColorReset   = "\033[0m"
+	ColorBlack   = "\033[0;30m"
+	ColorRed     = "\033[0;31m"
+	ColorGreen   = "\033[0;32m"
+	ColorYellow  = "\033[0;33m"
+	ColorBlue    = "\033[0;34m"
+	ColorMagenta = "\033[0;35m"
+	ColorCyan    = "\033[0;36m"
+	ColorWhite   = "\033[0;37m"
+
+	BoldBlack   = "\033[1;30m"
+	BoldRed     = "\033[1;31m"
+	BoldGreen   = "\033[1;32m"
+	BoldYellow  = "\033[1;33m"
+	BoldBlue    = "\033[1;34m"
+	BoldMagenta = "\033[1;35m"
+	BoldCyan    = "\033[1;36m"
+	BoldWhite   = "\033[1;37m"
 )

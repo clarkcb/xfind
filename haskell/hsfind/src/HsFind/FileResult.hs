@@ -25,7 +25,7 @@ import Data.Time (UTCTime)
 import System.FilePath ((</>), dropFileName, splitPath, takeDirectory, takeFileName)
 import Text.Regex.PCRE
 
-import HsFind.Color (green, reset)
+import HsFind.Color (colorGreen, colorReset)
 import HsFind.FileTypes
 import HsFind.FindSettings
 import HsFind.FileUtil (getExtensionIndex)
@@ -79,7 +79,7 @@ fileResultToString = fileResultPath
 
 colorizeString :: String -> Int -> Int -> String
 colorizeString s startIdx len = 
-  prefixS ++ green ++ matchS ++ reset ++ suffixS
+  prefixS ++ colorGreen ++ matchS ++ colorReset ++ suffixS
   where prefixS =
           if startIdx > 0
           then take startIdx s

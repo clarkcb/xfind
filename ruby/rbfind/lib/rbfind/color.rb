@@ -11,36 +11,80 @@
 #
 ################################################################################
 
+module Color
+  RESET = 0
+  BLACK = 30
+  RED = 31
+  GREEN = 32
+  YELLOW = 33
+  BLUE = 34
+  MAGENTA = 35
+  CYAN = 36
+  WHITE = 37
+end
+
 class String
   def black
-    "\e[30m#{self}\e[0m"
+    "\e[0;#{Color::BLACK}m#{self}\e[#{Color::RESET}m"
+  end
+
+  def bold_black
+    "\e[1;#{Color::BLACK}m#{self}\e[#{Color::RESET}m"
   end
 
   def red
-    "\e[31m#{self}\e[0m"
+    "\e[0;#{Color::RED}m#{self}\e[#{Color::RESET}m"
+  end
+
+  def bold_red
+    "\e[1;#{Color::RED}m#{self}\e[#{Color::RESET}m"
   end
 
   def green
-    "\e[32m#{self}\e[0m"
+    "\e[0;#{Color::GREEN}m#{self}\e[#{Color::RESET}m"
   end
 
-  def brown
-    "\e[33m#{self}\e[0m"
+  def bold_green
+    "\e[1;#{Color::GREEN}m#{self}\e[#{Color::RESET}m"
+  end
+
+  def yellow
+    "\e[0;#{Color::YELLOW}m#{self}\e[#{Color::RESET}m"
+  end
+
+  def bold_yellow
+    "\e[1;#{Color::YELLOW}m#{self}\e[#{Color::RESET}m"
   end
 
   def blue
-    "\e[34m#{self}\e[0m"
+    "\e[0;#{Color::BLUE}m#{self}\e[#{Color::RESET}m"
+  end
+
+  def bold_blue
+    "\e[1;#{Color::BLUE}m#{self}\e[#{Color::RESET}m"
   end
 
   def magenta
-    "\e[35m#{self}\e[0m"
+    "\e[0;#{Color::MAGENTA}m#{self}\e[#{Color::RESET}m"
+  end
+
+  def bold_magenta
+    "\e[1;#{Color::MAGENTA}m#{self}\e[#{Color::RESET}m"
   end
 
   def cyan
-    "\e[36m#{self}\e[0m"
+    "\e[0;#{Color::CYAN}m#{self}\e[#{Color::RESET}m"
   end
 
-  def gray
-    "\e[37m#{self}\e[0m"
+  def bold_cyan
+    "\e[1;#{Color::CYAN}m#{self}\e[#{Color::RESET}m"
+  end
+
+  def white
+    "\e[0;#{Color::WHITE}m#{self}\e[#{Color::RESET}m"
+  end
+
+  def bold_white
+    "\e[1;#{Color::WHITE}m#{self}\e[#{Color::RESET}m"
   end
 end

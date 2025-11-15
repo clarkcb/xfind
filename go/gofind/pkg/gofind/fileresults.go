@@ -215,9 +215,9 @@ func Colorize(s string, matchStartIndex int, matchEndIndex int) string {
 		suffix = s[matchEndIndex:]
 	}
 	return prefix +
-		COLOR_GREEN +
+		ColorGreen +
 		s[matchStartIndex:matchEndIndex] +
-		COLOR_RESET +
+		ColorReset +
 		suffix
 }
 

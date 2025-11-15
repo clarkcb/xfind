@@ -38,9 +38,9 @@ class FileResultFormatter
         }
         $match_length = $match_end_index - $match_start_index;
         return $prefix .
-            Color::Green->value .
+            ConsoleColor::Green->value .
             substr($s, $match_start_index, $match_length) .
-            Color::Reset->value .
+            ConsoleColor::Reset->value .
             $suffix;
     }
 

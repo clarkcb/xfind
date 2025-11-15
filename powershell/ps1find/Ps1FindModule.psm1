@@ -28,15 +28,23 @@ $findOptionsPath = Join-Path -Path $sharedPath -ChildPath 'findoptions.json'
 ########################################
 #$esc = "`e" # Escape character
 $esc = [char]27
-$Reset =  "${esc}[0m";
-$Black =  "${esc}[30m";
-$Red =    "${esc}[31m";
-$Green =  "${esc}[32m";
-$Yellow = "${esc}[33m";
-$Blue =   "${esc}[34m";
-$Purple = "${esc}[35m";
-$Cyan =   "${esc}[36m";
-$White =  "${esc}[37m";
+$Reset       = "${esc}[0m";
+$Black       = "${esc}[0;30m";
+$Red         = "${esc}[0;31m";
+$Green       = "${esc}[0;32m";
+$Yellow      = "${esc}[0;33m";
+$Blue        = "${esc}[0;34m";
+$Magenta     = "${esc}[0;35m";
+$Cyan        = "${esc}[0;36m";
+$White       = "${esc}[0;37m";
+$BoldBlack   = "${esc}[1;30m";
+$BoldRed     = "${esc}[1;31m";
+$BoldGreen   = "${esc}[1;32m";
+$BoldYellow  = "${esc}[1;33m";
+$BoldBlue    = "${esc}[1;34m";
+$BoldMagenta = "${esc}[1;35m";
+$BoldCyan    = "${esc}[1;36m";
+$BoldWhite   = "${esc}[1;37m";
 #endregion
 
 

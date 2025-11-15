@@ -57,9 +57,9 @@ class FileResultFormatter {
       suffix = s.substring(matchEndIndex);
     }
     return prefix +
-        ConsoleColor.GREEN +
+        ConsoleColor.green +
         s.substring(matchStartIndex, matchEndIndex) +
-        ConsoleColor.RESET +
+        ConsoleColor.reset +
         suffix;
   }
 

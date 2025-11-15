@@ -33,6 +33,7 @@ defmodule ExFind.FileResultFormatter do
   Documentation for `ExFind.FileResultFormatter`.
   """
 
+  alias ExFind.Color
   alias ExFind.StringUtil
 
   defstruct [:settings, :fn_format_path, :fn_format_file_name]
@@ -63,7 +64,7 @@ defmodule ExFind.FileResultFormatter do
       ""
     end
     match_text = String.slice(s, start_idx, end_idx - start_idx)
-    colorized = IO.ANSI.green() <> match_text <> IO.ANSI.reset()
+    colorized = Color.green <> match_text <> Color.reset
     prefix <> colorized <> suffix
   end
 

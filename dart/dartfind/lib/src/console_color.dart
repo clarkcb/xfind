@@ -1,11 +1,20 @@
 class ConsoleColor {
-  static const String RESET = '\u001B[0m';
-  static const String BLACK = '\u001B[30m';
-  static const String RED = '\u001B[31m';
-  static const String GREEN = '\u001B[32m';
-  static const String YELLOW = '\u001B[33m';
-  static const String BLUE = '\u001B[34m';
-  static const String PURPLE = '\u001B[35m';
-  static const String CYAN = '\u001B[36m';
-  static const String WHITE = '\u001B[37m';
+  static const String reset = '\u001B[0m';
+  static const String black = '\u001B[0;30m';
+  static const String red = '\u001B[0;31m';
+  static const String green = '\u001B[0;32m';
+  static const String yellow = '\u001B[0;33m';
+  static const String blue = '\u001B[0;34m';
+  static const String magenta = '\u001B[0;35m';
+  static const String cyan = '\u001B[0;36m';
+  static const String white = '\u001B[0;37m';
+
+  static const String boldBlack = '\u001B[1;30m';
+  static const String boldRed = '\u001B[1;31m';
+  static const String boldGreen = '\u001B[1;32m';
+  static const String boldYellow = '\u001B[1;33m';
+  static const String boldBlue = '\u001B[1;34m';
+  static const String boldMagenta = '\u001B[1;35m';
+  static const String boldCyan = '\u001B[1;36m';
+  static const String boldWhite = '\u001B[1;37m';
 }

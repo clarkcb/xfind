@@ -13,7 +13,7 @@ import os.path
 from io import StringIO
 from pathlib import Path
 
-from .color import Color
+from .color import ConsoleColor
 from .filetypes import FileType
 from .findsettings import FindSettings, SortBy
 
@@ -79,9 +79,9 @@ class FileResultFormatter(object):
         if match_end_index < len(s):
             suffix = s[match_end_index:]
         return prefix + \
-            Color.GREEN + \
+            ConsoleColor.GREEN + \
             s[match_start_index:match_end_index] + \
-            Color.RESET + \
+            ConsoleColor.RESET + \
             suffix
 
     def __format_dir_path_with_color(self, dir_path: Path) -> str:
