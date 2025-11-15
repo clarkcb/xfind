@@ -275,28 +275,25 @@ class ScenarioResult(object):
 
 
 class ScenarioResults(object):
-    def __init__(self, scenario_results: list[ScenarioResult] = None, **kwargs):
+    def __init__(self, scenarios: list[Scenario], xfind_names: list[str], **kwargs):
         self.scenario_results = []
-        if scenario_results:
-            self.scenario_results = scenario_results
+        self.scenarios = scenarios
+        self.xfind_names = xfind_names
         self.__dict__.update(kwargs)
-        self.langs = set()
         self._update()
 
     def _update(self):
-        if self.scenario_results:
-            self.langs = self.scenario_results[0].langs
-        self._lang_totals_dict = { l: { t: 0 for t in time_keys } for l in self.langs }
+        self._lang_totals_dict = { l: { t: 0 for t in time_keys } for l in self.xfind_names }
         for sr in self.scenario_results:
-            for l in self.langs:
-                self._lang_totals_dict[l]['real'] += sr.total_real(l)
-                self._lang_totals_dict[l]['sys'] += sr.total_sys(l)
-                self._lang_totals_dict[l]['user'] += sr.total_user(l)
-                self._lang_totals_dict[l]['total'] += sr.total_total(l)
+            for x in self.xfind_names:
+                self._lang_totals_dict[x]['real'] += sr.total_real(x)
+                self._lang_totals_dict[x]['sys'] += sr.total_sys(x)
+                self._lang_totals_dict[x]['user'] += sr.total_user(x)
+                self._lang_totals_dict[x]['total'] += sr.total_total(x)
         # for each time type, a list of the languages in order from fastest to slowest
         self.__ranks_dict = {}
         for t in time_keys:
-            type_totals = sorted([(self._lang_totals_dict[l][t], l) for l in self.langs], key=lambda t: t[0])
+            type_totals = sorted([(self._lang_totals_dict[l][t], l) for l in self.xfind_names], key=lambda t: t[0])
             self.__ranks_dict[t] = [t[1] for t in type_totals]
 
     @property
@@ -318,7 +315,9 @@ class ScenarioResults(object):
 
     def avg_real(self, lang: str) -> float:
         tr = self.total_real(lang)
-        return tr / self.runs
+        if self.runs:
+            return tr / self.runs
+        return 0
 
     def rank_real(self, lang: str) -> int:
         return self.__rank_of_type(lang, 'real')
@@ -328,7 +327,9 @@ class ScenarioResults(object):
 
     def avg_sys(self, lang: str) -> float:
         ts = self.total_sys(lang)
-        return ts / self.runs
+        if self.runs:
+            return ts / self.runs
+        return 0
 
     def rank_sys(self, lang: str) -> int:
         return self.__rank_of_type(lang, 'sys')
@@ -338,7 +339,9 @@ class ScenarioResults(object):
 
     def avg_user(self, lang: str) -> float:
         tu = self.total_user(lang)
-        return tu / self.runs
+        if self.runs:
+            return tu / self.runs
+        return 0
 
     def rank_user(self, lang: str) -> int:
         return self.__rank_of_type(lang, 'user')
@@ -348,7 +351,9 @@ class ScenarioResults(object):
 
     def avg_total(self, lang: str) -> float:
         tt = self.total_total(lang)
-        return tt / self.runs
+        if self.runs:
+            return tt / self.runs
+        return 0
 
     def rank_total(self, lang: str) -> int:
         return self.__rank_of_type(lang, 'total')
@@ -360,6 +365,7 @@ class ScenarioResults(object):
 class Benchmarker(object):
     def __init__(self, **kwargs):
         self.colorize = True
+        self.langs = []
         self.xfind_names = []
         self.group_names = []
         self.scenario_names = []
@@ -376,8 +382,9 @@ class Benchmarker(object):
         self.skip_groups = ['settings-only']
         self.skip_scenarios = ['use invalid settings-file']
         self.__dict__.update(kwargs)
-        if not self.xfind_names:
-            self.xfind_names = all_xfind_names
+        if not self.langs:
+            self.langs = all_langs
+        self.xfind_names = [xfind_dict[l] for l in self.langs]
         if self.group_names and not self.include_groups:
             self.include_groups = self.group_names[:]
             self.group_names = []
@@ -729,30 +736,55 @@ class Benchmarker(object):
                 error_line = p.stderr.readline()
                 if not output_line and not error_line:
                     break
-                if output_line and error_line:
-                    error_line = error_line.decode().strip()
-                    if error_line.startswith('ERROR:'):
-                        output_lines.append(error_line)
-                    else:
-                        error_lines.append(error_line)
+                if output_line:
                     output_lines.append(output_line.decode().strip())
-                elif output_line:
-                    output_lines.append(output_line.decode().strip())
-                elif error_line:
-                    error_line = error_line.decode().strip()
-                    if error_line == 'Command exited with non-zero status 1':
-                        continue
-                    # print(f'error_line: "{error_line}"')
-                    if error_line.startswith('ERROR:'):
-                        output_lines.append(error_line)
-                    else:
-                        error_lines.append(error_line)
-                else:
-                    break
+                if error_line:
+                    error_lines.append(error_line.decode().strip())
+                # else:
+                #     break
             p.terminate()
             # output = '\n'.join(output_lines)
             # Temporary: sort output lines to reduce mismatches
             # output = '\n'.join(sorted(output_lines))
+            # Clean up error_lines
+            if error_lines:
+                new_output_lines = []
+                new_error_lines = []
+                i = 0
+                while i < len(error_lines):
+                    if not error_lines[i]:
+                        i += 1
+                        continue
+                    # If it starts with ERROR: or a console color sequence, add it to output
+                    if error_lines[i].startswith('ERROR:'):
+                        new_output_lines.append(error_lines[i])
+                        i += 1
+                    elif error_lines[i].startswith('\x1b['):
+                        if error_lines[i].find('ERROR:') > -1 and error_lines[i].endswith('\x1b[0m'):
+                            new_output_lines.append(error_lines[i])
+                            i += 1
+                        elif error_lines[i].find('ERROR:') > -1 and len(error_lines) > i + 1 and \
+                                error_lines[i + 1] == '\x1b[0m':
+                            new_output_lines.append(error_lines[i] + error_lines[i + 1])
+                            i += 2
+                        elif len(error_lines) > i + 1 and \
+                                error_lines[i + 1].startswith('ERROR:') and \
+                                error_lines[i + 1].endswith('\x1b[0m'):
+                            new_output_lines.append(error_lines[i] + error_lines[i + 1])
+                            i += 2
+                        elif len(error_lines) > i + 2 and \
+                                error_lines[i + 1].startswith('ERROR:') and \
+                                error_lines[i + 2].startswith('\x1b['):
+                            new_output_lines.append(error_lines[i] + error_lines[i + 1] + error_lines[i + 2])
+                            i += 3
+                        else:
+                            new_output_lines.append(error_lines[i])
+                            i += 1
+                    else:
+                        new_error_lines.append(error_lines[i])
+                        i += 1
+                output_lines = new_output_lines + output_lines
+                error_lines = new_error_lines
             if s.replace_xfind_name:
                 output = '\n'.join(output_lines)
                 output = xfind_name_regex.sub('xfind', output)
@@ -820,7 +852,7 @@ class Benchmarker(object):
     def run(self):
         if 'pyfind' in self.xfind_names:
             self.activate_pyvenv()
-        scenario_results = ScenarioResults()
+        scenario_results = ScenarioResults(scenarios=self.scenarios, xfind_names=self.xfind_names)
         runs = 0
         try:
             for i, s in enumerate(self.scenarios):
@@ -946,12 +978,11 @@ def main():
             if alias_lang in lang_alias_dict:
                 lang = lang_alias_dict[alias_lang]
                 langs.append(lang)
-                xfind_names.append(xfind_dict[lang])
             else:
                 print(f'Skipping unknown language: {alias_lang}')
+        langs = list(sorted(set(langs)))
     else:
         langs = all_langs
-        xfind_names = all_xfind_names
 
     if parsed_args.skip_langs:
         parsed_skip_langs = fix_arg_list(parsed_args.skip_langs)
@@ -964,8 +995,6 @@ def main():
                 skip_langs.append(skip_lang)
                 if skip_lang in langs:
                     langs.remove(skip_lang)
-                if xfind_dict[skip_lang] in xfind_names:
-                    del xfind_names[xfind_names.index(xfind_dict[skip_lang])]
             else:
                 print(f'Skipping unknown language: {alias_skip_lang}')
 
@@ -985,8 +1014,7 @@ def main():
     print(f'skip_groups: {skip_groups}')
     print(f'skip_langs ({len(skip_langs)}): [{", ".join(skip_langs)}]')
     print(f'skip_scenarios: {skip_scenarios}')
-    print(f'xfind_names ({len(xfind_names)}): [{", ".join(xfind_names)}]')
-    benchmarker = Benchmarker(xfind_names=xfind_names, runs=runs,
+    benchmarker = Benchmarker(langs=langs, runs=runs,
                               group_names=groups, scenario_names=scenarios,
                               skip_groups=skip_groups, skip_scenarios=skip_scenarios,
                               scenarios_files=scenarios_files,
