@@ -28,3 +28,7 @@ filetypes.json
 filetypes.xml
 findoptions.json
 findoptions.xml
+
+# Test resource files
+testFile*.txt
+

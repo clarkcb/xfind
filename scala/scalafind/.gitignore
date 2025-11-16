@@ -24,6 +24,9 @@ config.json
 filetypes.xml
 searchoptions.xml
 
+# test resource files
+testFile*.txt
+
 # from https://users.scala-lang.org/t/solved-should-i-add-bsp-directory-in-gitignore/6921
 .bsp/
 

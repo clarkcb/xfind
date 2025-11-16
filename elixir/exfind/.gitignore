@@ -24,3 +24,7 @@ exfind-*.tar
 
 # Temporary files, for example, from tests.
 /tmp/
+
+# lock file (for now)
+mix.lock
+

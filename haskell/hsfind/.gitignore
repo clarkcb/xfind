@@ -1,6 +1,8 @@
 .stack-work/
 *~
 
+stack.yaml.lock
+
 # resource files that are copied from shared or unused
 config.json
 filetypes.json
