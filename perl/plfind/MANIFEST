@@ -12,6 +12,7 @@ lib/plfind/ArgTokenType.pm
 lib/plfind/Color.pm
 lib/plfind/common.pm
 lib/plfind/config.pm
+lib/plfind/ConsoleColor.pm
 lib/plfind/FileResult.pm
 lib/plfind/FileType.pm
 lib/plfind/FileTypes.pm

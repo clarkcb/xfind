@@ -26,7 +26,7 @@ sub log_err {
     }
     my $err = 'ERROR: ' . $msg;
     if ($colorize == 1) {
-        $err = plfind::ConsoleColor->BOLD_RED . $err . plfind::ConsoleColor->RESET;
+        $err = plfind::ConsoleColor->CONSOLE_BOLD_RED . $err . plfind::ConsoleColor->CONSOLE_RESET;
     }
     print STDERR $err . "\n";
 }

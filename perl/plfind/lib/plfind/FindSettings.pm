@@ -12,6 +12,7 @@ use Path::Class;
 use Scalar::Util qw(blessed reftype);
 
 use plfind::common;
+use plfind::Color;
 use plfind::FileTypes;
 use plfind::SortBy;
 
@@ -24,6 +25,9 @@ sub new {
         archives_only => 0,
         colorize => 1,
         debug => 0,
+        dir_color => plfind::Color->CYAN,
+        ext_color => plfind::Color->YELLOW,
+        file_color => plfind::Color->MAGENTA,
         follow_symlinks => 0,
         in_archive_extensions => [],
         in_archive_file_patterns => [],

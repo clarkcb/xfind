@@ -36,13 +36,15 @@ sub new {
 }
 
 sub colorize {
-    my ($s, $match_start_index, $match_end_index) = @_;
+    my ($s, $match_start_index, $match_end_index, $color) = @_;
+    $color ||= plfind::Color->GREEN;
     my $prefix = '';
     if ($match_start_index > 0) {
         $prefix = substr($s, 0, $match_start_index);
     }
     my $match_length = $match_end_index - $match_start_index;
-    my $colorized = plfind::ConsoleColor->GREEN . substr($s, $match_start_index, $match_length) . plfind::ConsoleColor->RESET;
+    my $console_color = plfind::Color::color_to_console_color($color);
+    my $colorized = $console_color . substr($s, $match_start_index, $match_length) . plfind::ConsoleColor->CONSOLE_RESET;
     my $suffix = '';
     # if ($match_end_index < length($s) - 1) {
     if ($match_end_index < length($s)) {
@@ -61,7 +63,7 @@ sub format_dir_with_color {
             if ($formatted_dir =~ /$p/) {
                 my $start_index = $-[0];
                 my $end_index = $+[0];
-                $formatted_dir = colorize($formatted_dir, $start_index, $end_index);
+                $formatted_dir = colorize($formatted_dir, $start_index, $end_index, $self->{settings}->{dir_color});
                 last;
             }
         }
@@ -87,7 +89,7 @@ sub format_file_name_with_color {
         if ($formatted_file_name =~ /$p/) {
             my $start_index = $-[0];
             my $end_index = $+[0];
-            $formatted_file_name = colorize($formatted_file_name, $start_index, $end_index);
+            $formatted_file_name = colorize($formatted_file_name, $start_index, $end_index, $self->{settings}->{file_color});
             last;
         }
     }
@@ -95,7 +97,7 @@ sub format_file_name_with_color {
         my $idx = rindex($formatted_file_name, '.');
         my $file_name_len = length($formatted_file_name);
         if ($idx > 0 && $idx < $file_name_len - 1) {
-            $formatted_file_name = colorize($formatted_file_name, $idx + 1, $file_name_len);
+            $formatted_file_name = colorize($formatted_file_name, $idx + 1, $file_name_len, $self->{settings}->{ext_color});
         }
     }
     return $formatted_file_name;
