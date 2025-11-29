@@ -8,25 +8,38 @@
 #
 ###############################################################################
 """
+
+
 class ConsoleColor:
     """ConsoleColor class"""
-    _prefix = '\033['
+    _esc = '\033'
+    _reset = 0
+    _regular = 0
+    _bold = 1
+    _black = 30
+    _red = 31
+    _green = 32
+    _yellow = 33
+    _blue = 34
+    _magenta = 35
+    _cyan = 36
+    _white = 37
 
-    RESET = f'\033[0m'
-    BLACK = f'\033[0;30m'
-    RED = f'\033[0;31m'
-    GREEN = f'\033[0;32m'
-    YELLOW = f'\033[0;33m'
-    BLUE = f'\033[0;34m'
-    MAGENTA = f'\033[0;35m'
-    CYAN = f'\033[0;36m'
-    WHITE = f'\033[0;37m'
+    RESET = f'{_esc}[{_reset}m'
+    BLACK = f'{_esc}[{_regular};{_black}m'
+    RED = f'{_esc}[{_regular};{_red}m'
+    GREEN = f'{_esc}[{_regular};{_green}m'
+    YELLOW = f'\033[{_regular};{_yellow}m'
+    BLUE = f'{_esc}[{_regular};{_blue}m'
+    MAGENTA = f'{_esc}[{_regular};{_magenta}m'
+    CYAN = f'{_esc}[{_regular};{_cyan}m'
+    WHITE = f'{_esc}[{_regular};{_white}m'
 
-    BOLD_BLACK = f'\033[1;30m'
-    BOLD_RED = f'\033[1;31m'
-    BOLD_GREEN = f'\033[1;32m'
-    BOLD_YELLOW = f'\033[1;33m'
-    BOLD_BLUE = f'\033[1;34m'
-    BOLD_MAGENTA = f'\033[1;35m'
-    BOLD_CYAN = f'\033[1;36m'
-    BOLD_WHITE = f'\033[1;37m'
+    BOLD_BLACK = f'{_esc}[{_bold};{_black}m'
+    BOLD_RED = f'{_esc}[{_bold};{_red}m'
+    BOLD_GREEN = f'{_esc}[{_bold};{_green}m'
+    BOLD_YELLOW = f'{_esc}[{_bold};{_yellow}m'
+    BOLD_BLUE = f'{_esc}[{_bold};{_blue}m'
+    BOLD_MAGENTA = f'{_esc}[{_bold};{_magenta}m'
+    BOLD_CYAN = f'{_esc}[{_bold};{_cyan}m'
+    BOLD_WHITE = f'{_esc}[{_bold};{_white}m'

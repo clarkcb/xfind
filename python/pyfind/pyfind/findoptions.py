@@ -289,7 +289,7 @@ class FindOptions:
         self.update_settings_from_args(settings, args)
         return settings
 
-    def __get_usage_string(self):
+    def __get_usage_string(self) -> str:
         sio = StringIO()
         sio.write('Usage:\n')
         sio.write(

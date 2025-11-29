@@ -13,6 +13,7 @@ import os.path
 from io import StringIO
 from pathlib import Path
 
+from .color import Color
 from .consolecolor import ConsoleColor
 from .filetypes import FileType
 from .findsettings import FindSettings, SortBy
@@ -70,7 +71,7 @@ class FileResultFormatter(object):
                 self.format_file_name = self.__format_file_name_with_color
 
     @staticmethod
-    def colorize(s: str, match_start_index: int, match_end_index: int) -> str:
+    def colorize(s: str, match_start_index: int, match_end_index: int, color: Color = Color.GREEN) -> str:
         """colorize a string"""
         prefix = ''
         if match_start_index > 0:
@@ -79,7 +80,7 @@ class FileResultFormatter(object):
         if match_end_index < len(s):
             suffix = s[match_end_index:]
         return prefix + \
-            ConsoleColor.GREEN + \
+            Color.to_console_color(color) + \
             s[match_start_index:match_end_index] + \
             ConsoleColor.RESET + \
             suffix
@@ -91,7 +92,7 @@ class FileResultFormatter(object):
             match = p.search(formatted_dir)
             if match:
                 formatted_dir = FileResultFormatter.colorize(
-                    formatted_dir, match.start(), match.end())
+                    formatted_dir, match.start(), match.end(), self.settings.dir_color)
                 break
         return formatted_dir
 
@@ -108,14 +109,14 @@ class FileResultFormatter(object):
             match = p.search(formatted_file_name)
             if match:
                 formatted_file_name = FileResultFormatter.colorize(
-                    formatted_file_name, match.start(), match.end())
+                    formatted_file_name, match.start(), match.end(), self.settings.file_color)
                 break
         if len(self.settings.in_extensions):
             # we know that file_name has a matching extension, no need to match
             idx = formatted_file_name.rfind('.')
             if 0 < idx < len(formatted_file_name) - 1:
                 formatted_file_name = FileResultFormatter.colorize(
-                    formatted_file_name, idx + 1, len(formatted_file_name))
+                    formatted_file_name, idx + 1, len(formatted_file_name), self.settings.ext_color)
         return formatted_file_name
 
     def format_file_name(self, file_name: str) -> str:

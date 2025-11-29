@@ -8,66 +8,42 @@
 #
 ###############################################################################
 """
+import re
 from datetime import datetime
 from io import StringIO
 from pathlib import Path
-import re
-from enum import StrEnum
 from typing import Any, Optional, Pattern
 
 from .common import list_to_str
+from .color import Color
 from .filetypes import FileType
 from .findexception import FindException
-
+from .sortby import SortBy
 
 PatternSet = set[Pattern]
-
-
-class SortBy(StrEnum):
-    """SortBy enum"""
-    FILEPATH = 'filepath'
-    FILENAME = 'filename'
-    FILETYPE = 'filetype'
-    FILESIZE = 'filesize'
-    LASTMOD = 'lastmod'
-
-
-def get_sort_by_for_name(sort_by_name: str):
-    """Set sort-by from str"""
-    sort_by_name = sort_by_name.strip().upper()
-    match sort_by_name:
-        case 'FILEPATH' | 'PATH':
-            return SortBy.FILEPATH
-        case 'FILENAME' | 'NAME':
-            return SortBy.FILENAME
-        case 'FILESIZE' | 'SIZE':
-            return SortBy.FILESIZE
-        case 'FILETYPE' | 'TYPE':
-            return SortBy.FILETYPE
-        case 'LASTMOD':
-            return SortBy.LASTMOD
-        case _:
-            return SortBy.FILEPATH
 
 
 class FindSettings:
     """a class to encapsulate find settings for a particular find session"""
 
     __slots__ = [
-        'archives_only', 'colorize', 'debug', 'follow_symlinks', 'in_archive_extensions',
-        'in_archive_file_patterns', 'in_dir_patterns', 'in_extensions', 'in_file_patterns',
-        'in_file_types', 'include_archives', 'include_hidden', 'max_depth', 'max_last_mod',
-        'max_size', 'min_depth', 'min_last_mod', 'min_size', 'out_archive_extensions',
-        'out_archive_file_patterns', 'out_dir_patterns', 'out_extensions',
-        'out_file_patterns', 'out_file_types', 'paths', 'print_dirs', 'print_files',
-        'print_usage', 'print_version', 'recursive', 'sort_by', 'sort_case_insensitive',
-        'sort_descending', 'verbose'
+        'archives_only', 'colorize', 'debug', 'dir_color', 'ext_color', 'file_color',
+        'follow_symlinks', 'in_archive_extensions', 'in_archive_file_patterns', 'in_dir_patterns',
+        'in_extensions', 'in_file_patterns', 'in_file_types', 'include_archives', 'include_hidden',
+        'max_depth', 'max_last_mod', 'max_size', 'min_depth', 'min_last_mod', 'min_size',
+        'out_archive_extensions', 'out_archive_file_patterns', 'out_dir_patterns',
+        'out_extensions', 'out_file_patterns', 'out_file_types', 'paths', 'print_dirs',
+        'print_files', 'print_usage', 'print_version', 'recursive', 'sort_by',
+        'sort_case_insensitive', 'sort_descending', 'verbose'
     ]
 
     def __init__(self,
                  archives_only: bool = False,
                  colorize: bool = True,
                  debug: bool = False,
+                 dir_color: Color = Color.CYAN,
+                 ext_color: Color = Color.YELLOW,
+                 file_color: Color = Color.MAGENTA,
                  follow_symlinks: bool = False,
                  in_archive_extensions: list[str] | set[str] | str = None,
                  in_archive_file_patterns: list | set | str | Pattern = None,
@@ -102,6 +78,9 @@ class FindSettings:
         self.archives_only = archives_only
         self.colorize = colorize
         self.debug = debug
+        self.dir_color = dir_color
+        self.ext_color = ext_color
+        self.file_color = file_color
         self.follow_symlinks = follow_symlinks
         self.in_archive_extensions: set[str] = set()
         if in_archive_extensions:
@@ -246,7 +225,7 @@ class FindSettings:
 
     def set_sort_by(self, sort_by_name: str):
         """Set sort-by from str"""
-        self.sort_by = get_sort_by_for_name(sort_by_name)
+        self.sort_by = SortBy(sort_by_name)
 
     def __str__(self):
         sio = StringIO()
