@@ -5,15 +5,27 @@ namespace phpfind;
 /**
  * Enum Color
  */
-enum Color: int
+enum Color: string
 {
-    case Reset = 0;
-    case Black = 30;
-    case Red = 31;
-    case Green = 32;
-    case Yellow = 33;
-    case Blue = 34;
-    case Magenta = 35;
-    case Cyan = 36;
-    case White = 37;
+    case Black = 'black';
+    case Red = 'red';
+    case Green = 'green';
+    case Yellow = 'yellow';
+    case Blue = 'blue';
+    case Magenta = 'magenta';
+    case Cyan = 'cyan';
+    case White = 'white';
+
+    public function to_console_color(): ConsoleColor {
+        return match ($this) {
+            Color::Black => ConsoleColor::Black,
+            Color::Red => ConsoleColor::Red,
+            Color::Green => ConsoleColor::Green,
+            Color::Yellow => ConsoleColor::Yellow,
+            Color::Blue => ConsoleColor::Blue,
+            Color::Magenta => ConsoleColor::Magenta,
+            Color::Cyan => ConsoleColor::Cyan,
+            Color::White => ConsoleColor::White
+        };
+    }
 }

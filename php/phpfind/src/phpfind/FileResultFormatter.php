@@ -26,7 +26,7 @@ class FileResultFormatter
         }
     }
 
-    public function colorize(string $s, int $match_start_index, int $match_end_index): string
+    public function colorize(string $s, int $match_start_index, int $match_end_index, Color $color): string
     {
         $prefix = '';
         if ($match_start_index > 0) {
@@ -38,7 +38,7 @@ class FileResultFormatter
         }
         $match_length = $match_end_index - $match_start_index;
         return $prefix .
-            ConsoleColor::Green->value .
+            $color->to_console_color()->value .
             substr($s, $match_start_index, $match_length) .
             ConsoleColor::Reset->value .
             $suffix;
@@ -55,7 +55,8 @@ class FileResultFormatter
                 if (!empty($matches)) {
                     $start_index = (int)$matches[0][1];
                     $end_index = $start_index + strlen($matches[0][0]);
-                    $formatted_dir = $this->colorize($formatted_dir, $start_index, $end_index);
+                    $formatted_dir = $this->colorize($formatted_dir, $start_index, $end_index,
+                        $this->settings->dir_color);
                     break;
                 }
             }
@@ -78,7 +79,8 @@ class FileResultFormatter
             if (!empty($matches)) {
                 $start_index = (int)$matches[0][1];
                 $end_index = $start_index + strlen($matches[0][0]);
-                $formatted_file_name = $this->colorize($formatted_file_name, $start_index, $end_index);
+                $formatted_file_name = $this->colorize($formatted_file_name, $start_index, $end_index,
+                    $this->settings->file_color);
                 break;
             }
         }
@@ -86,7 +88,8 @@ class FileResultFormatter
             $dot_idx = strrpos($formatted_file_name, '.');
             $file_name_length = strlen($formatted_file_name);
             if ($dot_idx !== false && $dot_idx > 0 && $dot_idx < $file_name_length - 1) {
-                $formatted_file_name = $this->colorize($formatted_file_name, $dot_idx + 1, $file_name_length);
+                $formatted_file_name = $this->colorize($formatted_file_name, $dot_idx + 1,
+                    $file_name_length, $this->settings->ext_color);
             }
         }
         return $formatted_file_name;

@@ -14,6 +14,9 @@ class FindSettings
     public bool $archives_only = false;
     public bool $colorize = true;
     public bool $debug = false;
+    public Color $dir_color = Color::Cyan;
+    public Color $ext_color = Color::Yellow;
+    public Color $file_color = Color::Magenta;
     public bool $follow_symlinks = false;
     /**
      * @var string[] $in_archive_extensions

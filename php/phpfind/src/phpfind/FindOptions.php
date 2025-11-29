@@ -190,8 +190,8 @@ class FindOptions
     }
 
     /**
-     * @param string $json
      * @param FindSettings $settings
+     * @param string $json
      * @return void
      * @throws FindException
      */
