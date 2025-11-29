@@ -10,6 +10,7 @@
 
 require 'pathname'
 
+require_relative 'color'
 require_relative 'console_color'
 
 module RbFind
@@ -32,12 +33,12 @@ module RbFind
       end
     end
 
-    def colorize(str, match_start_index, match_end_index)
+    def colorize(str, match_start_index, match_end_index, color = Color::GREEN)
       prefix = ''
       if match_start_index > 0
         prefix = str[0..(match_start_index - 1)]
       end
-      colorized = str[match_start_index..(match_end_index - 1)].green
+      colorized = str[match_start_index..(match_end_index - 1)].console_color(color)
       suffix = ''
       if match_end_index < str.length
         suffix = str[match_end_index..str.length]
@@ -73,7 +74,7 @@ module RbFind
       @settings.in_dir_patterns.each do |p|
         m = p.match(formatted_dir)
         if m
-          formatted_dir = colorize(formatted_dir, m.begin(0), m.end(0))
+          formatted_dir = colorize(formatted_dir, m.begin(0), m.end(0), @settings.dir_color)
           break
         end
       end
@@ -85,14 +86,14 @@ module RbFind
       @settings.in_file_patterns.each do |p|
         m = p.match(formatted_file_name)
         if m
-          formatted_file_name = colorize(formatted_file_name, m.begin(0), m.end(0))
+          formatted_file_name = colorize(formatted_file_name, m.begin(0), m.end(0), @settings.file_color)
           break
         end
       end
       unless @settings.in_extensions.empty? or file_name.extname.empty?
         idx = formatted_file_name.rindex('.')
         if idx > 0 && idx < formatted_file_name.length - 1
-          formatted_file_name = colorize(formatted_file_name, idx + 1, formatted_file_name.length)
+          formatted_file_name = colorize(formatted_file_name, idx + 1, formatted_file_name.length, @settings.ext_color)
         end
       end
       formatted_file_name

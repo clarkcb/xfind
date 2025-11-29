@@ -1,25 +1,12 @@
 module RbFind
-  module SortBy
-    FILEPATH: 0
-    FILENAME: 1
-    FILESIZE: 2
-    FILETYPE: 3
-    LASTMOD: 4
-
-    NAMES: Array[:filepath | :filename | :filesize | :filetype | :lastmod]
-
-    def self?.from_name: (String name) -> SortBy
-
-    def self?.from_sym: (Symbol sym) -> SortBy
-
-    def self?.to_name: (SortBy sort_by) -> String
-  end
-
   # FindSettings - encapsulates find settings
   class FindSettings
     attr_reader archives_only: bool
     attr_accessor colorize: bool
     attr_reader debug: bool
+    attr_accessor dir_color: Color
+    attr_accessor ext_color: Color
+    attr_accessor file_color: Color
     attr_accessor follow_symlinks: bool
     attr_accessor in_archive_extensions: Set[String]
     attr_accessor in_archive_file_patterns: Set[Regexp]

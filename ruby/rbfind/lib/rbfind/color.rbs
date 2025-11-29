@@ -1,0 +1,28 @@
+module RbFind
+  module Color
+    BLACK: 0
+    RED: 1
+    GREEN: 2
+    YELLOW: 3
+    BLUE: 4
+    MAGENTA: 5
+    CYAN: 6
+    WHITE: 7
+
+    NAMES: Array[:filepath | :filename | :filesize | :filetype | :lastmod]
+
+    def self?.from_name: (String name) -> Color
+
+    def self?.from_sym: (Symbol sym) -> Color
+
+    def self?.to_name: (Color color) -> String
+
+    def self?.to_console_color: (Color color) -> ConsoleColor
+
+    def self?.console_color: (Color color) -> ::String
+  end
+end
+
+class String
+  def console_color: (RbFind::Color color) -> ::String
+end

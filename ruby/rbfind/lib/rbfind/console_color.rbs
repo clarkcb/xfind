@@ -1,13 +1,15 @@
-module ConsoleColor
-  RESET: 0
-  BLACK: 30
-  RED: 31
-  GREEN: 32
-  YELLOW: 33
-  BLUE: 34
-  MAGENTA: 35
-  CYAN: 36
-  WHITE: 37
+module RbFind
+  module ConsoleColor
+    RESET: 0
+    BLACK: 30
+    RED: 31
+    GREEN: 32
+    YELLOW: 33
+    BLUE: 34
+    MAGENTA: 35
+    CYAN: 36
+    WHITE: 37
+  end
 end
 
 class String
@@ -42,4 +44,6 @@ class String
   def white: () -> ::String
 
   def bold_white: () -> ::String
+
+  def in_color: (RbFind::ConsoleColor console_color) -> ::String
 end

@@ -1,31 +1,7 @@
 require_relative 'filetypes'
+require_relative 'sortby'
 
 module RbFind
-
-  module SortBy
-    FILEPATH = 0
-    FILENAME = 1
-    FILESIZE = 2
-    FILETYPE = 3
-    LASTMOD  = 4
-
-    NAMES = Array[:filepath, :filename, :filesize, :filetype, :lastmod].freeze
-
-    module_function
-    def from_name(name)
-      idx = NAMES.index(name.downcase.to_sym)
-      idx.nil? ? 0 : idx
-    end
-
-    def from_sym(sym)
-      idx = NAMES.index(sym)
-      idx.nil? ? 0 : idx
-    end
-
-    def to_name(sort_by)
-      sort_by < NAMES.size ? NAMES[sort_by].to_s : NAMES[0].to_s
-    end
-  end
 
   # FindSettings - encapsulates find settings
   class FindSettings
@@ -33,6 +9,9 @@ module RbFind
     attr_reader :archives_only
     attr_accessor :colorize
     attr_reader :debug
+    attr_accessor :dir_color
+    attr_accessor :ext_color
+    attr_accessor :file_color
     attr_accessor :follow_symlinks
     attr_accessor :in_archive_extensions
     attr_accessor :in_archive_file_patterns
@@ -69,6 +48,9 @@ module RbFind
       @archives_only = false
       @colorize = true
       @debug = false
+      @dir_color = Color::CYAN
+      @ext_color = Color::YELLOW
+      @file_color = Color::MAGENTA
       @follow_symlinks = false
       @in_archive_extensions = Set::new
       @in_archive_file_patterns = Set::new

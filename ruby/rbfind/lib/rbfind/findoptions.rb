@@ -22,7 +22,6 @@ module RbFind
       @int_action_dict = {}
       set_actions
       set_options_from_json
-      @options.sort! { |a, b| a.sort_arg <=> b.sort_arg }
       @arg_tokenizer = ArgTokenizer.new(@options)
     end
 
@@ -61,6 +60,7 @@ module RbFind
       opt_strings = []
       opt_descs = []
       longest = 0
+      @options.sort! { |a, b| a.sort_arg <=> b.sort_arg }
       @options.each do |opt|
         if opt.short_arg.empty?
           opt_string = "--#{opt.long_arg}"
@@ -133,7 +133,6 @@ module RbFind
         mindepth: ->(i, settings) { settings.min_depth = i },
         minsize: ->(i, settings) { settings.min_size = i },
       }
-      @str_dict = {path: :path}
     end
 
     def set_options_from_json

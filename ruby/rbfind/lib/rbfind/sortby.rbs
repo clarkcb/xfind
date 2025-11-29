@@ -1,0 +1,17 @@
+module RbFind
+  module SortBy
+    FILEPATH: 0
+    FILENAME: 1
+    FILESIZE: 2
+    FILETYPE: 3
+    LASTMOD: 4
+
+    NAMES: Array[:filepath | :filename | :filesize | :filetype | :lastmod]
+
+    def self?.from_name: (String name) -> SortBy
+
+    def self?.from_sym: (Symbol sym) -> SortBy
+
+    def self?.to_name: (SortBy sort_by) -> String
+  end
+end

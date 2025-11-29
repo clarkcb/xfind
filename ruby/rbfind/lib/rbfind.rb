@@ -10,6 +10,8 @@
 ################################################################################
 
 require_relative 'rbfind/common'
+require_relative 'rbfind/color'
+require_relative 'rbfind/console_color'
 require_relative 'rbfind/fileresult'
 require_relative 'rbfind/fileresultformatter'
 require_relative 'rbfind/fileresultsorter'
@@ -27,7 +29,7 @@ def find_main
     begin
       options.find_settings_from_args(ARGV)
     rescue RbFind::FindError => e
-      handle_find_error(e, options)
+      handle_find_error(e, true, options)
     end
 
   RbFind::log("settings: #{settings}") if settings.debug
@@ -45,20 +47,20 @@ def find_main
   find(options, settings)
 end
 
-def handle_find_error(err, options, settings)
+def handle_find_error(err, colorize, options)
   RbFind::log('')
-  RbFind::log_err("#{err.message}\n", settings.colorize)
+  RbFind::log_err("#{err.message}\n", colorize)
   options.usage
 end
 
 def find(options, settings)
-  finder = 
+  finder =
     begin
       RbFind::Finder.new(settings)
     rescue RbFind::FindError => e
-      handle_find_error(e, options, settings)
+      handle_find_error(e, settings.colorize, options)
     rescue => e
-      handle_find_error(e, options, settings)
+      handle_find_error(e, settings.colorize, options)
     end
   file_results = finder.find
   formatter = RbFind::FileResultFormatter.new(settings)
@@ -75,5 +77,5 @@ def find(options, settings)
 #   handle_find_error(e, options)
 
 rescue RuntimeError => e
-  handle_find_error(e, options)
+  handle_find_error(e, settings.colorize, options)
 end

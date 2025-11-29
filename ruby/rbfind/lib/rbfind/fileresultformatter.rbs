@@ -8,7 +8,7 @@ module RbFind
 
     def initialize: (FindSettings settings) -> void
 
-    def colorize: (String str, Integer match_start_index, Integer match_end_index) -> String
+    def colorize: (String str, Integer match_start_index, Integer match_end_index, Color color) -> String
 
     def format_dir_path: (Pathname path) -> String
 
