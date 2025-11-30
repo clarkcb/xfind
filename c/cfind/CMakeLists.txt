@@ -40,6 +40,7 @@ target_sources(${PROJECT_NAME}
         $<INSTALL_INTERFACE:include/cfind.h>
         PRIVATE
         include/consolecolor.h
+        include/color.h src/color.c
         include/common.h src/common.c
         include/config.h src/config.c
         include/argtokennode.h src/argtokennode.c
@@ -49,6 +50,7 @@ target_sources(${PROJECT_NAME}
         include/filetypes.h src/filetypes.c
         include/fileutil.h src/fileutil.c
         include/finderr.h src/finderr.c
+        include/sortby.h src/sortby.c
         include/argtokenizer.h src/argtokenizer.c
         include/findoptions.h src/findoptions.c
         include/findsettings.h src/findsettings.c

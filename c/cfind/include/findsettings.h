@@ -3,37 +3,23 @@
 
 #include <stdbool.h>
 
+#include "color.h"
 #include "intnode.h"
 #include "pathnode.h"
 #include "regexnode.h"
+#include "sortby.h"
 #include "stringnode.h"
 
 #define BOOLEAN_NAME_FALSE "false"
 #define BOOLEAN_NAME_TRUE "true"
 
-#define SORT_BY_NAME_FILEPATH "filepath"
-#define SORT_BY_NAME_PATH "path"
-#define SORT_BY_NAME_FILENAME "filename"
-#define SORT_BY_NAME_NAME "name"
-#define SORT_BY_NAME_FILESIZE "filesize"
-#define SORT_BY_NAME_SIZE "size"
-#define SORT_BY_NAME_FILETYPE "filetype"
-#define SORT_BY_NAME_TYPE "type"
-#define SORT_BY_NAME_LASTMOD "lastmod"
-#define SORT_BY_NAME_UNKNOWN "unknown"
-
-typedef enum {
-    FILEPATH = 0,
-    FILENAME = 1,
-    FILESIZE = 2,
-    FILETYPE = 3,
-    LASTMOD  = 4
-} SortBy;
-
 typedef struct FindSettings {
     bool archives_only : 1;
     bool colorize : 1;
     bool debug : 1;
+    Color dir_color;
+    Color ext_color;
+    Color file_color;
     bool follow_symlinks : 1;
     StringNode *in_archive_extensions;
     RegexNode *in_archive_file_patterns;
@@ -80,10 +66,6 @@ void destroy_settings(FindSettings *settings);
 void set_archives_only(FindSettings *settings, unsigned short archives_only);
 
 void set_debug(FindSettings *settings, unsigned short debug);
-
-SortBy sort_by_from_name(const char *name);
-
-void sort_by_to_name(SortBy sort_by, char *name);
 
 bool need_stat(const FindSettings *settings);
 

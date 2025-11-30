@@ -65,28 +65,57 @@ void get_file_types_path(char *dest);
 void get_find_options_path(char *dest);
 
 
+// consolecolor.h
+
+#define CONSOLE_COLOR_LENGTH  12
+
+#define CONSOLE_COLOR_RESET   "\033[0m"
+#define CONSOLE_COLOR_BLACK   "\033[0;30m"
+#define CONSOLE_COLOR_RED     "\033[0;31m"
+#define CONSOLE_COLOR_GREEN   "\033[0;32m"
+#define CONSOLE_COLOR_YELLOW  "\033[0;33m"
+#define CONSOLE_COLOR_BLUE    "\033[0;34m"
+#define CONSOLE_COLOR_MAGENTA "\033[0;35m"
+#define CONSOLE_COLOR_CYAN    "\033[0;36m"
+#define CONSOLE_COLOR_WHITE   "\033[0;37m"
+
+#define CONSOLE_BOLD_BLACK    "\033[1;30m"
+#define CONSOLE_BOLD_RED      "\033[1;31m"
+#define CONSOLE_BOLD_GREEN    "\033[1;32m"
+#define CONSOLE_BOLD_YELLOW   "\033[1;33m"
+#define CONSOLE_BOLD_BLUE     "\033[1;34m"
+#define CONSOLE_BOLD_MAGENTA  "\033[1;35m"
+#define CONSOLE_BOLD_CYAN     "\033[1;36m"
+#define CONSOLE_BOLD_WHITE    "\033[1;37m"
+
+
 // color.h
 
-#define COLOR_LENGTH  12
+#define COLOR_NAME_BLACK "black"
+#define COLOR_NAME_RED "red"
+#define COLOR_NAME_GREEN "green"
+#define COLOR_NAME_YELLOW "yellow"
+#define COLOR_NAME_BLUE "blue"
+#define COLOR_NAME_MAGENTA "magenta"
+#define COLOR_NAME_CYAN "cyan"
+#define COLOR_NAME_WHITE "white"
 
-#define COLOR_RESET   "\033[0m"
-#define COLOR_BLACK   "\033[0;30m"
-#define COLOR_RED     "\033[0;31m"
-#define COLOR_GREEN   "\033[0;32m"
-#define COLOR_YELLOW  "\033[0;33m"
-#define COLOR_BLUE    "\033[0;34m"
-#define COLOR_MAGENTA "\033[0;35m"
-#define COLOR_CYAN    "\033[0;36m"
-#define COLOR_WHITE   "\033[0;37m"
+typedef enum {
+    BLACK = 1,
+    RED = 2,
+    GREEN = 3,
+    YELLOW = 4,
+    BLUE = 5,
+    MAGENTA = 6,
+    CYAN = 7,
+    WHITE = 8
+} Color;
 
-#define BOLD_BLACK    "\033[1;30m"
-#define BOLD_RED      "\033[1;31m"
-#define BOLD_GREEN    "\033[1;32m"
-#define BOLD_YELLOW   "\033[1;33m"
-#define BOLD_BLUE     "\033[1;34m"
-#define BOLD_MAGENTA  "\033[1;35m"
-#define BOLD_CYAN     "\033[1;36m"
-#define BOLD_WHITE    "\033[1;37m"
+Color color_from_name(const char *name);
+
+void color_to_name(Color color, char *name);
+
+void color_to_console_color(Color color, char *console_color);
 
 
 // finderr.h
@@ -427,7 +456,7 @@ void file_type_node_to_string(IntNode *file_type_node, char *s);
 void destroy_file_types(FileTypes *file_types);
 
 
-// findsettings.h
+// sortby.h
 
 #define BOOLEAN_NAME_FALSE "false"
 #define BOOLEAN_NAME_TRUE "true"
@@ -451,10 +480,20 @@ typedef enum {
     LASTMOD  = 4
 } SortBy;
 
+SortBy sort_by_from_name(const char *name);
+
+void sort_by_to_name(const SortBy sort_by, char *name);
+
+
+// findsettings.h
+
 typedef struct FindSettings {
     bool archives_only : 1;
     bool colorize : 1;
     bool debug : 1;
+    Color dir_color;
+    Color ext_color;
+    Color file_color;
     bool follow_symlinks : 1;
     StringNode *in_archive_extensions;
     RegexNode *in_archive_file_patterns;
@@ -501,10 +540,6 @@ void destroy_settings(FindSettings *settings);
 void set_archives_only(FindSettings *settings, unsigned short archives_only);
 
 void set_debug(FindSettings *settings, unsigned short debug);
-
-SortBy sort_by_from_name(const char *name);
-
-void sort_by_to_name(const SortBy sort_by, char *name);
 
 bool need_stat(const FindSettings *settings);
 

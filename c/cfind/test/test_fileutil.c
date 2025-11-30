@@ -17,25 +17,25 @@ void test_dir_or_file_exists(void)
 
     printf("dir: \"%s\"\n", xfindpath);
     const unsigned int res = dir_or_file_exists(xfindpath);
-    const char* color = res == 1 ? COLOR_GREEN : COLOR_RED;
-    printf("%sexpected exists: 1%s\n", color, COLOR_RESET);
-    printf("%sactual exists:   %u%s\n", color, res, COLOR_RESET);
+    const char* color = res == 1 ? CONSOLE_COLOR_GREEN : CONSOLE_COLOR_RED;
+    printf("%sexpected exists: 1%s\n", color, CONSOLE_COLOR_RESET);
+    printf("%sactual exists:   %u%s\n", color, res, CONSOLE_COLOR_RESET);
     assert(res == 1);
 
     const char *nonexistent = "/this/path/should/not/exist";
     printf("dir: \"%s\"\n", nonexistent);
     const unsigned int res2 = dir_or_file_exists(nonexistent);
-    color = res2 == 0 ? COLOR_GREEN : COLOR_RED;
-    printf("%sexpected exists: 0%s\n", color, COLOR_RESET);
-    printf("%sactual exists:   %u%s\n", color, res2, COLOR_RESET);
+    color = res2 == 0 ? CONSOLE_COLOR_GREEN : CONSOLE_COLOR_RED;
+    printf("%sexpected exists: 0%s\n", color, CONSOLE_COLOR_RESET);
+    printf("%sactual exists:   %u%s\n", color, res2, CONSOLE_COLOR_RESET);
     assert(res2 == 0);
 
     const char *tilde_home = "~/Documents";
     printf("dir: \"%s\"\n", tilde_home);
     const unsigned int res3 = dir_or_file_exists(tilde_home);
-    color = res3 == 0 ? COLOR_GREEN : COLOR_RED;
-    printf("%sexpected exists: 0%s\n", color, COLOR_RESET);
-    printf("%sactual exists:   %u%s\n", color, res3, COLOR_RESET);
+    color = res3 == 0 ? CONSOLE_COLOR_GREEN : CONSOLE_COLOR_RED;
+    printf("%sexpected exists: 0%s\n", color, CONSOLE_COLOR_RESET);
+    printf("%sactual exists:   %u%s\n", color, res3, CONSOLE_COLOR_RESET);
     assert(res3 == 0);
 
     char *expanded = malloc((strnlen(tilde_home, 100) + 1) * sizeof (char *));
@@ -44,9 +44,9 @@ void test_dir_or_file_exists(void)
     printf("dir: \"%s\"\n", tilde_home);
     printf("expanded: \"%s\"\n", expanded);
     const unsigned int res4 = dir_or_file_exists(expanded);
-    color = res4 == 1 ? COLOR_GREEN : COLOR_RED;
-    printf("%sexpected exists: 1%s\n", color, COLOR_RESET);
-    printf("%sactual exists:   %u%s\n", color, res4, COLOR_RESET);
+    color = res4 == 1 ? CONSOLE_COLOR_GREEN : CONSOLE_COLOR_RED;
+    printf("%sexpected exists: 1%s\n", color, CONSOLE_COLOR_RESET);
+    printf("%sactual exists:   %u%s\n", color, res4, CONSOLE_COLOR_RESET);
     assert(res4 == 1);
     free(expanded);
 }
@@ -77,9 +77,9 @@ void test_get_extension(void)
         char *ext = malloc(4 * sizeof(char));
         get_extension(filenames[i], ext);
         const int res = strcmp(ext, exts[i]);
-        const char* color = res == 0 ? COLOR_GREEN : COLOR_RED;
-        printf("%sexpected ext: \"%s\"%s\n", color, exts[i], COLOR_RESET);
-        printf("%sactual ext:   \"%s\"%s\n", color, ext, COLOR_RESET);
+        const char* color = res == 0 ? CONSOLE_COLOR_GREEN : CONSOLE_COLOR_RED;
+        printf("%sexpected ext: \"%s\"%s\n", color, exts[i], CONSOLE_COLOR_RESET);
+        printf("%sactual ext:   \"%s\"%s\n", color, ext, CONSOLE_COLOR_RESET);
         assert(res == 0);
         free(ext);
     }
@@ -118,9 +118,9 @@ void test_is_dot_dir(void)
     for (int i=0; i < arrlen; i++) {
         printf("dir: \"%s\"\n", dirnames[i]);
         const int res = is_dot_dir(dirnames[i]);
-        const char* color = res == expected[i] ? COLOR_GREEN : COLOR_RED;
-        printf("%sexpected res: %d%s\n", color, expected[i], COLOR_RESET);
-        printf("%sactual res:   %d%s\n", color, res, COLOR_RESET);
+        const char* color = res == expected[i] ? CONSOLE_COLOR_GREEN : CONSOLE_COLOR_RED;
+        printf("%sexpected res: %d%s\n", color, expected[i], CONSOLE_COLOR_RESET);
+        printf("%sactual res:   %d%s\n", color, res, CONSOLE_COLOR_RESET);
         assert(res == expected[i]);
     }
 }
@@ -172,9 +172,9 @@ void test_is_hidden_path(void)
     for (int i=0; i < arrlen; i++) {
         printf("file_path: \"%s\"\n", file_paths[i]);
         const int res = is_hidden_path(file_paths[i]);
-        const char* color = res == expected[i] ? COLOR_GREEN : COLOR_RED;
-        printf("%sexpected res: %d%s\n", color, expected[i], COLOR_RESET);
-        printf("%sactual res:   %d%s\n", color, res, COLOR_RESET);
+        const char* color = res == expected[i] ? CONSOLE_COLOR_GREEN : CONSOLE_COLOR_RED;
+        printf("%sexpected res: %d%s\n", color, expected[i], CONSOLE_COLOR_RESET);
+        printf("%sactual res:   %d%s\n", color, res, CONSOLE_COLOR_RESET);
         assert(res == expected[i]);
     }
 }
@@ -190,36 +190,36 @@ void test_expand_path(void)
     const char *tilde = "~";
     expand_path(tilde, &expanded);
     const size_t diff = strnlen(expanded, 100) - strnlen(tilde, 100);
-    const char* color = diff > 0 ? COLOR_GREEN : COLOR_RED;
-    printf("%soriginal path: %s%s\n", color, tilde, COLOR_RESET);
-    printf("%sexpanded path: %s%s\n", color, expanded, COLOR_RESET);
+    const char* color = diff > 0 ? CONSOLE_COLOR_GREEN : CONSOLE_COLOR_RED;
+    printf("%soriginal path: %s%s\n", color, tilde, CONSOLE_COLOR_RESET);
+    printf("%sexpanded path: %s%s\n", color, expanded, CONSOLE_COLOR_RESET);
     assert(diff > 0);
 
     // test tilde path
     const char *tilde_path = "~/src/xfind";
     expand_path(tilde_path, &expanded);
     const size_t diff2 = strnlen(expanded, 100) - strnlen(tilde, 100);
-    color = diff2 > 0 ? COLOR_GREEN : COLOR_RED;
-    printf("%soriginal path: %s%s\n", color, tilde_path, COLOR_RESET);
-    printf("%sexpanded path: %s%s\n", color, expanded, COLOR_RESET);
+    color = diff2 > 0 ? CONSOLE_COLOR_GREEN : CONSOLE_COLOR_RED;
+    printf("%soriginal path: %s%s\n", color, tilde_path, CONSOLE_COLOR_RESET);
+    printf("%sexpanded path: %s%s\n", color, expanded, CONSOLE_COLOR_RESET);
     assert(diff2 > 0);
 
     // test tilde name path
     const char *tilde_name_path = "~cary/src/xfind";
     expand_path(tilde_name_path, &expanded);
     const size_t diff3 = strnlen(expanded, 100) - strnlen(tilde, 100);
-    color = diff3 > 0 ? COLOR_GREEN : COLOR_RED;
-    printf("%soriginal path: %s%s\n", color, tilde_name_path, COLOR_RESET);
-    printf("%sexpanded path: %s%s\n", color, expanded, COLOR_RESET);
+    color = diff3 > 0 ? CONSOLE_COLOR_GREEN : CONSOLE_COLOR_RED;
+    printf("%soriginal path: %s%s\n", color, tilde_name_path, CONSOLE_COLOR_RESET);
+    printf("%sexpanded path: %s%s\n", color, expanded, CONSOLE_COLOR_RESET);
     assert(diff3 > 0);
 
     // test no tilde
     const char *homepath = "/home/path";
     expand_path(homepath, &expanded);
     const size_t diff4 = strnlen(expanded, 100) - strnlen(homepath, 100);
-    color = diff4 == 0 ? COLOR_GREEN : COLOR_RED;
-    printf("%soriginal path: %s%s\n", color, homepath, COLOR_RESET);
-    printf("%sexpanded path: %s%s\n", color, expanded, COLOR_RESET);
+    color = diff4 == 0 ? CONSOLE_COLOR_GREEN : CONSOLE_COLOR_RED;
+    printf("%soriginal path: %s%s\n", color, homepath, CONSOLE_COLOR_RESET);
+    printf("%sexpanded path: %s%s\n", color, expanded, CONSOLE_COLOR_RESET);
     assert(diff4 == 0);
     assert(strcmp(expanded, homepath) == 0);
 
@@ -239,8 +239,8 @@ void test_join_path(void)
     printf("path1: %s\n", path1);
     printf("path2: %s\n", path2);
     const int cmp = strcmp(joined_path, "/home/path");
-    const char* color = cmp == 0 ? COLOR_GREEN : COLOR_RED;
-    printf("%sjoined_path: %s%s\n", color, joined_path, COLOR_RESET);
+    const char* color = cmp == 0 ? CONSOLE_COLOR_GREEN : CONSOLE_COLOR_RED;
+    printf("%sjoined_path: %s%s\n", color, joined_path, CONSOLE_COLOR_RESET);
     assert(cmp == 0);
 
     // TODO: fix - need to normalize paths before joining
@@ -267,10 +267,10 @@ void test_split_path(void)
     printf("path: %s\n", path);
     const int dcmp = strcmp(d, "/home");
     const int fcmp = strcmp(f, "profile");
-    const char* color = dcmp == 0 ? COLOR_GREEN : COLOR_RED;
-    printf("%sd: %s%s\n", color, d, COLOR_RESET);
-    color = fcmp == 0 ? COLOR_GREEN : COLOR_RED;
-    printf("%sf: %s%s\n", color, f, COLOR_RESET);
+    const char* color = dcmp == 0 ? CONSOLE_COLOR_GREEN : CONSOLE_COLOR_RED;
+    printf("%sd: %s%s\n", color, d, CONSOLE_COLOR_RESET);
+    color = fcmp == 0 ? CONSOLE_COLOR_GREEN : CONSOLE_COLOR_RED;
+    printf("%sf: %s%s\n", color, f, CONSOLE_COLOR_RESET);
     assert(strcmp(d, "/home") == 0);
     assert(strcmp(f, "profile") == 0);
 

@@ -31,12 +31,12 @@ void test_last_index_of_char_in_string(void)
     for (int i=0; i < arrlen; i++) {
         printf("file_name: \"%s\"\n", filenames[i]);
         const int res = last_index_of_char_in_string('.', filenames[i]);
-        const char* color = COLOR_GREEN;
+        const char* color = CONSOLE_COLOR_GREEN;
         if (res != expected[i]) {
-            color = COLOR_RED;
+            color = CONSOLE_COLOR_RED;
         }
-        printf("%sexpected res: %d%s\n", color, expected[i], COLOR_RESET);
-        printf("%sactual res:   %d%s\n", color, res, COLOR_RESET);
+        printf("%sexpected res: %d%s\n", color, expected[i], CONSOLE_COLOR_RESET);
+        printf("%sactual res:   %d%s\n", color, res, CONSOLE_COLOR_RESET);
         assert(res == expected[i]);
     }
 }

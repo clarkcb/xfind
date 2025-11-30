@@ -20,10 +20,10 @@ void log_err_color(const char *msg)
 {
     char msg2[150];
     msg2[0] = '\0';
-    strcpy(msg2, BOLD_RED);
+    strcpy(msg2, CONSOLE_BOLD_RED);
     strcat(msg2, "ERROR: ");
     strcat(msg2, msg);
-    strcat(msg2, COLOR_RESET);
+    strcat(msg2, CONSOLE_COLOR_RESET);
     fprintf(stderr, "\n%s\n", msg2);
 }
 

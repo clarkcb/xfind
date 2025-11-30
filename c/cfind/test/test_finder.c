@@ -19,14 +19,14 @@ void test_validate_settings(void)
 
     FindSettings *settings = default_settings();
     int empty_paths = is_null_or_empty_path_node(settings->paths);
-    const char* color = empty_paths == 1 ? COLOR_GREEN : COLOR_RED;
-    printf("%sis_null_or_empty_string_node(settings->paths): %d%s\n", color, empty_paths, COLOR_RESET);
+    const char* color = empty_paths == 1 ? CONSOLE_COLOR_GREEN : CONSOLE_COLOR_RED;
+    printf("%sis_null_or_empty_string_node(settings->paths): %d%s\n", color, empty_paths, CONSOLE_COLOR_RESET);
     assert(empty_paths == 1);
 
     error_t err = validate_settings(settings);
-    color = err == E_STARTPATH_NOT_DEFINED ? COLOR_GREEN : COLOR_RED;
+    color = err == E_STARTPATH_NOT_DEFINED ? CONSOLE_COLOR_GREEN : CONSOLE_COLOR_RED;
     if (err == E_STARTPATH_NOT_DEFINED) {
-        printf("%svalidate_settings(settings): E_STARTPATH_NOT_DEFINED%s\n", color, COLOR_RESET);
+        printf("%svalidate_settings(settings): E_STARTPATH_NOT_DEFINED%s\n", color, CONSOLE_COLOR_RESET);
     }
     assert(err == E_STARTPATH_NOT_DEFINED);
 
@@ -38,8 +38,8 @@ void test_validate_settings(void)
     empty_paths = is_null_or_empty_path_node(settings->paths);
     assert(empty_paths == 0);
     size_t path_count = path_node_count(settings->paths);
-    color = path_count == 1 ? COLOR_GREEN : COLOR_RED;
-    printf("%spath_node_count(settings->paths): %zu%s\n", color, path_count, COLOR_RESET);
+    color = path_count == 1 ? CONSOLE_COLOR_GREEN : CONSOLE_COLOR_RED;
+    printf("%spath_node_count(settings->paths): %zu%s\n", color, path_count, CONSOLE_COLOR_RESET);
     assert(path_count == 1);
 
     const char* f2 = "./non_existent_file.c";
@@ -47,14 +47,14 @@ void test_validate_settings(void)
     Path *p2 = new_path(f2);
     add_path_to_path_node(p2, settings->paths);
     path_count = path_node_count(settings->paths);
-    color = path_count == 2 ? COLOR_GREEN : COLOR_RED;
-    printf("%spath_node_count(settings->paths): %zu%s\n", color, path_count, COLOR_RESET);
+    color = path_count == 2 ? CONSOLE_COLOR_GREEN : CONSOLE_COLOR_RED;
+    printf("%spath_node_count(settings->paths): %zu%s\n", color, path_count, CONSOLE_COLOR_RESET);
     assert(path_count == 2);
 
     err = validate_settings(settings);
-    color = err == E_STARTPATH_NOT_FOUND ? COLOR_GREEN : COLOR_RED;
+    color = err == E_STARTPATH_NOT_FOUND ? CONSOLE_COLOR_GREEN : CONSOLE_COLOR_RED;
     if (err == E_STARTPATH_NOT_FOUND) {
-        printf("%svalidate_settings(settings): E_STARTPATH_NOT_FOUND%s\n", color, COLOR_RESET);
+        printf("%svalidate_settings(settings): E_STARTPATH_NOT_FOUND%s\n", color, CONSOLE_COLOR_RESET);
     }
     assert(err == E_STARTPATH_NOT_FOUND);
 
@@ -72,22 +72,22 @@ void test_is_matching_dir(void) {
     // test current dot dir
     const char* dot_dir = ".";
     const unsigned short res1 = is_matching_dir(settings, dot_dir);
-    const char* color = res1 == 1 ? COLOR_GREEN : COLOR_RED;
-    printf("%sis_matching_dir(\"%s\"): %d%s\n", color, dot_dir, res1, COLOR_RESET);
+    const char* color = res1 == 1 ? CONSOLE_COLOR_GREEN : CONSOLE_COLOR_RED;
+    printf("%sis_matching_dir(\"%s\"): %d%s\n", color, dot_dir, res1, CONSOLE_COLOR_RESET);
     assert(res1 == 1);
 
     // test parent dot dir
     const char* parent_dir = "..";
     const unsigned short res2 = is_matching_dir(settings, parent_dir);
-    color = res2 == 1 ? COLOR_GREEN : COLOR_RED;
-    printf("%sis_matching_dir(\"%s\"): %d%s\n", color, parent_dir, res2, COLOR_RESET);
+    color = res2 == 1 ? CONSOLE_COLOR_GREEN : CONSOLE_COLOR_RED;
+    printf("%sis_matching_dir(\"%s\"): %d%s\n", color, parent_dir, res2, CONSOLE_COLOR_RESET);
     assert(res2 == 1);
 
     // test "test" dir
     const char* test_dir = "test";
     const unsigned short res3 = is_matching_dir(settings, test_dir);
-    color = res3 == 1 ? COLOR_GREEN : COLOR_RED;
-    printf("%sis_matching_dir(\"%s\"): %d%s\n", color, test_dir, res3, COLOR_RESET);
+    color = res3 == 1 ? CONSOLE_COLOR_GREEN : CONSOLE_COLOR_RED;
+    printf("%sis_matching_dir(\"%s\"): %d%s\n", color, test_dir, res3, CONSOLE_COLOR_RESET);
     assert(res3 == 1);
 
     destroy_settings(settings);
@@ -105,15 +105,15 @@ void test_is_matching_dir_in_dir_patterns(void) {
     printf("Adding in-dir-pattern: \"%s\"\n", test_dir);
     settings->in_dir_patterns = new_regex_node_from_string("test");
     const unsigned short res1 = is_matching_dir(settings, test_dir);
-    const char* color = res1 == 1 ? COLOR_GREEN : COLOR_RED;
-    printf("%sis_matching_dir(\"%s\"): %d%s\n", color, test_dir, res1, COLOR_RESET);
+    const char* color = res1 == 1 ? CONSOLE_COLOR_GREEN : CONSOLE_COLOR_RED;
+    printf("%sis_matching_dir(\"%s\"): %d%s\n", color, test_dir, res1, CONSOLE_COLOR_RESET);
     assert(res1 == 1);
 
     // test "other" dir with "test" in_dir_pattern
     const char* other_dir = "other";
     const unsigned short res2 = is_matching_dir(settings, other_dir);
-    color = res2 == 0 ? COLOR_GREEN : COLOR_RED;
-    printf("%sis_matching_dir(\"%s\"): %d%s\n", color, other_dir, res2, COLOR_RESET);
+    color = res2 == 0 ? CONSOLE_COLOR_GREEN : CONSOLE_COLOR_RED;
+    printf("%sis_matching_dir(\"%s\"): %d%s\n", color, other_dir, res2, CONSOLE_COLOR_RESET);
     assert(res2 == 0);
 
     destroy_settings(settings);
@@ -131,15 +131,15 @@ void test_is_matching_dir_out_dir_patterns(void) {
     printf("Adding out-dir-pattern: \"%s\"\n", test_dir);
     settings->out_dir_patterns = new_regex_node_from_string("test");
     const unsigned short res1 = is_matching_dir(settings, test_dir);
-    const char* color = res1 == 0 ? COLOR_GREEN : COLOR_RED;
-    printf("%sis_matching_dir(\"%s\"): %d%s\n", color, test_dir, res1, COLOR_RESET);
+    const char* color = res1 == 0 ? CONSOLE_COLOR_GREEN : CONSOLE_COLOR_RED;
+    printf("%sis_matching_dir(\"%s\"): %d%s\n", color, test_dir, res1, CONSOLE_COLOR_RESET);
     assert(res1 == 0);
 
     // test "other" dir with "test" out_dir_pattern
     const char* other_dir = "other";
     const unsigned short res2 = is_matching_dir(settings, other_dir);
-    color = res2 == 1 ? COLOR_GREEN : COLOR_RED;
-    printf("%sis_matching_dir(\"%s\"): %d%s\n", color, test_dir, res2, COLOR_RESET);
+    color = res2 == 1 ? CONSOLE_COLOR_GREEN : CONSOLE_COLOR_RED;
+    printf("%sis_matching_dir(\"%s\"): %d%s\n", color, test_dir, res2, CONSOLE_COLOR_RESET);
     assert(res2 == 1);
 
     destroy_settings(settings);
@@ -160,15 +160,15 @@ void test_filter_path(void) {
     const Path *test_path = new_path(test_file);
     const FileType ft = CODE;
     const unsigned short res1 = filter_path(settings, test_path, &ft, 0, 0);
-    const char* color = res1 == 1 ? COLOR_GREEN : COLOR_RED;
-    printf("%sfilter_path(\"%s\"): %d%s\n", color, test_file, res1, COLOR_RESET);
+    const char* color = res1 == 1 ? CONSOLE_COLOR_GREEN : CONSOLE_COLOR_RED;
+    printf("%sfilter_path(\"%s\"): %d%s\n", color, test_file, res1, CONSOLE_COLOR_RESET);
     assert(res1 == 1);
 
     const char* hidden_file = "./.hidden.c";
     const Path *hidden_path = new_path(hidden_file);
     const unsigned short res2 = filter_path(settings, hidden_path, &ft, 0, 0);
-    color = res2 == 0 ? COLOR_GREEN : COLOR_RED;
-    printf("%sfilter_path(\"%s\"): %d%s\n", color, hidden_file, res2, COLOR_RESET);
+    color = res2 == 0 ? CONSOLE_COLOR_GREEN : CONSOLE_COLOR_RED;
+    printf("%sfilter_path(\"%s\"): %d%s\n", color, hidden_file, res2, CONSOLE_COLOR_RESET);
     assert(res2 == 0);
 
     destroy_settings(settings);
@@ -191,15 +191,15 @@ void test_is_matching_path_in_extensions(void) {
     const Path *matching_path = new_path(matching_file);
     const FileType ft = CODE;
     const unsigned short res1 = is_matching_path(settings, matching_path, &ft, 0, 0);
-    const char* color = res1 == 1 ? COLOR_GREEN : COLOR_RED;
-    printf("%sis_matching_path(\"%s\"): %d%s\n", color, matching_file, res1, COLOR_RESET);
+    const char* color = res1 == 1 ? CONSOLE_COLOR_GREEN : CONSOLE_COLOR_RED;
+    printf("%sis_matching_path(\"%s\"): %d%s\n", color, matching_file, res1, CONSOLE_COLOR_RESET);
     assert(res1 == 1);
 
     const char* non_matching_file = "test_finder.h";
     const Path *non_matching_path = new_path(non_matching_file);
     const unsigned short res2 = is_matching_path(settings, non_matching_path, &ft, 0, 0);
-    color = res2 == 0 ? COLOR_GREEN : COLOR_RED;
-    printf("%sis_matching_path(\"%s\"): %d%s\n", color, non_matching_file, res2, COLOR_RESET);
+    color = res2 == 0 ? CONSOLE_COLOR_GREEN : CONSOLE_COLOR_RED;
+    printf("%sis_matching_path(\"%s\"): %d%s\n", color, non_matching_file, res2, CONSOLE_COLOR_RESET);
     assert(res2 == 0);
 
     destroy_settings(settings);
@@ -222,15 +222,15 @@ void test_is_matching_path_out_extensions(void) {
     const Path *matching_path = new_path(matching_file);
     const FileType ft = CODE;
     const unsigned short res1 = is_matching_path(settings, matching_path, &ft, 0, 0);
-    const char* color = res1 == 0 ? COLOR_GREEN : COLOR_RED;
-    printf("%sis_matching_path(\"%s\"): %d%s\n", color, matching_file, res1, COLOR_RESET);
+    const char* color = res1 == 0 ? CONSOLE_COLOR_GREEN : CONSOLE_COLOR_RED;
+    printf("%sis_matching_path(\"%s\"): %d%s\n", color, matching_file, res1, CONSOLE_COLOR_RESET);
     assert(res1 == 0);
 
     const char* non_matching_file = "test_finder.h";
     const Path *non_matching_path = new_path(non_matching_file);
     const unsigned short res2 = is_matching_path(settings, non_matching_path, &ft, 0, 0);
-    color = res2 == 1 ? COLOR_GREEN : COLOR_RED;
-    printf("%sis_matching_path(\"%s\"): %d%s\n", color, non_matching_file, res2, COLOR_RESET);
+    color = res2 == 1 ? CONSOLE_COLOR_GREEN : CONSOLE_COLOR_RED;
+    printf("%sis_matching_path(\"%s\"): %d%s\n", color, non_matching_file, res2, CONSOLE_COLOR_RESET);
     assert(res2 == 1);
 
     destroy_settings(settings);
@@ -253,15 +253,15 @@ void test_is_matching_path_in_file_patterns(void) {
     const Path *matching_path = new_path(matching_file);
     const FileType ft = CODE;
     const unsigned short res1 = is_matching_path(settings, matching_path, &ft, 0, 0);
-    const char* color = res1 == 1 ? COLOR_GREEN : COLOR_RED;
-    printf("%sis_matching_path(\"%s\"): %d%s\n", color, matching_file, res1, COLOR_RESET);
+    const char* color = res1 == 1 ? CONSOLE_COLOR_GREEN : CONSOLE_COLOR_RED;
+    printf("%sis_matching_path(\"%s\"): %d%s\n", color, matching_file, res1, CONSOLE_COLOR_RESET);
     assert(res1 == 1);
 
     const char* non_matching_file = "finder.c";
     const Path *non_matching_path = new_path(non_matching_file);
     const unsigned short res2 = is_matching_path(settings, non_matching_path, &ft, 0, 0);
-    color = res2 == 0 ? COLOR_GREEN : COLOR_RED;
-    printf("%sis_matching_path(\"%s\"): %d%s\n", color, non_matching_file, res2, COLOR_RESET);
+    color = res2 == 0 ? CONSOLE_COLOR_GREEN : CONSOLE_COLOR_RED;
+    printf("%sis_matching_path(\"%s\"): %d%s\n", color, non_matching_file, res2, CONSOLE_COLOR_RESET);
     assert(res2 == 0);
 
     destroy_settings(settings);
@@ -284,15 +284,15 @@ void test_is_matching_path_out_file_patterns(void) {
     const Path *matching_path = new_path(matching_file);
     const FileType ft = CODE;
     const unsigned short res1 = is_matching_path(settings, matching_path, &ft, 0, 0);
-    const char* color = res1 == 0 ? COLOR_GREEN : COLOR_RED;
-    printf("%sis_matching_path(\"%s\"): %d%s\n", color, matching_file, res1, COLOR_RESET);
+    const char* color = res1 == 0 ? CONSOLE_COLOR_GREEN : CONSOLE_COLOR_RED;
+    printf("%sis_matching_path(\"%s\"): %d%s\n", color, matching_file, res1, CONSOLE_COLOR_RESET);
     assert(res1 == 0);
 
     const char* non_matching_file = "finder.c";
     const Path *non_matching_path = new_path(non_matching_file);
     const unsigned short res2 = is_matching_path(settings, non_matching_path, &ft, 0, 0);
-    color = res2 == 1 ? COLOR_GREEN : COLOR_RED;
-    printf("%sis_matching_path(\"%s\"): %d%s\n", color, non_matching_file, res2, COLOR_RESET);
+    color = res2 == 1 ? CONSOLE_COLOR_GREEN : CONSOLE_COLOR_RED;
+    printf("%sis_matching_path(\"%s\"): %d%s\n", color, non_matching_file, res2, CONSOLE_COLOR_RESET);
     assert(res2 == 1);
 
     destroy_settings(settings);
@@ -319,16 +319,16 @@ void test_is_matching_path_in_file_types(void) {
     const Path *matching_path = new_path(matching_file);
     FileType ft = CODE;
     const unsigned short res1 = is_matching_path(settings, matching_path, &ft, 0, 0);
-    const char* color = res1 == 1 ? COLOR_GREEN : COLOR_RED;
-    printf("%sis_matching_path(\"%s\"): %d%s\n", color, matching_file, res1, COLOR_RESET);
+    const char* color = res1 == 1 ? CONSOLE_COLOR_GREEN : CONSOLE_COLOR_RED;
+    printf("%sis_matching_path(\"%s\"): %d%s\n", color, matching_file, res1, CONSOLE_COLOR_RESET);
     assert(res1 == 1);
 
     const char* non_matching_file = "README.md";
     const Path *non_matching_path = new_path(non_matching_file);
     ft = TEXT;
     const unsigned short res2 = is_matching_path(settings, non_matching_path, &ft, 0, 0);
-    color = res2 == 0 ? COLOR_GREEN : COLOR_RED;
-    printf("%sis_matching_path(\"%s\"): %d%s\n", color, non_matching_file, res2, COLOR_RESET);
+    color = res2 == 0 ? CONSOLE_COLOR_GREEN : CONSOLE_COLOR_RED;
+    printf("%sis_matching_path(\"%s\"): %d%s\n", color, non_matching_file, res2, CONSOLE_COLOR_RESET);
     assert(res2 == 0);
 
     destroy_settings(settings);
@@ -355,16 +355,16 @@ void test_is_matching_path_out_file_types(void) {
     const Path *non_matching_path = new_path(non_matching_file);
     FileType ft = CODE;
     const unsigned short res1 = is_matching_path(settings, non_matching_path, &ft, 0, 0);
-    const char* color = res1 == 0 ? COLOR_GREEN : COLOR_RED;
-    printf("%sis_matching_path(\"%s\"): %d%s\n", color, non_matching_file, res1, COLOR_RESET);
+    const char* color = res1 == 0 ? CONSOLE_COLOR_GREEN : CONSOLE_COLOR_RED;
+    printf("%sis_matching_path(\"%s\"): %d%s\n", color, non_matching_file, res1, CONSOLE_COLOR_RESET);
     assert(res1 == 0);
 
     const char* matching_file = "README.md";
     const Path *matching_path = new_path(matching_file);
     ft = TEXT;
     const unsigned short res2 = is_matching_path(settings, matching_path, &ft, 0, 0);
-    color = res2 == 1 ? COLOR_GREEN : COLOR_RED;
-    printf("%sis_matching_path(\"%s\"): %d%s\n", color, matching_file, res2, COLOR_RESET);
+    color = res2 == 1 ? CONSOLE_COLOR_GREEN : CONSOLE_COLOR_RED;
+    printf("%sis_matching_path(\"%s\"): %d%s\n", color, matching_file, res2, CONSOLE_COLOR_RESET);
     assert(res2 == 1);
 
     destroy_settings(settings);
@@ -387,8 +387,8 @@ void test_follow_symlinks_default_settings(void) {
     assert(err == E_OK);
     const size_t res_count = file_results_count(results);
     if (res_count > 0) {
-        const char* color = res_count < 4 ? COLOR_GREEN : COLOR_RED;
-        printf("%sres_count: %d%s\n", color, (int)res_count, COLOR_RESET);
+        const char* color = res_count < 4 ? CONSOLE_COLOR_GREEN : CONSOLE_COLOR_RED;
+        printf("%sres_count: %d%s\n", color, (int)res_count, CONSOLE_COLOR_RESET);
         assert(res_count < 4);
     }
 
@@ -414,8 +414,8 @@ void test_follow_symlinks_follow_symlinks(void) {
     assert(err == E_OK);
     const size_t res_count = file_results_count(results);
     if (res_count > 0) {
-        const char* color = res_count > 2 ? COLOR_GREEN : COLOR_RED;
-        printf("%sres_count: %d%s\n", color, (int)res_count, COLOR_RESET);
+        const char* color = res_count > 2 ? CONSOLE_COLOR_GREEN : CONSOLE_COLOR_RED;
+        printf("%sres_count: %d%s\n", color, (int)res_count, CONSOLE_COLOR_RESET);
         assert(res_count > 2);
     }
 
@@ -441,8 +441,8 @@ void test_follow_symlinks_no_follow_symlinks(void) {
     assert(err == E_OK);
     const size_t res_count = file_results_count(results);
     if (res_count > 0) {
-        const char* color = res_count < 4 ? COLOR_GREEN : COLOR_RED;
-        printf("%sres_count: %d%s\n", color, (int)res_count, COLOR_RESET);
+        const char* color = res_count < 4 ? CONSOLE_COLOR_GREEN : CONSOLE_COLOR_RED;
+        printf("%sres_count: %d%s\n", color, (int)res_count, CONSOLE_COLOR_RESET);
         assert(res_count < 4);
     }
 
