@@ -129,12 +129,6 @@ export class FindOptions {
         this.argTokenizer = new ArgTokenizer(this.options);
     }
 
-    private static optCmp(o1: FindOption, o2: FindOption) {
-        const a: string = o1.sortArg;
-        const b: string = o2.sortArg;
-        return a.localeCompare(b);
-    }
-
     // setOptionsFromJsonFile
     private setOptionsFromJsonFile(): void {
         const json = FileUtil.getFileContentsSync(config.FIND_OPTIONS_JSON_PATH);
@@ -142,6 +136,11 @@ export class FindOptions {
         if (Object.prototype.hasOwnProperty.call(obj, 'findoptions') && Array.isArray(obj['findoptions'])) {
             obj['findoptions'].forEach(fo => {
                 const longArg = fo['long'];
+                let shortArg = '';
+                if (Object.prototype.hasOwnProperty.call(fo, 'short')) {
+                    shortArg = fo['short'];
+                }
+                const desc = fo['desc'];
                 let argType = ArgTokenType.Unknown;
                 if (this.boolActionMap[longArg]) {
                     argType = ArgTokenType.Bool;
@@ -150,15 +149,9 @@ export class FindOptions {
                 } else if (this.intActionMap[longArg]) {
                     argType = ArgTokenType.Int;
                 }
-                let shortArg = '';
-                if (Object.prototype.hasOwnProperty.call(fo, 'short')) {
-                    shortArg = fo['short'];
-                }
-                const desc = fo['desc'];
                 this.options.push(new FindOption(shortArg, longArg, desc, argType));
             });
         } else throw new Error(`Invalid findoptions file: ${config.FIND_OPTIONS_JSON_PATH}`);
-        this.options.sort(FindOptions.optCmp);
     }
 
     private updateSettingsFromArgTokens(settings: FindSettings, argTokens: ArgToken[]): Error | undefined {
@@ -232,12 +225,19 @@ export class FindOptions {
         cb(err, settings);
     }
 
+    private static optCmp(o1: FindOption, o2: FindOption) {
+        const a: string = o1.sortArg;
+        const b: string = o2.sortArg;
+        return a.localeCompare(b);
+    }
+
     private getUsageString(): string {
         let usage: string = 'Usage:\n tsfind [options] <path> [<path> ...]' +
             '\n\nOptions:\n';
         const optStrings: string[] = [];
         const optDescs: string[] = [];
         let longest = 0;
+        this.options.sort(FindOptions.optCmp);
         this.options.forEach((opt: FindOption) => {
             let optString = ' ';
             if (opt.shortArg)

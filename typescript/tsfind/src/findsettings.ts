@@ -6,6 +6,7 @@
 
 'use strict';
 
+import {Color} from "./color";
 import {FileType} from './filetype';
 import {FileTypes} from './filetypes';
 import {SortBy} from "./sortby";
@@ -16,6 +17,9 @@ export class FindSettings {
     #archivesOnly = false;
     colorize = true;
     #debug = false;
+    dirColor = Color.CYAN;
+    extColor = Color.YELLOW;
+    fileColor = Color.MAGENTA;
     followSymlinks = false;
     inArchiveExtensions: string[] = [];
     inArchiveFilePatterns: RegExp[] = [];
@@ -195,7 +199,7 @@ export class FindSettings {
             + ', printUsage=' + this.printUsage
             + ', printVersion=' + this.printVersion
             + ', recursive=' + this.recursive
-            + ', sortBy=' + SortUtil.sortByToName(this.sortBy)
+            + ', sortBy=' + this.sortBy
             + ', sortCaseInsensitive=' + this.sortCaseInsensitive
             + ', sortDescending=' + this.sortDescending
             + ', verbose=' + this.verbose

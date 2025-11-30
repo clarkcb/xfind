@@ -299,7 +299,7 @@ export class Finder {
         const dirs: string[] = this.getMatchingDirs(fileResults);
         if (dirs.length > 0) {
             common.log("\nMatching directories " + `(${dirs.length}):`);
-            dirs.forEach(d => common.log(formatter.formatPath(d)));
+            dirs.forEach(d => common.log(formatter.formatDirPath(d)));
         } else {
             common.log("\nMatching directories: 0");
         }

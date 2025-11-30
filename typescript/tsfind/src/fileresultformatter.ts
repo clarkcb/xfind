@@ -4,6 +4,7 @@
  * SearchResult class represents a search result
  */
 
+import {Color, colorToConsoleColor} from './color';
 import {ConsoleColor} from './consolecolor';
 import {FileResult} from './fileresult';
 import {FindSettings} from './findsettings';
@@ -18,8 +19,8 @@ export class FileResultFormatter {
         this.settings = settings;
         if (settings.colorize) {
             if (settings.inDirPatterns.length > 0) {
-                this.formatPath = function(path: string): string {
-                    return this.formatPathWithColor(path);
+                this.formatDirPath = function(path: string): string {
+                    return this.formatDirPathWithColor(path);
                 };
             }
             if (settings.inExtensions.length > 0 || settings.inFilePatterns.length > 0) {
@@ -30,7 +31,7 @@ export class FileResultFormatter {
         }
     }
 
-    public colorize(s: string, matchStartIndex: number, matchEndIndex: number): string {
+    public colorize(s: string, matchStartIndex: number, matchEndIndex: number, color: Color): string {
         let prefix = '';
         if (matchStartIndex > 0) {
             prefix = s.slice(0, matchStartIndex);
@@ -40,20 +41,20 @@ export class FileResultFormatter {
             suffix = s.slice(matchEndIndex);
         }
         return prefix +
-            ConsoleColor.GREEN +
+            colorToConsoleColor(color) +
             s.slice(matchStartIndex, matchEndIndex) +
             ConsoleColor.RESET +
             suffix;
     }
 
-    private formatPathWithColor(path: string): string {
+    private formatDirPathWithColor(dirPath: string): string {
         let formattedPath = '.';
-        if (path) {
-            formattedPath = path;
+        if (dirPath) {
+            formattedPath = dirPath;
             for (let p of this.settings.inDirPatterns) {
                 let m = p.exec(formattedPath);
                 if (m) {
-                    formattedPath = this.colorize(formattedPath, m.index, m.index + m[0].length);
+                    formattedPath = this.colorize(formattedPath, m.index, m.index + m[0].length, this.settings.dirColor);
                     break;
                 }
             }
@@ -61,8 +62,8 @@ export class FileResultFormatter {
         return formattedPath;
     }
 
-    public formatPath(path: string): string {
-        return path;
+    public formatDirPath(dirPath: string): string {
+        return dirPath;
     }
 
     private formatFileNameWithColor(fileName: string): string {
@@ -70,14 +71,14 @@ export class FileResultFormatter {
         for (let p of this.settings.inFilePatterns) {
             let m = p.exec(formattedFileName);
             if (m) {
-                formattedFileName = this.colorize(formattedFileName, m.index, m.index + m[0].length);
+                formattedFileName = this.colorize(formattedFileName, m.index, m.index + m[0].length, this.settings.fileColor);
                 break;
             }
         }
         if (this.settings.inExtensions.length > 0) {
             const idx: number = formattedFileName.lastIndexOf('.');
             if (idx > 0 && idx < formattedFileName.length - 1) {
-                formattedFileName = this.colorize(formattedFileName, idx + 1, formattedFileName.length);
+                formattedFileName = this.colorize(formattedFileName, idx + 1, formattedFileName.length, this.settings.extColor);
             }
         }
         return formattedFileName;
@@ -88,7 +89,7 @@ export class FileResultFormatter {
     }
 
     public formatFileResult(result: FileResult): string {
-        let parent = this.formatPath(result.path);
+        let parent = this.formatDirPath(result.path);
         let fileName = this.formatFileName(result.fileName);
         return path.join(parent, fileName);
     }

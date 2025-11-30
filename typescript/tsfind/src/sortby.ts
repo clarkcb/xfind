@@ -8,9 +8,9 @@
 'use strict';
 
 export enum SortBy {
-    FilePath,
-    FileName,
-    FileSize,
-    FileType,
-    LastMod
+    FilePath = 'filepath',
+    FileName = 'filename',
+    FileSize = 'filesize',
+    FileType = 'filetype',
+    LastMod = 'lastmod'
 }
