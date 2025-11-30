@@ -16,7 +16,7 @@ enum class ArgTokenType {
 data class ArgToken(val name: String, val type: ArgTokenType, val value: Any) {
 }
 
-class ArgTokenizer(options: List<FindOption>) {
+class ArgTokenizer(options: List<Option>) {
 
     private var boolMap = mutableMapOf<String, String>()
     private var strMap = mutableMapOf<String, String>()

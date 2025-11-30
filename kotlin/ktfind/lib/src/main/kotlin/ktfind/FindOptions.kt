@@ -6,7 +6,15 @@ import org.json.JSONTokener
 /**
  * @author cary on 7/23/16.
  */
-data class FindOption(val shortArg: String?, val longArg: String, val desc: String, val argType: ArgTokenType) {
+interface Option {
+    val shortArg: String?
+    val longArg: String
+    val desc: String
+    val argType: ArgTokenType
+}
+
+data class FindOption(override val shortArg: String?, override val longArg: String, override val desc: String,
+                      override val argType: ArgTokenType) : Option {
     val sortArg =
         if (shortArg == null) {
             longArg.lowercase()
@@ -110,6 +118,14 @@ class FindOptions {
             val findOptionObj = findOptionsArray.next() as JSONObject
             val longArg = findOptionObj.getString("long")
             longArgs.add(longArg)
+            val shortArg =
+                if (findOptionObj.has("short")) {
+                    val sArg = findOptionObj.getString("short")
+                    sArg
+                } else {
+                    null
+                }
+            val desc = findOptionObj.getString("desc")
             var argType = ArgTokenType.UNKNOWN
             if (boolActionMap.containsKey(longArg)) {
                 argType = ArgTokenType.BOOL
@@ -120,14 +136,6 @@ class FindOptions {
             } else if (longActionMap.containsKey(longArg)) {
                 argType = ArgTokenType.LONG
             }
-            val shortArg =
-                if (findOptionObj.has("short")) {
-                    val sArg = findOptionObj.getString("short")
-                    sArg
-                } else {
-                    null
-                }
-            val desc = findOptionObj.getString("desc")
             options.add(FindOption(shortArg, longArg, desc, argType))
         }
         return options.toList()
@@ -236,7 +244,7 @@ class FindOptions {
 
         val optPairs = findOptions.sortedBy { it.sortArg }.map { Pair(getOptString(it), it.desc) }
         val longest = optPairs.maxOfOrNull { it.first.length }
-        val format = " %1$-${longest}s  %2${'$'}s\n"
+        val format = $$" %1$-$${longest}s  %2$s\n"
         for (o in optPairs) {
             sb.append(String.format(format, o.first, o.second))
         }

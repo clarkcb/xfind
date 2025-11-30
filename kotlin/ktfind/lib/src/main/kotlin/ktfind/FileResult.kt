@@ -96,11 +96,11 @@ class FileResult(
 
 class FileResultFormatter(val settings: FindSettings) {
 
-    fun colorize(s: String, matchStartIndex: Int, matchEndIndex: Int): String {
+    fun colorize(s: String, matchStartIndex: Int, matchEndIndex: Int, color: Color): String {
         val prefix = if (matchStartIndex > 0) s.substring(0, matchStartIndex) else ""
         val suffix = if (matchEndIndex < s.length) s.substring(matchEndIndex) else ""
         return prefix +
-                ConsoleColor.GREEN.value +
+                color.toConsoleColor().value +
                 s.substring(matchStartIndex, matchEndIndex) +
                 ConsoleColor.RESET.value +
                 suffix
@@ -111,7 +111,7 @@ class FileResultFormatter(val settings: FindSettings) {
         for (p in settings.inDirPatterns) {
             val m = p.find(formattedDirPath)
             if (m != null) {
-                formattedDirPath = colorize(formattedDirPath, m.range.first, m.range.last + 1)
+                formattedDirPath = colorize(formattedDirPath, m.range.first, m.range.last + 1, settings.dirColor)
                 break
             }
         }
@@ -129,14 +129,14 @@ class FileResultFormatter(val settings: FindSettings) {
         for (p in settings.inFilePatterns) {
             val m = p.find(formattedFileName)
             if (m != null) {
-                formattedFileName = colorize(formattedFileName, m.range.first, m.range.last + 1)
+                formattedFileName = colorize(formattedFileName, m.range.first, m.range.last + 1, settings.fileColor)
                 break
             }
         }
         if (!settings.inExtensions.isEmpty()) {
             val idx = formattedFileName.lastIndexOf('.')
             if (idx > 0 && idx < formattedFileName.length - 1) {
-                formattedFileName = colorize(formattedFileName, idx + 1, formattedFileName.length)
+                formattedFileName = colorize(formattedFileName, idx + 1, formattedFileName.length, settings.extColor)
             }
         }
         return formattedFileName
