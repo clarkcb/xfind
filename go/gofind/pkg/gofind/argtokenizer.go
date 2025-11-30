@@ -32,8 +32,15 @@ type ArgTokenizer struct {
 	LongMap   map[string]string
 }
 
-// TODO: change FindOption to Option interface
-func NewArgTokenizer(options []*FindOption) *ArgTokenizer {
+// ArgOption interface - implement these methods to use as a type to pass to ArgTokenizer
+type ArgOption interface {
+	ShortArg() string
+	LongArg() string
+	Description() string
+	ArgType() ArgTokenType
+}
+
+func NewArgTokenizer(options []ArgOption) *ArgTokenizer {
 	boolMap := make(map[string]string)
 	stringMap := make(map[string]string)
 	stringMap["path"] = "path"
@@ -41,25 +48,25 @@ func NewArgTokenizer(options []*FindOption) *ArgTokenizer {
 	longMap := make(map[string]string)
 
 	for _, o := range options {
-		if o.ArgType == ArgTokenTypeBool {
-			boolMap[o.Long] = o.Long
-			if o.Short != "" {
-				boolMap[o.Short] = o.Long
+		if o.ArgType() == ArgTokenTypeBool {
+			boolMap[o.LongArg()] = o.LongArg()
+			if o.ShortArg() != "" {
+				boolMap[o.ShortArg()] = o.LongArg()
 			}
-		} else if o.ArgType == ArgTokenTypeString {
-			stringMap[o.Long] = o.Long
-			if o.Short != "" {
-				stringMap[o.Short] = o.Long
+		} else if o.ArgType() == ArgTokenTypeString {
+			stringMap[o.LongArg()] = o.LongArg()
+			if o.ShortArg() != "" {
+				stringMap[o.ShortArg()] = o.LongArg()
 			}
-		} else if o.ArgType == ArgTokenTypeInt {
-			intMap[o.Long] = o.Long
-			if o.Short != "" {
-				intMap[o.Short] = o.Long
+		} else if o.ArgType() == ArgTokenTypeInt {
+			intMap[o.LongArg()] = o.LongArg()
+			if o.ShortArg() != "" {
+				intMap[o.ShortArg()] = o.LongArg()
 			}
-		} else if o.ArgType == ArgTokenTypeLong {
-			longMap[o.Long] = o.Long
-			if o.Short != "" {
-				longMap[o.Short] = o.Long
+		} else if o.ArgType() == ArgTokenTypeLong {
+			longMap[o.LongArg()] = o.LongArg()
+			if o.ShortArg() != "" {
+				longMap[o.ShortArg()] = o.LongArg()
 			}
 		}
 	}

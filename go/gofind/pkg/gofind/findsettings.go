@@ -67,6 +67,9 @@ type FindSettings struct {
 	archivesOnly           bool
 	colorize               bool
 	debug                  bool
+	dirColor               Color
+	extColor               Color
+	fileColor              Color
 	followSymlinks         bool
 	inArchiveExtensions    []string
 	inArchiveFilePatterns  *Patterns
@@ -105,6 +108,9 @@ func GetDefaultFindSettings() *FindSettings {
 		false,          // ArchivesOnly
 		true,           // Colorize
 		false,          // Debug
+		ColorCyan,      // DirColor
+		ColorYellow,    // ExtColor
+		ColorMagenta,   // FileColor
 		false,          // FollowSymlinks
 		[]string{},     // InArchiveExtensions
 		NewPatterns(),  // InArchiveFilePatterns
@@ -208,6 +214,30 @@ func (f *FindSettings) SetDebug(debug bool) {
 	if debug {
 		f.verbose = true
 	}
+}
+
+func (f *FindSettings) DirColor() Color {
+	return f.dirColor
+}
+
+func (f *FindSettings) SetDirColor(dirColor Color) {
+	f.dirColor = dirColor
+}
+
+func (f *FindSettings) ExtColor() Color {
+	return f.extColor
+}
+
+func (f *FindSettings) SetExtColor(extColor Color) {
+	f.extColor = extColor
+}
+
+func (f *FindSettings) FileColor() Color {
+	return f.fileColor
+}
+
+func (f *FindSettings) SetFileColor(fileColor Color) {
+	f.fileColor = fileColor
 }
 
 func (f *FindSettings) FollowSymlinks() bool {

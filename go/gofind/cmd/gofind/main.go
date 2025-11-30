@@ -6,9 +6,9 @@ import (
 	"os"
 )
 
-func errorAndExit(err error, findOptions *gofind.FindOptions, settings *gofind.FindSettings) {
+func errorAndExit(err error, colorize bool, findOptions *gofind.FindOptions) {
 	gofind.Log("")
-	if settings.Colorize() {
+	if colorize {
 		gofind.LogErrorColor(fmt.Sprintf("%s", err))
 	} else {
 		gofind.LogError(fmt.Sprintf("%s", err))
@@ -20,8 +20,9 @@ func main() {
 	findOptions := gofind.NewFindOptions()
 	settings, err := findOptions.FindSettingsFromArgs(os.Args[1:])
 	if err != nil {
-		errorAndExit(err, findOptions, settings)
+		errorAndExit(err, true, findOptions)
 	}
+	colorize := settings.Colorize()
 
 	if settings.PrintUsage() {
 		findOptions.PrintUsage()
@@ -38,7 +39,7 @@ func main() {
 	finder := gofind.NewFinder(settings)
 	fileResults, err := finder.Find()
 	if err != nil {
-		errorAndExit(err, findOptions, settings)
+		errorAndExit(err, colorize, findOptions)
 	}
 	formatter := gofind.NewFileResultFormatter(settings)
 

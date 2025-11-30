@@ -205,7 +205,7 @@ func NewFileResultFormatter(settings *FindSettings) *FileResultFormatter {
 	return f
 }
 
-func Colorize(s string, matchStartIndex int, matchEndIndex int) string {
+func Colorize(s string, matchStartIndex int, matchEndIndex int, color Color) string {
 	prefix := ""
 	if matchStartIndex > 0 {
 		prefix = s[0:matchStartIndex]
@@ -215,9 +215,9 @@ func Colorize(s string, matchStartIndex int, matchEndIndex int) string {
 		suffix = s[matchEndIndex:]
 	}
 	return prefix +
-		ColorGreen +
+		ConsoleColorForColor(color) +
 		s[matchStartIndex:matchEndIndex] +
-		ColorReset +
+		ConsoleColorReset +
 		suffix
 }
 
@@ -229,7 +229,7 @@ func (f *FileResultFormatter) formatPathWithColor(path string) string {
 		for it.Next() {
 			p := it.Value()
 			if match := p.FindStringIndex(formattedPath); match != nil {
-				formattedPath = Colorize(formattedPath, match[0], match[1])
+				formattedPath = Colorize(formattedPath, match[0], match[1], f.Settings.DirColor())
 				break
 			}
 		}
@@ -243,14 +243,14 @@ func (f *FileResultFormatter) formatFileNameWithColor(fileName string) string {
 	for it.Next() {
 		p := it.Value()
 		if match := p.FindStringIndex(formattedFileName); match != nil {
-			formattedFileName = Colorize(formattedFileName, match[0], match[1])
+			formattedFileName = Colorize(formattedFileName, match[0], match[1], f.Settings.FileColor())
 			break
 		}
 	}
 	if len(f.Settings.InExtensions()) > 0 {
 		idx := strings.LastIndex(formattedFileName, ".")
 		if idx > 0 && idx < len(formattedFileName)-1 {
-			formattedFileName = Colorize(formattedFileName, idx+1, len(formattedFileName))
+			formattedFileName = Colorize(formattedFileName, idx+1, len(formattedFileName), f.Settings.ExtColor())
 		}
 	}
 	return formattedFileName

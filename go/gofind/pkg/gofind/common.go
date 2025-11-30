@@ -20,7 +20,7 @@ func LogError(message string) {
 }
 
 func LogErrorColor(message string) {
-	errMsg := fmt.Sprintf("%sERROR: %s%s", BoldRed, message, ColorReset)
+	errMsg := fmt.Sprintf("%sERROR: %s%s", ConsoleBoldRed, message, ConsoleColorReset)
 	_, err := fmt.Fprintln(os.Stderr, errMsg)
 	if err != nil {
 		return
