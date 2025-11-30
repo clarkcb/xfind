@@ -13,7 +13,8 @@
   (:import (cljfind.findsettings FindSettings)
            (java.nio.file Paths Path Files))
   (:use [clojure.string :as string :only (join lower-case)]
-        [cljfind.consolecolor :only (GREEN RESET)]
+        [cljfind.color]
+        [cljfind.consolecolor]
         [cljfind.filetypes :only (to-name)]
         [cljfind.fileutil :only (get-path-name get-parent-name)]
         ))
@@ -126,9 +127,9 @@
   (let [file-result-comparator (get-file-result-comparator settings)]
     (sort file-result-comparator results)))
 
-(defn colorize-string ^String [^String s start-index end-index]
+(defn colorize-string ^String [^String s start-index end-index color]
   (let [prefix (if (> start-index 0) (subs s 0 start-index) "")
-        colorized (str GREEN (subs s start-index end-index) RESET)
+        colorized (str (get-console-color-for-color color) (subs s start-index end-index) CONSOLE_COLOR_RESET)
         suffix (if (< end-index (.length s)) (subs s end-index) "")]
     (str prefix colorized suffix)))
 
@@ -136,7 +137,7 @@
   (let [dir-path (if (nil? p) "." (.toString p))
         matching-dir-patterns (take 1 (filter #(re-find % dir-path) (:in-dir-patterns settings)))
         dir-matcher (if (empty? matching-dir-patterns) nil (re-matcher (first matching-dir-patterns) dir-path))
-        color-dir-path (if (nil? dir-matcher) dir-path (do (.find dir-matcher 0) (colorize-string dir-path (.start dir-matcher) (.end dir-matcher))))]
+        color-dir-path (if (nil? dir-matcher) dir-path (do (.find dir-matcher 0) (colorize-string dir-path (.start dir-matcher) (.end dir-matcher) (:dir-color settings))))]
     color-dir-path))
 
 (defn get-dir-path-formatter [^FindSettings settings]
@@ -152,13 +153,13 @@
 (defn colorize-file-name ^String [^String filename ^FindSettings settings]
   (let [matching-file-patterns (take 1 (filter #(re-find % filename) (:in-file-patterns settings)))
         file-matcher (if (empty? matching-file-patterns) nil (re-matcher (first matching-file-patterns) filename))
-        color-filename (if (nil? file-matcher) filename (do (.find file-matcher 0) (colorize-string filename (.start file-matcher) (.end file-matcher))))]
+        color-filename (if (nil? file-matcher) filename (do (.find file-matcher 0) (colorize-string filename (.start file-matcher) (.end file-matcher) (:file-color settings))))]
     (if (empty? (:in-extensions settings))
       color-filename
       (let [idx (.lastIndexOf color-filename ".")
             filename-len (.length color-filename)]
         (if (and (> idx 0) (< idx (- filename-len 1)))
-          (colorize-string color-filename (+ idx 1) filename-len)
+          (colorize-string color-filename (+ idx 1) filename-len (:ext-color settings))
           color-filename)))))
 
 (defn get-file-name-formatter [^FindSettings settings]

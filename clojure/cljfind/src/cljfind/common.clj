@@ -1,5 +1,5 @@
 (ns cljfind.common
-  (:use [cljfind.consolecolor :only (BOLD_RED RESET)]))
+  (:use [cljfind.consolecolor :only (CONSOLE_COLOR_BOLD_RED CONSOLE_COLOR_RESET)]))
 
 (defn log-msg [^String msg & msgs]
   (println msg)
@@ -10,7 +10,7 @@
     (log-error err true))
   ([^String err, colorize]
     (if colorize
-      (.println *err* (str "\n" BOLD_RED "ERROR: " err RESET))
+      (.println *err* (str "\n" CONSOLE_COLOR_BOLD_RED "ERROR: " err CONSOLE_COLOR_RESET))
       (.println *err* (str "\nERROR: " err)))))
 
 (defn log-errors
