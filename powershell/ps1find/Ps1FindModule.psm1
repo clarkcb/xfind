@@ -28,23 +28,58 @@ $findOptionsPath = Join-Path -Path $sharedPath -ChildPath 'findoptions.json'
 ########################################
 #$esc = "`e" # Escape character
 $esc = [char]27
-$Reset       = "${esc}[0m";
-$Black       = "${esc}[0;30m";
-$Red         = "${esc}[0;31m";
-$Green       = "${esc}[0;32m";
-$Yellow      = "${esc}[0;33m";
-$Blue        = "${esc}[0;34m";
-$Magenta     = "${esc}[0;35m";
-$Cyan        = "${esc}[0;36m";
-$White       = "${esc}[0;37m";
-$BoldBlack   = "${esc}[1;30m";
-$BoldRed     = "${esc}[1;31m";
-$BoldGreen   = "${esc}[1;32m";
-$BoldYellow  = "${esc}[1;33m";
-$BoldBlue    = "${esc}[1;34m";
-$BoldMagenta = "${esc}[1;35m";
-$BoldCyan    = "${esc}[1;36m";
-$BoldWhite   = "${esc}[1;37m";
+$ConsoleReset   = "${esc}[0m";
+$ConsoleBlack   = "${esc}[0;30m";
+$ConsoleRed     = "${esc}[0;31m";
+$ConsoleGreen   = "${esc}[0;32m";
+$ConsoleYellow  = "${esc}[0;33m";
+$ConsoleBlue    = "${esc}[0;34m";
+$ConsoleMagenta = "${esc}[0;35m";
+$ConsoleCyan    = "${esc}[0;36m";
+$ConsoleWhite   = "${esc}[0;37m";
+$BoldBlack      = "${esc}[1;30m";
+$BoldRed        = "${esc}[1;31m";
+$BoldGreen      = "${esc}[1;32m";
+$BoldYellow     = "${esc}[1;33m";
+$BoldBlue       = "${esc}[1;34m";
+$BoldMagenta    = "${esc}[1;35m";
+$BoldCyan       = "${esc}[1;36m";
+$BoldWhite      = "${esc}[1;37m";
+#endregion
+
+
+#region Color
+########################################
+# Color
+########################################
+enum Color {
+    Black
+    Red
+    Green
+    Yellow
+    Blue
+    Magenta
+    Cyan
+    White
+}
+
+function GetConsoleColorForColor {
+    [OutputType([string])]
+    param([Color]$color)
+
+    switch ($color)
+    {
+        Black     {return $ConsoleBlack}
+        Red       {return $ConsoleRed}
+        Green     {return $ConsoleGreen}
+        Yellow    {return $ConsoleYellow}
+        Blue      {return $ConsoleBlue}
+        Magenta   {return $ConsoleMagenta}
+        Cyan      {return $ConsoleCyan}
+        White     {return $ConsoleWhite}
+    }
+    return [FileType]::Unknown
+}
 #endregion
 
 
@@ -74,7 +109,7 @@ function LogErrorColor {
 
     # Write-Error adds a stack trace, which we don't want
     # Write-Error "`n${BoldRed}ERROR: ${msg}${Reset}"
-    $host.UI.WriteErrorLine("`n${BoldRed}ERROR: ${err}${Reset}")
+    $host.UI.WriteErrorLine("`n${BoldRed}ERROR: ${err}${ConsoleReset}")
 }
 #endregion
 
@@ -364,6 +399,9 @@ class FindSettings {
     [bool]$ArchivesOnly
     [bool]$Colorize
     [bool]$Debug
+    [Color]$DirColor
+    [Color]$ExtColor
+    [Color]$FileColor
     [bool]$FollowSymlinks
     [string[]]$InArchiveExtensions
     [Regex[]]$InArchiveFilePatterns
@@ -400,6 +438,9 @@ class FindSettings {
 		$this.ArchivesOnly = $false
 		$this.Colorize = $true
 		$this.Debug = $false
+		$this.DirColor = [Color]::Cyan
+		$this.ExtColor = [Color]::Yellow
+		$this.FileColor = [Color]::Magenta
 		$this.FollowSymlinks = $false
 		$this.InArchiveExtensions = @()
 		$this.InArchiveFilePatterns = @()
@@ -748,7 +789,6 @@ class FindOptions {
     [FindOption[]]$FindOptions = @()
     [ArgTokenizer]$ArgTokenizer
     # instantiate this way to get case sensitivity of keys
-    $LongArgMap = [system.collections.hashtable]::new()
     $BoolActionMap = @{
         "archivesonly" = {
             param([bool]$b, [FindSettings]$settings)
@@ -942,8 +982,6 @@ class FindOptions {
         if (-not $optionsHash.ContainsKey('findoptions')) {
             throw "Missing findoptions in JSON"
         }
-        # add path manually since it is not in findoptions
-        $this.LongArgMap['path'] = 'path'
         $opts = @(foreach ($optionObj in $optionsHash['findoptions']) {
             $ShortArg = ''
             $LongArg = $optionObj['long']
@@ -956,10 +994,8 @@ class FindOptions {
             } elseif ($this.IntActionMap.ContainsKey($LongArg)) {
                 $ArgType = [ArgTokenType]::Int
             }
-            $this.LongArgMap[$LongArg] = $LongArg
             if ($optionObj.ContainsKey('short')) {
                 $ShortArg = $optionObj['short']
-                $this.LongArgMap[$ShortArg] = $LongArg
             }
             [FindOption]::new($ShortArg, $LongArg, $Desc, $ArgType)
         })
@@ -1112,7 +1148,7 @@ class FileResultFormatter {
         }
     }
 
-    [string]ColorizeString([string]$s, [int]$matchStartIdx, [int]$matchEndIdx) {
+    [string]ColorizeString([string]$s, [int]$matchStartIdx, [int]$matchEndIdx, [Color]$color) {
         $prefix = ''
         if ($matchStartIdx -gt 0) {
             $prefix = $s.Substring(0, $matchStartIdx)
@@ -1122,7 +1158,8 @@ class FileResultFormatter {
         if ($matchEndIdx -lt $s.Length) {
             $suffix = $s.Substring($matchEndIdx)
         }
-        return "$prefix${script:Green}$match${script:Reset}$suffix"
+        $consoleColor = GetConsoleColorForColor($color)
+        return "$prefix${consoleColor}$match${script:ConsoleReset}$suffix"
     }
 
     [string]FormatDirectoryWithColor([System.IO.DirectoryInfo]$dir) {
@@ -1132,7 +1169,7 @@ class FileResultFormatter {
             foreach ($dirPattern in $this.Settings.InDirPatterns) {
                 $match = $dirPattern.Match($formattedDir)
                 if ($match.Success) {
-                    $formattedDir = $this.ColorizeString($formattedDir, $match.Index, $match.Index + $match.Length)
+                    $formattedDir = $this.ColorizeString($formattedDir, $match.Index, $match.Index + $match.Length, $this.Settings.DirColor)
                     break
                 }
             }
@@ -1149,14 +1186,14 @@ class FileResultFormatter {
         foreach ($filePattern in $this.Settings.InFilePatterns) {
             $match = $filePattern.Match($formattedFileName)
             if ($match.Success) {
-                $formattedFileName = $this.ColorizeString($formattedFileName, $match.Index, $match.Index + $match.Length)
+                $formattedFileName = $this.ColorizeString($formattedFileName, $match.Index, $match.Index + $match.Length, $this.Settings.FileColor)
                 break
             }
         }
         if ($this.Settings.InExtensions.Count -gt 0) {
             $idx = $formattedFileName.LastIndexOf('.')
             if ($idx -gt 0 -and $idx -lt $formattedFileName.Length) {
-                $formattedFileName = $this.ColorizeString($formattedFileName, $idx + 1, $formattedFileName.Length)
+                $formattedFileName = $this.ColorizeString($formattedFileName, $idx + 1, $formattedFileName.Length, $this.Settings.ExtColor)
             }
         }
         return $formattedFileName
