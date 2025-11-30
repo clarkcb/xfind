@@ -9,6 +9,7 @@ use crate::finderror::FindError;
 
 pub mod argtokenizer;
 pub mod consolecolor;
+pub mod color;
 pub mod common;
 pub mod config;
 pub mod filetypes;
@@ -86,9 +87,19 @@ fn find(args: Iter<String>) {
     }
 }
 
+// This is to try to skip the first arg if it is the executable
+fn update_args(args: Iter<String>) -> Iter<String> {
+    let mut updated_args = args.clone().into_iter();
+    match updated_args.next() {
+        Some(next_arg) if next_arg.ends_with("rsfind") => updated_args,
+        _ => args
+    }
+}
+
 fn main() {
     let args: Vec<String> = env::args().collect();
-    find(args.iter());
+    let updated_args = update_args(args.iter());
+    find(updated_args);
 }
 
 #[cfg(test)]

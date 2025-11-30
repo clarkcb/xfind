@@ -1,6 +1,6 @@
 use std::fmt;
 use regex::Regex;
-
+use crate::color::Color;
 use crate::common::get_regex_vec_string;
 use crate::filetypes;
 use crate::sortby::SortBy;
@@ -10,6 +10,9 @@ pub struct FindSettings {
     _archives_only: bool,
     _colorize: bool,
     _debug: bool,
+    _dir_color: Color,
+    _ext_color: Color,
+    _file_color: Color,
     _follow_symlinks: bool,
     _in_archive_extensions: Vec<String>,
     _in_archive_file_patterns: Vec<Regex>,
@@ -49,6 +52,9 @@ impl FindSettings {
             _archives_only: false,
             _colorize: true,
             _debug: false,
+            _dir_color: Color::Cyan,
+            _ext_color: Color::Yellow,
+            _file_color: Color::Magenta,
             _follow_symlinks: false,
             _in_archive_extensions: Vec::new(),
             _in_archive_file_patterns: Vec::new(),
@@ -111,6 +117,30 @@ impl FindSettings {
         if b {
             self._verbose = b;
         }
+    }
+
+    pub fn dir_color(&self) -> Color {
+        self._dir_color
+    }
+
+    pub fn set_dir_color(&mut self, color: Color) {
+        self._dir_color = color
+    }
+
+    pub fn ext_color(&self) -> Color {
+        self._ext_color
+    }
+
+    pub fn set_ext_color(&mut self, color: Color) {
+        self._ext_color = color
+    }
+
+    pub fn file_color(&self) -> Color {
+        self._file_color
+    }
+
+    pub fn set_file_color(&mut self, color: Color) {
+        self._file_color = color
     }
 
     pub fn follow_symlinks(&self) -> bool {

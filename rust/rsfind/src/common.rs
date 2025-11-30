@@ -2,7 +2,7 @@ use chrono::NaiveDate;
 use chrono::format::ParseResult;
 use regex::Regex;
 
-use crate::consolecolor::{BOLD_RED, RESET};
+use crate::consolecolor::{BOLD_RED, CONSOLE_RESET};
 
 // logging
 pub fn log(message: &str) {
@@ -15,7 +15,7 @@ pub fn log_err(message: &str) {
 
 pub fn log_err_color(message: &str, colorize: bool) {
     if colorize {
-        eprintln!("{}ERROR: {}{}", BOLD_RED, message, RESET);
+        eprintln!("{}ERROR: {}{}", BOLD_RED, message, CONSOLE_RESET);
     } else {
         eprintln!("ERROR: {}", message);
     }

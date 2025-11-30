@@ -3,6 +3,7 @@
 
 pub mod argtokenizer;
 pub mod consolecolor;
+pub mod color;
 pub mod common;
 pub mod config;
 pub mod filetypes;

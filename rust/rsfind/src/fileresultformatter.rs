@@ -1,4 +1,5 @@
-use crate::consolecolor::{GREEN, RESET};
+use crate::consolecolor::{CONSOLE_RESET};
+use crate::color::{console_color_from_color, Color};
 use crate::fileresult::FileResult;
 use crate::findsettings::FindSettings;
 use std::path::PathBuf;
@@ -9,7 +10,7 @@ pub struct FileResultFormatter {
     pub format_file_name: Box<dyn Fn(&str, &FindSettings) -> String>,
 }
 
-pub fn colorize(s: &str, match_start_index: usize, match_end_index: usize) -> String {
+pub fn colorize(s: &str, match_start_index: usize, match_end_index: usize, color: &Color) -> String {
     let mut prefix = String::from("");
     if match_start_index > 0 {
         prefix = String::from(&s[0..match_start_index]);
@@ -20,9 +21,9 @@ pub fn colorize(s: &str, match_start_index: usize, match_end_index: usize) -> St
     }
     String::from(format!("{}{}{}{}{}",
                          prefix,
-                         GREEN,
+                         console_color_from_color(color),
                          &s[match_start_index..match_end_index],
-                         RESET,
+                         CONSOLE_RESET,
                          suffix))
 }
 
@@ -32,7 +33,7 @@ fn format_dir_path_with_color(dir_path: &PathBuf, settings: &FindSettings) -> St
         let m = p.find(&formatted_dir_path);
         if m.is_some() {
             formatted_dir_path = colorize(&formatted_dir_path, m.unwrap().start(),
-                                          m.unwrap().end());
+                                          m.unwrap().end(), &settings.dir_color());
             break;
         }
     }
@@ -45,7 +46,7 @@ fn format_file_name_with_color(file_name: &str, settings: &FindSettings) -> Stri
         let m = p.find(&file_name);
         if m.is_some() {
             formatted_file_name = colorize(&formatted_file_name, m.unwrap().start(),
-                                           m.unwrap().end());
+                                           m.unwrap().end(), &settings.file_color());
             break;
         }
     }
@@ -54,7 +55,7 @@ fn format_file_name_with_color(file_name: &str, settings: &FindSettings) -> Stri
         if idx.is_some() && idx.unwrap() > 0 && idx.unwrap() < formatted_file_name.len() {
             formatted_file_name = colorize(&formatted_file_name,
                                            idx.unwrap() + 1,
-                                           formatted_file_name.len());
+                                           formatted_file_name.len(), &settings.ext_color());
         }
     }
     formatted_file_name

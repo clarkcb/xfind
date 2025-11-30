@@ -22,7 +22,7 @@ pub struct JsonFindOptions {
     pub findoptions: Vec<JsonFindOption>,
 }
 
-// Alias FindOption to ArgOption (will do similar in rssearch)
+// Alias FindOption to ArgOption for ArgTokenizer
 type FindOption = ArgOption;
 
 type BoolAction = Box<dyn Fn(bool, &mut FindSettings) -> Result<(), FindError>>;
@@ -55,7 +55,12 @@ impl FindOptions {
         let string_action_map: HashMap<String, StringAction> = get_string_action_map();
         let int_action_map: HashMap<String, IntAction> = get_int_action_map();
         let long_action_map: HashMap<String, LongAction> = get_long_action_map();
-        let find_options = json_options_to_find_options(&jso.findoptions, &bool_action_map, &string_action_map, &int_action_map, &long_action_map);
+        let find_options =
+            json_options_to_find_options(&jso.findoptions,
+                                         &bool_action_map,
+                                         &string_action_map,
+                                         &int_action_map,
+                                         &long_action_map);
         let arg_tokenizer = ArgTokenizer::new(&find_options);
         Ok(FindOptions {
             find_options,

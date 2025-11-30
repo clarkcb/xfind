@@ -94,9 +94,6 @@ impl ArgTokenizer {
 
     fn rec_tokenize_args(&self, mut args: Iter<String>, mut arg_tokens: Vec<ArgToken>) -> Result<Vec<ArgToken>, FindError> {
         match args.next() {
-            // if it ends with rsfind, it's the executable arg, skip it
-            Some(next_arg) if next_arg.ends_with("rsfind") =>
-                self.rec_tokenize_args(args, arg_tokens),
             Some(next_arg) if LONG_ARG_WITH_VAL_REGEX.is_match(&next_arg) => {
                 let caps = LONG_ARG_WITH_VAL_REGEX.captures(&next_arg).unwrap();
                 let new_arg = format!("--{}", caps.get(1).unwrap().as_str());
