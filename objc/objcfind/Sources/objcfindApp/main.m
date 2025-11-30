@@ -14,9 +14,9 @@ NSArray* argvToNSArray(int argc, const char * argv[]) {
     return [NSArray arrayWithArray:args];
 }
 
-void handleError(NSError *error, FindOptions *options, FindSettings *settings) {
+void handleError(NSError *error, BOOL colorize, FindOptions *options) {
     logMsg(@"");
-    logErrorColor(error.domain, settings.colorize);
+    logErrorColor(error.domain, colorize);
     [options usage:1];
 }
 
@@ -31,7 +31,7 @@ int main(int argc, const char * argv[]) {
         FindSettings *settings = [options settingsFromArgs:args error:&error];
 
         if (error) {
-            handleError(error, options, settings);
+            handleError(error, settings.colorize, options);
         }
 
         if (settings.debug) {
@@ -45,13 +45,13 @@ int main(int argc, const char * argv[]) {
         Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
 
         if (error) {
-            handleError(error, options, settings);
+            handleError(error, settings.colorize, options);
         }
 
         NSArray<FileResult*> *fileResults = [finder find:&error];
 
         if (error) {
-            handleError(error, options, settings);
+            handleError(error, settings.colorize, options);
         }
         
         FileResultFormatter *formatter = [[FileResultFormatter alloc] initWithSettings:settings];

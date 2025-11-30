@@ -75,3 +75,24 @@ NSDate* stringToNSDate(NSString *dateStr) {
     [dateFormat setDateFormat:[NSString stringWithUTF8String:DATE_FORMAT]];
     return [dateFormat dateFromString:dateStr];
 }
+
+NSString* colorToConsoleColor(Color color) {
+    switch (color) {
+        case ColorBlack:
+            return [NSString stringWithUTF8String:ANSI_BLACK];
+        case ColorRed:
+            return [NSString stringWithUTF8String:ANSI_RED];
+        case ColorGreen:
+            return [NSString stringWithUTF8String:ANSI_GREEN];
+        case ColorYellow:
+            return [NSString stringWithUTF8String:ANSI_YELLOW];
+        case ColorBlue:
+            return [NSString stringWithUTF8String:ANSI_BLUE];
+        case ColorMagenta:
+            return [NSString stringWithUTF8String:ANSI_MAGENTA];
+        case ColorCyan:
+            return [NSString stringWithUTF8String:ANSI_CYAN];
+        case ColorWhite:
+            return [NSString stringWithUTF8String:ANSI_WHITE];
+    }
+}

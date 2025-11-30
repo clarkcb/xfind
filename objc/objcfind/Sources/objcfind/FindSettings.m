@@ -13,6 +13,9 @@
         self.archivesOnly = false;
         self.colorize = true;
         self.debug = false;
+        self.dirColor = ColorCyan;
+        self.extColor = ColorYellow;
+        self.fileColor = ColorMagenta;
         self.followSymlinks = false;
         self.includeArchives = false;
         self.includeHidden = false;

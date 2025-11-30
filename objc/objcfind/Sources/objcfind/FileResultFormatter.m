@@ -33,13 +33,13 @@
     return self;
 }
 
-- (NSString *) colorize:(NSString*)s matchStartIndex:(long)matchStartIndex matchEndIndex:(long)matchEndIndex {
+- (NSString *) colorize:(NSString*)s matchStartIndex:(long)matchStartIndex matchEndIndex:(long)matchEndIndex color:(Color)color {
     NSMutableString *c = [NSMutableString string];
     if (matchStartIndex > 0) {
         [c appendString:[s substringToIndex:matchStartIndex]];
     }
     long matchLength = matchEndIndex - matchStartIndex;
-    [c appendFormat:@"%s", ANSI_GREEN];
+    [c appendString:colorToConsoleColor(color)];
     [c appendString:[s substringWithRange:NSMakeRange(matchStartIndex, matchLength)]];
     [c appendFormat:@"%s", ANSI_RESET];
 
@@ -58,7 +58,7 @@
         for (Regex *p in self.settings.inDirPatterns) {
             NSTextCheckingResult *m = [p firstMatch:formattedDirPath];
             if (m != nil) {
-                formattedDirPath = [self colorize:formattedDirPath matchStartIndex:m.range.location matchEndIndex:m.range.location + m.range.length];
+                formattedDirPath = [self colorize:formattedDirPath matchStartIndex:m.range.location matchEndIndex:m.range.location + m.range.length color:self.settings.dirColor];
                 break;
             }
         }
@@ -71,14 +71,14 @@
     for (Regex *p in self.settings.inFilePatterns) {
         NSTextCheckingResult *m = [p firstMatch:formattedFileName];
         if (m != nil) {
-            formattedFileName = [self colorize:formattedFileName matchStartIndex:m.range.location matchEndIndex:m.range.location + m.range.length];
+            formattedFileName = [self colorize:formattedFileName matchStartIndex:m.range.location matchEndIndex:m.range.location + m.range.length color:self.settings.fileColor];
             break;
         }
     }
     if ([self.settings.inExtensions count] > 0) {
         int idx = (int)([formattedFileName rangeOfString:@"." options:NSBackwardsSearch].location);
         if (idx > 0 && idx < formattedFileName.length) {
-            formattedFileName = [self colorize:formattedFileName matchStartIndex:(idx + 1) matchEndIndex:formattedFileName.length];
+            formattedFileName = [self colorize:formattedFileName matchStartIndex:(idx + 1) matchEndIndex:formattedFileName.length color:self.settings.extColor];
         }
     }
     return formattedFileName;

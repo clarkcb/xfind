@@ -13,7 +13,7 @@
 
 - (instancetype) initWithSettings:(FindSettings*)settings;
 
-- (NSString *) colorize:(NSString*)s matchStartIndex:(long)matchStartIndex matchEndIndex:(long)matchEndIndex;
+- (NSString *) colorize:(NSString*)s matchStartIndex:(long)matchStartIndex matchEndIndex:(long)matchEndIndex color:(Color)color;
 
 - (NSString *) formatDirPathWithColor:(NSString*)dirPath;
 

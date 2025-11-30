@@ -59,6 +59,18 @@ typedef enum {
     ArgTokenTypeInt
 } ArgTokenType;
 
+// Color enum
+typedef enum {
+    ColorBlack = 1,
+    ColorRed,
+    ColorGreen,
+    ColorYellow,
+    ColorBlue,
+    ColorMagenta,
+    ColorCyan,
+    ColorWhite
+} Color;
+
 // common functions
 void logMsg(NSString *s);
 void logError(NSString *s);
@@ -68,5 +80,6 @@ NSString * boolToNSString(BOOL b);
 NSString * arrayToNSString(NSArray *arr);
 NSString* dateToNSString(NSDate *date);
 NSDate* stringToNSDate(NSString *dateStr);
+NSString* colorToConsoleColor(Color color);
 
 #endif /* common_h */
