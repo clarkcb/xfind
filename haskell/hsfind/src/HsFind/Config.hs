@@ -1,8 +1,7 @@
 module HsFind.Config
-  (
-      getXfindPath
-    , getDataPath
-    , getHome
+  ( getXfindPath
+  , getDataPath
+  , getHome
   ) where
 
 import System.Directory (getHomeDirectory)

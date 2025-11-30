@@ -1,15 +1,14 @@
 module HsFind.Finder
-    (
-      doFind
-    , filterToFileResult
-    , formatMatchingDirs
-    , formatMatchingFiles
-    , getFinder
-    , isMatchingArchiveFilePath
-    , isMatchingDirPath
-    , isMatchingFilePath
-    , validateFindSettings
-    ) where
+  ( doFind
+  , filterToFileResult
+  , formatMatchingDirs
+  , formatMatchingFiles
+  , getFinder
+  , isMatchingArchiveFilePath
+  , isMatchingDirPath
+  , isMatchingFilePath
+  , validateFindSettings
+  ) where
 
 import Control.Monad (forM, filterM)
 import Data.List (nub, partition, sort, zipWith4)

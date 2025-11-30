@@ -1,6 +1,6 @@
 {-# LANGUAGE DeriveGeneric, NoMonomorphismRestriction #-}
-module HsFind.FindOptions (
-    FindOption(..)
+module HsFind.FindOptions
+  ( FindOption(..)
   , FindOptions(..)
   , getFindOptions
   , getUsage
@@ -91,7 +91,8 @@ getFindOptions = do
 
 getUsage :: FindOptions -> String
 getUsage findOptions =
-  "Usage:\n hsfind [options] <path> [<path> ...]\n\nOptions:\n" ++ findOptionsToString (options findOptions)
+  "Usage:\n hsfind [options] <path> [<path> ...]\n\nOptions:\n" ++
+  findOptionsToString (options findOptions)
 
 getOptStrings :: [FindOption] -> [String]
 getOptStrings = map formatOpts

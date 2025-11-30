@@ -24,6 +24,7 @@ import qualified Data.HashMap.Strict as HM
 import qualified Data.Vector as V (toList)
 import GHC.Generics (Generic)
 
+import HsFind.ConsoleColor (Color(..))
 import HsFind.FileTypes (FileType, getFileTypeForName, getFileTypeName)
 import HsFind.FileUtil (normalizeExtension)
 import HsFind.SortBy (SortBy(..), getSortByForName, sortByToString)
@@ -32,6 +33,9 @@ data FindSettings = FindSettings {
                                    archivesOnly :: Bool
                                  , colorize :: Bool
                                  , debug :: Bool
+                                 , dirColor :: Color
+                                 , extColor :: Color
+                                 , fileColor :: Color
                                  , followSymlinks :: Bool
                                  , inArchiveExtensions :: [String]
                                  , inArchiveFilePatterns :: [String]
@@ -70,6 +74,9 @@ defaultFindSettings = FindSettings {
                                      archivesOnly=False
                                    , colorize=True
                                    , debug=False
+                                   , dirColor=ColorCyan
+                                   , extColor=ColorYellow
+                                   , fileColor=ColorMagenta
                                    , followSymlinks=False
                                    , inArchiveExtensions=[]
                                    , inArchiveFilePatterns=[]

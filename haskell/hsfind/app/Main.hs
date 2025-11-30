@@ -3,7 +3,7 @@ module Main (main) where
 import System.Environment (getArgs)
 import System.IO (hPutStr, stderr)
 
-import HsFind.ConsoleColor (boldRed, colorReset)
+import HsFind.ConsoleColor (boldRed, consoleReset)
 import HsFind.FindOptions (getFindOptions, getUsage, settingsFromArgs)
 import HsFind.Finder (doFind, formatMatchingDirs, formatMatchingFiles, getFinder, validateFindSettings)
 import HsFind.FindSettings (FindSettings(..), findSettingsToString)
@@ -15,10 +15,10 @@ logMsg = putStr
 logErr :: String -> IO ()
 logErr s = hPutStr stderr $ "ERROR: " ++ s
 
-logErrColor :: FindSettings -> String -> IO ()
-logErrColor settings s =
-  if colorize settings
-    then hPutStr stderr $ boldRed ++ "ERROR: " ++ s ++ colorReset ++ "\n"
+logErrColor :: String -> Bool -> IO ()
+logErrColor s colorize =
+  if colorize
+    then hPutStr stderr $ boldRed ++ "ERROR: " ++ s ++ consoleReset ++ "\n"
     else hPutStr stderr $ "ERROR: " ++ s ++ "\n"
 
 main :: IO ()
@@ -43,18 +43,17 @@ main = do
           case validateFindSettings settings of
             Just errMsg -> do
               logMsg "\n"
-              logErrColor settings errMsg
+              logErrColor errMsg $ colorize settings
               logMsg $ "\n" ++ getUsage findOptions ++ "\n"
             Nothing -> do
               if printUsage settings
                 then logMsg $ "\n" ++ getUsage findOptions ++ "\n"
                 else do
-                  let finder = getFinder settings
-                  findResultsEither <- doFind finder
+                  findResultsEither <- doFind $ getFinder settings
                   case findResultsEither of
                     Left errMsg -> do
                       logMsg "\n"
-                      logErrColor settings errMsg
+                      logErrColor errMsg $ colorize settings
                       logMsg $ "\n" ++ getUsage findOptions ++ "\n"
                     Right fileResults -> do
                       logMsg $ if printDirs settings

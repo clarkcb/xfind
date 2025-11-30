@@ -25,7 +25,7 @@ import Data.Time (UTCTime)
 import System.FilePath ((</>), dropFileName, splitPath, takeDirectory, takeFileName)
 import Text.Regex.PCRE
 
-import HsFind.ConsoleColor (colorGreen, colorReset)
+import HsFind.ConsoleColor (Color(..), colorToConsoleColor, consoleReset)
 import HsFind.FileTypes
 import HsFind.FindSettings
 import HsFind.FileUtil (getExtensionIndex)
@@ -77,9 +77,9 @@ newFileResultWithSizeAndLastMod fp ft size lastmod = FileResult {
 fileResultToString :: FileResult -> String
 fileResultToString = fileResultPath
 
-colorizeString :: String -> Int -> Int -> String
-colorizeString s startIdx len = 
-  prefixS ++ colorGreen ++ matchS ++ colorReset ++ suffixS
+colorizeString :: String -> Int -> Int -> Color -> String
+colorizeString s startIdx len color = 
+  prefixS ++ colorToConsoleColor color ++ matchS ++ consoleReset ++ suffixS
   where prefixS =
           if startIdx > 0
           then take startIdx s
@@ -96,7 +96,7 @@ colorizeDirectory settings dir =
   case filter (\p -> dir =~ p :: Bool) (inDirPatterns settings) of
     [] -> dir
     (p:_) -> case getAllMatches (dir =~ p) :: [(Int, Int)] of
-      ((mStart, mLen):_) -> colorizeString dir mStart mLen
+      ((mStart, mLen):_) -> colorizeString dir mStart mLen (dirColor settings)
       [] -> dir
 
 formatDirectory :: FindSettings -> FilePath -> String
@@ -111,11 +111,11 @@ colorizeFileName settings fileName = formattedFileName
           case filter (\p -> fileName =~ p :: Bool) (inFilePatterns settings) of
             [] -> fileName
             (p:_) -> case getAllMatches (fileName =~ p) :: [(Int, Int)] of
-              ((mStart, mLen):_) -> colorizeString fileName mStart mLen
+              ((mStart, mLen):_) -> colorizeString fileName mStart mLen (fileColor settings)
               [] -> fileName
         maxDotIndex = getExtensionIndex withFilePattern
         formattedFileName = if not (null (inExtensions settings)) && maxDotIndex > 0 && maxDotIndex < length withFilePattern -1
-                            then colorizeString withFilePattern (maxDotIndex + 1) $ length withFilePattern
+                            then colorizeString withFilePattern (maxDotIndex + 1) (length withFilePattern) (extColor settings)
                             else withFilePattern
 
 formatFileName :: FindSettings -> String -> String

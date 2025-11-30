@@ -1,51 +1,61 @@
 module HsFind.ConsoleColor
-  (
-      colorReset
-    , colorBlack
-    , colorRed
-    , colorGreen
-    , colorYellow
-    , colorBlue
-    , colorMagenta
-    , colorCyan
-    , colorWhite
-    , boldBlack
-    , boldRed
-    , boldGreen
-    , boldYellow
-    , boldBlue
-    , boldMagenta
-    , boldCyan
-    , boldWhite
+  ( Color(..)
+  , colorToConsoleColor
+  , consoleReset
+  , consoleBlack
+  , consoleRed
+  , consoleGreen
+  , consoleYellow
+  , consoleBlue
+  , consoleMagenta
+  , consoleCyan
+  , consoleWhite
+  , boldBlack
+  , boldRed
+  , boldGreen
+  , boldYellow
+  , boldBlue
+  , boldMagenta
+  , boldCyan
+  , boldWhite
   ) where
 
+data Color = ColorBlack
+           | ColorRed
+           | ColorGreen
+           | ColorYellow
+           | ColorBlue
+           | ColorMagenta
+           | ColorCyan
+           | ColorWhite
+  deriving (Show, Eq)
 
-colorReset :: String
-colorReset = "\x1b[0m"
+consoleReset :: String
+consoleReset = "\x1b[0m"
 
-colorBlack :: String
-colorBlack = "\x1b[0;30m"
+consoleBlack :: String
+consoleBlack = "\x1b[0;30m"
 
-colorRed :: String
-colorRed = "\x1b[0;31m"
+consoleRed :: String
+consoleRed = "\x1b[0;31m" 
 
-colorGreen :: String
-colorGreen = "\x1b[0;32m"
+consoleGreen :: String
+consoleGreen = "\x1b[0;32m"
 
-colorYellow :: String
-colorYellow = "\x1b[0;33m"
+consoleYellow :: String
+consoleYellow = "\x1b[0;33m"
 
-colorBlue :: String
-colorBlue = "\x1b[0;34m"
+consoleBlue :: String
+consoleBlue = "\x1b[0;34m"
 
-colorMagenta :: String
-colorMagenta = "\x1b[0;35m"
+consoleMagenta :: String
+consoleMagenta = "\x1b[0;35m"
 
-colorCyan :: String
-colorCyan = "\x1b[0;36m"
+consoleCyan :: String
+consoleCyan = "\x1b[0;36m"
 
-colorWhite :: String
-colorWhite = "\x1b[0;37m"
+consoleWhite :: String
+consoleWhite = "\x1b[0;37m"
 
 boldBlack :: String
 boldBlack = "\x1b[1;30m"
@@ -70,3 +80,15 @@ boldCyan = "\x1b[1;36m"
 
 boldWhite :: String
 boldWhite = "\x1b[1;37m"
+
+colorToConsoleColor :: Color -> String
+colorToConsoleColor color =
+  case color of
+    ColorBlack -> consoleBlack
+    ColorRed -> consoleRed
+    ColorGreen -> consoleGreen
+    ColorYellow -> consoleYellow
+    ColorBlue -> consoleBlue
+    ColorMagenta -> consoleMagenta
+    ColorCyan -> consoleCyan
+    ColorWhite -> consoleWhite

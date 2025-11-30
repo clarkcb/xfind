@@ -30,8 +30,8 @@ source-repository head
 library
   exposed-modules:
       HsFind.ArgTokenizer
-      HsFind.Color
       HsFind.Config
+      HsFind.ConsoleColor
       HsFind.FileResult
       HsFind.FileTypes
       HsFind.FileUtil

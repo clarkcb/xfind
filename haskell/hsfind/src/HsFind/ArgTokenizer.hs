@@ -1,6 +1,6 @@
 {-# LANGUAGE DeriveGeneric, NoMonomorphismRestriction #-}
-module HsFind.ArgTokenizer (
-    ArgToken(..)
+module HsFind.ArgTokenizer
+  ( ArgToken(..)
   , ArgTokenizer(..)
   , ArgTokenType(..)
   , ArgValueType(..)

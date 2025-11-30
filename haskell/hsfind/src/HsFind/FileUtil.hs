@@ -1,35 +1,34 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 
 module HsFind.FileUtil
-    (
-      expandPath
-    , filterDirectories
-    , filterFiles
-    , filterOutSymlinks
-    , getDirectoryFiles
-    , getExtension
-    , getExtensionIndex
-    , getFileByteString
-    , getFileLines
-    , getFileSizes
-    , getFileString
-    , getModificationTimes
-    , getNonDotDirectoryContents
-    , getParentPath
-    , getRecursiveContents
-    , getRecursiveDirectories
-    , hasExtension
-    , isDirectory
-    , isDotDir
-    , isFile
-    , isHiddenName
-    , isHiddenFilePath
-    , normalizeExtension
-    , partitionDirsAndFiles
-    , partitionExisting
-    , pathExists
-    , pathsExist
-    ) where
+  ( expandPath
+  , filterDirectories
+  , filterFiles
+  , filterOutSymlinks
+  , getDirectoryFiles
+  , getExtension
+  , getExtensionIndex
+  , getFileByteString
+  , getFileLines
+  , getFileSizes
+  , getFileString
+  , getModificationTimes
+  , getNonDotDirectoryContents
+  , getParentPath
+  , getRecursiveContents
+  , getRecursiveDirectories
+  , hasExtension
+  , isDirectory
+  , isDotDir
+  , isFile
+  , isHiddenName
+  , isHiddenFilePath
+  , normalizeExtension
+  , partitionDirsAndFiles
+  , partitionExisting
+  , pathExists
+  , pathsExist
+  ) where
 
 import Control.Exception (IOException, handle)
 import Control.Monad (filterM, forM)
