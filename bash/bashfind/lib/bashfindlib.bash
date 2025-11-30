@@ -51,6 +51,9 @@ do
 done
 
 
+# Colors
+COLORS=(black red green yellow blue magenta cyan white)
+
 # Sort By
 SORT_BY_TYPES=(path name size type lastmod)
 
@@ -59,6 +62,9 @@ SORT_BY_TYPES=(path name size type lastmod)
 ARCHIVES_ONLY=false
 COLORIZE=true
 DEBUG=false
+DIR_COLOR=cyan
+EXT_COLOR=yellow
+FILE_COLOR=magenta
 FOLLOW_SYMLINKS=false
 INCLUDE_ARCHIVES=false
 INCLUDE_HIDDEN=false
@@ -919,7 +925,7 @@ format_dir_path () {
             if [[ "$dir_path" =~ $p ]]
             then
                 match="${BASH_REMATCH[0]}"
-                formatted_dir_path="${dir_path//$match/${GREEN}$match${COLOR_RESET}}"
+                formatted_dir_path="${dir_path//$match/${DIR_CONSOLE_COLOR}$match${COLOR_RESET}}"
                 break
             fi
         done
@@ -938,7 +944,7 @@ format_file_name () {
             if [[ "$file_name" =~ $p ]]
             then
                 match="${BASH_REMATCH[0]}"
-                formatted_file_name="${file_name//$match/${GREEN}$match${COLOR_RESET}}"
+                formatted_file_name="${file_name//$match/${FILE_CONSOLE_COLOR}$match${COLOR_RESET}}"
                 break
             fi
         done
@@ -947,7 +953,7 @@ format_file_name () {
         then
             local file_ext="${formatted_file_name##*.}"
             local formatted_no_ext="${formatted_file_name%.*}"
-            formatted_file_name="${formatted_no_ext}.${GREEN}$file_ext${COLOR_RESET}"
+            formatted_file_name="${formatted_no_ext}.${EXT_CONSOLE_COLOR}$file_ext${COLOR_RESET}"
         fi
     fi
     echo "$formatted_file_name"
@@ -1568,6 +1574,9 @@ settings_from_args () {
         esac
         i=$(($i + 1))
     done
+    DIR_CONSOLE_COLOR=$(console_color_for_color "$DIR_COLOR")
+    EXT_CONSOLE_COLOR=$(console_color_for_color "$EXT_COLOR")
+    FILE_CONSOLE_COLOR=$(console_color_for_color "$FILE_COLOR")
     # SORT_BY_TYPES=(path name size type lastmod)
     case "$SORT_BY" in
         filename | name)

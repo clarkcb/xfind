@@ -80,3 +80,19 @@ ON_IBLUE='\033[0;104m'    # Blue
 ON_IMAGENTA='\033[0;105m' # Magenta
 ON_ICYAN='\033[0;106m'    # Cyan
 ON_IWHITE='\033[0;107m'   # White
+
+
+console_color_for_color() {
+    local color_name="$1"
+    case "$color_name" in
+        black) echo -e "${BLACK}" ;;
+        red) echo -e "${RED}" ;;
+        green) echo -e "${GREEN}" ;;
+        yellow) echo -e "${YELLOW}" ;;
+        blue) echo -e "${BLUE}" ;;
+        magenta) echo -e "${MAGENTA}" ;;
+        cyan) echo -e "${CYAN}" ;;
+        white) echo -e "${WHITE}" ;;
+        *) echo -e "${COLOR_RESET}" ;; # Default to reset
+    esac
+}
