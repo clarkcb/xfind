@@ -15,6 +15,9 @@ class DefaultFindSettings {
     static final boolean ARCHIVES_ONLY = false
     static final boolean COLORIZE = true
     static final boolean DEBUG = false
+    static final Color DIR_COLOR = Color.CYAN
+    static final Color EXT_COLOR = Color.YELLOW
+    static final Color FILE_COLOR = Color.MAGENTA
     static final boolean FOLLOW_SYMLINKS = false
     static final boolean INCLUDE_ARCHIVES = false
     static final boolean INCLUDE_HIDDEN = false
@@ -41,6 +44,9 @@ class FindSettings {
     boolean archivesOnly
     boolean colorize
     boolean debug
+    Color dirColor
+    Color extColor
+    Color fileColor
     boolean followSymlinks
     final Set<String> inArchiveExtensions
     final Set<Pattern> inArchiveFilePatterns
@@ -77,6 +83,9 @@ class FindSettings {
         this.archivesOnly = DefaultFindSettings.ARCHIVES_ONLY
         this.colorize = DefaultFindSettings.COLORIZE
         this.debug = DefaultFindSettings.DEBUG
+        this.dirColor = DefaultFindSettings.DIR_COLOR
+        this.extColor = DefaultFindSettings.EXT_COLOR
+        this.fileColor = DefaultFindSettings.FILE_COLOR
         this.followSymlinks = DefaultFindSettings.FOLLOW_SYMLINKS
         this.inArchiveExtensions = new LinkedHashSet<>(INITIAL_SET_CAPACITY)
         this.inArchiveFilePatterns = new LinkedHashSet<>(INITIAL_SET_CAPACITY)
