@@ -13,9 +13,9 @@ public enum ArgTokenType {
 }
 
 public struct ArgToken {
-    let name: String
-    let type: ArgTokenType
-    let value: Any
+    public let name: String
+    public let type: ArgTokenType
+    public let value: Any
 }
 
 public class ArgTokenizer {

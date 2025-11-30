@@ -47,7 +47,7 @@ public class FileResultFormatter {
         }
     }
 
-    public func colorize(_ s: String, _ matchStartIndex: Int, _ matchEndIndex: Int) -> String {
+    public func colorize(_ s: String, _ matchStartIndex: Int, _ matchEndIndex: Int, _ color: Color) -> String {
         let strMatchStartIndex = s.index(s.startIndex, offsetBy: matchStartIndex)
         let strMatchEndIndex = s.index(s.startIndex, offsetBy: matchEndIndex)
         var prefix = ""
@@ -59,7 +59,7 @@ public class FileResultFormatter {
             suffix = String(s[strMatchEndIndex...])
         }
         return prefix +
-        ConsoleColor.GREEN +
+        colorToConsoleColor(color) +
         String(s[strMatchStartIndex ..< strMatchEndIndex]) +
         ConsoleColor.RESET +
         suffix
@@ -73,7 +73,7 @@ public class FileResultFormatter {
             for p in settings.inDirPatterns {
                 let match = p.firstMatch(formattedDirPath)
                 if match != nil {
-                    formattedDirPath = colorize(formattedDirPath, match!.range.lowerBound, match!.range.upperBound)
+                    formattedDirPath = colorize(formattedDirPath, match!.range.lowerBound, match!.range.upperBound, settings.dirColor)
                     break
                 }
             }
@@ -86,7 +86,7 @@ public class FileResultFormatter {
         for p in settings.inFilePatterns {
             let match = p.firstMatch(formattedFileName)
             if match != nil {
-                formattedFileName = colorize(formattedFileName, match!.range.lowerBound, match!.range.upperBound)
+                formattedFileName = colorize(formattedFileName, match!.range.lowerBound, match!.range.upperBound, settings.fileColor)
                 break
             }
         }
@@ -95,7 +95,7 @@ public class FileResultFormatter {
             if idx != nil {
                 let utf16Offset = idx!.utf16Offset(in: formattedFileName)
                 if utf16Offset > 0 && utf16Offset < formattedFileName.count - 1 {
-                    formattedFileName = colorize(formattedFileName, utf16Offset + 1, formattedFileName.count)
+                    formattedFileName = colorize(formattedFileName, utf16Offset + 1, formattedFileName.count, settings.extColor)
                 }
             }
         }

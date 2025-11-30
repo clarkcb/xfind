@@ -8,6 +8,10 @@
 
 import Foundation
 
+public enum Color {
+    case black, red, green, yellow, blue, magenta, cyan, white
+}
+
 public enum ConsoleColor {
     public static let RESET = "\u{001B}[0m"
     public static let BLACK = "\u{001B}[0;30m"
@@ -27,4 +31,25 @@ public enum ConsoleColor {
     public static let BOLD_MAGENTA = "\u{001B}[1;35m"
     public static let BOLD_CYAN = "\u{001B}[1;36m"
     public static let BOLD_WHITE = "\u{001B}[1;37m"
+}
+
+public func colorToConsoleColor(_ color: Color) -> String {
+    switch color {
+    case Color.black:
+        ConsoleColor.BLACK
+    case Color.red:
+        ConsoleColor.RED
+    case Color.green:
+        ConsoleColor.GREEN
+    case Color.yellow:
+        ConsoleColor.YELLOW
+    case Color.blue:
+        ConsoleColor.BLUE
+    case Color.magenta:
+        ConsoleColor.MAGENTA
+    case Color.cyan:
+        ConsoleColor.CYAN
+    case Color.white:
+        ConsoleColor.WHITE
+    }
 }

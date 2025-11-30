@@ -56,6 +56,9 @@ public enum DefaultFindSettings {
     public static let archivesOnly = false
     public static let colorize = true
     public static let debug = false
+    public static let dirColor = Color.cyan
+    public static let extColor = Color.yellow
+    public static let fileColor = Color.magenta
     public static let followSymlinks = false
     public static let includeArchives = false
     public static let includeHidden = false
@@ -80,6 +83,9 @@ open class FindSettings: CustomStringConvertible {
     public var _archivesOnly: Bool = DefaultFindSettings.archivesOnly
     open var colorize: Bool = DefaultFindSettings.colorize
     public var _debug: Bool = DefaultFindSettings.debug
+    open var dirColor: Color = DefaultFindSettings.dirColor
+    open var extColor: Color = DefaultFindSettings.extColor
+    open var fileColor: Color = DefaultFindSettings.fileColor
     open var followSymlinks: Bool = DefaultFindSettings.followSymlinks
     open var includeArchives: Bool = DefaultFindSettings.includeArchives
     open var includeHidden: Bool = DefaultFindSettings.includeHidden

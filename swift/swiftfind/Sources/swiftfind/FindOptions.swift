@@ -23,7 +23,7 @@ struct FindOption: Option {
 
     var sortArg: String {
         if shortArg != nil, !shortArg!.isEmpty {
-            return shortArg!.lowercased() + "@" + longArg.lowercased()
+            return shortArg!.lowercased() + "a" + longArg.lowercased()
         }
         return longArg.lowercased()
     }
