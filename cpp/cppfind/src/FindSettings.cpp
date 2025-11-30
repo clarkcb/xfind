@@ -10,6 +10,9 @@ namespace cppfind {
     m_archives_only{false},
     m_colorize{true},
     m_debug{false},
+    m_dir_color{Color::CYAN},
+    m_ext_color{Color::YELLOW},
+    m_file_color{Color::MAGENTA},
     m_follow_symlinks{false},
     m_include_archives{false},
     m_include_hidden{false},
@@ -51,6 +54,30 @@ namespace cppfind {
     void FindSettings::debug(const bool debug) {
         m_debug = debug;
         if (debug) m_verbose = true;
+    }
+
+    Color FindSettings::dir_color() const {
+        return m_dir_color;
+    }
+
+    void FindSettings::dir_color(const Color dir_color) {
+        m_dir_color = dir_color;
+    }
+
+    Color FindSettings::ext_color() const {
+        return m_ext_color;
+    }
+
+    void FindSettings::ext_color(const Color ext_color) {
+        m_ext_color = ext_color;
+    }
+
+    Color FindSettings::file_color() const {
+        return m_file_color;
+    }
+
+    void FindSettings::file_color(const Color file_color) {
+        m_file_color = file_color;
     }
 
     bool FindSettings::follow_symlinks() const {

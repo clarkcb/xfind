@@ -5,6 +5,7 @@
 #include <string>
 #include <unordered_set>
 
+#include "consolecolor.h"
 #include "FileTypes.h"
 #include "RegexPattern.h"
 
@@ -41,6 +42,9 @@ namespace cppfind {
         [[nodiscard]] bool archives_only() const;
         [[nodiscard]] bool colorize() const;
         [[nodiscard]] bool debug() const;
+        [[nodiscard]] Color dir_color() const;
+        [[nodiscard]] Color ext_color() const;
+        [[nodiscard]] Color file_color() const;
         [[nodiscard]] bool follow_symlinks() const;
         [[nodiscard]] bool include_archives() const;
         [[nodiscard]] bool include_hidden() const;
@@ -78,6 +82,9 @@ namespace cppfind {
         void archives_only(bool archives_only);
         void colorize(bool colorize);
         void debug(bool debug);
+        void dir_color(Color dir_color);
+        void ext_color(Color ext_color);
+        void file_color(Color file_color);
         void follow_symlinks(bool follow_symlinks);
         void in_archive_extensions(const std::unordered_set<std::string>& in_archive_extensions);
         void in_dir_patterns(const std::unordered_set<RegexPattern, RegexPatternHash>& in_dir_patterns);
@@ -144,6 +151,11 @@ namespace cppfind {
         bool m_archives_only;
         bool m_colorize;
         bool m_debug;
+
+        Color m_dir_color;
+        Color m_ext_color;
+        Color m_file_color;
+
         bool m_follow_symlinks;
 
         // add sets of strings that hold extensions and patterns to match on

@@ -177,7 +177,6 @@ namespace cppfind {
         std::vector<std::string> opt_strings{};
         std::vector<std::string> opt_descs{};
 
-        // filter out path
         auto options = std::vector<FindOption>{};
         for (auto const& o : m_options) {
             options.emplace_back(o->short_arg(), o->long_arg(), o->description(), o->arg_type());

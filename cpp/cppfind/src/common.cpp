@@ -21,7 +21,7 @@ namespace cppfind {
             colorized.append(BOLD_RED);
             colorized.append("ERROR: ");
             colorized.append(msg);
-            colorized.append(COLOR_RESET);
+            colorized.append(CONSOLE_RESET);
             std::cerr << colorized << std::endl << std::flush;
         } else {
             std::cerr << "ERROR: " << msg << std::endl << std::flush;

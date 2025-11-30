@@ -29,15 +29,16 @@ namespace cppfind {
     }
 
     std::string FileResultFormatter::colorize(const std::string& s, const unsigned long match_start_idx,
-        const unsigned long match_end_idx) {
+        const unsigned long match_end_idx, const Color color) {
         std::string colorized;
         colorized.reserve(s.length() + 12);
         if (match_start_idx > 0) {
             colorized.append(s.substr(0, match_start_idx));
         }
-        colorized.append(COLOR_GREEN);
+        // colorized.append(CONSOLE_GREEN);
+        colorized.append(color_to_console_color(color));
         colorized.append(s.substr(match_start_idx, match_end_idx - match_start_idx));
-        colorized.append(COLOR_RESET);
+        colorized.append(CONSOLE_RESET);
         // if (match_end_idx < s.length() - 1) {
         if (match_end_idx < s.length()) {
             colorized.append(s.substr(match_end_idx));
@@ -54,7 +55,7 @@ namespace cppfind {
                 if (std::regex r = p.regex(); std::regex_search(formatted_dir, match, r)) {
                     const unsigned long match_start_idx = match.position(0);
                     const unsigned long match_end_idx = match_start_idx + match.length(0);
-                    formatted_dir = colorize(formatted_dir, match_start_idx, match_end_idx);
+                    formatted_dir = colorize(formatted_dir, match_start_idx, match_end_idx, m_settings.dir_color());
                 }
             }
         }
@@ -72,13 +73,15 @@ namespace cppfind {
             if (std::regex r = p.regex(); std::regex_search(formatted_file_name, match, r)) {
                 const unsigned long match_start_idx = match.position(0);
                 const unsigned long match_end_idx = match_start_idx + match.length(0);
-                formatted_file_name = colorize(formatted_file_name, match_start_idx, match_end_idx);
+                formatted_file_name = colorize(formatted_file_name, match_start_idx, match_end_idx,
+                    m_settings.file_color());
             }
         }
         if (!m_settings.in_extensions().empty()) {
             if (const auto idx = formatted_file_name.find_last_of('.');
                 idx > 0 && idx < formatted_file_name.length() - 1) {
-                formatted_file_name = colorize(formatted_file_name, idx + 1, formatted_file_name.length());
+                formatted_file_name = colorize(formatted_file_name, idx + 1,
+                    formatted_file_name.length(), m_settings.ext_color());
             }
         }
         return formatted_file_name;

@@ -189,25 +189,31 @@ namespace cppfind {
         static std::string long_to_date_str(long time);
     };
 
-    // color.h
-#define COLOR_RESET   "\033[0m"
-#define COLOR_BLACK   "\033[0;30m"
-#define COLOR_RED     "\033[0;31m"
-#define COLOR_GREEN   "\033[0;32m"
-#define COLOR_YELLOW  "\033[0;33m"
-#define COLOR_BLUE    "\033[0;34m"
-#define COLOR_MAGENTA "\033[0;35m"
-#define COLOR_CYAN    "\033[0;36m"
-#define COLOR_WHITE   "\033[0;37m"
+    // consolecolor.h
+#define CONSOLE_RESET   "\033[0m"
+#define CONSOLE_BLACK   "\033[0;30m"
+#define CONSOLE_RED     "\033[0;31m"
+#define CONSOLE_GREEN   "\033[0;32m"
+#define CONSOLE_YELLOW  "\033[0;33m"
+#define CONSOLE_BLUE    "\033[0;34m"
+#define CONSOLE_MAGENTA "\033[0;35m"
+#define CONSOLE_CYAN    "\033[0;36m"
+#define CONSOLE_WHITE   "\033[0;37m"
 
-#define BOLD_BLACK    "\033[1;30m"
-#define BOLD_RED      "\033[1;31m"
-#define BOLD_GREEN    "\033[1;32m"
-#define BOLD_YELLOW   "\033[1;33m"
-#define BOLD_BLUE     "\033[1;34m"
-#define BOLD_MAGENTA  "\033[1;35m"
-#define BOLD_CYAN     "\033[1;36m"
-#define BOLD_WHITE    "\033[1;37m"
+#define BOLD_BLACK      "\033[1;30m"
+#define BOLD_RED        "\033[1;31m"
+#define BOLD_GREEN      "\033[1;32m"
+#define BOLD_YELLOW     "\033[1;33m"
+#define BOLD_BLUE       "\033[1;34m"
+#define BOLD_MAGENTA    "\033[1;35m"
+#define BOLD_CYAN       "\033[1;36m"
+#define BOLD_WHITE      "\033[1;37m"
+
+    enum class Color {BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE};
+
+    Color color_from_name(std::string_view name);
+    std::string color_to_name(Color color);
+    std::string color_to_console_color(Color color);
 
     // common.h
     void log_msg(std::string_view msg);
@@ -273,6 +279,9 @@ namespace cppfind {
         [[nodiscard]] bool archives_only() const;
         [[nodiscard]] bool colorize() const;
         [[nodiscard]] bool debug() const;
+        [[nodiscard]] Color dir_color() const;
+        [[nodiscard]] Color ext_color() const;
+        [[nodiscard]] Color file_color() const;
         [[nodiscard]] bool follow_symlinks() const;
         [[nodiscard]] bool include_archives() const;
         [[nodiscard]] bool include_hidden() const;
@@ -310,6 +319,9 @@ namespace cppfind {
         void archives_only(bool archives_only);
         void colorize(bool colorize);
         void debug(bool debug);
+        void dir_color(Color dir_color);
+        void ext_color(Color ext_color);
+        void file_color(Color file_color);
         void follow_symlinks(bool follow_symlinks);
         void in_archive_extensions(const std::unordered_set<std::string>& in_archive_extensions);
         void in_dir_patterns(const std::unordered_set<RegexPattern, RegexPatternHash>& in_dir_patterns);
@@ -398,7 +410,8 @@ namespace cppfind {
         FileResultFormatter(FileResultFormatter& other) = delete;
         FileResultFormatter(FileResultFormatter&& other) = delete;
         [[nodiscard]] FindSettings settings() const;
-        static std::string colorize(const std::string& s, unsigned long match_start_idx, unsigned long match_end_idx);
+        static std::string colorize(const std::string& s, unsigned long match_start_idx, unsigned long match_end_idx,
+            Color color);
         [[nodiscard]] std::string format_dir_path(const std::filesystem::path& dir_path) const;
         [[nodiscard]] std::string format_file_name(const std::string& file_name) const;
         [[nodiscard]] std::string format_file_path(const std::filesystem::path& file_path) const;
