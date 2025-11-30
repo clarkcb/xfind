@@ -22,6 +22,9 @@ type FindSettings() =
             _debug <- value
             this.Verbose <- value
 
+    member val DirColor : Color = Color.Cyan with get, set
+    member val ExtColor : Color = Color.Yellow with get, set
+    member val FileColor : Color = Color.Magenta with get, set
     member val FollowSymlinks : bool = false with get, set
     member val InArchiveExtensions : string list = [] with get, set
     member val InArchiveFilePatterns : Regex list = [] with get, set

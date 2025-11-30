@@ -13,7 +13,7 @@ type FileResultFormatter (settings : FindSettings) =
             match (Seq.tryFind (fun p -> (p:Regex).Match(dirName).Success) settings.InDirPatterns) with
             | Some dirPattern ->
                 let dirMatch = dirPattern.Match(dirName)
-                ConsoleColor.Colorize dirName dirMatch.Index (dirMatch.Index + dirMatch.Length)
+                ColorUtil.Colorize dirName dirMatch.Index (dirMatch.Index + dirMatch.Length) settings.DirColor
             | None -> dirName
 
     member this.FormatDirectoryFun =
@@ -29,14 +29,14 @@ type FileResultFormatter (settings : FindSettings) =
             match (Seq.tryFind (fun p -> (p:Regex).Match(fileName).Success) settings.InFilePatterns) with
             | Some filePattern ->
                 let fileMatch = filePattern.Match(fileName)
-                ConsoleColor.Colorize fileName fileMatch.Index (fileMatch.Index + fileMatch.Length)
+                ColorUtil.Colorize fileName fileMatch.Index (fileMatch.Index + fileMatch.Length) settings.FileColor
             | None -> fileName
         if List.isEmpty settings.InExtensions
         then formattedFileName
         else
             let idx = formattedFileName.LastIndexOf('.')
             if idx > 0 && idx < formattedFileName.Length - 1
-            then ConsoleColor.Colorize formattedFileName (idx + 1) formattedFileName.Length
+            then ColorUtil.Colorize formattedFileName (idx + 1) formattedFileName.Length settings.ExtColor
             else formattedFileName
 
     member this.FormatFileNameFun =

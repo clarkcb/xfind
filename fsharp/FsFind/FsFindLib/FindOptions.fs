@@ -4,14 +4,9 @@ open System
 open System.Collections.Generic
 open System.Text.Json
 
-module FindOptions =   
+module FindOptions =
 
     type FindOption = Option
-
-    let SortOption (o1 : FindOption) (o2 : FindOption) : int =
-        let os1 = if o1.ShortArg <> "" then o1.ShortArg + "@" + o1.LongArg else o1.LongArg
-        let os2 = if o2.ShortArg <> "" then o2.ShortArg + "@" + o2.LongArg else o2.LongArg
-        String.Compare(os1, os2, StringComparison.OrdinalIgnoreCase)
 
     let boolActionMap : Map<string, bool -> FindSettings -> Unit> =
         [
@@ -175,6 +170,11 @@ module FindOptions =
     let SettingsFromArgs (args : string[]) : Result<FindSettings, string> =
         let settings = FindSettings(PrintFiles=true)
         UpdateSettingsFromArgs settings args
+
+    let SortOption (o1 : FindOption) (o2 : FindOption) : int =
+        let os1 = if o1.ShortArg <> "" then o1.ShortArg + "@" + o1.LongArg else o1.LongArg
+        let os2 = if o2.ShortArg <> "" then o2.ShortArg + "@" + o2.LongArg else o2.LongArg
+        String.Compare(os1, os2, StringComparison.OrdinalIgnoreCase)
 
     let GetUsageString () : string =
         let sortedOptions = options
