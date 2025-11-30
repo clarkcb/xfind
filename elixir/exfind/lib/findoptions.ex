@@ -124,7 +124,7 @@ defmodule ExFind.FindOptions do
 
   defp get_arg_tokenizer(options, arg_action_maps) do
     {bool_arg_action_map, int_arg_action_map, str_arg_action_map} = arg_action_maps
-    %ExFind.ArgTokenizer{
+    %ArgTokenizer{
       options: options,
       bool_opts: Map.keys(bool_arg_action_map),
       int_opts: Map.keys(int_arg_action_map),

@@ -33,6 +33,7 @@ defmodule ExFind.FileResultFormatter do
   Documentation for `ExFind.FileResultFormatter`.
   """
 
+  alias ExFind.Color
   alias ExFind.ConsoleColor
   alias ExFind.StringUtil
 
@@ -52,7 +53,7 @@ defmodule ExFind.FileResultFormatter do
     __struct__([settings: settings, fn_format_path: fn_format_path, fn_format_file_name: fn_format_file_name])
   end
 
-  def colorize(s, start_idx, end_idx) do
+  def colorize(s, start_idx, end_idx, color) do
     prefix = if start_idx > 0 do
       String.slice(s, 0, start_idx)
     else
@@ -64,7 +65,7 @@ defmodule ExFind.FileResultFormatter do
       ""
     end
     match_text = String.slice(s, start_idx, end_idx - start_idx)
-    colorized = ConsoleColor.green <> match_text <> ConsoleColor.reset
+    colorized = Color.get_console_color_for_color(color) <> match_text <> ConsoleColor.reset
     prefix <> colorized <> suffix
   end
 
@@ -72,7 +73,7 @@ defmodule ExFind.FileResultFormatter do
     matching_dir_pattern = Enum.find(settings.in_dir_patterns, false, fn p -> Regex.match?(p, path) end)
     if matching_dir_pattern do
       {match_idx, match_length} = Regex.run(matching_dir_pattern, path, return: :index) |> Enum.at(0)
-      colorize(path, match_idx, match_idx + match_length)
+      colorize(path, match_idx, match_idx + match_length, settings.dir_color)
     else
       path
     end
@@ -87,7 +88,7 @@ defmodule ExFind.FileResultFormatter do
     formatted_file_name =
       if matching_file_pattern do
         {match_idx, match_length} = Regex.run(matching_file_pattern, file_name, return: :index) |> Enum.at(0)
-        colorize(file_name, match_idx, match_idx + match_length)
+        colorize(file_name, match_idx, match_idx + match_length, settings.file_color)
       else
         file_name
       end
@@ -98,7 +99,7 @@ defmodule ExFind.FileResultFormatter do
       if idx < 1 || idx >= String.length(formatted_file_name) do
         formatted_file_name
       else
-        colorize(formatted_file_name, idx + 1, String.length(formatted_file_name))
+        colorize(formatted_file_name, idx + 1, String.length(formatted_file_name), settings.ext_color)
       end
     end
   end
