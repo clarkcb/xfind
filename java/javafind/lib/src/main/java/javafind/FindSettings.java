@@ -26,6 +26,9 @@ public class FindSettings {
     private boolean archivesOnly;
     private boolean colorize;
     private boolean debug;
+    private Color dirColor;
+    private Color extColor;
+    private Color fileColor;
     private boolean followSymlinks;
     private final Set<String> inArchiveExtensions;
     private final Set<Pattern> inArchiveFilePatterns;
@@ -62,6 +65,9 @@ public class FindSettings {
         this.archivesOnly = DefaultFindSettings.ARCHIVES_ONLY;
         this.colorize = DefaultFindSettings.COLORIZE;
         this.debug = DefaultFindSettings.DEBUG;
+        this.dirColor = DefaultFindSettings.DIR_COLOR;
+        this.extColor = DefaultFindSettings.EXT_COLOR;
+        this.fileColor = DefaultFindSettings.FILE_COLOR;
         this.followSymlinks = DefaultFindSettings.FOLLOW_SYMLINKS;
         this.inArchiveExtensions = new LinkedHashSet<>(INITIAL_SET_CAPACITY);
         this.inArchiveFilePatterns = new LinkedHashSet<>(INITIAL_SET_CAPACITY);
@@ -143,6 +149,30 @@ public class FindSettings {
         if (debug) {
             this.verbose = true;
         }
+    }
+
+    public Color getDirColor() {
+        return dirColor;
+    }
+
+    public void setDirColor(Color dirColor) {
+        this.dirColor = dirColor;
+    }
+
+    public Color getExtColor() {
+        return extColor;
+    }
+
+    public void setExtColor(Color extColor) {
+        this.extColor = extColor;
+    }
+
+    public Color getFileColor() {
+        return fileColor;
+    }
+
+    public void setFileColor(Color fileColor) {
+        this.fileColor = fileColor;
     }
 
     public boolean getFollowSymlinks() {

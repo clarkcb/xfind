@@ -15,7 +15,7 @@ public enum FindError {
         this.message = message;
     }
 
-    String getMessage() {
+    public String getMessage() {
         return message;
     }
 }

@@ -124,7 +124,12 @@ public class FindOptions {
 
         for (var i=0; i<findOptionsArray.length(); i++) {
             var findOptionObj = findOptionsArray.getJSONObject(i);
+            var shortArg = "";
+            if (findOptionObj.has("short")) {
+                shortArg = findOptionObj.getString("short");
+            }
             var longArg = findOptionObj.getString("long");
+            var desc = findOptionObj.getString("desc");
             var argType = ArgTokenType.UNKNOWN;
             if (boolActionMap.containsKey(longArg)) {
                 argType = ArgTokenType.BOOL;
@@ -134,11 +139,6 @@ public class FindOptions {
                 argType = ArgTokenType.INT;
             } else if (longActionMap.containsKey(longArg)) {
                 argType = ArgTokenType.LONG;
-            }
-            var desc = findOptionObj.getString("desc");
-            var shortArg = "";
-            if (findOptionObj.has("short")) {
-                shortArg = findOptionObj.getString("short");
             }
             options.add(new FindOption(shortArg, longArg, desc, argType));
         }

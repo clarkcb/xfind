@@ -23,7 +23,7 @@ public class FileResultFormatter {
         }
     }
 
-    public static String colorize(final String s, final int matchStartIndex, final int matchEndIndex) {
+    public static String colorize(final String s, final int matchStartIndex, final int matchEndIndex, final Color color) {
         var prefix = "";
         if (matchStartIndex > 0) {
             prefix = s.substring(0, matchStartIndex);
@@ -33,7 +33,7 @@ public class FileResultFormatter {
             suffix = s.substring(matchEndIndex);
         }
         return prefix +
-                ConsoleColor.GREEN.getValue() +
+                color.toConsoleColor().getValue() +
                 s.substring(matchStartIndex, matchEndIndex) +
                 ConsoleColor.RESET.getValue() +
                 suffix;
@@ -44,7 +44,7 @@ public class FileResultFormatter {
         for (var p : settings.getInDirPatterns()) {
             Matcher m = p.matcher(formattedDirPath);
             if (m.find()) {
-                formattedDirPath = colorize(formattedDirPath, m.start(), m.end());
+                formattedDirPath = colorize(formattedDirPath, m.start(), m.end(), settings.getDirColor());
                 break;
             }
         }
@@ -60,14 +60,14 @@ public class FileResultFormatter {
         for (var p : settings.getInFilePatterns()) {
             Matcher m = p.matcher(formattedFileName);
             if (m.find()) {
-                formattedFileName = colorize(formattedFileName, m.start(), m.end());
+                formattedFileName = colorize(formattedFileName, m.start(), m.end(), settings.getFileColor());
                 break;
             }
         }
         if (!settings.getInExtensions().isEmpty()) {
             var idx = formattedFileName.lastIndexOf('.');
             if (idx > 0 && idx < formattedFileName.length() - 1) {
-                formattedFileName = colorize(formattedFileName, idx + 1, formattedFileName.length());
+                formattedFileName = colorize(formattedFileName, idx + 1, formattedFileName.length(), settings.getExtColor());
             }
         }
         return formattedFileName;
