@@ -1,5 +1,6 @@
 package scalafind
 
+import scalafind.Color.Color
 import scalafind.FileType.FileType
 import scalafind.SortBy.SortBy
 
@@ -34,6 +35,9 @@ object DefaultFindSettings {
   val archivesOnly = false
   val colorize = true
   val debug = false
+  val dirColor: Color = Color.CYAN
+  val extColor: Color = Color.YELLOW
+  val fileColor: Color = Color.MAGENTA
   val followSymlinks = false
   var includeArchives = false
   val includeHidden = false
@@ -56,6 +60,9 @@ object DefaultFindSettings {
 case class FindSettings(archivesOnly: Boolean = DefaultFindSettings.archivesOnly,
                         colorize: Boolean = DefaultFindSettings.colorize,
                         debug: Boolean = DefaultFindSettings.debug,
+                        dirColor: Color = DefaultFindSettings.dirColor,
+                        extColor: Color = DefaultFindSettings.extColor,
+                        fileColor: Color = DefaultFindSettings.fileColor,
                         followSymlinks: Boolean = DefaultFindSettings.followSymlinks,
                         inArchiveExtensions: Set[String] = Set.empty[String],
                         inArchiveFilePatterns: Set[Regex] = Set.empty[Regex],

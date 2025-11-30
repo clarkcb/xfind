@@ -14,7 +14,7 @@ enum ArgTokenType:
 case class ArgToken(name: String, tokenType: ArgTokenType, value: Any) {
 }
 
-class ArgTokenizer(options: List[FindOption]) {
+class ArgTokenizer(options: List[ArgOption]) {
 
   private var boolMap: Map[String, String] = Map.empty
   private var strMap: Map[String, String] = Map.empty

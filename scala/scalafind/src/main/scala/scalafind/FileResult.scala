@@ -121,7 +121,7 @@ class FileResult(val containers: List[Path],
 
 class FileResultFormatter(val settings: FindSettings) {
 
-  def colorize(s: String, matchStartIndex: Int, matchEndIndex: Int): String = {
+  def colorize(s: String, matchStartIndex: Int, matchEndIndex: Int, color: Color.Color): String = {
     val prefix = if (matchStartIndex > 0) {
       s.substring(0, matchStartIndex)
     } else {
@@ -133,7 +133,7 @@ class FileResultFormatter(val settings: FindSettings) {
       ""
     }
     prefix +
-      ConsoleColor.GREEN.toString +
+      Color.toConsoleColor(color).toString +
       s.substring(matchStartIndex, matchEndIndex) +
       ConsoleColor.RESET.toString +
       suffix
@@ -142,7 +142,7 @@ class FileResultFormatter(val settings: FindSettings) {
   private def formatDirPathWithColor(dirPath: Path): String = {
     var formattedDirPath = dirPath.toString
     settings.inDirPatterns.flatMap(p => p.findFirstMatchIn(formattedDirPath)).take(1).foreach { m =>
-      formattedDirPath = colorize(formattedDirPath, m.start, m.end)
+      formattedDirPath = colorize(formattedDirPath, m.start, m.end, settings.dirColor)
     }
     formattedDirPath
   }
@@ -157,12 +157,12 @@ class FileResultFormatter(val settings: FindSettings) {
   private def formatFileNameWithColor(fileName: String): String = {
     var formattedFileName = fileName
     settings.inFilePatterns.flatMap(p => p.findFirstMatchIn(formattedFileName)).take(1).foreach { m =>
-      formattedFileName = colorize(formattedFileName, m.start, m.end)
+      formattedFileName = colorize(formattedFileName, m.start, m.end, settings.fileColor)
     }
     if (settings.inExtensions.nonEmpty) {
       val idx = formattedFileName.lastIndexOf('.')
       if (idx > 0 && idx < formattedFileName.length - 1) {
-        formattedFileName = colorize(formattedFileName, idx + 1, formattedFileName.length)
+        formattedFileName = colorize(formattedFileName, idx + 1, formattedFileName.length, settings.extColor)
       }
     }
     formattedFileName

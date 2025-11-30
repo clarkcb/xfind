@@ -8,7 +8,14 @@ import scala.annotation.tailrec
 import scala.collection.mutable
 import scala.jdk.CollectionConverters.*
 
-case class FindOption(shortArg: Option[String], longArg: String, desc: String, argType: ArgTokenType) {
+trait ArgOption {
+  val shortArg: Option[String]
+  val longArg: String
+  val desc: String
+  val argType: ArgTokenType
+}
+
+case class FindOption(shortArg: Option[String], longArg: String, desc: String, argType: ArgTokenType) extends ArgOption {
   val sortArg: String = shortArg match {
     case Some(sa) => sa.toLowerCase + "@" + longArg.toLowerCase
     case None => longArg.toLowerCase
@@ -210,6 +217,8 @@ object FindOptions {
     recSettingsFromArgTokens(argTokens, settings)
   }
 
+  private val argTokenizer: ArgTokenizer = new ArgTokenizer(findOptions)
+
   def updateSettingsFromJson(settings: FindSettings, json: String): FindSettings = {
     try {
       val argTokens = argTokenizer.tokenizeJson(json)
@@ -224,8 +233,6 @@ object FindOptions {
     val argTokens = argTokenizer.tokenizeFile(filePath)
     updateSettingsFromArgTokens(settings, argTokens)
   }
-
-  private val argTokenizer: ArgTokenizer = new ArgTokenizer(findOptions)
 
   def updateSettingsFromArgs(settings: FindSettings, args: Array[String]): FindSettings = {
     val argTokens = argTokenizer.tokenizeArgs(args)
