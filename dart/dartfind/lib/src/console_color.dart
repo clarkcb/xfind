@@ -1,3 +1,5 @@
+enum Color { black, red, green, yellow, blue, magenta, cyan, white }
+
 class ConsoleColor {
   static const String reset = '\u001B[0m';
   static const String black = '\u001B[0;30m';
@@ -17,4 +19,25 @@ class ConsoleColor {
   static const String boldMagenta = '\u001B[1;35m';
   static const String boldCyan = '\u001B[1;36m';
   static const String boldWhite = '\u001B[1;37m';
+
+  static String fromColor(Color color) {
+    switch (color) {
+      case Color.black:
+        return black;
+      case Color.red:
+        return red;
+      case Color.green:
+        return green;
+      case Color.yellow:
+        return yellow;
+      case Color.blue:
+        return blue;
+      case Color.magenta:
+        return magenta;
+      case Color.cyan:
+        return cyan;
+      case Color.white:
+        return white;
+    }
+  }
 }

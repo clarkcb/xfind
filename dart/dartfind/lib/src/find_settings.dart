@@ -1,3 +1,4 @@
+import 'package:dartfind/src/console_color.dart';
 import 'package:dartfind/src/file_types.dart';
 import 'package:path/path.dart' as path;
 
@@ -73,6 +74,10 @@ class FindSettings {
       verbose = value;
     }
   }
+
+  Color dirColor = Color.cyan;
+  Color extColor = Color.yellow;
+  Color fileColor = Color.magenta;
 
   bool followSymlinks = false;
 

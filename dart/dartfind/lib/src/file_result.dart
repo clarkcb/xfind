@@ -47,7 +47,8 @@ class FileResultFormatter {
     }
   }
 
-  String colorize(String s, int matchStartIndex, int matchEndIndex) {
+  String colorize(
+      String s, int matchStartIndex, int matchEndIndex, Color color) {
     var prefix = '';
     if (matchStartIndex > 0) {
       prefix = s.substring(0, matchStartIndex);
@@ -57,7 +58,7 @@ class FileResultFormatter {
       suffix = s.substring(matchEndIndex);
     }
     return prefix +
-        ConsoleColor.green +
+        ConsoleColor.fromColor(color) +
         s.substring(matchStartIndex, matchEndIndex) +
         ConsoleColor.reset +
         suffix;
@@ -68,7 +69,8 @@ class FileResultFormatter {
     for (var p in settings.inDirPatterns) {
       var match = (p as RegExp).firstMatch(formattedDir);
       if (match != null) {
-        formattedDir = colorize(formattedDir, match.start, match.end);
+        formattedDir =
+            colorize(formattedDir, match.start, match.end, settings.dirColor);
         break;
       }
     }
@@ -80,15 +82,16 @@ class FileResultFormatter {
     for (var p in settings.inFilePatterns) {
       var match = (p as RegExp).firstMatch(formattedFileName);
       if (match != null) {
-        formattedFileName = colorize(formattedFileName, match.start, match.end);
+        formattedFileName = colorize(
+            formattedFileName, match.start, match.end, settings.fileColor);
         break;
       }
     }
     if (settings.inExtensions.isNotEmpty) {
       var idx = formattedFileName.lastIndexOf('.');
       if (idx > 0 && idx < formattedFileName.length - 1) {
-        formattedFileName =
-            colorize(formattedFileName, idx + 1, formattedFileName.length);
+        formattedFileName = colorize(formattedFileName, idx + 1,
+            formattedFileName.length, settings.extColor);
       }
     }
     return formattedFileName;
