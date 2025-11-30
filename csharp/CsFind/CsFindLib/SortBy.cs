@@ -1,3 +1,5 @@
+using System;
+
 namespace CsFindLib;
 
 public enum SortBy
@@ -13,17 +15,7 @@ public static class SortByUtil
 {
 	public static SortBy GetSortByFromName(string sortByName)
 	{
-		return sortByName.ToUpper() switch
-		{
-			"filename" => SortBy.FileName,
-			"name" => SortBy.FileName,
-			"filesize" => SortBy.FileSize,
-			"size" => SortBy.FileSize,
-			"filetype" => SortBy.FileType,
-			"type" => SortBy.FileType,
-			"lastmod" => SortBy.LastMod,
-			_ => SortBy.FilePath
-		};
+		return Enum.TryParse<SortBy>(sortByName, out var sortBy) ? sortBy : SortBy.FilePath;
 	}
 
 	public static string GetNameFromSortBy(SortBy sortBy)

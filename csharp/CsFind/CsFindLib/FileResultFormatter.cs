@@ -29,7 +29,7 @@ public class FileResultFormatter
         }
     }
 
-    public static string Colorize(string s, int matchStartIndex, int matchEndIndex)
+    public static string Colorize(string s, int matchStartIndex, int matchEndIndex, Color color)
     {
         var prefix = "";
         if (matchStartIndex > 0)
@@ -43,7 +43,7 @@ public class FileResultFormatter
         }
         var matchLength = matchEndIndex - matchStartIndex;
         return prefix +
-               ConsoleColor.Green + 
+               ColorUtil.ColorToConsoleColor(color) + 
                s.Substring(matchStartIndex, matchLength) +
                ConsoleColor.Reset + 
                suffix;
@@ -57,7 +57,7 @@ public class FileResultFormatter
             var m = p.Match(formattedDirPath);
             if (m.Success)
             {
-                formattedDirPath = Colorize(formattedDirPath, m.Index, m.Index + m.Length);
+                formattedDirPath = Colorize(formattedDirPath, m.Index, m.Index + m.Length, Settings.DirColor);
                 break;
             }
         }
@@ -74,7 +74,7 @@ public class FileResultFormatter
             var m = p.Match(formattedFileName);
             if (m.Success)
             {
-                formattedFileName = Colorize(formattedFileName, m.Index, m.Index + m.Length);
+                formattedFileName = Colorize(formattedFileName, m.Index, m.Index + m.Length, Settings.FileColor);
                 break;
             }
         }
@@ -84,7 +84,7 @@ public class FileResultFormatter
             if (idx > 0 && idx < formattedFileName.Length - 1)
             {
                 formattedFileName = Colorize(formattedFileName, idx + 1,
-                    formattedFileName.Length);
+                    formattedFileName.Length, Settings.ExtColor);
             }
         }
         return formattedFileName;

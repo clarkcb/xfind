@@ -34,6 +34,9 @@ public class FindSettings
 		}
 	}
 
+	public Color DirColor { get; set; }
+	public Color ExtColor { get; set; }
+	public Color FileColor { get; set; }
 	public bool FollowSymlinks { get; set; }
 	public ISet<string> InArchiveExtensions { get; private set; }
 	public ISet<Regex> InArchiveFilePatterns { get; private set; }
@@ -71,6 +74,9 @@ public class FindSettings
 		ArchivesOnly = false;
 		Colorize = true;
 		Debug = false;
+		DirColor = Color.Cyan;
+		ExtColor = Color.Yellow;
+		FileColor = Color.Magenta;
 		FollowSymlinks = false;
 		InArchiveExtensions = new HashSet<string>();
 		InArchiveFilePatterns = new HashSet<Regex>();

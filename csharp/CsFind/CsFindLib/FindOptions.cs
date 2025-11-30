@@ -76,9 +76,6 @@ public class FindOptions
 		};
 
 	public List<IOption> Options { get; }
-	private Dictionary<string, string> BoolDictionary { get; }
-	private Dictionary<string, string> StringDictionary { get; }
-	private Dictionary<string, string> IntDictionary { get; }
 	private ArgTokenizer ArgTokenizer { get; }
 
 
@@ -86,9 +83,6 @@ public class FindOptions
 	{
 		_findOptionsResource = EmbeddedResource.GetResourceFileContents("CsFindLib.Resources.findoptions.json");
 		Options = [];
-		BoolDictionary = new Dictionary<string, string>();
-		StringDictionary = new Dictionary<string, string> { { "path", "path" } };
-		IntDictionary = new Dictionary<string, string>();
 		SetOptionsFromJson();
 		ArgTokenizer = new ArgTokenizer(Options);
 	}
@@ -105,6 +99,12 @@ public class FindOptions
 		foreach (var optionDict in optionDicts)
 		{
 			var longArg = optionDict["long"];
+			string? shortArg = null;
+			if (optionDict.TryGetValue("short", out var shortVal))
+			{
+				shortArg = shortVal;
+			}
+			var desc = optionDict["desc"];
 			ArgTokenType argType;
 			if (BoolActionDictionary.ContainsKey(longArg))
 			{
@@ -122,12 +122,6 @@ public class FindOptions
 			{
 				throw new FindException($"Invalid option: {longArg}");
 			}
-			string? shortArg = null;
-			if (optionDict.TryGetValue("short", out var shortVal))
-			{
-				shortArg = shortVal;
-			}
-			var desc = optionDict["desc"];
 			var option = new FindOption(shortArg, longArg, desc, argType);
 			Options.Add(option);
 		}
