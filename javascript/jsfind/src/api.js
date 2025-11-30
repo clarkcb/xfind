@@ -7,6 +7,10 @@
 // Requirements
 //-----------------------------------------------------------------------------
 
+const {ArgToken} = require('./argtoken');
+const {ArgTokenType} = require('./argtokentype');
+const {ArgTokenizer} = require('./argtokenizer');
+const {Color, colorToConsoleColor, nameToColor} = require('./color');
 const {ConsoleColor} = require('./consolecolor');
 const common = require('./common');
 const {FileResult} = require('./fileresult');
@@ -20,14 +24,18 @@ const {FindSettings} = require('./findsettings');
 const {Finder} = require('./finder');
 const {FindError} = require('./finderror');
 const StringUtil = require('./stringutil');
-const {SortBy, nameToSortBy, sortByToName} = require('./sortby');
+const {SortBy, nameToSortBy} = require('./sortby');
 
 //-----------------------------------------------------------------------------
 // Exports
 //-----------------------------------------------------------------------------
 
 module.exports = {
-  COLORS: ConsoleColor,
+  ArgToken,
+  ArgTokenType,
+  ArgTokenizer,
+  Color,
+  ConsoleColor,
   common,
   FileResult,
   FileResultFormatter,
@@ -41,6 +49,7 @@ module.exports = {
   FindSettings,
   StringUtil,
   SortBy,
-  nameToSortBy,
-  sortByToName
+  colorToConsoleColor,
+  nameToColor,
+  nameToSortBy
 };

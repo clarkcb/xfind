@@ -3,6 +3,7 @@
  *
  * FileResultFormatter class provides formatting of search result instances
  */
+const {colorToConsoleColor} = require('./color');
 const {ConsoleColor} = require('./consolecolor');
 const path = require('path');
 
@@ -13,8 +14,8 @@ class FileResultFormatter {
     this.settings = settings;
     if (settings.colorize) {
       if (settings.inDirPatterns.length > 0) {
-        this.formatPath = function(path) {
-          return this.formatPathWithColor(path);
+        this.formatDirPath = function(path) {
+          return this.formatDirPathWithColor(path);
         };
       }
       if (settings.inExtensions.length > 0 || settings.inFilePatterns.length > 0) {
@@ -25,7 +26,7 @@ class FileResultFormatter {
     }
   }
 
-  colorize(s, matchStartIndex, matchEndIndex) {
+  colorize(s, matchStartIndex, matchEndIndex, color) {
     let prefix = ''
     if (matchStartIndex > 0) {
       prefix = s.slice(0, matchStartIndex);
@@ -35,20 +36,20 @@ class FileResultFormatter {
       suffix = s.slice(matchEndIndex);
     }
     return prefix +
-      ConsoleColor.GREEN +
+      colorToConsoleColor(color) +
       s.slice(matchStartIndex, matchEndIndex) +
       ConsoleColor.RESET +
       suffix;
   }
 
-  formatPathWithColor(path) {
+  formatDirPathWithColor(dirPath) {
     let formattedPath = '.'
-    if (path) {
-      formattedPath = path;
+    if (dirPath) {
+      formattedPath = dirPath;
       for (let p of this.settings.inDirPatterns) {
         let m = p.exec(formattedPath);
         if (m) {
-          formattedPath = this.colorize(formattedPath, m.index, m.index + m[0].length);
+          formattedPath = this.colorize(formattedPath, m.index, m.index + m[0].length, this.settings.dirColor);
           break;
         }
       }
@@ -56,8 +57,8 @@ class FileResultFormatter {
     return formattedPath;
   }
 
-  formatPath(path) {
-    return path;
+  formatDirPath(dirPath) {
+    return dirPath;
   }
 
   formatFileNameWithColor(fileName) {
@@ -65,14 +66,14 @@ class FileResultFormatter {
     for (let p of this.settings.inFilePatterns) {
       let m = p.exec(formattedFileName);
       if (m) {
-        formattedFileName = this.colorize(formattedFileName, m.index, m.index + m[0].length);
+        formattedFileName = this.colorize(formattedFileName, m.index, m.index + m[0].length, this.settings.fileColor);
         break;
       }
     }
     if (this.settings.inExtensions.length > 0) {
       let idx = formattedFileName.lastIndexOf('.');
       if (idx > 0 && idx < formattedFileName.length - 1) {
-        formattedFileName = this.colorize(formattedFileName, idx + 1, formattedFileName.length);
+        formattedFileName = this.colorize(formattedFileName, idx + 1, formattedFileName.length, this.settings.extColor);
       }
     }
     return formattedFileName;
@@ -83,7 +84,7 @@ class FileResultFormatter {
   }
 
   formatFileResult(result) {
-    let parent = this.formatPath(result.path);
+    let parent = this.formatDirPath(result.path);
     let fileName = this.formatFileName(result.fileName);
     return path.join(parent, fileName);
   }

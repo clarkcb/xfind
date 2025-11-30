@@ -15,8 +15,6 @@ const {nameToSortBy} = require("./sortby");
 
 class FindOptions {
     constructor() {
-        // path is separate because it is not included as an option in findoptions.json
-        this.argNameMap = {'path' : 'path'};
         this.boolActionMap = {
             'archivesonly':
               (b, settings) => { settings.archivesOnly = b; },
@@ -120,8 +118,12 @@ class FindOptions {
             if (Object.prototype.hasOwnProperty.call(obj, 'findoptions') && Array.isArray(obj.findoptions)) {
                 obj.findoptions.forEach(fo => {
                     let longArg = fo.long;
+                    let shortArg = '';
+                    if (Object.prototype.hasOwnProperty.call(fo, 'short')) {
+                        shortArg = fo.short;
+                    }
+                    let desc = fo.desc;
                     let argType = ArgTokenType.Unknown;
-                    this.argNameMap[longArg] = longArg;
                     if (this.boolActionMap[longArg]) {
                         argType = ArgTokenType.Bool;
                     } else if (this.stringActionMap[longArg]) {
@@ -129,24 +131,11 @@ class FindOptions {
                     } else if (this.intActionMap[longArg]) {
                         argType = ArgTokenType.Int;
                     }
-                    let shortArg = '';
-                    if (Object.prototype.hasOwnProperty.call(fo, 'short')) {
-                        shortArg = fo.short;
-                        this.argNameMap[shortArg] = longArg;
-                    }
-                    let desc = fo.desc;
                     this.options.push(new FindOption(shortArg, longArg, desc, argType));
                 });
             } else throw new FindError(`Invalid findoptions file: ${config.FIND_OPTIONS_JSON_PATH}`);
-            this.options.sort(this.optCmp);
             this.argTokenizer = new ArgTokenizer(this.options);
         })();
-    }
-
-    optCmp(o1, o2) {
-        const a = o1.sortArg;
-        const b = o2.sortArg;
-        return a.localeCompare(b);
     }
 
     updateSettingsFromArgTokens(settings, argTokens) {
@@ -220,12 +209,19 @@ class FindOptions {
         cb(err, settings);
     }
 
+    optCmp(o1, o2) {
+        const a = o1.sortArg;
+        const b = o2.sortArg;
+        return a.localeCompare(b);
+    }
+
     getUsageString() {
         let usage = 'Usage:\n jsfind [options] <path> [<path> ...]\n\n';
         usage += 'Options:\n';
         let optStrings = [];
         let optDescs = [];
         let longest = 0;
+        this.options.sort(this.optCmp);
         this.options.forEach(opt => {
             let optString = ' ';
             if (opt.shortArg)

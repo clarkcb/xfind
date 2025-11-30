@@ -5,13 +5,17 @@
  */
 
 const {FileTypes} = require('./filetypes');
-const {SortBy, sortByToName} = require("./sortby");
+const {SortBy} = require("./sortby");
 const StringUtil = require('./stringutil');
+const { Color } = require('./color')
 
 class FindSettings {
     _archivesOnly = false;
     colorize = true;
     _debug = false;
+    dirColor = Color.CYAN;
+    extColor = Color.YELLOW;
+    fileColor = Color.MAGENTA;
     followSymlinks = false;
     inArchiveExtensions = [];
     inArchiveFilePatterns = [];
@@ -190,7 +194,7 @@ class FindSettings {
           ', printUsage=' + this.printUsage +
           ', printVersion=' + this.printVersion +
           ', recursive=' + this.recursive +
-          ', sortBy=' + sortByToName(this.sortBy) +
+          ', sortBy=' + this.sortBy +
           ', sortCaseInsensitive=' + this.sortCaseInsensitive +
           ', sortDescending=' + this.sortDescending +
           ', verbose=' + this.verbose +

@@ -5,16 +5,13 @@
  *
  */
 
-const SortBy = {
-    FILEPATH: 1,
-    FILENAME: 2,
-    FILESIZE: 3,
-    FILETYPE: 4,
-    LASTMOD: 5
-};
-Object.freeze(SortBy);
-
-// exports.SortBy = SortBy;
+const SortBy = Object.freeze({
+    FILEPATH: 'filepath',
+    FILENAME: 'filename',
+    FILESIZE: 'filesize',
+    FILETYPE: 'filetype',
+    LASTMOD: 'lastmod'
+});
 
 const nameToSortBy = name => {
     switch (name.toLowerCase()) {
@@ -34,19 +31,4 @@ const nameToSortBy = name => {
     }
 };
 
-const sortByToName = (sortBy) => {
-    switch (sortBy) {
-        case SortBy.FILENAME:
-            return 'filename';
-        case SortBy.FILESIZE:
-            return 'filesize';
-        case SortBy.FILETYPE:
-            return 'filetype';
-        case SortBy.LASTMOD:
-            return 'lastmod';
-        default:
-            return 'filepath';
-    }
-};
-
-module.exports = {SortBy, nameToSortBy, sortByToName};
+module.exports = {SortBy, nameToSortBy};

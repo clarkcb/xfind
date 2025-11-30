@@ -6,7 +6,7 @@
 
 'use strict'
 
-const ConsoleColor = {
+const ConsoleColor = Object.freeze({
   RESET: '\u001b[0m',
   BLACK: '\u001b[0;30m',
   RED: '\u001b[0;31m',
@@ -25,5 +25,6 @@ const ConsoleColor = {
   BOLD_MAGENTA: '\u001b[1;35m',
   BOLD_CYAN: '\u001b[1;36m',
   BOLD_WHITE: '\u001b[1;37m',
-}
+});
+
 exports.ConsoleColor = ConsoleColor;
