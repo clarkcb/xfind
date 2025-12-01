@@ -5,7 +5,7 @@ if (-not (Test-Path Env:XFIND_PATH))
     $env:XFIND_PATH = Join-Path $HOME 'src' 'xfind'
 }
 
-$scalaVersion = '3.7.3'
+$scalaVersion = '3.7.4'
 $scalaFindJarPath = Join-Path $env:XFIND_PATH 'scala' 'scalafind' 'target' "scala-$scalaVersion"
 $scalaFindVersion = '0.1.0'
 $scalaFindJarName = "scalafind-assembly-$scalaFindVersion.jar"

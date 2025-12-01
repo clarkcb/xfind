@@ -635,9 +635,9 @@ clean_linux () {
 
     # clean_mlfind
 
-    clean_plfind
-
     clean_phpfind
+
+    clean_plfind
 
     clean_pyfind
 

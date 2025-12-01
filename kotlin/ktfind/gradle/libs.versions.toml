@@ -2,7 +2,7 @@
 # https://docs.gradle.org/current/userguide/platforms.html#sub::toml-dependencies-format
 
 [versions]
-kotlin-gradle-plugin = "2.2.20"
+kotlin-gradle-plugin = "2.2.21"
 kotlinx-coroutines-core = "1.10.2"
 org-json = "20250517"
 junit-jupiter = "6.0.1"

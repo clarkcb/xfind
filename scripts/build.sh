@@ -1711,7 +1711,7 @@ build_scalafind () {
 
     # scala --version output looks like this:
     # Scala code runner version: 1.4.3
-    # Scala version (default): 3.5.2
+    # Scala version (default): 3.7.4
     SCALA_VERSION=$(scala -version 2>&1 | tail -n 1 | cut -d ' ' -f 4)
     log "scala version: $SCALA_VERSION"
 
@@ -1764,6 +1764,19 @@ build_scalafind () {
         FAILED_BUILDS+=("scalafind")
         cd -
         return
+    fi
+
+    # copy the jar to xsearch if found
+    if [ -n "$XSEARCH_PATH" -a -d "$XSEARCH_PATH/scala/scalasearch/lib" ]
+    then
+        SCALAFIND_JAR=$(find "$SCALAFIND_PATH/target/scala-$SCALA_VERSION/" -name "scalafind_3-"*.jar | head -n 1)
+        if [ -n "$SCALAFIND_JAR" -a -f "$SCALAFIND_JAR" ]
+        then
+            log "Copying $SCALAFIND_JAR to $XSEARCH_PATH/scala/scalasearch/lib/"
+            cp "$SCALAFIND_JAR" "$XSEARCH_PATH/scala/scalasearch/lib/"
+        else
+            log_error "Unable to find built scalafind jar to copy to xsearch"
+        fi
     fi
 
     # add to bin

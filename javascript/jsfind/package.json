@@ -40,7 +40,7 @@
     "@babel/core": "^7.28.5",
     "@babel/eslint-parser": "^7.28.5",
     "@babel/plugin-transform-class-properties": "^7.27.1",
-    "@eslint/config-array": "^0.21.1",
+    "@eslint/config-array": "^0.23.0",
     "@eslint/object-schema": "^2.1.7",
     "babel-preset-minify": "^0.5.2",
     "eslint": "^8.57.1",

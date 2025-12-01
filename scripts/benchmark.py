@@ -393,7 +393,7 @@ class Benchmarker(object):
             self.scenario_names = []
         self.shell = os.environ.get('SHELL', '/bin/bash')
         self.git_info = get_git_info()
-        # read from scenarios file
+        # read from scenarios files
         if self.scenarios_files and all([os.path.isfile(f) for f in self.scenarios_files]):
             for f in self.scenarios_files:
                 self.load_scenarios_file(f)
@@ -746,6 +746,7 @@ class Benchmarker(object):
             # output = '\n'.join(output_lines)
             # Temporary: sort output lines to reduce mismatches
             # output = '\n'.join(sorted(output_lines))
+
             # Clean up error_lines
             if error_lines:
                 new_output_lines = []
@@ -785,6 +786,7 @@ class Benchmarker(object):
                         i += 1
                 output_lines = new_output_lines + output_lines
                 error_lines = new_error_lines
+
             if s.replace_xfind_name:
                 output = '\n'.join(output_lines)
                 output = xfind_name_regex.sub('xfind', output)
