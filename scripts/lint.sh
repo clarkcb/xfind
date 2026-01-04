@@ -3,7 +3,7 @@
 #
 # lint.sh
 #
-# Run static code analysis tools
+# Run static code analysis tools on xfind language versions
 #
 ################################################################################
 
@@ -12,12 +12,13 @@
 ########################################
 
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-source "$DIR/config.sh"
-source "$DIR/common.sh"
+
+# Load the generic lint functions
+source "$DIR/lint_functions.sh"
 
 
 ########################################
-# Utility Functions
+# Common Functions
 ########################################
 
 usage () {
@@ -30,505 +31,331 @@ usage () {
 # Lint Functions
 ########################################
 
-lint_bash () {
+lint_xfind_version () {
+    local lang_name="$1"
+    local version_name="$2"
+
+    function_name="lint_${lang_name}_version"
+    # log "function_name: $function_name"
+
+    if [[ "$(type -t $function_name)" == "function" ]]
+    then
+        "$function_name" "$XFIND_PATH" "$version_name"
+    else
+        log_error "lint function not found: $function_name"
+        LINT_LASTEXITCODE=1
+    fi
+
+    # log "LINT_LASTEXITCODE: $LINT_LASTEXITCODE"
+    if [ "$LINT_LASTEXITCODE" -eq 0 ]
+    then
+        log "$version_name lint succeeded"
+        SUCCESSFUL_LINTS+=($version_name)
+    else
+        log_error "$version_name lint failed"
+        FAILED_LINTS+=($version_name)
+    fi
+}
+
+lint_bashfind () {
     echo
-    hdr "lint_bash"
+    hdr "lint_bashfind"
 
     log "not implemented at this time"
 }
 
-lint_c () {
+lint_cfind () {
     echo
-    hdr "lint_c"
+    hdr "lint_cfind"
 
     log "not implemented at this time"
 }
 
-lint_clojure () {
+lint_cljfind () {
     echo
-    hdr "lint_clojure"
+    hdr "lint_cljfind"
 
-    if [ -n "$(which clj)" ]
-    then
-        # clj -version output looks like this: Clojure CLI version 1.11.4.1474
-        # CLOJURE_VERSION=$(clj -version | head -n 1 | cut -d ' ' -f 3)
-        CLOJURE_VERSION=$(clj -version 2>&1)
-        log "clojure version: $CLOJURE_VERSION"
-    fi
-
-    # ensure lein is installed
-    if [ -z "$(which lein)" ]
-    then
-        echo "You need to install lein"
-        return
-    fi
-
-    # lein version output looks like this: Leiningen 2.9.7 on Java 11.0.24 OpenJDK 64-Bit Server VM
-    LEIN_VERSION=$(lein version)
-    log "lein version: $LEIN_VERSION"
-
-    cd "$CLJFIND_PATH"
-
-    log "Linting cljfind"
-    log "lein eastwood"
-    lein eastwood
-
-    cd -
+    lint_xfind_version "clojure" "cljfind"
 }
 
-lint_cpp () {
+lint_cppfind () {
     echo
-    hdr "lint_cpp"
+    hdr "lint_cppfind"
 
     log "not implemented at this time"
 }
 
-lint_csharp () {
+lint_csfind () {
     echo
-    hdr "lint_csharp"
+    hdr "lint_csfind"
 
     log "not implemented at this time"
 }
 
-lint_dart () {
+lint_dartfind () {
     echo
-    hdr "lint_dart"
+    hdr "lint_dartfind"
 
-    # ensure dart is installed
-    if [ -z "$(which dart)" ]
-    then
-        log_error "You need to install dart"
-        return
-    fi
-
-    DART_VERSION=$(dart --version)
-    log "$DART_VERSION"
-
-    log "Linting dartfind"
-    log "dart analyze $DARTFIND_PATH"
-    dart analyze "$DARTFIND_PATH"
+    lint_xfind_version "dart" "dartfind"
 }
 
-lint_elixir () {
+lint_exfind () {
     echo
-    hdr "lint_elixir"
+    hdr "lint_exfind"
 
-    # ensure elixir is installed
-    if [ -z "$(which elixir)" ]
-    then
-        log_error "You need to install elixir"
-        return
-    fi
-
-    ELIXIR_VERSION=$(elixir --version | grep Elixir)
-    log "elixir version: $ELIXIR_VERSION"
-
-    # ensure mix is installed
-    if [ -z "$(which mix)" ]
-    then
-        log_error "You need to install mix"
-        return
-    fi
-
-    MIX_VERSION=$(mix --version | grep Mix)
-    log "mix version: $MIX_VERSION"
-
-    log "Linting exfind"
-    log "mix credo $EXFIND_PATH"
-    mix credo "$EXFIND_PATH"
+    lint_xfind_version "elixir" "exfind"
 }
 
-lint_fsharp () {
+lint_fsfind () {
     echo
-    hdr "lint_fsharp"
+    hdr "lint_fsfind"
 
     log "not implemented at this time"
 }
 
-lint_go () {
+lint_gofind () {
     echo
-    hdr "lint_go"
+    hdr "lint_gofind"
 
-    # ensure go is installed
-    if [ -z "$(which go)" ]
-    then
-        echo "You need to install go"
-        return
-    fi
-
-    GO_VERSION=$(go version | sed 's/go version //')
-    # GO_VERSION=$(go version | head -n 1 | cut -d ' ' -f 3)
-    log "go version: $GO_VERSION"
-
-    cd "$GOFIND_PATH"
-
-    log "Linting gofind"
-    log "go vet ./..."
-    go vet ./...
-
-    cd -
+    lint_xfind_version "go" "gofind"
 }
 
-lint_groovy () {
+lint_groovyfind () {
     echo
-    hdr "lint_groovy"
+    hdr "lint_groovyfind"
 
-    GROOVYLINT="npm-groovy-lint"
-
-    if [ -z "$(which $GROOVYLINT)" ]
-    then
-        log_error "You need to install $GROOVYLINT"
-        return
-    fi
-
-    GROOVYFIND_APP_PATH="$GROOVYFIND_PATH/app/src/main/groovy/groovyfind/app"
-    GROOVYFIND_LIB_PATH="$GROOVYFIND_PATH/lib/src/main/groovy/groovyfind"
-
-    log "Linting groovyfind"
-    log "$GROOVYLINT $GROOVYFIND_APP_PATH $GROOVYFIND_LIB_PATH"
-    "$GROOVYLINT" "$GROOVYFIND_APP_PATH" "$GROOVYFIND_LIB_PATH"
+    lint_xfind_version "groovy" "groovyfind"
 }
 
-lint_haskell () {
+lint_hsfind () {
     echo
-    hdr "lint_haskell"
+    hdr "lint_hsfind"
 
-    HLINT="$HOME/.local/bin/hlint"
-
-    if [ ! -f "$HLINT" ]
-    then
-        log_error "You need to install hlint"
-        return
-    fi
-
-    log "Linting hsfind"
-    log "hlint $HSFIND_PATH"
-    "$HLINT" "$HSFIND_PATH"
+    lint_xfind_version "haskell" "hsfind"
 }
 
-lint_java () {
+lint_javafind () {
     echo
-    hdr "lint_java"
+    hdr "lint_javafind"
 
-    TOOLS_PATH="$JAVA_PATH/tools"
-    if [ ! -d "$TOOLS_PATH" ]
-    then
-        log "mkdir -p $TOOLS_PATH"
-        mkdir -p "$TOOLS_PATH"
-    fi
-
-    CHECKSTYLE_VERSION="8.41"
-    # CHECKSTYLE_VERSION="10.17.0"
-    CHECKSTYLE_JAR=$(find "$TOOLS_PATH" -name "checkstyle*.jar" | grep $CHECKSTYLE_VERSION | head -n 1)
-    if [ -z "$CHECKSTYLE_JAR" ]
-    then
-        log "Checkstyle jar not found, downloading"
-        # https://github.com/checkstyle/checkstyle/releases/download/checkstyle-10.17.0/checkstyle-10.17.0-all.jar
-        URL="https://github.com/checkstyle/checkstyle/releases/download/checkstyle-$CHECKSTYLE_VERSION/checkstyle-$CHECKSTYLE_VERSION-all.jar"
-        cd "$TOOLS_PATH"
-        log "curl -J -L -O $URL"
-        curl -J -L -O "$URL"
-        cd -
-        CHECKSTYLE_JAR=$(find "$TOOLS_PATH" -name "checkstyle*.jar" | grep $CHECKSTYLE_VERSION | head -n 1)
-    fi
-
-    log "CHECKSTYLE_JAR: $CHECKSTYLE_JAR"
-
-    JAVA="$JAVA_HOME/bin/java"
-    # CONFIG=$JAVAFIND_PATH/sun_checks.xml
-    CONFIG="$JAVAFIND_PATH/google_checks.xml"
-
-    GREPVS=("Javadoc"
-            "hides a field"
-            "Line is longer than 80 characters"
-            "Missing a Javadoc comment"
-            "Missing package-info.java file"
-            )
-
-    log "Linting javafind"
-    FILES=$(find "$JAVAFIND_PATH/src" -name "*.java")
-    for f in ${FILES[*]}
-    do
-        echo
-        log "$JAVA -jar $CHECKSTYLE_JAR -c $CONFIG $f"
-        output=$("$JAVA" -jar "$CHECKSTYLE_JAR" -c "$CONFIG" "$f")
-        # for g in ${GREPVS[*]}
-        # do
-        #     output=$(echo $output | grep -v $g)
-        # done
-        echo -e "$output"
-    done
+    lint_xfind_version "java" "javafind"
 }
 
-lint_javascript () {
+lint_jsfind () {
     echo
-    hdr "lint_javascript"
+    hdr "lint_jsfind"
 
-    JSSRC_PATH="$JSFIND_PATH/src"
-    JSHINT="$JSFIND_PATH/node_modules/jshint/bin/jshint"
-
-    if [ ! -f "$JSHINT" ]
-    then
-        cd "$JSFIND_PATH"
-        npm install jshint
-        cd -
-    fi
-
-    log "Linting jsfind"
-    FILES=$(find "$JSSRC_PATH" -name "*.js")
-    for f in ${FILES[*]}
-    do
-        log "$JSHINT $f"
-        "$JSHINT" "$f"
-    done
+    lint_xfind_version "javascript" "jsfind"
 }
 
-lint_kotlin () {
+lint_ktfind () {
     echo
-    hdr "lint_kotlin"
+    hdr "lint_ktfind"
 
-    if [ -z "$(which ktlint)" ]
-    then
-        echo "You need to install ktlint"
-        return
-    fi
-
-    log "Linting ktfind"
-    cd "$KTFIND_PATH"
-    log "ktlint"
-    ktlint
-    cd -
+    lint_xfind_version "kotlin" "ktfind"
 }
 
-lint_objc () {
+lint_mlfind () {
     echo
-    hdr "lint_objc"
+    hdr "lint_mlfind"
+
+    # TODO: probably want to delete the _build directory
+}
+
+lint_objcfind () {
+    echo
+    hdr "lint_objcfind"
 
     log "not implemented at this time"
 }
 
-lint_ocaml () {
+lint_phpfind () {
     echo
-    hdr "lint_ocaml"
+    hdr "lint_phpfind"
+
+    lint_xfind_version "php" "phpfind"
+}
+
+lint_plfind () {
+    echo
+    hdr "lint_plfind"
 
     log "not implemented at this time"
 }
 
-lint_perl () {
+lint_ps1find () {
     echo
-    hdr "lint_perl"
+    hdr "lint_ps1find"
+    log "Nothing to do for powershell"
+    # TODO: do we want to uninstall?
+}
+
+lint_pyfind () {
+    echo
+    hdr "lint_pyfind"
+
+    lint_xfind_version "python" "pyfind"
+}
+
+lint_rbfind () {
+    echo
+    hdr "lint_rbfind"
+
+    lint_xfind_version "ruby" "rbfind"
+}
+
+lint_rsfind () {
+    echo
+    hdr "lint_rsfind"
 
     log "not implemented at this time"
 }
 
-lint_php () {
+lint_scalafind () {
     echo
-    hdr "lint_php"
+    hdr "lint_scalafind"
 
-    cd "$PHPFIND_PATH"
-
-    if [ ! -f "vendor/bin/phpstan" ]
-    then
-        echo "You need to install phpstan"
-        return
-    fi
-
-    log "Linting phpfind"
-
-    log "vendor/bin/phpstan analyse -l 9 src tests"
-    vendor/bin/phpstan analyse -l 9 src tests
-
-    cd -
+    lint_xfind_version "scala" "scalafind"
 }
 
-lint_powershell () {
+lint_swiftfind () {
     echo
-    hdr "lint_powershell"
+    hdr "lint_swiftfind"
 
-    cd "$PS1FIND_PATH"
-
-    # This is always going to fail because this is a Cmdlet and only available in Powershell,
-    # adding here as a reminder for when I create lint.ps1
-    if [ ! -f "invoke-scriptanalyzer" ]
-    then
-        echo "You need to install PSScriptAnalyzer"
-        echo "(NOTE: only available in Powershell)"
-        return
-    fi
-
-    log "Linting ps1find"
-
-    log "Invoke-ScriptAnalyzer -Path ."
-    Invoke-ScriptAnalyzer -Path .
-
-    cd -
+    lint_xfind_version "swift" "swiftfind"
 }
 
-lint_python () {
+lint_tsfind () {
     echo
-    hdr "lint_python"
-
-    LINTER="ruff"
-    LINT_CMD="ruff check"
-
-    if [ -z "$(which $LINTER)" ]
-    then
-        echo "Linter ruff not found, trying pylint"
-        LINTER="pylint"
-        LINT_CMD="pylint"
-
-        if [ -z "$(which $LINTER)" ]
-        then
-            echo "You need to install ruff or pylint"
-            return
-        fi
-    fi
-
-
-    log "Linting pyfind"
-    cd "$PYFIND_PATH"
-    log "$LINT_CMD pyfind"
-    $LINT_CMD pyfind
-    cd -
-}
-
-lint_ruby () {
-    echo
-    hdr "lint_ruby"
-
-    if [ -z "$(which ruby-lint)" ]
-    then
-        echo "You need to install ruby-lint"
-        return
-    fi
-
-    log "Linting rbfind"
-    FILES=$(find "$RBFIND_PATH" -name "*.rb")
-    for f in ${FILES[*]}
-    do
-        log "ruby-lint $f"
-        ruby-lint "$f" | grep -v 'undefined'
-    done
-}
-
-lint_rust () {
-    echo
-    hdr "lint_rust"
+    hdr "lint_tsfind"
 
     log "not implemented at this time"
 }
 
-lint_scala () {
-    echo
-    hdr "lint_scala"
+lint_linux () {
+    hdr "lint_linux"
 
-    # TOOLS_PATH=$SCALAFIND_PATH/tools
-    # if [ ! -d "$TOOLS_PATH" ]
-    # then
-    #     log "mkdir -p $TOOLS_PATH"
-    #     mkdir -p "$TOOLS_PATH"
-    # fi
+    lint_bashfind
 
-    # SCALASTYLE_JAR=$(find "$TOOLS_PATH" -name "scalastyle*.jar" | head -n 1)
-    # if [ -z "$SCALASTYLE_JAR" ]
-    # then
-    #     log "Scalastyle jar not found, downloading"
-    #     # TODO: is it the batch jar or the regular jar that should be used?
-    #     # URL="https://repo1.maven.org/maven2/org/scalastyle/scalastyle_2.12/1.0.0/scalastyle_2.12-1.0.0-batch.jar"
-    #     URL="https://repo1.maven.org/maven2/org/scalastyle/scalastyle_2.12/1.0.0/scalastyle_2.12-1.0.0.jar"
-    #     cd "$TOOLS_PATH"
-    #     curl -O "$URL"
-    #     cd -
-    #     SCALASTYLE_JAR=$(find "$TOOLS_PATH" -name "scalastyle*.jar" | head -n 1)
-    # fi
+    lint_cfind
 
-    # CONFIG="$SCALAFIND_PATH/scalastyle_config.xml"
+    # lint_cljfind
 
-    # log "Linting scalafind"
-    # log "java -jar $SCALASTYLE_JAR --config $CONFIG $SCALAFIND_PATH/src/main/scala"
-    # java -jar "$SCALASTYLE_JAR" --config "$CONFIG" "$SCALAFIND_PATH/src/main/scala"
+    # lint_cppfind
 
-    log "not implemented at this time (scalastyle not available for scala 3.x)"
-}
+    lint_csfind
 
-lint_swift () {
-    echo
-    hdr "lint_swift"
+    # lint_dartfind
 
-    if [ -z "$(which swiftlint)" ]
-    then
-        echo "You need to install swiftlint"
-        return
-    fi
+    lint_exfind
 
-    log "Linting swiftfind Sources"
-    log "cd $SWIFTFIND_PATH/Sources; swiftlint; cd -"
-    cd "$SWIFTFIND_PATH/Sources"; swiftlint; cd -
+    lint_fsfind
 
-    log "Linting swiftfind Tests"
-    log "cd $SWIFTFIND_PATH/Tests; swiftlint; cd -"
-    cd "$SWIFTFIND_PATH/Tests"; swiftlint; cd -
-}
+    lint_gofind
 
-lint_typescript () {
-    echo
-    hdr "lint_typescript"
+    lint_groovyfind
 
-    log "Not supported at this time"
+    # lint_hsfind
+
+    lint_javafind
+
+    lint_jsfind
+
+    lint_ktfind
+
+    # lint_objcfind
+
+    # lint_mlfind
+
+    lint_phpfind
+
+    lint_plfind
+
+    lint_pyfind
+
+    lint_rbfind
+
+    lint_rsfind
+
+    # lint_scalafind
+
+    lint_swiftfind
+
+    lint_tsfind
 }
 
 lint_all () {
-    log "lint_all"
+    hdr "lint_all"
 
-    lint_bash
+    lint_bashfind
 
-    lint_c
+    lint_cfind
 
-    lint_clojure
+    lint_cljfind
 
-    lint_cpp
+    lint_cppfind
 
-    lint_csharp
+    lint_csfind
 
-    lint_dart
+    lint_dartfind
 
-    lint_fsharp
+    lint_exfind
 
-    lint_go
+    lint_fsfind
 
-    lint_haskell
+    lint_gofind
 
-    lint_java
+    lint_groovyfind
 
-    lint_javascript
+    lint_hsfind
 
-    lint_kotlin
+    lint_javafind
 
-    lint_objc
+    lint_jsfind
 
-    lint_ocaml
+    lint_ktfind
 
-    lint_perl
+    lint_objcfind
 
-    lint_php
+    # lint_mlfind
 
-    lint_python
+    lint_plfind
 
-    lint_ruby
+    lint_phpfind
 
-    lint_rust
+    lint_ps1find
 
-    lint_scala
+    lint_pyfind
 
-    lint_swift
+    lint_rbfind
 
-    lint_typescript
+    lint_rsfind
+
+    lint_scalafind
+
+    lint_swiftfind
+
+    lint_tsfind
 }
 
 
 ########################################
 # Lint Main
 ########################################
+echo
+hdr "xfind lint script"
+log "user: $USER"
+log "host: $HOSTNAME"
+log "os: $(uname -o)"
+
+# Get the current git branch and commit
+# GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+GIT_BRANCH=$(git branch --show-current)
+GIT_COMMIT=$(git rev-parse --short HEAD)
+log "git branch: '$GIT_BRANCH' ($GIT_COMMIT)"
+
+log "args: $*"
+
 HELP=
 LINT_ALL=
 TARGET_LANGS=()
@@ -557,7 +384,10 @@ done
 # log the settings
 log "HELP: $HELP"
 log "LINT_ALL: $LINT_ALL"
-log "TARGET_LANGS: ${TARGET_LANGS[*]}"
+if [ ${#TARGET_LANGS[@]} -gt 0 ]
+then
+    log "TARGET_LANGS (${#TARGET_LANGS[@]}): ${TARGET_LANGS[*]}"
+fi
 
 if [ -n "$HELP" ]
 then
@@ -567,6 +397,7 @@ fi
 if [ -n "$LINT_ALL" ]
 then
     lint_all
+    print_lint_results
     exit
 fi
 
@@ -578,83 +409,88 @@ fi
 for TARGET_LANG in ${TARGET_LANGS[*]}
 do
     case $TARGET_LANG in
+        linux)
+            lint_linux
+            ;;
         bash)
-            lint_bash
+            lint_bashfind
             ;;
         c)
-            lint_c
+            lint_cfind
             ;;
         clj | clojure)
-            lint_clojure
+            lint_cljfind
             ;;
         cpp)
-            lint_cpp
+            lint_cppfind
             ;;
         cs | csharp)
-            lint_csharp
+            lint_csfind
             ;;
         dart)
-            lint_dart
+            lint_dartfind
             ;;
         elixir | ex)
-            lint_elixir
+            lint_exfind
             ;;
         fs | fsharp)
-            lint_fsharp
+            lint_fsfind
             ;;
         go)
-            lint_go
+            lint_gofind
             ;;
         groovy)
-            lint_groovy
+            lint_groovyfind
             ;;
         haskell | hs)
-            lint_haskell
+            lint_hsfind
             ;;
         java)
-            lint_java
+            lint_javafind
             ;;
         javascript | js)
-            lint_javascript
+            lint_jsfind
             ;;
         kotlin | kt)
-            lint_kotlin
+            lint_ktfind
             ;;
         objc)
-            lint_objc
+            lint_objcfind
             ;;
         # ocaml | ml)
-        #     lint_ocaml
+        #     lint_mlfind
         #     ;;
         perl | pl)
-            lint_perl
+            lint_plfind
             ;;
         php)
-            lint_php
+            lint_phpfind
             ;;
         ps1 | powershell)
-            lint_powershell
+            lint_ps1find
             ;;
         py | python)
-            lint_python
+            lint_pyfind
             ;;
         rb | ruby)
-            lint_ruby
+            lint_rbfind
             ;;
         rs | rust)
-            lint_rust
+            lint_rsfind
             ;;
         scala)
-            lint_scala
+            lint_scalafind
             ;;
         swift)
-            lint_swift
+            lint_swiftfind
             ;;
         ts | typescript)
-            lint_typescript
+            lint_tsfind
             ;;
         *)
             log_error "ERROR: unknown/unsupported language: $TARGET_LANG"
             ;;
     esac
 done
+
+print_lint_results

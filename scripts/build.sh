@@ -3,7 +3,7 @@
 #
 # build.sh
 #
-# Builds specified language version of xfind, or all versions
+# Build xfind language versions
 #
 ################################################################################
 
@@ -12,15 +12,13 @@
 ########################################
 
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-source "$DIR/config.sh"
-source "$DIR/common.sh"
 
-# Add failed builds to this array and report failed builds at the end
-FAILED_BUILDS=()
+# Load the generic build functions
+source "$DIR/build_functions.sh"
 
 
 ########################################
-# Utility Functions
+# Common Functions
 ########################################
 
 usage () {
@@ -28,1888 +26,210 @@ usage () {
     exit
 }
 
-# copy_config_json_resources
-copy_config_json_resources () {
-    local resources_path="$1"
-    log "cp $XFIND_SHARED_PATH/config.json $resources_path/"
-    cp "$XFIND_SHARED_PATH/config.json" "$resources_path/"
-}
-
-# copy_filetypes_json_resources
-copy_filetypes_json_resources () {
-    local resources_path="$1"
-    log "cp $XFIND_SHARED_PATH/filetypes.json $resources_path/"
-    cp "$XFIND_SHARED_PATH/filetypes.json" "$resources_path/"
-}
-
-# copy_findoptions_json_resources
-copy_findoptions_json_resources () {
-    local resources_path="$1"
-    log "cp $XFIND_SHARED_PATH/findoptions.json $resources_path/"
-    cp "$XFIND_SHARED_PATH/findoptions.json" "$resources_path/"
-}
-
-# copy_json_resources
-copy_json_resources () {
-    local resources_path="$1"
-    copy_config_json_resources "$resources_path"
-    copy_filetypes_json_resources "$resources_path"
-    copy_findoptions_json_resources "$resources_path"
-}
-
-# copy_test_resources
-copy_test_resources () {
-    local test_resources_path="$1"
-    log "cp $XFIND_TEST_FILE_PATH/testFile*.txt $test_resources_path/"
-    cp "$XFIND_TEST_FILE_PATH"/testFile*.txt "$test_resources_path/"
-}
-
-# add_to_bin
-add_to_bin () {
-    local script_path="$1"
-    local script_name=$(basename "$1")
-    if [ ! -d "$XFIND_BIN_PATH" ]
-    then
-        log "Creating bin path"
-        log "mkdir -p $XFIND_BIN_PATH"
-        mkdir -p "$XFIND_BIN_PATH"
-    fi
-
-    cd "$XFIND_BIN_PATH"
-
-    if [[ $script_name == *.sh || $script_name == *.bash || $script_name == *.ps1 ]]
-    then
-        script_name=${script_name%%.*}
-    fi
-
-    # echo "script_name: $script_name"
-    # if [ -L "$script_name" ]
-    # then
-    #     log "rm $script_name"
-    #     rm "$script_name"
-    # fi
-
-    log "ln -sf $script_path $script_name"
-    ln -sf "$script_path" "$script_name"
-
-    cd -
-}
-
-print_failed_builds () {
-    if [ ${#FAILED_BUILDS[@]} -gt 0 ]
-    then
-        log_error "Failed builds: ${FAILED_BUILDS[*]}"
-    else
-        log "All builds succeeded"
-    fi
-}
 
 ########################################
 # Build Functions
 ########################################
 
+build_xfind_version () {
+    local lang_name="$1"
+    local version_name="$2"
+
+    function_name="build_${lang_name}_version"
+    # log "function_name: $function_name"
+
+    if [[ "$(type -t $function_name)" == "function" ]]
+    then
+        "$function_name" "$XFIND_PATH" "$version_name"
+    else
+        log_error "build function not found: $function_name"
+        BUILD_LASTEXITCODE=1
+    fi
+
+    # log "BUILD_LASTEXITCODE: $BUILD_LASTEXITCODE"
+    if [ "$BUILD_LASTEXITCODE" -eq 0 ]
+    then
+        log "$version_name build succeeded"
+        SUCCESSFUL_BUILDS+=($version_name)
+    else
+        log_error "$version_name build failed"
+        FAILED_BUILDS+=($version_name)
+    fi
+}
+
 build_bashfind () {
     echo
     hdr "build_bashfind"
-    log "language: bash"
 
-    # ensure bash is installed
-    if [ -z "$(which bash)" ]
-    then
-        log_error "You need to install bash"
-        FAILED_BUILDS+=("bashfind")
-        return
-    fi
-
-    BASH_VERSION=$(bash --version | head -n 1)
-    log "bash version: $BASH_VERSION"
-
-    add_to_bin "$BASHFIND_PATH/bin/bashfind.bash"
+    build_xfind_version "bash" "bashfind"
 }
 
 build_cfind () {
     echo
     hdr "build_cfind"
-    log "language: C"
 
-    # ensure cmake is installed
-    if [ -z "$(which cmake)" ]
-    then
-        log_error "You need to install cmake"
-        FAILED_BUILDS+=("cfind")
-        return
-    fi
-
-    # cmake --version output looks like this: cmake version 3.30.2
-    CMAKE_VERSION=$(cmake --version | head -n 1 | cut -d ' ' -f 3)
-    log "cmake version: $CMAKE_VERSION"
-
-    cd "$CFIND_PATH"
-
-    if [ -n "$DEBUG" ] && [ -n "$RELEASE" ]
-    then
-        CONFIGURATIONS=(debug release)
-    elif [ -n "$DEBUG" ]
-    then
-        CONFIGURATIONS=(debug)
-    elif [ -n "$RELEASE" ]
-    then
-        CONFIGURATIONS=(release)
-    fi
-
-    for c in ${CONFIGURATIONS[*]}
-    do
-        CMAKE_BUILD_DIR="cmake-build-$c"
-        CMAKE_BUILD_PATH="$CFIND_PATH/$CMAKE_BUILD_DIR"
-        CMAKE_BUILD_TYPE="$c"
-
-        if [ ! -d "$CMAKE_BUILD_PATH" ]
-        then
-            log "mkdir -p $CMAKE_BUILD_PATH"
-            mkdir -p "$CMAKE_BUILD_PATH"
-
-            log "cd $CMAKE_BUILD_PATH"
-            cd "$CMAKE_BUILD_PATH"
-
-            log "cmake -G \"Unix Makefiles\" -DCMAKE_BUILD_TYPE=$c .."
-            cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=$c ..
-
-            # exec 5>&1
-            # log "make -f Makefile"
-            # OUTPUT=$(make -f Makefile | tee >(cat - >&5))
-            # I=$(echo "$OUTPUT" | grep "\[100%\] Built target ")
-            # make -f Makefile
-
-            cd -
-        fi
-
-        if [ -d "$CMAKE_BUILD_PATH" ]
-        then
-            TARGETS=(clean cfind cfindapp cfind-tests)
-            for t in ${TARGETS[*]}
-            do
-                log "cmake --build $CMAKE_BUILD_DIR --config $c --target $t"
-                cmake --build "$CMAKE_BUILD_DIR" --config "$c" --target "$t"
-
-                # check for success/failure
-                # [ "$?" -ne 0 ] && log "An error occurred while trying to run build target $t" >&2 && exit 1
-                if [ "$?" -eq 0 ]
-                then
-                    log "Build target $t succeeded"
-                else
-                    log_error "Build target $t failed"
-                    FAILED_BUILDS+=("cfind")
-                    return
-                fi
-            done
-
-            # now do the install
-            INSTALL_FILES=Y
-            if [ -n "$INSTALL_FILES" ]
-            then
-                log "Installing cfind files"
-                log "cmake --install $CMAKE_BUILD_DIR --config $c --prefix /usr/local"
-                cmake --install "$CMAKE_BUILD_DIR" --config "$c" --prefix /usr/local
-            fi
-        fi
-    done
-
-    if [ -n "$RELEASE" ]
-    then
-        # add release to bin
-        add_to_bin "$CFIND_PATH/bin/cfind.release.sh"
-    else
-        # add debug to bin
-        add_to_bin "$CFIND_PATH/bin/cfind.debug.sh"
-    fi
-
-    cd -
+    build_xfind_version "c" "cfind"
 }
 
 build_cljfind () {
     echo
     hdr "build_cljfind"
-    log "language: clojure"
 
-    # ensure clojure is installed
-    if [ -z "$(which clj)" ]
-    then
-        log_error "You need to install clojure"
-        FAILED_BUILDS+=("cljfind")
-        return
-    fi
-
-    # clj -version output looks like this: Clojure CLI version 1.11.4.1474
-    # CLOJURE_VERSION=$(clj -version | head -n 1 | cut -d ' ' -f 3)
-    CLOJURE_VERSION=$(clj -version 2>&1)
-    log "clojure version: $CLOJURE_VERSION"
-
-    # ensure leiningen is installed
-    if [ -z "$(which lein)" ]
-    then
-        log_error "You need to install leiningen"
-        FAILED_BUILDS+=("cljfind")
-        return
-    fi
-
-    # lein version output looks like this: Leiningen 2.9.7 on Java 11.0.24 OpenJDK 64-Bit Server VM
-    LEIN_VERSION=$(lein version)
-    log "lein version: $LEIN_VERSION"
-
-    # copy the shared json files to the local resource location
-    RESOURCES_PATH="$CLJFIND_PATH/resources"
-    mkdir -p "$RESOURCES_PATH"
-    copy_json_resources "$RESOURCES_PATH"
-
-    cd "$CLJFIND_PATH"
-
-    # Create uberjar with lein
-    log "Building cljfind"
-    log "lein clean"
-    lein clean
-
-    # install to local maven repository
-    log "lein install"
-    lein install
-
-    # create uberjar
-    log "lein uberjar"
-    lein uberjar
-
-    # check for success/failure
-    if [ "$?" -eq 0 ]
-    then
-        log "Build succeeded"
-    else
-        log_error "Build failed"
-        FAILED_BUILDS+=("cljfind")
-        cd -
-        return
-    fi
-
-    # add to bin
-    add_to_bin "$CLJFIND_PATH/bin/cljfind.sh"
-
-    cd -
+    build_xfind_version "clojure" "cljfind"
 }
 
 build_cppfind () {
     echo
     hdr "build_cppfind"
-    log "language: C++"
 
-    # ensure cmake is installed
-    if [ -z "$(which cmake)" ]
-    then
-        log_error "You need to install cmake"
-        FAILED_BUILDS+=("cppfind")
-        return
-    fi
-
-    # cmake --version output looks like this: cmake version 3.30.2
-    CMAKE_VERSION=$(cmake --version | head -n 1 | cut -d ' ' -f 3)
-    log "cmake version: $CMAKE_VERSION"
-
-    cd "$CPPFIND_PATH"
-
-    # CMAKE_CXX_FLAGS="-W -Wall -Werror"
-    CMAKE_CXX_FLAGS="-W -Wall -Werror -Wextra -Wshadow -Wnon-virtual-dtor -pedantic"
-
-    # Add AddressSanitizer
-    # CMAKE_CXX_FLAGS="$CMAKE_CXX_FLAGS -fsanitize=address -fno-omit-frame-pointer"
-
-    if [ -n "$DEBUG" ] && [ -n "$RELEASE" ]
-    then
-        CONFIGURATIONS=(debug release)
-    elif [ -n "$DEBUG" ]
-    then
-        CONFIGURATIONS=(debug)
-    elif [ -n "$RELEASE" ]
-    then
-        CONFIGURATIONS=(release)
-    fi
-
-    for c in ${CONFIGURATIONS[*]}
-    do
-        CMAKE_BUILD_DIR="cmake-build-$c"
-        CMAKE_BUILD_PATH="$CPPFIND_PATH/$CMAKE_BUILD_DIR"
-        CMAKE_BUILD_TYPE="$c"
-
-        if [ ! -d "$CMAKE_BUILD_PATH" ]
-        then
-            log "mkdir -p $CMAKE_BUILD_PATH"
-            mkdir -p "$CMAKE_BUILD_PATH"
-
-            log "cd $CMAKE_BUILD_PATH"
-            cd "$CMAKE_BUILD_PATH"
-
-            log "cmake -G \"Unix Makefiles\" -DCMAKE_BUILD_TYPE=$c .."
-            cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=$c ..
-
-            # exec 5>&1
-            # log "make -f Makefile"
-            # OUTPUT=$(make -f Makefile | tee >(cat - >&5))
-            # I=$(echo "$OUTPUT" | grep "\[100%\] Built target ")
-            # make -f Makefile
-
-            cd -
-        fi
-
-        if [ -d "$CMAKE_BUILD_PATH" ]
-        then
-            TARGETS=(clean cppfind cppfindapp cppfind-tests)
-            for t in ${TARGETS[*]}
-            do
-                log "cmake --build $CMAKE_BUILD_DIR --config $c --target $t -- $CMAKE_CXX_FLAGS"
-                cmake --build "$CMAKE_BUILD_DIR" --config "$c" --target "$t" -- "$CMAKE_CXX_FLAGS"
-
-                # check for success/failure
-                # [ "$?" -ne 0 ] && log "An error occurred while trying to run build target $t" >&2 && exit 1
-                if [ "$?" -eq 0 ]
-                then
-                    log "Build target $t succeeded"
-                else
-                    log_error "Build target $t failed"
-                    FAILED_BUILDS+=("cppfind")
-                    cd -
-                    return
-                fi
-            done
-
-            # now do the install
-            INSTALL_FILES=Y
-            if [ -n "$INSTALL_FILES" ]
-            then
-                log "Installing cppfind files"
-                log "cmake --install $CMAKE_BUILD_DIR --config $c --prefix /usr/local"
-                cmake --install "$CMAKE_BUILD_DIR" --config "$c" --prefix /usr/local
-            fi
-        fi
-    done
-
-    if [ -n "$RELEASE" ]
-    then
-        # add release to bin
-        add_to_bin "$CPPFIND_PATH/bin/cppfind.release.sh"
-    else
-        # add debug to bin
-        add_to_bin "$CPPFIND_PATH/bin/cppfind.debug.sh"
-    fi
-
-    cd -
+    build_xfind_version "cpp" "cppfind"
 }
 
 build_csfind () {
     echo
     hdr "build_csfind"
-    log "language: C#"
 
-    # ensure dotnet is installed
-    if [ -z "$(which dotnet)" ]
-    then
-        log_error "You need to install dotnet"
-        FAILED_BUILDS+=("csfind")
-        return
-    fi
-
-    DOTNET_VERSION=$(dotnet --version)
-    log "dotnet version: $DOTNET_VERSION"
-
-    RESOURCES_PATH="$CSFIND_PATH/CsFindLib/Resources"
-    TEST_RESOURCES_PATH="$CSFIND_PATH/CsFindTests/Resources"
-
-    # copy the shared json files to the local resource location
-    mkdir -p "$RESOURCES_PATH"
-    copy_json_resources "$RESOURCES_PATH"
-
-    # copy the shared test files to the local test resource location
-    mkdir -p "$TEST_RESOURCES_PATH"
-    copy_test_resources "$TEST_RESOURCES_PATH"
-
-    if [ -n "$DEBUG" ] && [ -n "$RELEASE" ]
-    then
-        CONFIGURATIONS=(Debug Release)
-    elif [ -n "$DEBUG" ]
-    then
-        CONFIGURATIONS=(Debug)
-    elif [ -n "$RELEASE" ]
-    then
-        CONFIGURATIONS=(Release)
-    fi
-
-    # run dotnet build for selected configurations
-    for c in ${CONFIGURATIONS[*]}
-    do
-        log "Building csfind for $c configuration"
-        log "dotnet build $CSFIND_PATH/CsFind.sln --configuration $c"
-        dotnet build "$CSFIND_PATH/CsFind.sln" --configuration "$c"
-
-        # check for success/failure
-        if [ "$?" -eq 0 ]
-        then
-            log "Build succeeded"
-        else
-            log_error "Build failed"
-            FAILED_BUILDS+=("csfind")
-            return
-        fi
-    done
-
-    if [ -n "$RELEASE" ]
-    then
-        # add release to bin
-        add_to_bin "$CSFIND_PATH/bin/csfind.release.sh"
-    else
-        # add debug to bin
-        add_to_bin "$CSFIND_PATH/bin/csfind.debug.sh"
-    fi
+    build_xfind_version "csharp" "csfind"
 }
 
 build_dartfind () {
     echo
     hdr "build_dartfind"
-    log "language: dart"
 
-    # ensure dart is installed
-    if [ -z "$(which dart)" ]
-    then
-        log_error "You need to install dart"
-        FAILED_BUILDS+=("dartfind")
-        return
-    fi
-
-    DART_VERSION=$(dart --version)
-    log "$DART_VERSION"
-
-    cd "$DARTFIND_PATH"
-
-    # RESOURCES_PATH="$DARTFIND_PATH/lib/data"
-
-    # TODO: move resources to local location, for now read relative to XFIND_PATH
-    # mkdir -p "$RESOURCES_PATH"
-    # copy_json_resources "$RESOURCES_PATH"
-
-    log "Building dartfind"
-    if [ ! -f "$DARTFIND_PATH/.dart_tool/package_config.json" ] && [ ! -f "$DARTFIND_PATH/.packages" ]
-    then
-        log "dart pub get"
-        dart pub get
-    else
-        log "dart pub upgrade"
-        dart pub upgrade
-    fi
-
-    log "Compiling dartfind"
-    log "dart compile exe $DARTFIND_PATH/bin/dartfind.dart"
-    dart compile exe "$DARTFIND_PATH/bin/dartfind.dart"
-
-    # check for success/failure
-    if [ "$?" -eq 0 ]
-    then
-        log "Build succeeded"
-    else
-        log_error "Build failed"
-        FAILED_BUILDS+=("dartfind")
-        cd -
-        return
-    fi
-
-    # add to bin
-    add_to_bin "$DARTFIND_PATH/bin/dartfind.sh"
-
-    cd -
+    build_xfind_version "dart" "dartfind"
 }
 
 build_exfind () {
     echo
     hdr "build_exfind"
-    log "language: elixir"
 
-    # ensure elixir is installed
-    if [ -z "$(which elixir)" ]
-    then
-        log_error "You need to install elixir"
-        FAILED_BUILDS+=("exfind")
-        return
-    fi
-
-    ELIXIR_VERSION=$(elixir --version | grep Elixir)
-    log "elixir version: $ELIXIR_VERSION"
-
-    # ensure mix is installed
-    if [ -z "$(which mix)" ]
-    then
-        log_error "You need to install mix"
-        FAILED_BUILDS+=("exfind")
-        return
-    fi
-
-    MIX_VERSION=$(mix --version | grep Mix)
-    log "mix version: $MIX_VERSION"
-
-    cd "$EXFIND_PATH"
-
-    log "Getting exfind dependencies"
-    log "mix deps.get"
-    mix deps.get
-
-    log "Compiling exfind"
-    log "mix compile"
-    mix compile
-
-    log "Creating exfind executable"
-    log "mix escript.build"
-    mix escript.build
-
-    # check for success/failure
-    if [ "$?" -eq 0 ]
-    then
-        log "Build succeeded"
-    else
-        log_error "Build failed"
-        FAILED_BUILDS+=("exfind")
-        cd -
-        return
-    fi
-
-    # add to bin
-    add_to_bin "$EXFIND_PATH/bin/exfind"
-
-    cd -
+    build_xfind_version "elixir" "exfind"
 }
 
 build_fsfind () {
     echo
     hdr "build_fsfind"
-    log "language: F#"
 
-    # ensure dotnet is installed
-    if [ -z "$(which dotnet)" ]
-    then
-        log_error "You need to install dotnet"
-        FAILED_BUILDS+=("fsfind")
-        return
-    fi
-
-    DOTNET_VERSION=$(dotnet --version)
-    log "dotnet version: $DOTNET_VERSION"
-
-    RESOURCES_PATH="$FSFIND_PATH/FsFindLib/Resources"
-    TEST_RESOURCES_PATH="$FSFIND_PATH/FsFindTests/Resources"
-
-    # copy the shared json files to the local resource location
-    mkdir -p "$RESOURCES_PATH"
-    copy_json_resources "$RESOURCES_PATH"
-
-    # copy the shared test files to the local test resource location
-    mkdir -p "$TEST_RESOURCES_PATH"
-    copy_test_resources "$TEST_RESOURCES_PATH"
-
-    if [ -n "$DEBUG" ] && [ -n "$RELEASE" ]
-    then
-        CONFIGURATIONS=(Debug Release)
-    elif [ -n "$DEBUG" ]
-    then
-        CONFIGURATIONS=(Debug)
-    elif [ -n "$RELEASE" ]
-    then
-        CONFIGURATIONS=(Release)
-    fi
-
-    # run dotnet build for selected configurations
-    for c in ${CONFIGURATIONS[*]}
-    do
-        log "Building fsfind for $c configuration"
-        log "dotnet build $FSFIND_PATH/FsFind.sln --configuration $c"
-        dotnet build "$FSFIND_PATH/FsFind.sln" --configuration "$c"
-
-        # check for success/failure
-        if [ "$?" -eq 0 ]
-        then
-            log "Build succeeded"
-        else
-            log_error "Build failed"
-            FAILED_BUILDS+=("fsfind")
-            return
-        fi
-    done
-
-    if [ -n "$RELEASE" ]
-    then
-        # add release to bin
-        add_to_bin "$FSFIND_PATH/bin/fsfind.release.sh"
-    else
-        # add debug to bin
-        add_to_bin "$FSFIND_PATH/bin/fsfind.debug.sh"
-    fi
+    build_xfind_version "fsharp" "fsfind"
 }
 
 build_gofind () {
     echo
     hdr "build_gofind"
-    log "language: go"
 
-    # ensure go is installed
-    if [ -z "$(which go)" ]
-    then
-        log_error "You need to install go"
-        return
-    fi
-
-    GO_VERSION=$(go version | sed 's/go version //')
-    # GO_VERSION=$(go version | head -n 1 | cut -d ' ' -f 3)
-    log "go version: $GO_VERSION"
-
-    # build the code to generate the dynamic code for gofind
-    #log "Building gengofindcode"
-    #echo "go install elocale.com/clarkcb/gofindcodegen/gengofindcode"
-    #go install elocale.com/clarkcb/gofindcodegen/gengofindcode
-
-    # run it to generate the dynamic gofind code
-    #log "Running gengofindcode"
-    #log "gengofindcode"
-    #gengofindcode
-
-    cd "$GOFIND_PATH"
-
-    # go fmt the gofind source (for auto-generated code)
-    log "Auto-formatting gofind"
-    log "go fmt ./..."
-    go fmt ./...
-
-    # create the bin dir if it doesn't already exist
-    if [ ! -d "$XFIND_BIN_PATH" ]
-    then
-        mkdir -p "$XFIND_BIN_PATH"
-    fi
-
-    # if GOBIN not defined, set to XFIND_BIN_PATH
-    # if [ ! -d "$GOBIN" ]
-    # then
-    #     export GOBIN="$XFIND_BIN_PATH"
-    # fi
-
-    # now build/install gofind
-    log "Building gofind"
-    log "go install ./..."
-    GOBIN="$XFIND_BIN_PATH" go install ./...
-
-    # check for success/failure
-    if [ "$?" -eq 0 ]
-    then
-        log "Build succeeded"
-    else
-        log_error "Build failed"
-        FAILED_BUILDS+=("gofind")
-    fi
-
-    cd -
+    build_xfind_version "go" "gofind"
 }
 
 build_groovyfind () {
     echo
     hdr "build_groovyfind"
-    log "language: groovy"
 
-    # ensure groovy is installed
-    if [ -z "$(which groovy)" ]
-    then
-        log_error "You need to install groovy"
-        return
-    fi
-
-    GROOVY_VERSION=$(groovy --version)
-    log "$GROOVY_VERSION"
-
-    cd "$GROOVYFIND_PATH"
-
-    GRADLE=
-    # check for gradle wrapper
-    if [ -f "gradlew" ]
-    then
-        GRADLE="./gradlew"
-    elif [ -n "$(which gradle)" ]
-    then
-        GRADLE="gradle"
-    else
-        log_error "You need to install gradle"
-        FAILED_BUILDS+=("groovyfind")
-        return
-    fi
-
-    GRADLE_OUTPUT=$($GRADLE --version)
-    # ------------------------------------------------------------
-    # Gradle 8.10.2
-    # ------------------------------------------------------------
-
-    # Build time:    2024-09-23 21:28:39 UTC
-    # Revision:      415adb9e06a516c44b391edff552fd42139443f7
-
-    # Kotlin:        1.9.24
-    # Groovy:        3.0.22
-    # Ant:           Apache Ant(TM) version 1.10.14 compiled on August 16 2023
-    # Launcher JVM:  11.0.24 (Homebrew 11.0.24+0)
-    # Daemon JVM:    /usr/local/Cellar/openjdk@11/11.0.24/libexec/openjdk.jdk/Contents/Home (no JDK specified, using current Java home)
-    # OS:            Mac OS X 14.6.1 x86_64
-
-    GRADLE_VERSION=$(echo "$GRADLE_OUTPUT" | grep '^Gradle' | awk '{print $2}')
-    log "$GRADLE version: $GRADLE_VERSION"
-
-    GRADLE_GROOVY_VERSION=$(echo $GRADLE_OUTPUT | grep '^Groovy' | awk '{print $2}')
-    log "Gradle Groovy version: $GRADLE_GROOVY_VERSION"
-
-    JVM_VERSION=$(echo "$GRADLE_OUTPUT" | grep '^Launcher' | awk '{print $3}')
-    log "JVM version: $JVM_VERSION"
-
-    RESOURCES_PATH="$GROOVYFIND_PATH/lib/src/main/resources"
-    TEST_RESOURCES_PATH="$GROOVYFIND_PATH/lib/src/test/resources"
-
-    # copy the shared json files to the local resource location
-    mkdir -p "$RESOURCES_PATH"
-    copy_json_resources "$RESOURCES_PATH"
-
-    # copy the test files to the local test resource location
-    mkdir -p "$TEST_RESOURCES_PATH"
-    copy_test_resources "$TEST_RESOURCES_PATH"
-
-    # run a maven clean build
-    log "Building groovyfind"
-
-    # log "gradle --warning-mode all clean jar publishToMavenLocal"
-    # gradle --warning-mode all clean jar publishToMavenLocal
-    # GRADLE_ARGS="--info --warning-mode all"
-    GRADLE_ARGS="--warning-mode all"
-    GRADLE_TASKS=(clean :lib:jar :lib:publishToMavenLocal :app:jar)
-    for t in ${GRADLE_TASKS[*]}
-    do
-        log "$GRADLE $GRADLE_ARGS $t"
-        "$GRADLE" --warning-mode all $t
-    done
-
-    # check for success/failure
-    if [ "$?" -eq 0 ]
-    then
-        log "Build succeeded"
-    else
-        log_error "Build failed"
-        FAILED_BUILDS+=("groovyfind")
-        cd -
-        return
-    fi
-
-    # add to bin
-    add_to_bin "$GROOVYFIND_PATH/bin/groovyfind.sh"
-
-    cd -
+    build_xfind_version "groovy" "groovyfind"
 }
 
 build_hsfind () {
     echo
     hdr "build_hsfind"
-    log "language: haskell"
 
-    # ensure ghc is installed
-    if [ -z "$(which ghc)" ]
-    then
-        log_error "You need to install ghc"
-        FAILED_BUILDS+=("hsfind")
-        return
-    fi
-
-    GHC_VERSION=$(ghc --version)
-    log "ghc version: $GHC_VERSION"
-
-    # ensure stack is installed
-    if [ -z "$(which stack)" ]
-    then
-        log_error "You need to install stack"
-        FAILED_BUILDS+=("hsfind")
-        return
-    fi
-
-    STACK_VERSION=$(stack --version)
-    log "stack version: $STACK_VERSION"
-
-    # set the default stack settings, e.g. use system ghc
-    STACK_DIR=$HOME/.stack
-    if [ ! -d "$STACK_DIR" ]
-    then
-        mkdir -p "$STACK_DIR"
-    fi
-    if [ ! -f "$STACK_DIR/config.yaml" ]
-    then
-        touch "$STACK_DIR/config.yaml"
-    fi
-    INSTALL_GHC=$(grep '^install-ghc:' "$STACK_DIR"/config.yaml)
-    if [ -z "$INSTALL_GHC" ]
-    then
-        echo 'install-ghc: false' >> "$STACK_DIR/config.yaml"
-    fi
-    SYSTEM_GHC=$(grep '^system-ghc:' "$STACK_DIR"/config.yaml)
-    if [ -z "$SYSTEM_GHC" ]
-    then
-        echo 'system-ghc: true' >> "$STACK_DIR/config.yaml"
-    fi
-
-    # copy the shared json files to the local resource location
-    RESOURCES_PATH="$HSFIND_PATH/data"
-    mkdir -p "$RESOURCES_PATH"
-    copy_json_resources "$RESOURCES_PATH"
-
-    cd "$HSFIND_PATH/"
-
-    # build with stack (via make)
-    log "Building hsfind"
-    log "stack setup"
-    make setup
-
-    log "stack build"
-    make build
-
-    # check for success/failure
-    if [ "$?" -eq 0 ]
-    then
-        log "Build succeeded"
-    else
-        log_error "Build failed"
-        FAILED_BUILDS+=("hsfind")
-        cd -
-        return
-    fi
-
-    log "stack install --local-bin-path $XFIND_BIN_PATH"
-    stack install --local-bin-path "$XFIND_BIN_PATH"
-
-    cd -
+    build_xfind_version "haskell" "hsfind"
 }
 
 build_javafind () {
     echo
     hdr "build_javafind"
-    log "language: java"
 
-    # ensure java is installed
-    if [ -z "$(which java)" ]
-    then
-        log_error "You need to install java"
-        FAILED_BUILDS+=("javafind")
-        return
-    fi
-
-    JAVA_VERSION=$(java -version 2>&1 | head -n 1)
-    log "java version: $JAVA_VERSION"
-
-    cd "$JAVAFIND_PATH"
-
-    GRADLE=
-    # check for gradle wrapper
-    if [ -f "gradlew" ]
-    then
-        GRADLE="./gradlew"
-    elif [ -n "$(which gradle)" ]
-    then
-        GRADLE="gradle"
-    else
-        log_error "You need to install gradle"
-        FAILED_BUILDS+=("javafind")
-        cd -
-        return
-    fi
-
-    GRADLE_OUTPUT=$($GRADLE --version)
-    # ------------------------------------------------------------
-    # Gradle 8.10.2
-    # ------------------------------------------------------------
-
-    # Build time:    2024-09-23 21:28:39 UTC
-    # Revision:      415adb9e06a516c44b391edff552fd42139443f7
-
-    # Kotlin:        1.9.24
-    # Groovy:        3.0.22
-    # Ant:           Apache Ant(TM) version 1.10.14 compiled on August 16 2023
-    # Launcher JVM:  11.0.24 (Homebrew 11.0.24+0)
-    # Daemon JVM:    /usr/local/Cellar/openjdk@11/11.0.24/libexec/openjdk.jdk/Contents/Home (no JDK specified, using current Java home)
-    # OS:            Mac OS X 14.6.1 x86_64
-
-    GRADLE_VERSION=$(echo "$GRADLE_OUTPUT" | grep '^Gradle' | awk '{print $2}')
-    log "$GRADLE version: $GRADLE_VERSION"
-
-    KOTLIN_VERSION=$(echo "$GRADLE_OUTPUT" | grep '^Kotlin' | awk '{print $2}')
-    log "Kotlin version: $KOTLIN_VERSION"
-
-    JVM_VERSION=$(echo "$GRADLE_OUTPUT" | grep '^Launcher' | awk '{print $3}')
-    log "JVM version: $JVM_VERSION"
-
-    RESOURCES_PATH="$JAVAFIND_PATH/lib/src/main/resources"
-    TEST_RESOURCES_PATH="$JAVAFIND_PATH/lib/src/test/resources"
-
-    # copy the shared json files to the local resource location
-    mkdir -p "$RESOURCES_PATH"
-    copy_json_resources "$RESOURCES_PATH"
-
-    # copy the test files to the local test resource location
-    mkdir -p "$TEST_RESOURCES_PATH"
-    copy_test_resources "$TEST_RESOURCES_PATH"
-
-    # run a gradle clean jar build
-    log "Building javafind"
-
-    # log "gradle --warning-mode all clean jar publishToMavenLocal"
-    # gradle --warning-mode all clean jar publishToMavenLocal
-    # GRADLE_ARGS="--info --warning-mode all"
-    GRADLE_ARGS="--warning-mode all"
-    GRADLE_TASKS=(clean :lib:jar :lib:publishToMavenLocal :app:jar)
-    for t in ${GRADLE_TASKS[*]}
-    do
-        log "$GRADLE $GRADLE_ARGS $t"
-        "$GRADLE" --warning-mode all $t
-    done
-
-    # check for success/failure
-    if [ "$?" -eq 0 ]
-    then
-        log "Build succeeded"
-    else
-        log_error "Build failed"
-        FAILED_BUILDS+=("javafind")
-        cd -
-        return
-    fi
-
-    # # install to local repo so it can be added as a dependency to javasearch
-    # log "mvn -f $JAVAFIND_PATH/pom.xml install"
-    # mvn -f "$JAVAFIND_PATH/pom.xml" install
-
-    # add to bin
-    add_to_bin "$JAVAFIND_PATH/bin/javafind.sh"
-
-    cd -
+    build_xfind_version "java" "javafind"
 }
 
 build_jsfind () {
     echo
     hdr "build_jsfind"
-    log "language: javascript"
 
-    # ensure node is installed
-    if [ -z "$(which node)" ]
-    then
-        log_error "You need to install node.js"
-        FAILED_BUILDS+=("jsfind")
-        return
-    fi
-
-    NODE_VERSION=$(node --version)
-    log "node version: $NODE_VERSION"
-
-    # ensure npm is installed
-    if [ -z "$(which npm)" ]
-    then
-        log_error "You need to install npm"
-        FAILED_BUILDS+=("jsfind")
-        return
-    fi
-
-    NPM_VERSION=$(npm --version)
-    log "npm version: $NPM_VERSION"
-
-    # copy the shared json files to the local resource location
-    RESOURCES_PATH="$JSFIND_PATH/data"
-    mkdir -p "$RESOURCES_PATH"
-    copy_json_resources "$RESOURCES_PATH"
-
-    cd "$JSFIND_PATH"
-
-    # run npm install and build
-    log "Building jsfind"
-    log "npm install"
-    npm install
-
-    log "npm run build"
-    npm run build
-
-    # check for success/failure
-    if [ "$?" -eq 0 ]
-    then
-        log "Build succeeded"
-    else
-        log_error "Build failed"
-        FAILED_BUILDS+=("jsfind")
-        cd -
-        return
-    fi
-
-    # add to bin
-    add_to_bin "$JSFIND_PATH/bin/jsfind.sh"
-
-    cd -
+    build_xfind_version "javascript" "jsfind"
 }
 
 build_ktfind () {
     echo
     hdr "build_ktfind"
-    log "language: kotlin"
 
-    cd "$KTFIND_PATH"
-
-    GRADLE=
-    # check for gradle wrapper
-    if [ -f "gradlew" ]
-    then
-        GRADLE="./gradlew"
-    elif [ -n "$(which gradle)" ]
-    then
-        GRADLE="gradle"
-    else
-        log_error "You need to install gradle"
-        FAILED_BUILDS+=("ktfind")
-        cd -
-        return
-    fi
-
-    GRADLE_OUTPUT=$($GRADLE --version)
-    # echo "$GRADLE_OUTPUT"
-
-    # ------------------------------------------------------------
-    # Gradle 8.10.2
-    # ------------------------------------------------------------
-
-    # Build time:    2024-09-23 21:28:39 UTC
-    # Revision:      415adb9e06a516c44b391edff552fd42139443f7
-
-    # Kotlin:        1.9.24
-    # Groovy:        3.0.22
-    # Ant:           Apache Ant(TM) version 1.10.14 compiled on August 16 2023
-    # Launcher JVM:  11.0.24 (Homebrew 11.0.24+0)
-    # Daemon JVM:    /usr/local/Cellar/openjdk@11/11.0.24/libexec/openjdk.jdk/Contents/Home (no JDK specified, using current Java home)
-    # OS:            Mac OS X 14.6.1 x86_64
-
-    GRADLE_VERSION=$(echo "$GRADLE_OUTPUT" | grep '^Gradle' | awk '{print $2}')
-    log "$GRADLE version: $GRADLE_VERSION"
-
-    KOTLIN_VERSION=$(echo "$GRADLE_OUTPUT" | grep '^Kotlin' | awk '{print $2}')
-    log "Kotlin version: $KOTLIN_VERSION"
-
-    JVM_VERSION=$(echo "$GRADLE_OUTPUT" | grep '^Launcher' | awk '{print $3}')
-    log "JVM version: $JVM_VERSION"
-
-    RESOURCES_PATH="$KTFIND_PATH/lib/src/main/resources"
-    TEST_RESOURCES_PATH="$KTFIND_PATH/lib/src/test/resources"
-
-    # copy the shared json files to the local resource location
-    mkdir -p "$RESOURCES_PATH"
-    copy_json_resources "$RESOURCES_PATH"
-
-    # copy the test files to the local test resource location
-    mkdir -p "$TEST_RESOURCES_PATH"
-    copy_test_resources "$TEST_RESOURCES_PATH"
-
-    # run a gradle clean jar build
-    log "Building ktfind"
-
-    # log "gradle --warning-mode all clean jar publishToMavenLocal"
-    # gradle --warning-mode all clean jar publishToMavenLocal
-    # GRADLE_ARGS="--info --warning-mode all"
-    GRADLE_ARGS="--warning-mode all"
-    GRADLE_TASKS=(clean :lib:jar :lib:publishToMavenLocal :app:jar)
-    for t in ${GRADLE_TASKS[*]}
-    do
-        log "$GRADLE $GRADLE_ARGS $t"
-        "$GRADLE" --warning-mode all $t
-    done
-
-    # check for success/failure
-    if [ "$?" -eq 0 ]
-    then
-        log "Build succeeded"
-    else
-        log_error "Build failed"
-        FAILED_BUILDS+=("ktfind")
-        cd -
-        return
-    fi
-
-    # add to bin
-    add_to_bin "$KTFIND_PATH/bin/ktfind.sh"
-
-    cd -
-}
-
-build_objcfind () {
-    echo
-    hdr "build_objcfind"
-    log "language: objc"
-
-    TARGET=alltargets
-
-    # TODO: copy resource files locally?
-    # ensure swift is installed
-    if [ -z "$(which swift)" ]
-    then
-        log_error "You need to install swift"
-        FAILED_BUILDS+=("objcfind")
-        return
-    fi
-
-    # swift --version 2>&1 output looks like this:
-    # (stdout) Apple Swift version 6.0.2 (swiftlang-6.0.2.1.2 clang-1600.0.26.4)
-    # (stdout) Target: x86_64-apple-macosx14.0
-    # (stderr) swift-driver version: 1.115
-    SWIFT_VERSION=$(swift --version 2>&1 | grep 'Apple Swift' | cut -d ' ' -f 7)
-    log "swift version: Apple Swift version $SWIFT_VERSION"
-
-    # TODO: copy resource files locally? - embedded resources not currently supported apparently
-
-    cd "$OBJCFIND_PATH"
-
-    # run swift build
-    log "Building objcfind"
-
-    if [ -n "$DEBUG" ]
-    then
-        log "swift build"
-        swift build
-
-        # check for success/failure
-        if [ "$?" -eq 0 ]
-        then
-            log "Build succeeded"
-        else
-            log_error "Build failed"
-            FAILED_BUILDS+=("objcfind")
-            cd -
-            return
-        fi
-    fi
-    if [ -n "$RELEASE" ]
-    then
-        log "swift build --configuration release"
-        swift build --configuration release
-
-        # check for success/failure
-        if [ "$?" -eq 0 ]
-        then
-            log "Build succeeded"
-        else
-            log_error "Build failed"
-            FAILED_BUILDS+=("objcfind")
-            cd -
-            return
-        fi
-
-        # add release to bin
-        add_to_bin "$OBJCFIND_PATH/bin/objcfind.release.sh"
-    else
-        # add debug to bin
-        add_to_bin "$OBJCFIND_PATH/bin/objcfind.debug.sh"
-    fi
-
-    cd -
+    build_xfind_version "kotlin" "ktfind"
 }
 
 build_mlfind () {
     echo
     hdr "build_mlfind"
-    log "language: ocaml"
 
-    cd "$MLFIND_PATH"
-    ./build.sh
-    # if [ -L ~/bin/mlfind ]
-    # then
-    #     rm ~/bin/mlfind
-    # fi
-    ln -sf "$MLFIND_PATH/_build/src/mlfind.native" ~/bin/mlfind
-    cd -
+    build_xfind_version "ocaml" "mlfind"
+}
+
+build_objcfind () {
+    echo
+    hdr "build_objcfind"
+
+    build_xfind_version "objc" "objcfind"
 }
 
 build_plfind () {
     echo
     hdr "build_plfind"
-    log "language: perl"
 
-    # ensure perl is installed
-    if [ -z "$(which perl)" ]
-    then
-        log_error "You need to install perl"
-        FAILED_BUILDS+=("plfind")
-        return
-    fi
-
-    PERL_VERSION="$(perl -e 'print $^V' | grep '^v5')"
-    if [ -z $PERL_VERSION ]
-    then
-        log_error "A 5.x version of perl is required"
-        FAILED_BUILDS+=("plfind")
-        return
-    fi
-
-    log "perl version: $PERL_VERSION"
-
-    # copy the shared json files to the local resource location
-    RESOURCES_PATH="$PLFIND_PATH/share"
-    mkdir -p "$RESOURCES_PATH"
-    copy_json_resources "$RESOURCES_PATH"
-
-    # check for success/failure
-    if [ "$?" -eq 0 ]
-    then
-        log "Build succeeded"
-    else
-        log_error "Build failed"
-        FAILED_BUILDS+=("plfind")
-        return
-    fi
-
-    # add to bin
-    add_to_bin "$PLFIND_PATH/bin/plfind.sh"
+    build_xfind_version "perl" "plfind"
 }
 
 build_phpfind () {
     echo
     hdr "build_phpfind"
-    log "language: php"
 
-    # ensure php is installed
-    if [ -z "$(which php)" ]
-    then
-        log_error "You need to install PHP"
-        FAILED_BUILDS+=("phpfind")
-        return
-    fi
-
-    # PHP_VERSION=$(php -r "echo phpversion();")
-    PHP_VERSION=$(php -v | grep '^PHP [78]')
-    if [ -z "$PHP_VERSION" ]
-    then
-        log_error "A version of PHP >= 7.x is required"
-        FAILED_BUILDS+=("phpfind")
-        return
-    fi
-    log "php version: $PHP_VERSION"
-
-    # ensure composer is installed
-    if [ -z "$(which composer)" ]
-    then
-        log_error "Need to install composer"
-        FAILED_BUILDS+=("phpfind")
-        return
-    fi
-
-    COMPOSER_VERSION=$(composer --version 2>&1 | grep '^Composer')
-    log "composer version: $COMPOSER_VERSION"
-
-    CONFIG_PATH="$PHPFIND_PATH/config"
-    RESOURCES_PATH="$PHPFIND_PATH/resources"
-
-    # copy the shared config json file to the local config location
-    mkdir -p "$CONFIG_PATH"
-    log "cp $XFIND_SHARED_PATH/config.json $CONFIG_PATH/"
-    cp "$XFIND_SHARED_PATH/config.json" "$CONFIG_PATH/"
-
-    # copy the shared json files to the local resource location
-    mkdir -p "$RESOURCES_PATH"
-    log "cp $XFIND_SHARED_PATH/filetypes.json $RESOURCES_PATH/"
-    cp "$XFIND_SHARED_PATH/filetypes.json" "$RESOURCES_PATH/"
-    log "cp $XFIND_SHARED_PATH/findoptions.json $RESOURCES_PATH/"
-    cp "$XFIND_SHARED_PATH/findoptions.json" "$RESOURCES_PATH/"
-
-    cd "$PHPFIND_PATH"
-
-    # run a composer build
-    log "Building phpfind"
-
-    if [ -d "$PHPFIND_PATH/vendor" ]
-    then
-        log "composer update"
-        composer update
-    else
-        log "composer install"
-        composer install
-    fi
-
-    # check for success/failure
-    if [ "$?" -eq 0 ]
-    then
-        log "Build succeeded"
-    else
-        log_error "Build failed"
-        FAILED_BUILDS+=("phpfind")
-        cd -
-        return
-    fi
-
-    # add to bin
-    add_to_bin "$PHPFIND_PATH/bin/phpfind.sh"
-
-    cd -
+    build_xfind_version "php" "phpfind"
 }
 
 build_ps1find () {
     echo
     hdr "build_ps1find"
-    log "language: powershell"
 
-    # ensure pwsh is installed
-    if [ -z "$(which pwsh)" ]
-    then
-        log_error "You need to install powershell"
-        return
-    fi
-
-    POWERSHELL_VERSION=$(pwsh -v)
-    log "powershell version: $POWERSHELL_VERSION"
-
-    MODULEPATH=$(pwsh -c 'echo $env:PSModulePath')
-    if [ -z "$MODULEPATH" ]
-    then
-        log_error "Unable to get powershell module path"
-        FAILED_BUILDS+=("ps1find")
-        return
-    fi
-
-    log "Building ps1find"
-
-    # split on : and get the first path
-    IFS=':' read -ra MODULEPATHS <<< "$MODULEPATH"
-    MODULEPATH=${MODULEPATHS[0]}
-    PS1FINDMODULEPATH="$MODULEPATH/Ps1FindModule"
-
-    mkdir -p "$PS1FINDMODULEPATH"
-
-    log "cp $PS1FIND_PATH/Ps1FindModule.psm1 $PS1FINDMODULEPATH/"
-    cp "$PS1FIND_PATH/Ps1FindModule.psm1" "$PS1FINDMODULEPATH/"
-
-    # add to bin
-    add_to_bin "$PS1FIND_PATH/ps1find.ps1"
+    build_xfind_version "powershell" "ps1find"
 }
 
 build_pyfind () {
     echo
     hdr "build_pyfind"
-    log "language: python"
 
-    # Set to Yes to use venv
-    USE_VENV=$VENV
-    # PYTHON_VERSIONS=(python3.12 python3.11 python3.10 python3.9)
-    # We don't want to use python3.12 yet
-    PYTHON_VERSIONS=(python3.11 python3.10 python3.9)
-    PYTHON=
-
-    ACTIVE_VENV=
-
-    if [ "$USE_VENV" == 'yes' ]
-    then
-        log 'Using venv'
-
-        # 3 possibilities:
-        # 1. venv exists and is active
-        # 2. venv exists and is not active
-        # 3. venv does not exist
-
-        if [ -n "$VIRTUAL_ENV" ]
-        then
-            # 1. venv exists and is active
-            log "Already active venv: $VIRTUAL_ENV"
-            ACTIVE_VENV="$VIRTUAL_ENV"
-
-            PYTHON=$(which python3)
-            PYTHON=$(basename "$PYTHON")
-
-        elif [ -d "$PYFIND_PATH/venv" ]
-        then
-            # 2. venv exists and is not active
-            log 'Using existing venv'
-
-            # activate the venv - we run this even if this venv or another is already active
-            # because it's the only way to be able to run deactivate later
-            log "source $PYFIND_PATH/venv/bin/activate"
-            source $PYFIND_PATH/venv/bin/activate
-
-            PYTHON=$(which python3)
-            PYTHON=$(basename "$PYTHON")
-
-        else
-            # 3. venv does not exist
-            # ensure python3.9+ is installed
-            for p in ${PYTHON_VERSIONS[*]}
-            do
-                PYTHON=$(which "$p")
-                if [ -f "$PYTHON" ]
-                then
-                    break
-                fi
-            done
-
-            if [ -z "$PYTHON" ]
-            then
-                log_error "A version of python >= 3.9 is required"
-                FAILED_BUILDS+=("pyfind")
-                return
-            else
-                PYTHON=$(basename "$PYTHON")
-            fi
-
-            log "Creating new venv"
-
-            # create a virtual env to run from and install to if it doesn't already exist
-            log "$PYTHON -m venv venv"
-            "$PYTHON" -m venv venv
-
-            # activate the venv
-            log "source $PYFIND_PATH/venv/bin/activate"
-            source $PYFIND_PATH/venv/bin/activate
-
-            # get the path to the venv version
-            PYTHON=$(which python3)
-            PYTHON=$(basename "$PYTHON")
-        fi
-
-    else
-
-        log "Not using venv"
-
-        # ensure python3.9+ is installed
-        for p in ${PYTHON_VERSIONS[*]}
-        do
-            PYTHON=$(which "$p")
-            if [ -f "$PYTHON" ]
-            then
-                break
-            fi
-        done
-
-        if [ -z "$PYTHON" ]
-        then
-            log_error "A version of python >= 3.9 is required"
-            FAILED_BUILDS+=("pyfind")
-            return
-        else
-            PYTHON=$(basename "$PYTHON")
-        fi
-    fi
-
-    log "Using $PYTHON ($(which $PYTHON))"
-    log "python version: $($PYTHON -V)"
-
-    # # copy the shared json files to the local resource location
-    RESOURCES_PATH="$PYFIND_PATH/pyfind/data"
-    mkdir -p "$RESOURCES_PATH"
-    copy_json_resources "$RESOURCES_PATH"
-
-    cd "$PYFIND_PATH"
-
-    # install wheel - this seems to fix problems with installing local dependencies,
-    # which pyfind will be for pysearch
-    # log "pip3 install wheel"
-    # pip3 install wheel
-
-    # install dependencies in requirements.txt
-    log "pip3 install -r requirements.txt"
-    pip3 install -r requirements.txt
-
-    # check for success/failure
-    ERROR=
-    if [ "$?" -eq 0 ]
-    then
-        log "Build succeeded"
-    else
-        log_error "Build failed"
-        FAILED_BUILDS+=("pyfind")
-        ERROR=yes
-    fi
-
-    # if there was not an active venv before the build, deactivate the venv
-    if [ "$USE_VENV" == 'yes' -a -z "$ACTIVE_VENV" ]
-    then
-        # deactivate at end of setup process
-        log "deactivate"
-        deactivate
-    fi
-
-    if [ -n "$ERROR" ]
-    then
-        cd -
-        return
-    fi
-
-    # TODO: change the !# line in pyfind to use the determined python version
-
-    # add to bin
-    add_to_bin "$PYFIND_PATH/bin/pyfind.sh"
-
-    cd -
+    build_xfind_version "python" "pyfind"
 }
 
 build_rbfind () {
     echo
     hdr "build_rbfind"
-    log "language: ruby"
 
-    # ensure ruby3.x+ is installed
-    if [ -z "$(which ruby)" ]
-    then
-        log_error "You need to install ruby"
-        FAILED_BUILDS+=("rbfind")
-        return
-    fi
-
-    RUBY_VERSION="$(ruby -v 2>&1 | grep '^ruby 3')"
-    if [ -z "$RUBY_VERSION" ]
-    then
-        log_error "A version of ruby >= 3.x is required"
-        FAILED_BUILDS+=("rbfind")
-        return
-    fi
-    log "ruby version: $RUBY_VERSION"
-
-    if [ -z "$(which bundle)" ]
-    then
-        log_error "You need to install bundler: https://bundler.io/"
-        FAILED_BUILDS+=("rbfind")
-        return
-    fi
-
-    BUNDLE_VERSION="$(bundle version)"
-    log "$BUNDLE_VERSION"
-
-    RESOURCES_PATH="$RBFIND_PATH/data"
-    TEST_RESOURCES_PATH="$RBFIND_PATH/test/fixtures"
-
-    # copy the shared json files to the local resource location
-    mkdir -p "$RESOURCES_PATH"
-    copy_json_resources "$RESOURCES_PATH"
-
-    # copy the shared test files to the local test resource location
-    mkdir -p "$TEST_RESOURCES_PATH"
-    copy_test_resources "$TEST_RESOURCES_PATH"
-
-    # TODO: figure out how to install dependencies without installing rbfind (which is what bundler does)
-    cd "$RBFIND_PATH"
-
-    log "Building rbfind"
-    log "bundle install"
-    bundle install
-
-    # check for success/failure
-    if [ "$?" -ne 0 ]
-    then
-        log_error "bundle install failed"
-        FAILED_BUILDS+=("rbfind")
-        cd -
-        return
-    fi
-
-    # Build the gem
-    log "gem build rbfind.gemspec"
-    gem build rbfind.gemspec
-
-    # check for success/failure
-    if [ "$?" -eq 0 ]
-    then
-        log "Build succeeded"
-    else
-        log_error "Build failed"
-        FAILED_BUILDS+=("rbfind")
-        cd -
-        return
-    fi
-
-    # TODO: install the gem?
-    log "gem install rbfind-0.1.0.gem"
-    gem install rbfind-0.1.0.gem
-
-    # add to bin
-    add_to_bin "$RBFIND_PATH/bin/rbfind.sh"
-
-    cd -
+    build_xfind_version "ruby" "rbfind"
 }
 
 build_rsfind () {
     echo
     hdr "build_rsfind"
-    log "language: rust"
 
-    # ensure rust is installed
-    if [ -z "$(which rustc)" ]
-    then
-        log_error "You need to install rust"
-        FAILED_BUILDS+=("rsfind")
-        return
-    fi
-
-    RUST_VERSION=$(rustc --version)
-    log "rustc version: $RUST_VERSION"
-
-    # ensure cargo is installed
-    if [ -z "$(which cargo)" ]
-    then
-        log_error "You need to install cargo"
-        FAILED_BUILDS+=("rsfind")
-        return
-    fi
-
-    CARGO_VERSION=$(cargo --version)
-    log "cargo version: $CARGO_VERSION"
-
-    cd "$RSFIND_PATH"
-
-    log "Building rsfind"
-    if [ -n "$DEBUG" ]
-    then
-        log "cargo build"
-        cargo build
-
-        # check for success/failure
-        if [ "$?" -eq 0 ]
-        then
-            log "Build succeeded"
-        else
-            log_error "Build failed"
-            FAILED_BUILDS+=("rsfind")
-            cd -
-            return
-        fi
-    fi
-    if [ -n "$RELEASE" ]
-    then
-        log "cargo build --release"
-        cargo build --release
-
-        # check for success/failure
-        if [ "$?" -eq 0 ]
-        then
-            log "Build succeeded"
-        else
-            log_error "Build failed"
-            FAILED_BUILDS+=("rsfind")
-            cd -
-            return
-        fi
-
-        # add release to bin
-        add_to_bin "$RSFIND_PATH/bin/rsfind.release.sh"
-    else
-        # add debug to bin
-        add_to_bin "$RSFIND_PATH/bin/rsfind.debug.sh"
-    fi
-
-    cd -
+    build_xfind_version "rust" "rsfind"
 }
 
 build_scalafind () {
     echo
     hdr "build_scalafind"
-    log "language: scala"
 
-    # ensure scala is installed
-    if [ -z "$(which scala)" ]
-    then
-        log_error "You need to install scala"
-        FAILED_BUILDS+=("scalafind")
-        return
-    fi
-
-    # scala --version output looks like this:
-    # Scala code runner version: 1.4.3
-    # Scala version (default): 3.7.4
-    SCALA_VERSION=$(scala -version 2>&1 | tail -n 1 | cut -d ' ' -f 4)
-    log "scala version: $SCALA_VERSION"
-
-    # ensure sbt is installed
-    if [ -z "$(which sbt)" ]
-    then
-        log_error "You need to install sbt"
-        FAILED_BUILDS+=("scalafind")
-        return
-    fi
-
-    SBT_OUTPUT=$(sbt --version)
-
-    SBT_PROJECT_VERSION=$(echo "$SBT_OUTPUT" | grep 'project')
-    log "$SBT_PROJECT_VERSION"
-
-    SBT_SCRIPT_VERSION=$(echo "$SBT_OUTPUT" | grep 'script')
-    log "$SBT_SCRIPT_VERSION"
-
-    JDK_VERSION=$(java -version  2>&1 | head -n 1)
-    log "JDK version: $JDK_VERSION"
-
-    RESOURCES_PATH="$SCALAFIND_PATH/src/main/resources"
-    TEST_RESOURCES_PATH="$SCALAFIND_PATH/src/test/resources"
-
-    # copy the shared json files to the local resource location
-    mkdir -p "$RESOURCES_PATH"
-    copy_json_resources "$RESOURCES_PATH"
-
-    # copy the test files to the local test resource location
-    mkdir -p "$TEST_RESOURCES_PATH"
-    copy_test_resources "$TEST_RESOURCES_PATH"
-
-    cd "$SCALAFIND_PATH"
-
-    # run sbt assembly
-    log "Building scalafind"
-    # log "sbt clean assembly"
-    # sbt clean assembly
-    # to build without testing, changed to this:
-    log "sbt 'set test in assembly := {}' clean package assembly"
-    sbt 'set test in assembly := {}' clean package assembly
-
-    # check for success/failure
-    if [ "$?" -eq 0 ]
-    then
-        log "Build succeeded"
-    else
-        log_error "Build failed"
-        FAILED_BUILDS+=("scalafind")
-        cd -
-        return
-    fi
-
-    # copy the jar to xsearch if found
-    if [ -n "$XSEARCH_PATH" -a -d "$XSEARCH_PATH/scala/scalasearch/lib" ]
-    then
-        SCALAFIND_JAR=$(find "$SCALAFIND_PATH/target/scala-$SCALA_VERSION/" -name "scalafind_3-"*.jar | head -n 1)
-        if [ -n "$SCALAFIND_JAR" -a -f "$SCALAFIND_JAR" ]
-        then
-            log "Copying $SCALAFIND_JAR to $XSEARCH_PATH/scala/scalasearch/lib/"
-            cp "$SCALAFIND_JAR" "$XSEARCH_PATH/scala/scalasearch/lib/"
-        else
-            log_error "Unable to find built scalafind jar to copy to xsearch"
-        fi
-    fi
-
-    # add to bin
-    add_to_bin "$SCALAFIND_PATH/bin/scalafind.sh"
-
-    cd -
+    build_xfind_version "scala" "scalafind"
 }
 
 build_swiftfind () {
     echo
     hdr "build_swiftfind"
-    log "language: swift"
 
-    # ensure swift is installed
-    if [ -z "$(which swift)" ]
-    then
-        log_error "You need to install swift"
-        FAILED_BUILDS+=("swiftfind")
-        return
-    fi
-
-    # swift --version 2>&1 output looks like this:
-    # (stdout) Apple Swift version 6.0.2 (swiftlang-6.0.2.1.2 clang-1600.0.26.4)
-    # (stdout) Target: x86_64-apple-macosx14.0
-    # (stderr) swift-driver version: 1.115
-    SWIFT_VERSION=$(swift --version 2>&1 | grep 'Apple Swift' | cut -d ' ' -f 7)
-    log "swift version: Apple Swift version $SWIFT_VERSION"
-
-    # TODO: copy resource files locally? - embedded resources not currently supported apparently
-
-    cd "$SWIFTFIND_PATH"
-
-    # run swift build
-    log "Building swiftfind"
-
-    if [ -n "$DEBUG" ]
-    then
-        log "swift build"
-        swift build
-
-        # check for success/failure
-        if [ "$?" -eq 0 ]
-        then
-            log "Build succeeded"
-        else
-            log_error "Build failed"
-            FAILED_BUILDS+=("swiftfind")
-            cd -
-            return
-        fi
-    fi
-    if [ -n "$RELEASE" ]
-    then
-        log "swift build --configuration release"
-        swift build --configuration release
-
-        # check for success/failure
-        if [ "$?" -eq 0 ]
-        then
-            log "Build succeeded"
-        else
-            log_error "Build failed"
-            FAILED_BUILDS+=("swiftfind")
-            cd -
-            return
-        fi
-
-        # add release to bin
-        add_to_bin "$SWIFTFIND_PATH/bin/swiftfind.release.sh"
-    else
-        # add debug to bin
-        add_to_bin "$SWIFTFIND_PATH/bin/swiftfind.debug.sh"
-    fi
-
-    cd -
+    build_xfind_version "swift" "swiftfind"
 }
 
 build_tsfind () {
     echo
     hdr "build_tsfind"
-    log "language: typescript"
 
-    # ensure node is installed
-    if [ -z "$(which node)" ]
-    then
-        log_error "You need to install node.js"
-        FAILED_BUILDS+=("tsfind")
-        return
-    fi
-
-    NODE_VERSION=$(node --version)
-    log "node version: $NODE_VERSION"
-
-    # ensure npm is installed
-    if [ -z "$(which npm)" ]
-    then
-        log_error "You need to install npm"
-        FAILED_BUILDS+=("tsfind")
-        return
-    fi
-
-    NPM_VERSION=$(npm --version)
-    log "npm version: $NPM_VERSION"
-
-    # copy the shared json files to the local resource location
-    RESOURCES_PATH="$TSFIND_PATH/data"
-    mkdir -p "$RESOURCES_PATH"
-    copy_json_resources "$RESOURCES_PATH"
-
-    cd "$TSFIND_PATH"
-
-    # run npm install and build
-    log "Building tsfind"
-    log "npm install"
-    npm install
-    log "npm run build"
-    npm run build
-
-    # check for success/failure
-    if [ "$?" -eq 0 ]
-    then
-        log "Build succeeded"
-    else
-        log_error "Build failed"
-        FAILED_BUILDS+=("tsfind")
-        cd -
-        return
-    fi
-
-    # add to bin
-    add_to_bin "$TSFIND_PATH/bin/tsfind.sh"
-
-    cd -
+    build_xfind_version "typescript" "tsfind"
 }
 
 # build_linux - builds the versions that are currently supported in the linux container
@@ -2040,7 +360,6 @@ log "host: $HOSTNAME"
 log "os: $(uname -o)"
 
 # Get the current git branch and commit
-# GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
 GIT_BRANCH=$(git branch --show-current)
 GIT_COMMIT=$(git rev-parse --short HEAD)
 log "git branch: '$GIT_BRANCH' ($GIT_COMMIT)"
@@ -2052,7 +371,6 @@ DEBUG=
 RELEASE=
 VENV=
 BUILD_ALL=
-# TARGET_LANG=all
 TARGET_LANGS=()
 
 if [ $# == 0 ]
@@ -2109,7 +427,7 @@ fi
 if [ -n "$BUILD_ALL" ]
 then
     build_all
-    print_failed_builds
+    print_build_results
     exit
 fi
 
@@ -2205,4 +523,4 @@ do
     esac
 done
 
-print_failed_builds
+print_build_results

@@ -3,7 +3,7 @@
 #
 # clean.sh
 #
-# Runs a clean (remove generated files) for each language version
+# Clean xfind language versions
 #
 ################################################################################
 
@@ -12,15 +12,16 @@
 ########################################
 
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-source "$DIR/config.sh"
-source "$DIR/common.sh"
 
-# Add failed builds to this array and report failed builds at the end
-FAILED_BUILDS=()
+# source "$DIR/config.sh"
+# source "$DIR/common.sh"
+
+# Load the generic build functions
+source "$DIR/clean_functions.sh"
 
 
 ########################################
-# Utility Functions
+# Common Functions
 ########################################
 
 usage () {
@@ -28,39 +29,36 @@ usage () {
     exit
 }
 
-# clean_json_resources
-clean_json_resources () {
-    local resources_path="$1"
-    for f in $(find "$resources_path" -name "*.json" -type f -maxdepth 1)
-    do
-        log "rm $f"
-        rm "$f"
-    done
-}
-
-# clean_test_resources
-clean_test_resources () {
-    local resources_path="$1"
-    for f in $(find "$resources_path" -name "testFile*.txt" -type f -maxdepth 1)
-    do
-        log "rm $f"
-        rm "$f"
-    done
-}
-
-print_failed_builds () {
-    if [ ${#FAILED_BUILDS[@]} -gt 0 ]
-    then
-        log_error "Failed cleans: ${FAILED_BUILDS[*]}"
-    else
-        log "All cleans succeeded"
-    fi
-}
-
 
 ########################################
 # Clean Functions
 ########################################
+
+clean_xfind_version () {
+    local lang_name="$1"
+    local version_name="$2"
+
+    function_name="clean_${lang_name}_version"
+    # log "function_name: $function_name"
+
+    if [[ "$(type -t $function_name)" == "function" ]]
+    then
+        "$function_name" "$XFIND_PATH" "$version_name"
+    else
+        log_error "clean function not found: $function_name"
+        CLEAN_LASTEXITCODE=1
+    fi
+
+    # log "CLEAN_LASTEXITCODE: $CLEAN_LASTEXITCODE"
+    if [ "$CLEAN_LASTEXITCODE" -eq 0 ]
+    then
+        log "$version_name clean succeeded"
+        SUCCESSFUL_CLEANS+=($version_name)
+    else
+        log_error "$version_name clean failed"
+        FAILED_CLEANS+=($version_name)
+    fi
+}
 
 clean_bashfind () {
     echo
@@ -72,532 +70,168 @@ clean_cfind () {
     echo
     hdr "clean_cfind"
 
-    cd "$CFIND_PATH"
-
-    for c in $(find . -name "cmake-build-*" -type d -maxdepth 1)
-    do
-        log "rm -rf $c"
-        rm -rf "$c"
-    done
-
-    cd -
+    clean_xfind_version "c" "cfind"
 }
 
 clean_cljfind () {
     echo
     hdr "clean_cljfind"
 
-    # ensure lein is installed
-    if [ -z "$(which lein)" ]
-    then
-        log_error "You need to install lein"
-        FAILED_BUILDS+=("cljfind")
-        return
-    fi
-
-    cd "$CLJFIND_PATH"
-
-    log "lein clean"
-    lein clean
-
-    clean_json_resources "$CLJFIND_PATH/resources"
-
-    cd -
+    clean_xfind_version "clojure" "cljfind"
 }
 
 clean_cppfind () {
     echo
     hdr "clean_cppfind"
 
-    cd "$CPPFIND_PATH"
-
-    for c in $(find . -name "cmake-build-*" -type d -maxdepth 1)
-    do
-        log "rm -rf $c"
-        rm -rf "$c"
-    done
-
-    cd -
+    clean_xfind_version "cpp" "cppfind"
 }
 
 clean_csfind () {
     echo
     hdr "clean_csfind"
 
-    # ensure dotnet is installed
-    if [ -z "$(which dotnet)" ]
-    then
-        log_error "You need to install dotnet"
-        FAILED_BUILDS+=("csfind")
-        return
-    fi
-
-    cd "$CSFIND_PATH"
-
-    # Verbosity levels: q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic]
-    log "dotnet clean -v minimal"
-    dotnet clean -v minimal
-
-    for p in $(find "$CSFIND_PATH" -name "CsFind*" -type d -maxdepth 1)
-    do
-        if [ -d "$p" ]
-        then
-            log "rm -rf $p/bin"
-            rm -rf "$p/bin"
-
-            log "rm -rf $p/obj"
-            rm -rf "$p/obj"
-        fi
-    done
-
-    clean_json_resources "$CSFIND_PATH/CsFindLib/Resources"
-
-    clean_test_resources "$CSFIND_PATH/CsFindTests/Resources"
-
-    cd -
+    clean_xfind_version "csharp" "csfind"
 }
 
 clean_dartfind () {
     echo
     hdr "clean_dartfind"
 
-    # ensure dart is installed
-    if [ -z "$(which dart)" ]
-    then
-        log_error "You need to install dart"
-        FAILED_BUILDS+=("dartfind")
-        return
-    fi
-
-    cd "$DARTFIND_PATH"
-
-    # pub cache repair is apparently the closest thing to clean for dart
-    # but unfortunately it's pretty slow
-    log "dart pub cache repair"
-    dart pub cache repair
-
-    if [ -n "$LOCKFILE" -a -f "pubspec.lock" ]
-    then
-        log "rm pubspec.lock"
-        rm -f pubspec.lock
-    fi
-
-    cd -
+    clean_xfind_version "dart" "dartfind"
 }
 
 clean_exfind () {
     echo
     hdr "clean_exfind"
 
-    # ensure elixir is installed
-    if [ -z "$(which elixir)" ]
-    then
-        log_error "You need to install elixir"
-        FAILED_BUILDS+=("exfind")
-        return
-    fi
-
-    # ensure mix is installed
-    if [ -z "$(which mix)" ]
-    then
-        log_error "You need to install mix"
-        FAILED_BUILDS+=("exfind")
-        return
-    fi
-
-    cd "$EXFIND_PATH"
-
-    log "mix clean"
-    mix clean
-
-    if [ -n "$LOCKFILE" -a -f "mix.lock" ]
-    then
-        log "rm mix.lock"
-        rm -f mix.lock
-    fi
-
-    cd -
+    clean_xfind_version "elixir" "exfind"
 }
 
 clean_fsfind () {
     echo
     hdr "clean_fsfind"
 
-    # ensure dotnet is installed
-    if [ -z "$(which dotnet)" ]
-    then
-        log_error "You need to install dotnet"
-        FAILED_BUILDS+=("fsfind")
-        return
-    fi
-
-    cd "$FSFIND_PATH"
-
-    # Verbosity levels: q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic]
-    log "dotnet clean -v minimal"
-    dotnet clean -v minimal
-
-    for p in $(find "$FSFIND_PATH" -name "FsFind*" -type d -maxdepth 1)
-    do
-        if [ -d "$p" ]
-        then
-            log "rm -rf $p/bin"
-            rm -rf "$p/bin"
-
-            log "rm -rf $p/obj"
-            rm -rf "$p/obj"
-        fi
-    done
-
-    clean_json_resources "$FSFIND_PATH/FsFindLib/Resources"
-
-    clean_test_resources "$FSFIND_PATH/FsFindTests/Resources"
-
-    cd -
+    clean_xfind_version "fsharp" "fsfind"
 }
 
 clean_gofind () {
     echo
     hdr "clean_gofind"
 
-    # ensure go is installed
-    if [ -z "$(which go)" ]
-    then
-        log_error "You need to install go"
-        FAILED_BUILDS+=("gofind")
-        return
-    fi
-
-    cd "$GOFIND_PATH"
-
-    log "go clean"
-    go clean
-
-    cd -
+    clean_xfind_version "go" "gofind"
 }
 
 clean_groovyfind () {
     echo
     hdr "clean_groovyfind"
 
-    cd "$GROOVYFIND_PATH"
-
-    GRADLE=
-    # check for gradle wrapper
-    if [ -f "gradlew" ]
-    then
-        GRADLE="./gradlew"
-    elif [ -n "$(which gradle)" ]
-    then
-        GRADLE="gradle"
-    else
-        log_error "You need to install gradle"
-        FAILED_BUILDS+=("groovyfind")
-        return
-    fi
-
-    log "$GRADLE --warning-mode all clean"
-    "$GRADLE" --warning-mode all clean
-
-    clean_json_resources "$GROOVYFIND_PATH/lib/src/main/resources"
-
-    clean_test_resources "$GROOVYFIND_PATH/lib/src/test/resources"
-
-    cd -
+    clean_xfind_version "groovy" "groovyfind"
 }
 
 clean_hsfind () {
     echo
     hdr "clean_hsfind"
 
-    # ensure stack is installed
-    if [ -z "$(which stack)" ]
-    then
-        log_error "You need to install stack"
-        FAILED_BUILDS+=("hsfind")
-        return
-    fi
-
-    cd "$HSFIND_PATH"
-
-    log "stack clean"
-    stack clean
-
-    clean_json_resources "$HSFIND_PATH/data"
-
-    if [ -n "$LOCKFILE" -a -f "stack.yaml.lock" ]
-    then
-        log "rm stack.yaml.lock"
-        rm -f stack.yaml.lock
-    fi
-
-    cd -
+    clean_xfind_version "haskell" "hsfind"
 }
 
 clean_javafind () {
     echo
     hdr "clean_javafind"
 
-    cd "$JAVAFIND_PATH"
-
-    GRADLE=
-    # check for gradle wrapper
-    if [ -f "gradlew" ]
-    then
-        GRADLE="./gradlew"
-    elif [ -n "$(which gradle)" ]
-    then
-        GRADLE="gradle"
-    else
-        log_error "You need to install gradle"
-        FAILED_BUILDS+=("javafind")
-        cd -
-        return
-    fi
-
-    log "$GRADLE --warning-mode all clean"
-    "$GRADLE" --warning-mode all clean
-
-    clean_json_resources "$JAVAFIND_PATH/lib/src/main/resources"
-
-    clean_test_resources "$JAVAFIND_PATH/lib/src/test/resources"
-
-    cd -
+    clean_xfind_version "java" "javafind"
 }
 
 clean_jsfind () {
     echo
     hdr "clean_jsfind"
 
-    # ensure npm is installed
-    if [ -z "$(which npm)" ]
-    then
-        log_error "You need to install npm"
-        FAILED_BUILDS+=("jsfind")
-        return
-    fi
-
-    cd "$JSFIND_PATH"
-
-    log "npm run clean"
-    npm run clean
-
-    clean_json_resources "$JSFIND_PATH/data"
-
-    if [ -n "$LOCKFILE" -a -f "package-lock.json" ]
-    then
-        log "rm package-lock.json"
-        rm -f package-lock.json
-    fi
-
-    cd -
+    clean_xfind_version "javascript" "jsfind"
 }
 
 clean_ktfind () {
     echo
     hdr "clean_ktfind"
 
-    cd "$KTFIND_PATH"
-
-    GRADLE=
-    # check for gradle wrapper
-    if [ -f "gradlew" ]
-    then
-        GRADLE="./gradlew"
-    elif [ -n "$(which gradle)" ]
-    then
-        GRADLE="gradle"
-    else
-        log_error "You need to install gradle"
-        FAILED_BUILDS+=("ktfind")
-        cd -
-        return
-    fi
-
-    log "$GRADLE --warning-mode all clean"
-    "$GRADLE" --warning-mode all clean
-
-    clean_json_resources "$KTFIND_PATH/lib/src/main/resources"
-
-    clean_test_resources "$KTFIND_PATH/lib/src/test/resources"
-
-    cd -
-}
-
-clean_objcfind () {
-    echo
-    hdr "clean_objcfind"
-
-    # ensure swift is installed
-    if [ -z "$(which swift)" ]
-    then
-        log_error "You need to install swift"
-        FAILED_BUILDS+=("objcfind")
-        return
-    fi
-
-    cd "$OBJCFIND_PATH"
-
-    log "swift package clean"
-    swift package clean
-
-    cd -
+    clean_xfind_version "kotlin" "ktfind"
 }
 
 clean_mlfind () {
     echo
     hdr "clean_mlfind"
 
-    # TODO: probably want to delete the _build directory
+    clean_xfind_version "ocaml" "mlfind"
 }
 
-clean_phpfind () {
+clean_objcfind () {
     echo
-    hdr "clean_phpfind"
+    hdr "clean_objcfind"
 
-    clean_json_resources "$PHPFIND_PATH/resources"
-
-    if [ -n "$LOCKFILE" -a -f "$PHPFIND_PATH/composer.lock" ]
-    then
-        log "rm composer.lock"
-        rm -f "$PHPFIND_PATH/composer.lock"
-    fi
+    clean_xfind_version "objc" "objcfind"
 }
 
 clean_plfind () {
     echo
     hdr "clean_plfind"
 
-    clean_json_resources "$PLFIND_PATH/share"
+    clean_xfind_version "perl" "plfind"
+}
+
+clean_phpfind () {
+    echo
+    hdr "clean_phpfind"
+
+    clean_xfind_version "php" "phpfind"
 }
 
 clean_ps1find () {
     echo
     hdr "clean_ps1find"
-    log "Nothing to do for powershell"
-    # TODO: do we want to uninstall?
+
+    clean_xfind_version "powershell" "ps1find"
 }
 
 clean_pyfind () {
     echo
     hdr "clean_pyfind"
 
-    clean_json_resources "$PYFIND_PATH/pyfind/data"
+    clean_xfind_version "python" "pyfind"
 }
 
 clean_rbfind () {
     echo
     hdr "clean_rbfind"
 
-    clean_json_resources "$RBFIND_PATH/data"
-
-    clean_test_resources "$RBFIND_PATH/test/fixtures"
-
-    if [ -n "$LOCKFILE" -a -f "$RBFIND_PATH/Gemfile.lock" ]
-    then
-        log "rm Gemfile.lock"
-        rm -f "$RBFIND_PATH/Gemfile.lock"
-    fi
+    clean_xfind_version "ruby" "rbfind"
 }
 
 clean_rsfind () {
     echo
     hdr "clean_rsfind"
 
-    # ensure cargo is installed
-    if [ -z "$(which cargo)" ]
-    then
-        log_error "You need to install cargo"
-        FAILED_BUILDS+=("rsfind")
-        return
-    fi
-
-    cd "$RSFIND_PATH"
-
-    echo "cargo clean"
-    cargo clean
-
-    if [ -n "$LOCKFILE" -a -f "Cargo.lock" ]
-    then
-        log "rm Cargo.lock"
-        rm -f Cargo.lock
-    fi
-
-    cd -
+    clean_xfind_version "rust" "rsfind"
 }
 
 clean_scalafind () {
     echo
     hdr "clean_scalafind"
 
-    # ensure sbt is installed
-    if [ -z "$(which sbt)" ]
-    then
-        log_error "You need to install sbt"
-        FAILED_BUILDS+=("scalafind")
-        return
-    fi
-
-    # TODO: convert to sbt command
-
-    cd "$SCALAFIND_PATH"
-
-    log "sbt clean"
-    sbt clean
-
-    clean_json_resources "$SCALAFIND_PATH/src/main/resources"
-
-    clean_test_resources "$SCALAFIND_PATH/src/test/resources"
-
-    cd -
+    clean_xfind_version "scala" "scalafind"
 }
 
 clean_swiftfind () {
     echo
     hdr "clean_swiftfind"
 
-    # ensure swift is installed
-    if [ -z "$(which swift)" ]
-    then
-        log_error "You need to install swift"
-        FAILED_BUILDS+=("swiftfind")
-        return
-    fi
-
-    cd "$SWIFTFIND_PATH"
-
-    log "swift package clean"
-    swift package clean
-
-    cd -
+    clean_xfind_version "swift" "swiftfind"
 }
 
 clean_tsfind () {
     echo
     hdr "clean_tsfind"
 
-    # ensure npm is installed
-    if [ -z "$(which npm)" ]
-    then
-        log_error "You need to install npm"
-        FAILED_BUILDS+=("tsfind")
-        return
-    fi
-
-    cd "$TSFIND_PATH"
-
-    log "npm run clean"
-    npm run clean
-
-    clean_json_resources "$TSFIND_PATH/data"
-
-    if [ -n "$LOCKFILE" -a -f "package-lock.json" ]
-    then
-        log "rm package-lock.json"
-        rm -f package-lock.json
-    fi
-
-    cd -
+    clean_xfind_version "typescript" "tsfind"
 }
 
 clean_linux () {
@@ -770,7 +404,7 @@ fi
 if [ -n "$CLEAN_ALL" ]
 then
     clean_all
-    print_failed_builds
+    print_clean_results
     exit
 fi
 
@@ -866,4 +500,4 @@ do
     esac
 done
 
-print_failed_builds
+print_clean_results
