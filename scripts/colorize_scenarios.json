@@ -12,7 +12,7 @@
             "group": "colorize",
             "name": "colorize in usage",
             "args": ["-h"],
-            "replace_xfind_name": true,
+            "replace_exe_name": true,
             "common_args": [
             ]
         },
@@ -20,7 +20,7 @@
             "group": "colorize",
             "name": "colorize error",
             "args": ["-c"],
-            "replace_xfind_name": true,
+            "replace_exe_name": true,
             "common_args": [
             ]
         },
@@ -28,7 +28,7 @@
             "group": "colorize",
             "name": "no colorize error",
             "args": ["-C"],
-            "replace_xfind_name": true,
+            "replace_exe_name": true,
             "common_args": [
             ]
         },
