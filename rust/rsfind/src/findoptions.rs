@@ -608,7 +608,7 @@ mod tests {
         assert!(!options.find_options.is_empty());
 
         let args: Vec<String> = vec![
-            "rsfind", "-x", "php,rs", "-D", "debug", "-f", "find", "-t",
+            "-x", "php,rs", "-D", "debug", "-f", "find", "-t",
             "code", "--debug", ".",
         ]
         .into_iter()

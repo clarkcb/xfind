@@ -7,7 +7,7 @@
 const {FileTypes} = require('./filetypes');
 const {SortBy} = require("./sortby");
 const StringUtil = require('./stringutil');
-const { Color } = require('./color')
+const { Color } = require('./color');
 
 class FindSettings {
     _archivesOnly = false;

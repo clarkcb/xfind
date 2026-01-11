@@ -6,9 +6,9 @@
 
 const {ArgToken} = require("./argtoken");
 const {ArgTokenType} = require("./argtokentype");
-const { FindError } = require('./finderror')
-const { FileUtil } = require('./fileutil')
-const fs = require('fs')
+const { FindError } = require('./finderror');
+const { FileUtil } = require('./fileutil');
+const fs = require('fs');
 
 class ArgTokenizer {
     boolMap

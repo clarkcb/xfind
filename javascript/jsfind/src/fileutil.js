@@ -8,7 +8,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const common = require('./common');
-const { trimFromEnd } = require('./stringutil')
+const { trimFromEnd } = require('./stringutil');
 
 const ENOENT = 'ENOENT';
 const EACCES = 'EACCES';

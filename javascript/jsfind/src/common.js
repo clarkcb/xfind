@@ -21,7 +21,7 @@ const logError = (message, colorize = true) => {
     } else {
         process.stderr.write(message + "\n");
     }
-}
+};
 
 const boolHashFromArray = (arr) => {
     const hash = {};

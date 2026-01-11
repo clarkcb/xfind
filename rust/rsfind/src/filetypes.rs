@@ -198,7 +198,7 @@ impl FileTypes {
 
 #[cfg(test)]
 mod tests {
-    use rsfind::filetypes::{FileType, FileTypes};
+    use super::*;
 
     #[test]
     fn get_file_type_archive_file() {

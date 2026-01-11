@@ -111,7 +111,7 @@ mod tests {
         let start_path = "/Users/cary/src/xfind/rust";
 
         let args: Vec<String> = vec![
-            "rsfind", "-x", "rs", "-D", "debug", "-f", "find", "--debug",
+            "-x", "rs", "-D", "debug", "-f", "find", "--debug",
             start_path,
         ]
         .into_iter()
@@ -126,7 +126,7 @@ mod tests {
         let start_path = "/Users/cary/src/xfind/rust";
 
         let args: Vec<String> = vec![
-            "rsfind", "-x", "rlib", "-f", "find", "--debug", start_path,
+            "-x", "rlib", "-f", "find", "--debug", start_path,
         ]
         .into_iter()
         .map(|a| a.to_string())

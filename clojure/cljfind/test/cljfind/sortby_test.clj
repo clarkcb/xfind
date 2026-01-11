@@ -1,6 +1,6 @@
 (ns cljfind.sortby-test
   (:require [clojure.test :refer :all])
-  (:use [cljfind.findsettings :only (sort-by-from-name)]))
+  (:use [cljfind.sortby :only (sort-by-from-name)]))
 
 (deftest test-sort-by-from-name
   (testing "test-sort-by-from-name"

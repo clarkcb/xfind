@@ -12,16 +12,15 @@ module HsFind.FindOptions
 import Data.Aeson
 import qualified Data.ByteString.Lazy.Char8 as BC
 import Data.Char (toLower)
-import Data.Either (isLeft, lefts, rights, either)
-import Data.List (isPrefixOf, isSuffixOf, sortBy)
-import Data.Maybe (fromJust, isJust, listToMaybe)
+import Data.List (sortBy)
+import Data.Maybe (fromJust, isJust)
 import Data.Time (UTCTime(..), parseTimeM, defaultTimeLocale)
 import GHC.Generics
 
 import HsFind.Paths_hsfind (getDataFileName)
 import HsFind.ArgTokenizer
 import HsFind.FileTypes (getFileTypeForName)
-import HsFind.FileUtil (expandPath, getFileString, isFile)
+import HsFind.FileUtil (getFileString)
 import HsFind.FindSettings
 
 
@@ -50,14 +49,14 @@ findOptionsFile = "findoptions.json"
 getArgTokenizer :: [FindOption] -> ArgTokenizer
 getArgTokenizer jsonOpts =
   ArgTokenizer
-    { boolMap = boolMap
-    , stringMap = stringMap
-    , intMap = intMap
+    { boolMap = boolMap'
+    , stringMap = stringMap'
+    , intMap = intMap'
     }
   where
-    boolMap = boolShortMap ++ boolLongMap
-    stringMap = stringShortMap ++ stringLongMap ++ [("settings-file", "settings-file")]
-    intMap = intShortMap ++ intLongMap
+    boolMap' = boolShortMap ++ boolLongMap
+    stringMap' = stringShortMap ++ stringLongMap ++ [("settings-file", "settings-file")]
+    intMap' = intShortMap ++ intLongMap
     boolLongMap :: [(String, String)]
     boolLongMap = [(long o, long o) | o <- jsonOpts, isBoolOption o]
     boolShortMap :: [(String, String)]

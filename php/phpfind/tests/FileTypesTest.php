@@ -14,9 +14,8 @@ class FileTypesTest extends TestCase
      */
     private FileTypes $file_types;
 
-    public function __construct()
+    function setUp(): void
     {
-        parent::__construct();
         $this->file_types = new FileTypes();
     }
 

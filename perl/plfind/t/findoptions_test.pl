@@ -17,7 +17,7 @@ BEGIN {
     unshift @INC, $lib_path;
 }
 
-use Test::Simple tests => 40;
+use Test::Simple tests => 42;
 
 use plfind::FindOptions;
 
@@ -82,7 +82,6 @@ sub test_invalid_arg {
 }
 
 sub test_settings_from_json {
-    my $settings = plfind::FindSettings->new();
     my $json = <<"END_JSON";
 {
   "path": "~/src/xfind/",
@@ -94,9 +93,9 @@ sub test_settings_from_json {
   "includehidden": true
 }
 END_JSON
-    $find_options->settings_from_json($json, $settings);
-    # path is expanded when added to settings, must compare to expanded version
-    # my $expected_path = $ENV{HOME} . "/src/xfind";
+    my ($settings, $errs) = $find_options->settings_from_json($json);
+    ok(scalar @$errs == 0, 'no errors getting settings from json');
+    ok(scalar @{$settings->{paths}} == 1, "paths has one path");
     my $expected_path = "~/src/xfind";
     ok(${$settings->{paths}}[0]->stringify eq $expected_path, "paths[0] is set to ~/src/xfind");
     ok(scalar @{$settings->{in_extensions}} == 2, "in_extensions has two extensions");

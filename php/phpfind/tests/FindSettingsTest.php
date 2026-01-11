@@ -14,9 +14,8 @@ class FindSettingsTest extends TestCase
      */
     private FindSettings $settings;
 
-    public function __construct()
+    public function setUp(): void
     {
-        parent::__construct();
         $this->settings = new FindSettings();
     }
 

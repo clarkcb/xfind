@@ -34,7 +34,7 @@
   (let [[ss errs] (settings-from-args ["-x" "clj" "." "-D"])]
     (testing "test-missing-arg"
       (is (= (count errs) 1))
-      (is (= (first errs) "Missing arg for option D")))))
+      (is (= (first errs) "Missing arg for option out-dirpattern")))))
 
 (deftest test-invalid-arg
   (let [[ss errs] (settings-from-args ["-x" "clj" "." "-Q"])]

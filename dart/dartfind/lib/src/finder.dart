@@ -230,7 +230,7 @@ class Finder {
       if ((entry is Directory || linkIsDir) &&
           recurse &&
           filterDirByHidden(entry as Directory) &&
-          filterDirByOutPatterns(entry as Directory)) {
+          filterDirByOutPatterns(entry)) {
         pathDirs.add(entry);
       } else if ((entry is File || linkIsFile) &&
           (minDepth < 0 || currentDepth >= minDepth)) {

@@ -71,7 +71,7 @@ class FindOptionsTest(unittest.TestCase):
         args = ['-x', 'py,rb', '.', '-D']
         with self.assertRaises(FindException) as cm:
             self.find_options.find_settings_from_args(args)
-        self.assertEqual(str(cm.exception), 'Missing value for option out-dirpattern')
+        self.assertEqual(str(cm.exception), 'Missing value for option D')
 
     def test_invalid_arg(self):
         args = ['-x', 'py,rb', '.', '-Q']

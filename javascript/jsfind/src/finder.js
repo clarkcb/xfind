@@ -16,7 +16,7 @@ const {FileType} = require("./filetype");
 const {FileTypes} = require('./filetypes');
 const {FileUtil, ENOENT, EACCES} = require('./fileutil');
 const {FindError} = require('./finderror');
-const common = require('./common')
+const common = require('./common');
 
 const startPathNotDefined = 'Startpath not defined';
 const invalidRangeForMinDepthAndMaxDepth = 'Invalid range for mindepth and maxdepth';

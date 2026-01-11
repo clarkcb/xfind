@@ -6,7 +6,7 @@
 
 const config = require('./config');
 const {ArgTokenizer} = require('./argtokenizer');
-const {ArgTokenType} = require('./argtokentype')
+const {ArgTokenType} = require('./argtokentype');
 const {FileUtil} = require('./fileutil');
 const {FindError} = require('./finderror');
 const {FindOption} = require('./findoption');

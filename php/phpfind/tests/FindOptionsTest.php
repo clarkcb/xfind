@@ -16,9 +16,8 @@ class FindOptionsTest extends TestCase
      */
     private FindOptions $find_options;
 
-    public function __construct()
+    function setUp(): void
     {
-        parent::__construct();
         $this->find_options = new FindOptions();
     }
 

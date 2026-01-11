@@ -170,13 +170,14 @@ needLastMods settings = isJust (minLastMod settings) || isJust (maxLastMod setti
 
 -- JSON parsing stuff below here
 validKeys :: [Text]
-validKeys = ["archivesonly", "colorize", "debug", "excludearchives", "excludehidden",
-             "followsymlinks", "help", "in-archiveext", "in-archivefilepattern", "in-dirpattern",
-             "in-ext", "in-filepattern", "in-filetype", "includearchives", "includehidden",
-             "maxdepth", "maxlastmod", "maxsize", "mindepth", "minlastmod", "minsize",
-             "out-archiveextension", "out-archivefilepattern", "out-dirpattern", "out-ext",
-             "out-filepattern", "out-filetype", "path", "printdirs", "printfiles", "recursive",
-             "sort-caseinsensitive", "sort-descending", "sort-by", "verbose", "version"]
+validKeys = ["archivesonly", "colorize", "debug", "dircolor", "excludearchives", "excludehidden",
+             "extcolor", "filecolor", "followsymlinks", "help", "in-archiveext",
+             "in-archivefilepattern", "in-dirpattern", "in-ext", "in-filepattern", "in-filetype",
+             "includearchives", "includehidden", "maxdepth", "maxlastmod", "maxsize", "mindepth",
+             "minlastmod", "minsize", "out-archiveextension", "out-archivefilepattern",
+             "out-dirpattern", "out-ext", "out-filepattern", "out-filetype", "path", "printdirs",
+             "printfiles", "recursive", "sort-caseinsensitive", "sort-descending", "sort-by",
+             "verbose", "version"]
 
 instance FromJSON FindSettings where
   parseJSON = withObject "FindSettings" $ \obj -> do
@@ -188,75 +189,81 @@ instance FromJSON FindSettings where
       fail $ "Invalid option: " ++ unpack (head unknownKeys)
 
     -- Parse known fields
-    archivesOnly <- obj .:? "archivesonly" .!= False
-    colorize <- obj .:? "colorize" .!= True
-    debug <- obj .:? "debug" .!= False
-    followSymlinks <- obj .:? "followsymlinks" .!= False
-    inArchiveExtensions <- obj .:? "in-archiveext" >>= parseStringOrArray
-    inArchiveFilePatterns <- obj .:? "in-archivefilepattern" >>= parseStringOrArray
-    inDirPatterns <- obj .:? "in-dirpattern" >>= parseStringOrArray
-    inExtensions <- obj .:? "in-ext" >>= parseStringOrArray
-    inFilePatterns <- obj .:? "in-filepattern" >>= parseStringOrArray
-    inFileTypes <- obj .:? "in-filetype" >>= parseFileTypes
-    includeArchives <- parseIncludeArchives obj
-    includeHidden <- parseIncludeHidden obj
-    maxDepth <- obj .:? "maxdepth" .!= (-1)
-    maxLastMod <- obj .:? "maxlastmod" >>= parseUTCTime
-    maxSize <- obj .:? "maxsize" .!= 0
-    minDepth <- obj .:? "mindepth" .!= (-1)
-    minLastMod <- obj .:? "minlastmod" >>= parseUTCTime
-    minSize <- obj .:? "minsize" .!= 0
-    outArchiveExtensions <- obj .:? "out-archiveextension" >>= parseStringOrArray
-    outArchiveFilePatterns <- obj .:? "out-archivefilepattern" >>= parseStringOrArray
-    outDirPatterns <- obj .:? "out-dirpattern" >>= parseStringOrArray
-    outExtensions <- obj .:? "out-ext" >>= parseStringOrArray
-    outFilePatterns <- obj .:? "out-filepattern" >>= parseStringOrArray
-    outFileTypes <- obj .:? "out-filetype" >>= parseFileTypes
-    paths <- obj .:? "path" >>= parseStringOrArray
-    printDirs <- obj .:? "printdirs" .!= False
-    printFiles <- obj .:? "printfiles" .!= False
-    printUsage <- obj .:? "help" .!= False
-    printVersion <- obj .:? "version" .!= False
-    recursive <- obj .:? "recursive" .!= True
-    sortCaseInsensitive <- obj .:? "sort-caseinsensitive" .!= False
-    sortDescending <- obj .:? "sort-descending" .!= False
-    sortResultsBy <- obj .:? "sort-by" >>= parseSortBy
-    verbose <- obj .:? "verbose" .!= False
+    archivesOnly' <- obj .:? "archivesonly" .!= False
+    colorize' <- obj .:? "colorize" .!= True
+    debug' <- obj .:? "debug" .!= False
+    -- dirColor' <- obj .:? "dircolor" .!= ColorCyan
+    -- extColor' <- obj .:? "extcolor" .!= ColorYellow
+    -- fileColor' <- obj .:? "filecolor" .!= ColorMagenta
+    followSymlinks' <- obj .:? "followsymlinks" .!= False
+    inArchiveExtensions' <- obj .:? "in-archiveext" >>= parseStringOrArray
+    inArchiveFilePatterns' <- obj .:? "in-archivefilepattern" >>= parseStringOrArray
+    inDirPatterns' <- obj .:? "in-dirpattern" >>= parseStringOrArray
+    inExtensions' <- obj .:? "in-ext" >>= parseStringOrArray
+    inFilePatterns' <- obj .:? "in-filepattern" >>= parseStringOrArray
+    inFileTypes' <- obj .:? "in-filetype" >>= parseFileTypes
+    includeArchives' <- parseIncludeArchives obj
+    includeHidden' <- parseIncludeHidden obj
+    maxDepth' <- obj .:? "maxdepth" .!= (-1)
+    maxLastMod' <- obj .:? "maxlastmod" >>= parseUTCTime
+    maxSize' <- obj .:? "maxsize" .!= 0
+    minDepth' <- obj .:? "mindepth" .!= (-1)
+    minLastMod' <- obj .:? "minlastmod" >>= parseUTCTime
+    minSize' <- obj .:? "minsize" .!= 0
+    outArchiveExtensions' <- obj .:? "out-archiveextension" >>= parseStringOrArray
+    outArchiveFilePatterns' <- obj .:? "out-archivefilepattern" >>= parseStringOrArray
+    outDirPatterns' <- obj .:? "out-dirpattern" >>= parseStringOrArray
+    outExtensions' <- obj .:? "out-ext" >>= parseStringOrArray
+    outFilePatterns' <- obj .:? "out-filepattern" >>= parseStringOrArray
+    outFileTypes' <- obj .:? "out-filetype" >>= parseFileTypes
+    paths' <- obj .:? "path" >>= parseStringOrArray
+    printDirs' <- obj .:? "printdirs" .!= False
+    printFiles' <- obj .:? "printfiles" .!= False
+    printUsage' <- obj .:? "help" .!= False
+    printVersion' <- obj .:? "version" .!= False
+    recursive' <- obj .:? "recursive" .!= True
+    sortCaseInsensitive' <- obj .:? "sort-caseinsensitive" .!= False
+    sortDescending' <- obj .:? "sort-descending" .!= False
+    sortResultsBy' <- obj .:? "sort-by" >>= parseSortBy
+    verbose' <- obj .:? "verbose" .!= False
     return FindSettings {
-      archivesOnly=archivesOnly
-    , colorize=colorize
-    , debug=debug
-    , followSymlinks=followSymlinks
-    , inArchiveExtensions=inArchiveExtensions
-    , inArchiveFilePatterns=inArchiveFilePatterns
-    , inDirPatterns=inDirPatterns
-    , inExtensions=inExtensions
-    , inFilePatterns=inFilePatterns
-    , inFileTypes=inFileTypes
-    , includeArchives=includeArchives
-    , includeHidden=includeHidden
-    , maxDepth=maxDepth
-    , maxLastMod=maxLastMod
-    , maxSize=maxSize
-    , minDepth=minDepth
-    , minLastMod=minLastMod
-    , minSize=minSize
-    , outArchiveExtensions=outArchiveExtensions
-    , outArchiveFilePatterns=outArchiveFilePatterns
-    , outDirPatterns=outDirPatterns
-    , outExtensions=outExtensions
-    , outFilePatterns=outFilePatterns
-    , outFileTypes=outFileTypes
-    , paths=paths
-    , printDirs=printDirs
-    , printFiles=printFiles
-    , printUsage=printUsage
-    , printVersion=printVersion
-    , recursive=recursive
-    , sortCaseInsensitive=sortCaseInsensitive
-    , sortDescending=sortDescending
-    , sortResultsBy=sortResultsBy
-    , verbose=verbose
+      archivesOnly=archivesOnly'
+    , colorize=colorize'
+    , debug=debug'
+    , dirColor=ColorCyan
+    , extColor=ColorYellow
+    , fileColor=ColorMagenta
+    , followSymlinks=followSymlinks'
+    , inArchiveExtensions=inArchiveExtensions'
+    , inArchiveFilePatterns=inArchiveFilePatterns'
+    , inDirPatterns=inDirPatterns'
+    , inExtensions=inExtensions'
+    , inFilePatterns=inFilePatterns'
+    , inFileTypes=inFileTypes'
+    , includeArchives=includeArchives'
+    , includeHidden=includeHidden'
+    , maxDepth=maxDepth'
+    , maxLastMod=maxLastMod'
+    , maxSize=maxSize'
+    , minDepth=minDepth'
+    , minLastMod=minLastMod'
+    , minSize=minSize'
+    , outArchiveExtensions=outArchiveExtensions'
+    , outArchiveFilePatterns=outArchiveFilePatterns'
+    , outDirPatterns=outDirPatterns'
+    , outExtensions=outExtensions'
+    , outFilePatterns=outFilePatterns'
+    , outFileTypes=outFileTypes'
+    , paths=paths'
+    , printDirs=printDirs'
+    , printFiles=printFiles'
+    , printUsage=printUsage'
+    , printVersion=printVersion'
+    , recursive=recursive'
+    , sortCaseInsensitive=sortCaseInsensitive'
+    , sortDescending=sortDescending'
+    , sortResultsBy=sortResultsBy'
+    , verbose=verbose'
     }
 
 -- Custom function to handle "includearchives" or "excludearchives"
@@ -308,6 +315,12 @@ parseUTCTime (Just (String s)) =
     Nothing   -> fail "Invalid UTCTime format"
 parseUTCTime _ = mzero
 
+-- -- Helper function to parse Color
+-- parseColor :: Maybe Value -> Parser Color
+-- parseColor Nothing = return ColorBlack
+-- parseColor (Just (String s)) = return $ getColorForName (unpack s)
+-- parseColor _ = mzero
+
 -- Helper function to parse SortBy
 parseSortBy :: Maybe Value -> Parser SortBy
 parseSortBy Nothing = return SortByFilePath
@@ -315,8 +328,8 @@ parseSortBy (Just (String s)) = return $ getSortByForName (unpack s)
 parseSortBy _ = mzero
 
 updateFindSettingsFromJsonValue :: FindSettings -> Value -> Either String FindSettings
-updateFindSettingsFromJsonValue settings json =
-  case fromJSON json of
+updateFindSettingsFromJsonValue settings jsonVal =
+  case fromJSON jsonVal of
     Success newSettings -> Right $ mergeFindSettings settings newSettings
     Error e             -> Left e
 
@@ -325,6 +338,9 @@ mergeFindSettings old new = FindSettings
   { archivesOnly = archivesOnly new || archivesOnly old
   , colorize = colorize new || colorize old
   , debug = debug new || debug old
+  -- , dirColor = dirColor new || dirColor old
+  -- , extColor = extColor new || extColor old
+  -- , fileColor = fileColor new || fileColor old
   , followSymlinks = followSymlinks new || followSymlinks old
   , inArchiveExtensions = inArchiveExtensions old ++ inArchiveExtensions new
   , inArchiveFilePatterns = inArchiveFilePatterns old ++ inArchiveFilePatterns new

@@ -27,11 +27,11 @@ class FileResultFormatter {
   }
 
   colorize(s, matchStartIndex, matchEndIndex, color) {
-    let prefix = ''
+    let prefix = '';
     if (matchStartIndex > 0) {
       prefix = s.slice(0, matchStartIndex);
     }
-    let suffix = ''
+    let suffix = '';
     if (matchEndIndex < s.length) {
       suffix = s.slice(matchEndIndex);
     }
@@ -43,7 +43,7 @@ class FileResultFormatter {
   }
 
   formatDirPathWithColor(dirPath) {
-    let formattedPath = '.'
+    let formattedPath = '.';
     if (dirPath) {
       formattedPath = dirPath;
       for (let p of this.settings.inDirPatterns) {

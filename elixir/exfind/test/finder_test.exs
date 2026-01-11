@@ -305,7 +305,7 @@ test "invalid range for mindepth and maxdepth" do
     finder = Finder.new(settings)
     case Finder.find(finder) do
       {:error, _} -> assert false
-      {:ok, results} -> assert (length(results) == 0 or length(results) > 2)
+      {:ok, results} -> assert (Enum.empty?(results) == 0 or length(results) > 2)
     end
   end
 

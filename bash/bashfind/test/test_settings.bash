@@ -109,7 +109,7 @@ test_settings_from_args_invalid_option () {
 
     echo "args: ${args[@]}"
 
-    result=$(settings_from_args "${args[@]}")
+    result=$(settings_from_args "${args[@]}" 2>&1)
 
     if [[ $result == *"ERROR: Invalid option: invalid"* ]]
     then
@@ -129,7 +129,7 @@ test_settings_from_args_missing_arg_for_option () {
 
     echo "args: ${args[@]}"
 
-    result=$(settings_from_args "${args[@]}")
+    result=$(settings_from_args "${args[@]}" 2>&1)
 
     if [[ $result == *"ERROR: Missing argument for option"* ]]
     then
@@ -173,7 +173,7 @@ test_validate_settings_missing_path () {
 
     settings_from_args "${args[@]}"
 
-    result=$(validate_settings)
+    result=$(validate_settings 2>&1)
 
     if [[ $result == *'ERROR: Startpath not defined'* ]]
     then
@@ -195,7 +195,7 @@ test_validate_settings_invalid_path () {
 
     settings_from_args "${args[@]}"
 
-    result=$(validate_settings)
+    result=$(validate_settings 2>&1)
 
     if [[ $result == *'ERROR: Startpath not found'* ]]
     then
@@ -217,7 +217,7 @@ test_validate_settings_invalid_depth_range () {
 
     settings_from_args "${args[@]}"
 
-    result=$(validate_settings)
+    result=$(validate_settings 2>&1)
 
     if [[ $result == *'ERROR: Invalid range for mindepth and maxdepth'* ]]
     then
@@ -239,7 +239,7 @@ test_validate_settings_invalid_lastmod_range () {
 
     settings_from_args "${args[@]}"
 
-    result=$(validate_settings)
+    result=$(validate_settings 2>&1)
 
     if [[ $result == *'ERROR: Invalid range for minlastmod and maxlastmod'* ]]
     then
@@ -261,7 +261,7 @@ test_validate_settings_invalid_size_range () {
 
     settings_from_args "${args[@]}"
 
-    result=$(validate_settings)
+    result=$(validate_settings 2>&1)
 
     if [[ $result == *'ERROR: Invalid range for minsize and maxsize'* ]]
     then
