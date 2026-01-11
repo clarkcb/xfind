@@ -1,2 +1,3 @@
 requires 'perl', '5.40';
+requires 'DateTime::Format::DateParse', '0.05';
 requires 'Path::Class', '0.37';
