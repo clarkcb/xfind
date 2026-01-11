@@ -41,6 +41,7 @@ library
       HsFind.FindSettings
       HsFind.Paths_hsfind
       HsFind.SortBy
+      HsFind.StringUtil
   other-modules:
       Paths_hsfind
   hs-source-dirs:

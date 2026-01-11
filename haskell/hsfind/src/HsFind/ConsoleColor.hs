@@ -1,5 +1,6 @@
 module HsFind.ConsoleColor
   ( Color(..)
+  , colorizeString
   , colorToConsoleColor
   , consoleReset
   , consoleBlack
@@ -19,6 +20,8 @@ module HsFind.ConsoleColor
   , boldCyan
   , boldWhite
   ) where
+
+import HsFind.StringUtil (sliceString)
 
 data Color = ColorBlack
            | ColorRed
@@ -92,3 +95,19 @@ colorToConsoleColor color =
     ColorMagenta -> consoleMagenta
     ColorCyan -> consoleCyan
     ColorWhite -> consoleWhite
+
+-- colorizeString :: String -> startIdx -> len -> Color -> String
+colorizeString :: String -> Int -> Int -> Color -> String
+colorizeString s startIdx len color = 
+  prefixS ++ colorToConsoleColor color ++ matchS ++ consoleReset ++ suffixS
+  where prefixS =
+          if startIdx > 0
+          then take startIdx s
+          else ""
+        suffixS =
+          if endIdx < length s
+          then drop endIdx s
+          else ""
+        -- matchS = take (endIdx - startIdx) $ drop startIdx s
+        matchS = sliceString startIdx endIdx s
+        endIdx = startIdx + len

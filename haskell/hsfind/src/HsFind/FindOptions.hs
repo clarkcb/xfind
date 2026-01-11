@@ -22,6 +22,7 @@ import HsFind.ArgTokenizer
 import HsFind.FileTypes (getFileTypeForName)
 import HsFind.FileUtil (getFileString)
 import HsFind.FindSettings
+import HsFind.StringUtil (padString)
 
 
 data FindOption = FindOption
@@ -113,10 +114,6 @@ sortFindOption FindOption {long=l1, short=s1} FindOption {long=l2, short=s2} =
 
 sortFindOptions :: [FindOption] -> [FindOption]
 sortFindOptions = sortBy sortFindOption
-
-padString :: String -> Int -> String
-padString s len | length s < len = s ++ replicate (len - length s) ' '
-                | otherwise      = s
 
 findOptionsToString :: [FindOption] -> String
 findOptionsToString findOptions = 

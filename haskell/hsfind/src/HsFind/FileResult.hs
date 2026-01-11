@@ -25,10 +25,11 @@ import Data.Time (UTCTime)
 import System.FilePath ((</>), dropFileName, splitPath, takeDirectory, takeFileName)
 import Text.Regex.PCRE
 
-import HsFind.ConsoleColor (Color(..), colorToConsoleColor, consoleReset)
+import HsFind.ConsoleColor (Color(..), colorizeString, colorToConsoleColor, consoleReset)
 import HsFind.FileTypes
 import HsFind.FindSettings
 import HsFind.FileUtil (getExtensionIndex)
+import HsFind.StringUtil (compareStrings)
 
 data FileResult = FileResult {
                                fileResultContainers :: [FilePath]
@@ -77,20 +78,6 @@ newFileResultWithSizeAndLastMod fp ft size lastmod = FileResult {
 fileResultToString :: FileResult -> String
 fileResultToString = fileResultPath
 
-colorizeString :: String -> Int -> Int -> Color -> String
-colorizeString s startIdx len color = 
-  prefixS ++ colorToConsoleColor color ++ matchS ++ consoleReset ++ suffixS
-  where prefixS =
-          if startIdx > 0
-          then take startIdx s
-          else ""
-        suffixS =
-          if endIdx < length s
-          then drop endIdx s
-          else ""
-        matchS = take (endIdx - startIdx) $ drop startIdx s
-        endIdx = startIdx + len
-
 colorizeDirectory :: FindSettings -> FilePath -> String
 colorizeDirectory settings dir = 
   case filter (\p -> dir =~ p :: Bool) (inDirPatterns settings) of
@@ -134,13 +121,6 @@ formatFilePath settings fp = formattedParent </> formattedFile
 formatFileResult :: FindSettings -> FileResult -> String
 formatFileResult settings result = formatFilePath settings (fileResultPath result)
 
-compareStrings :: FindSettings -> String -> String -> Ordering
-compareStrings settings s1 s2 =
-  if sortCaseInsensitive settings
-  then compare (lower s1) (lower s2)
-  else compare s1 s2
-  where lower = map toLower
-
 comparePaths :: FindSettings -> String -> String -> Ordering
 comparePaths settings p1 p2 =
   if sortCaseInsensitive settings
@@ -153,7 +133,7 @@ comparePaths settings p1 p2 =
 compareFileResultsByPath :: FindSettings -> FileResult -> FileResult -> Ordering
 compareFileResultsByPath settings fr1 fr2 =
   if pcmp == EQ
-  then compareStrings settings f1 f2
+  then compareStrings (sortCaseInsensitive settings) f1 f2
   else pcmp
   where p1 = dropFileName (fileResultPath fr1)
         p2 = dropFileName (fileResultPath fr2)
@@ -170,7 +150,7 @@ compareFileResultsByName settings fr1 fr2 =
         p2 = dropFileName (fileResultPath fr2)
         f1 = takeFileName (fileResultPath fr1)
         f2 = takeFileName (fileResultPath fr2)
-        fcmp = compareStrings settings f1 f2
+        fcmp = compareStrings (sortCaseInsensitive settings) f1 f2
 
 compareFileResultsBySize :: FindSettings -> FileResult -> FileResult -> Ordering
 compareFileResultsBySize settings fr1 fr2 =
