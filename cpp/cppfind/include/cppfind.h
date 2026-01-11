@@ -241,7 +241,7 @@ namespace cppfind {
     public:
         ArgTokenizer() = delete;
         explicit ArgTokenizer(const std::vector<std::unique_ptr<Option>>& options);
-        [[nodiscard]] std::vector<ArgToken> tokenize_args(int &argc, char **argv) const;
+        [[nodiscard]] std::vector<ArgToken> tokenize_args(int argc, char **argv) const;
         [[nodiscard]] std::vector<ArgToken> tokenize_json(std::string_view json) const;
         [[nodiscard]] std::vector<ArgToken> tokenize_file(const std::filesystem::path& file_path) const;
     };
@@ -301,19 +301,19 @@ namespace cppfind {
         [[nodiscard]] bool sort_descending() const;
         [[nodiscard]] bool verbose() const;
 
-        [[nodiscard]] std::unordered_set<std::string> in_archive_extensions() const;
-        [[nodiscard]] std::unordered_set<RegexPattern, RegexPatternHash> in_archive_file_patterns() const;
-        [[nodiscard]] std::unordered_set<RegexPattern, RegexPatternHash> in_dir_patterns() const;
-        [[nodiscard]] std::unordered_set<std::string> in_extensions() const;
-        [[nodiscard]] std::unordered_set<RegexPattern, RegexPatternHash> in_file_patterns() const;
-        [[nodiscard]] std::unordered_set<FileType> in_file_types() const;
-        [[nodiscard]] std::unordered_set<std::string> out_archive_extensions() const;
-        [[nodiscard]] std::unordered_set<RegexPattern, RegexPatternHash> out_archive_file_patterns() const;
-        [[nodiscard]] std::unordered_set<RegexPattern, RegexPatternHash> out_dir_patterns() const;
-        [[nodiscard]] std::unordered_set<std::string> out_extensions() const;
-        [[nodiscard]] std::unordered_set<RegexPattern, RegexPatternHash> out_file_patterns() const;
-        [[nodiscard]] std::unordered_set<FileType> out_file_types() const;
-        [[nodiscard]] std::unordered_set<std::filesystem::path, PathHash> paths() const;
+        [[nodiscard]] const std::unordered_set<std::string>& in_archive_extensions() const;
+        [[nodiscard]] const std::unordered_set<RegexPattern, RegexPatternHash>& in_archive_file_patterns() const;
+        [[nodiscard]] const std::unordered_set<RegexPattern, RegexPatternHash>& in_dir_patterns() const;
+        [[nodiscard]] const std::unordered_set<std::string>& in_extensions() const;
+        [[nodiscard]] const std::unordered_set<RegexPattern, RegexPatternHash>& in_file_patterns() const;
+        [[nodiscard]] const std::unordered_set<FileType>& in_file_types() const;
+        [[nodiscard]] const std::unordered_set<std::string>& out_archive_extensions() const;
+        [[nodiscard]] const std::unordered_set<RegexPattern, RegexPatternHash>& out_archive_file_patterns() const;
+        [[nodiscard]] const std::unordered_set<RegexPattern, RegexPatternHash>& out_dir_patterns() const;
+        [[nodiscard]] const std::unordered_set<std::string>& out_extensions() const;
+        [[nodiscard]] const std::unordered_set<RegexPattern, RegexPatternHash>& out_file_patterns() const;
+        [[nodiscard]] const std::unordered_set<FileType>& out_file_types() const;
+        [[nodiscard]] const std::unordered_set<std::filesystem::path, PathHash>& paths() const;
 
         // property setters
         void archives_only(bool archives_only);
@@ -444,8 +444,8 @@ namespace cppfind {
     class FindOptions {
     public:
         FindOptions();
-        FindSettings settings_from_args(int &argc, char **argv);
-        void update_settings_from_args(FindSettings& settings, int &argc, char **argv);
+        FindSettings settings_from_args(int argc, char **argv);
+        void update_settings_from_args(FindSettings& settings, int argc, char **argv);
         void update_settings_from_file(FindSettings& settings, const std::filesystem::path& file_path);
         void update_settings_from_json(FindSettings& settings, std::string_view json_str);
         void usage();

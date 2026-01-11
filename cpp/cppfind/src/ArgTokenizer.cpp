@@ -35,7 +35,7 @@ namespace cppfind {
         }
     }
 
-    std::vector<ArgToken> ArgTokenizer::tokenize_args(int &argc, char **argv) const {
+    std::vector<ArgToken> ArgTokenizer::tokenize_args(int argc, char **argv) const {
         std::vector<ArgToken> arg_tokens{};
         std::deque<std::string> arg_deque;
         int i;

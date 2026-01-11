@@ -17,8 +17,8 @@ namespace cppfind {
     class FindOptions {
     public:
         FindOptions();
-        FindSettings settings_from_args(int &argc, char **argv);
-        void update_settings_from_args(FindSettings& settings, int &argc, char **argv);
+        FindSettings settings_from_args(int argc, char **argv);
+        void update_settings_from_args(FindSettings& settings, int argc, char **argv);
         void update_settings_from_file(FindSettings& settings, const std::filesystem::path& file_path);
         void update_settings_from_json(FindSettings& settings, std::string_view json_str);
         void usage();

@@ -64,19 +64,19 @@ namespace cppfind {
         [[nodiscard]] bool sort_descending() const;
         [[nodiscard]] bool verbose() const;
 
-        [[nodiscard]] std::unordered_set<std::string> in_archive_extensions() const;
-        [[nodiscard]] std::unordered_set<RegexPattern, RegexPatternHash> in_archive_file_patterns() const;
-        [[nodiscard]] std::unordered_set<RegexPattern, RegexPatternHash> in_dir_patterns() const;
-        [[nodiscard]] std::unordered_set<std::string> in_extensions() const;
-        [[nodiscard]] std::unordered_set<RegexPattern, RegexPatternHash> in_file_patterns() const;
-        [[nodiscard]] std::unordered_set<FileType> in_file_types() const;
-        [[nodiscard]] std::unordered_set<std::string> out_archive_extensions() const;
-        [[nodiscard]] std::unordered_set<RegexPattern, RegexPatternHash> out_archive_file_patterns() const;
-        [[nodiscard]] std::unordered_set<RegexPattern, RegexPatternHash> out_dir_patterns() const;
-        [[nodiscard]] std::unordered_set<std::string> out_extensions() const;
-        [[nodiscard]] std::unordered_set<RegexPattern, RegexPatternHash> out_file_patterns() const;
-        [[nodiscard]] std::unordered_set<FileType> out_file_types() const;
-        [[nodiscard]] std::unordered_set<std::filesystem::path, PathHash> paths() const;
+        [[nodiscard]] const std::unordered_set<std::string>& in_archive_extensions() const;
+        [[nodiscard]] const std::unordered_set<RegexPattern, RegexPatternHash>& in_archive_file_patterns() const;
+        [[nodiscard]] const std::unordered_set<RegexPattern, RegexPatternHash>& in_dir_patterns() const;
+        [[nodiscard]] const std::unordered_set<std::string>& in_extensions() const;
+        [[nodiscard]] const std::unordered_set<RegexPattern, RegexPatternHash>& in_file_patterns() const;
+        [[nodiscard]] const std::unordered_set<FileType>& in_file_types() const;
+        [[nodiscard]] const std::unordered_set<std::string>& out_archive_extensions() const;
+        [[nodiscard]] const std::unordered_set<RegexPattern, RegexPatternHash>& out_archive_file_patterns() const;
+        [[nodiscard]] const std::unordered_set<RegexPattern, RegexPatternHash>& out_dir_patterns() const;
+        [[nodiscard]] const std::unordered_set<std::string>& out_extensions() const;
+        [[nodiscard]] const std::unordered_set<RegexPattern, RegexPatternHash>& out_file_patterns() const;
+        [[nodiscard]] const std::unordered_set<FileType>& out_file_types() const;
+        [[nodiscard]] const std::unordered_set<std::filesystem::path, PathHash>& paths() const;
 
         // property setters
         void archives_only(bool archives_only);

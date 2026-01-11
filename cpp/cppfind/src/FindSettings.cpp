@@ -88,7 +88,7 @@ namespace cppfind {
         m_follow_symlinks = follow_symlinks;
     }
 
-    std::unordered_set<std::string> FindSettings::in_archive_extensions() const {
+    const std::unordered_set<std::string>& FindSettings::in_archive_extensions() const {
         return m_in_archive_extensions;
     }
 
@@ -96,11 +96,11 @@ namespace cppfind {
         m_in_archive_extensions = in_archive_extensions;
     }
 
-    std::unordered_set<RegexPattern, RegexPatternHash> FindSettings::in_archive_file_patterns() const {
+   const  std::unordered_set<RegexPattern, RegexPatternHash>& FindSettings::in_archive_file_patterns() const {
         return m_in_archive_file_patterns;
     }
 
-    std::unordered_set<RegexPattern, RegexPatternHash> FindSettings::in_dir_patterns() const {
+    const std::unordered_set<RegexPattern, RegexPatternHash>& FindSettings::in_dir_patterns() const {
         return m_in_dir_patterns;
     }
 
@@ -108,7 +108,7 @@ namespace cppfind {
         m_in_dir_patterns = in_dir_patterns;
     }
 
-    std::unordered_set<std::string> FindSettings::in_extensions() const {
+    const std::unordered_set<std::string>& FindSettings::in_extensions() const {
         return m_in_extensions;
     }
 
@@ -116,7 +116,7 @@ namespace cppfind {
         m_in_extensions = in_extensions;
     }
 
-    std::unordered_set<RegexPattern, RegexPatternHash> FindSettings::in_file_patterns() const {
+    const std::unordered_set<RegexPattern, RegexPatternHash>& FindSettings::in_file_patterns() const {
         return m_in_file_patterns;
     }
 
@@ -124,7 +124,7 @@ namespace cppfind {
         m_in_file_patterns = in_file_patterns;
     }
 
-    std::unordered_set<FileType> FindSettings::in_file_types() const {
+    const std::unordered_set<FileType>& FindSettings::in_file_types() const {
         return m_in_file_types;
     }
 
@@ -196,7 +196,7 @@ namespace cppfind {
         m_min_size = min_size;
     }
 
-    std::unordered_set<std::string> FindSettings::out_archive_extensions() const {
+    const std::unordered_set<std::string>& FindSettings::out_archive_extensions() const {
         return m_out_archive_extensions;
     }
 
@@ -204,11 +204,11 @@ namespace cppfind {
         m_out_archive_extensions = out_archive_extensions;
     }
 
-    std::unordered_set<RegexPattern, RegexPatternHash> FindSettings::out_archive_file_patterns() const {
+    const std::unordered_set<RegexPattern, RegexPatternHash>& FindSettings::out_archive_file_patterns() const {
         return m_out_archive_file_patterns;
     }
 
-    std::unordered_set<RegexPattern, RegexPatternHash> FindSettings::out_dir_patterns() const {
+    const std::unordered_set<RegexPattern, RegexPatternHash>& FindSettings::out_dir_patterns() const {
         return m_out_dir_patterns;
     }
 
@@ -216,7 +216,7 @@ namespace cppfind {
         m_out_dir_patterns = out_dir_patterns;
     }
 
-    std::unordered_set<std::string> FindSettings::out_extensions() const {
+    const std::unordered_set<std::string>& FindSettings::out_extensions() const {
         return m_out_extensions;
     }
 
@@ -224,7 +224,7 @@ namespace cppfind {
         m_out_extensions = out_extensions;
     }
 
-    std::unordered_set<RegexPattern, RegexPatternHash> FindSettings::out_file_patterns() const {
+    const std::unordered_set<RegexPattern, RegexPatternHash>& FindSettings::out_file_patterns() const {
         return m_out_file_patterns;
     }
 
@@ -232,7 +232,7 @@ namespace cppfind {
         m_out_file_patterns = out_file_patterns;
     }
 
-    std::unordered_set<FileType> FindSettings::out_file_types() const {
+    const std::unordered_set<FileType>& FindSettings::out_file_types() const {
         return m_out_file_types;
     }
 
@@ -240,7 +240,7 @@ namespace cppfind {
         m_out_file_types = out_file_types;
     }
 
-    std::unordered_set<std::filesystem::path, PathHash> FindSettings::paths() const {
+    const std::unordered_set<std::filesystem::path, PathHash>& FindSettings::paths() const {
         return m_paths;
     }
 

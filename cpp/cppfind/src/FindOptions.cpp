@@ -143,12 +143,12 @@ namespace cppfind {
         }
     }
 
-    void FindOptions::update_settings_from_args(FindSettings& settings, int &argc, char **argv) {
+    void FindOptions::update_settings_from_args(FindSettings& settings, int argc, char **argv) {
         const auto arg_tokens = m_arg_tokenizer.tokenize_args(argc, argv);
         update_settings_from_arg_tokens(settings, arg_tokens);
     }
 
-    FindSettings FindOptions::settings_from_args(int &argc, char **argv) {
+    FindSettings FindOptions::settings_from_args(int argc, char **argv) {
         auto settings = FindSettings();
 
         // set print_files to true since we are running the executable

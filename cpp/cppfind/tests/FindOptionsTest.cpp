@@ -4,7 +4,9 @@
 
 TEST_CASE("Get FindSettings from minimal args", "[FindOptions]") {
     auto options = cppfind::FindOptions();
-    char* argv[] = { const_cast<char *>("cppfind"), const_cast<char *>(".") };
+    char arg0[] = "cppfind";
+    char arg1[] = ".";
+    char* argv[] = { arg0, arg1, nullptr };
     int argc = 2;
     auto settings = options.settings_from_args(argc, argv);
     REQUIRE(!settings.archives_only());
@@ -35,8 +37,11 @@ TEST_CASE("Get FindSettings from minimal args", "[FindOptions]") {
 
 TEST_CASE("Get FindSettings from valid args", "[FindOptions]") {
     auto options = cppfind::FindOptions();
-    char* argv[] = { const_cast<char *>("cppfind"), const_cast<char *>("-x"),
-                     const_cast<char *>("java,scala"), const_cast<char *>(".") };
+    char arg0[] = "cppfind";
+    char arg1[] = "-x";
+    char arg2[] = "java,scala";
+    char arg3[] = ".";
+    char* argv[] = { arg0, arg1, arg2, arg3, nullptr };
     int argc = 4;
     auto settings = options.settings_from_args(argc, argv);
     REQUIRE(!settings.archives_only());

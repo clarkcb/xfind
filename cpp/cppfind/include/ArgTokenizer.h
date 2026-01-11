@@ -21,7 +21,7 @@ namespace cppfind {
     public:
         ArgTokenizer() = delete;
         explicit ArgTokenizer(const std::vector<std::unique_ptr<Option>>& options);
-        [[nodiscard]] std::vector<ArgToken> tokenize_args(int &argc, char **argv) const;
+        [[nodiscard]] std::vector<ArgToken> tokenize_args(int argc, char **argv) const;
         [[nodiscard]] std::vector<ArgToken> tokenize_json(std::string_view json) const;
         [[nodiscard]] std::vector<ArgToken> tokenize_file(const std::filesystem::path& file_path) const;
 
