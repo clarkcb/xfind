@@ -3,7 +3,7 @@
 #
 # clean.ps1
 #
-# Runs a clean (remove generated files) for each language version
+# Clean xfind language versions
 #
 ################################################################################
 param([switch]$help = $false,
@@ -18,7 +18,8 @@ $scriptPath = $MyInvocation.MyCommand.Path
 $scriptDir = Split-Path $scriptPath -Parent
 
 . (Join-Path $scriptDir 'config.ps1')
-. (Join-Path $scriptDir 'common.ps1')
+# . (Join-Path $scriptDir 'common.ps1')
+. (Join-Path $scriptDir 'clean_functions.ps1')
 
 # args holds the remaining arguments
 $langs = $args
@@ -36,53 +37,15 @@ if ($langs.Length -gt 0 -and -not $all)
     Log("langs ($($langs.Length)): $langs")
 }
 
-# Add failed builds to this array and report failed builds at the end
-$failedBuilds = @()
-
 
 ########################################
-# Utility Functions
+# Common Functions
 ########################################
 
 function Usage
 {
     Write-Host "`nUsage: clean.ps1 [-help] [-lock] {""all"" | lang [lang...]}`n"
     exit
-}
-
-function CleanJsonResources
-{
-    param([string]$resourcesPath)
-    $resourceFiles = Get-ChildItem $resourcesPath -Depth 0 | Where-Object {!$_.PsIsContainer -and $_.Extension -eq '.json'}
-    ForEach ($f in $resourceFiles)
-    {
-        Log("Remove-Item $f")
-        Remove-Item $f
-    }
-}
-
-function CleanTestResources
-{
-    param([string]$resourcesPath)
-    $resourceFiles = Get-ChildItem $resourcesPath -Depth 0 | Where-Object {!$_.PsIsContainer -and $_.Name -like "testFile*" -and $_.Extension -eq '.txt'}
-    ForEach ($f in $resourceFiles)
-    {
-        Log("Remove-Item $f")
-        Remove-Item $f
-    }
-}
-
-function PrintFailedBuilds
-{
-    if ($global:failedBuilds.Length -gt 0)
-    {
-        $joinedBuilds = $global:failedBuilds -join ', '
-        PrintError("Failed builds: $joinedBuilds")
-    }
-    else
-    {
-        Log("All builds succeeded")
-    }
 }
 
 
@@ -94,7 +57,16 @@ function CleanBashFind
 {
     Write-Host
     Hdr('CleanBashFind')
-    Log('Nothing to do for bash')
+
+    if (CleanBashVersion $xfindPath 'bashfind')
+    {
+        Log("Clean succeeded")
+    }
+    else
+    {
+        PrintError('Clean failed')
+        $global:failedBuilds += 'bashfind'
+    }
 }
 
 function CleanCFind
@@ -102,21 +74,15 @@ function CleanCFind
     Write-Host
     Hdr('CleanCFind')
 
-    $oldPwd = Get-Location
-    Set-Location $cFindPath
-
-    $cmakeBuildDirs = Get-ChildItem . -Depth 0 | Where-Object {$_.PsIsContainer -and $_.Name.StartsWith('cmake-build-')}
-    ForEach ($c in $cmakeBuildDirs)
+    if (CleanCVersion $xfindPath 'cfind')
     {
-        if (Test-Path $c)
-        {
-            Log("Remove-Item $c -Recurse -Force")
-            $global:failedBuilds += 'cfind'
-            Remove-Item $c -Recurse -Force
-        }
+        Log("Clean succeeded")
     }
-
-    Set-Location $oldPwd
+    else
+    {
+        PrintError('Clean failed')
+        $global:failedBuilds += 'cfind'
+    }
 }
 
 function CleanCljFind
@@ -124,23 +90,15 @@ function CleanCljFind
     Write-Host
     Hdr('CleanCljFind')
 
-    if (-not (Get-Command 'lein' -ErrorAction 'SilentlyContinue'))
+    if (CleanCljVersion $xfindPath 'cljfind')
     {
-        PrintError('You need to install leiningen')
-        $global:failedBuilds += 'cljfind'
-        return
+        Log("Clean succeeded")
     }
-
-    $oldPwd = Get-Location
-    Set-Location $cljFindPath
-
-    Log('lein clean')
-    lein clean
-
-    $resourcesPath = Join-Path $cljFindPath 'resources'
-    CleanJsonResources($resourcesPath)
-
-    Set-Location $oldPwd
+    else
+    {
+        PrintError('Clean failed')
+        $global:failedBuilds += 'cljfind'
+    }
 }
 
 function CleanCppFind
@@ -148,20 +106,15 @@ function CleanCppFind
     Write-Host
     Hdr('CleanCppFind')
 
-    $oldPwd = Get-Location
-    Set-Location $cppFindPath
-
-    $cmakeBuildDirs = Get-ChildItem . -Depth 0 | Where-Object {$_.PsIsContainer -and $_.Name.StartsWith('cmake-build-')}
-    ForEach ($c in $cmakeBuildDirs)
+    if (CleanCppVersion $xfindPath 'cppfind')
     {
-        if (Test-Path $c)
-        {
-            Log("Remove-Item $c -Recurse -Force")
-            Remove-Item $c -Recurse -Force
-        }
+        Log("Clean succeeded")
     }
-
-    Set-Location $oldPwd
+    else
+    {
+        PrintError('Clean failed')
+        $global:failedBuilds += 'cppfind'
+    }
 }
 
 function CleanCsFind
@@ -169,44 +122,15 @@ function CleanCsFind
     Write-Host
     Hdr('CleanCsFind')
 
-    if (-not (Get-Command 'dotnet' -ErrorAction 'SilentlyContinue'))
+    if (CleanCsVersion $xfindPath 'csfind')
     {
-        PrintError('You need to install dotnet')
+        Log("Clean succeeded")
+    }
+    else
+    {
+        PrintError('Clean failed')
         $global:failedBuilds += 'csfind'
-        return
     }
-
-    $oldPwd = Get-Location
-    Set-Location $csFindPath
-
-    # Verbosity levels: q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic]
-    Log("dotnet clean -v minimal")
-    dotnet clean -v minimal
-
-    $csFindProjectDirs = Get-ChildItem . -Depth 0 | Where-Object {$_.PsIsContainer -and $_.Name.StartsWith('CsFind')}
-    ForEach ($p in $csFindProjectDirs)
-    {
-        $binDir = Join-Path $p.FullName 'bin'
-        if (Test-Path $binDir)
-        {
-            Log("Remove-Item $binDir -Recurse -Force")
-            Remove-Item $binDir -Recurse -Force
-        }
-        $objDir = Join-Path $p.FullName 'obj'
-        if (Test-Path $objDir)
-        {
-            Log("Remove-Item $objDir -Recurse -Force")
-            Remove-Item $objDir -Recurse -Force
-        }
-    }
-
-    $resourcesPath = Join-Path $csFindPath 'CsFindLib' 'Resources'
-    CleanJsonResources($resourcesPath)
-
-    $testResourcesPath = Join-Path $csFindPath 'CsFindTests' 'Resources'
-    CleanTestResources($testResourcesPath)
-
-    Set-Location $oldPwd
 }
 
 function CleanDartFind
@@ -214,26 +138,15 @@ function CleanDartFind
     Write-Host
     Hdr('CleanDartFind')
 
-    if (-not (Get-Command 'dart' -ErrorAction 'SilentlyContinue'))
+    if (CleanDartVersion $xfindPath 'dartfind')
     {
-        PrintError('You need to install dart')
+        Log("Clean succeeded")
+    }
+    else
+    {
+        PrintError('Clean failed')
         $global:failedBuilds += 'dartfind'
-        return
     }
-
-    $oldPwd = Get-Location
-    Set-Location $dartFindPath
-
-    Log('dart pub cache repair')
-    dart pub cache repair
-
-    if ($lock -and (Test-Path 'pubspec.lock'))
-    {
-        Log('Remove-Item pubspec.lock')
-        Remove-Item 'pubspec.lock'
-    }
-
-    Set-Location $oldPwd
 }
 
 function CleanExFind
@@ -241,35 +154,15 @@ function CleanExFind
     Write-Host
     Hdr('CleanExFind')
 
-    # ensure elixir is installed
-    if (-not (Get-Command 'elixir' -ErrorAction 'SilentlyContinue'))
+    if (CleanExVersion $xfindPath 'exfind')
     {
-        PrintError('You need to install elixir')
+        Log("Clean succeeded")
+    }
+    else
+    {
+        PrintError('Clean failed')
         $global:failedBuilds += 'exfind'
-        return
     }
-
-    # ensure mix is installed
-    if (-not (Get-Command 'mix' -ErrorAction 'SilentlyContinue'))
-    {
-        PrintError('You need to install mix')
-        $global:failedBuilds += 'exfind'
-        return
-    }
-
-    $oldPwd = Get-Location
-    Set-Location $exFindPath
-
-    Log('mix clean')
-    mix clean
-
-    if ($lock -and (Test-Path 'mix.lock'))
-    {
-        Log('Remove-Item mix.lock')
-        Remove-Item 'mix.lock'
-    }
-
-    Set-Location $oldPwd
 }
 
 function CleanFsFind
@@ -278,44 +171,15 @@ function CleanFsFind
     Write-Host
     Hdr('CleanFsFind')
 
-    if (-not (Get-Command 'dotnet' -ErrorAction 'SilentlyContinue'))
+    if (CleanFsVersion $xfindPath 'fsfind')
     {
-        PrintError('You need to install dotnet')
+        Log("Clean succeeded")
+    }
+    else
+    {
+        PrintError('Clean failed')
         $global:failedBuilds += 'fsfind'
-        return
     }
-
-    $oldPwd = Get-Location
-    Set-Location $fsFindPath
-
-    # Verbosity levels: q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic]
-    Log("dotnet clean -v minimal")
-    dotnet clean -v minimal
-
-    $fsFindProjectDirs = Get-ChildItem $fsFindPath -Depth 0 | Where-Object {$_.PsIsContainer -and $_.Name.StartsWith('FsFind')}
-    ForEach ($p in $fsFindProjectDirs)
-    {
-        $binDir = Join-Path $p.FullName 'bin'
-        if (Test-Path $binDir)
-        {
-            Log("Remove-Item $binDir -Recurse -Force")
-            Remove-Item $binDir -Recurse -Force
-        }
-        $objDir = Join-Path $p.FullName 'obj'
-        if (Test-Path $objDir)
-        {
-            Log("Remove-Item $objDir -Recurse -Force")
-            Remove-Item $objDir -Recurse -Force
-        }
-    }
-
-    $resourcesPath = Join-Path $fsFindPath 'FsFindLib' 'Resources'
-    CleanJsonResources($resourcesPath)
-
-    $testResourcesPath = Join-Path $fsFindPath 'FsFindTests' 'Resources'
-    CleanTestResources($testResourcesPath)
-
-    Set-Location $oldPwd
 }
 
 function CleanGoFind
@@ -323,20 +187,15 @@ function CleanGoFind
     Write-Host
     Hdr('CleanGoFind')
 
-    if (-not (Get-Command 'go' -ErrorAction 'SilentlyContinue'))
+    if (CleanGoVersion $xfindPath 'gofind')
     {
-        PrintError('You need to install go')
-        $global:failedBuilds += 'gofind'
-        return
+        Log("Clean succeeded")
     }
-
-    $oldPwd = Get-Location
-    Set-Location $goFindPath
-
-    Log('go clean')
-    go clean
-
-    Set-Location $oldPwd
+    else
+    {
+        PrintError('Clean failed')
+        $global:failedBuilds += 'gofind'
+    }
 }
 
 function CleanGroovyFind
@@ -344,31 +203,15 @@ function CleanGroovyFind
     Write-Host
     Hdr('CleanGroovyFind')
 
-    $oldPwd = Get-Location
-    Set-Location $groovyFindPath
-
-    $gradle = 'gradle'
-    $gradleWrapper = Join-Path '.' 'gradlew'
-    if (Test-Path $gradleWrapper)
+    if (CleanGroovyVersion $xfindPath 'groovyfind')
     {
-        $gradle = $gradleWrapper
+        Log("Clean succeeded")
     }
-    elseif (-not (Get-Command 'gradle' -ErrorAction 'SilentlyContinue')) {
-        PrintError('You need to install gradle')
+    else
+    {
+        PrintError('Clean failed')
         $global:failedBuilds += 'groovyfind'
-        return
     }
-
-    Log("$gradle --warning-mode all clean")
-    & $gradle --warning-mode all clean
-
-    $resourcesPath = Join-Path $groovyFindPath 'lib' 'src' 'main' 'resources'
-    CleanJsonResources($resourcesPath)
-
-    $testResourcesPath = Join-Path $groovyFindPath 'lib' 'src' 'test' 'resources'
-    CleanTestResources($testResourcesPath)
-
-    Set-Location $oldPwd
 }
 
 function CleanHsFind
@@ -376,29 +219,15 @@ function CleanHsFind
     Write-Host
     Hdr('CleanHsFind')
 
-    if (-not (Get-Command 'stack' -ErrorAction 'SilentlyContinue'))
+    if (CleanHsVersion $xfindPath 'hsfind')
     {
-        PrintError('You need to install stack')
+        Log("Clean succeeded")
+    }
+    else
+    {
+        PrintError('Clean failed')
         $global:failedBuilds += 'hsfind'
-        return
     }
-
-    $oldPwd = Get-Location
-    Set-Location $hsFindPath
-
-    Log('stack clean')
-    stack clean
-
-    $resourcesPath = Join-Path $hsFindPath 'data'
-    CleanJsonResources($resourcesPath)
-
-    if ($lock -and (Test-Path 'stack.yaml.lock'))
-    {
-        Log('Remove-Item stack.yaml.lock')
-        Remove-Item 'stack.yaml.lock'
-    }
-
-    Set-Location $oldPwd
 }
 
 function CleanJavaFind
@@ -406,31 +235,15 @@ function CleanJavaFind
     Write-Host
     Hdr('CleanJavaFind')
 
-    $oldPwd = Get-Location
-    Set-Location $javaFindPath
-
-    $gradle = 'gradle'
-    $gradleWrapper = Join-Path '.' 'gradlew'
-    if (Test-Path $gradleWrapper)
+    if (CleanJavaVersion $xfindPath 'javafind')
     {
-        $gradle = $gradleWrapper
+        Log("Clean succeeded")
     }
-    elseif (-not (Get-Command 'gradle' -ErrorAction 'SilentlyContinue')) {
-        PrintError('You need to install gradle')
+    else
+    {
+        PrintError('Clean failed')
         $global:failedBuilds += 'javafind'
-        return
     }
-
-    Log("$gradle --warning-mode all clean")
-    & $gradle --warning-mode all clean
-
-    $resourcesPath = Join-Path $javaFindPath 'lib' 'src' 'main' 'resources'
-    CleanJsonResources($resourcesPath)
-
-    $testResourcesPath = Join-Path $javaFindPath 'lib' 'src' 'test' 'resources'
-    CleanTestResources($testResourcesPath)
-
-    Set-Location $oldPwd
 }
 
 function CleanJsFind
@@ -438,29 +251,15 @@ function CleanJsFind
     Write-Host
     Hdr('CleanJsFind')
 
-    if (-not (Get-Command 'npm' -ErrorAction 'SilentlyContinue'))
+    if (CleanJsVersion $xfindPath 'jsfind')
     {
-        PrintError('You need to install node.js/npm')
+        Log("Clean succeeded")
+    }
+    else
+    {
+        PrintError('Clean failed')
         $global:failedBuilds += 'jsfind'
-        return
     }
-
-    $oldPwd = Get-Location
-    Set-Location $jsFindPath
-
-    Log('npm run clean')
-    npm run clean
-
-    $resourcesPath = Join-Path $jsFindPath 'data'
-    CleanJsonResources($resourcesPath)
-
-    if ($lock -and (Test-Path 'package-lock.json'))
-    {
-        Log('Remove-Item package-lock.json')
-        Remove-Item 'package-lock.json'
-    }
-
-    Set-Location $oldPwd
 }
 
 function CleanKtFind
@@ -468,32 +267,15 @@ function CleanKtFind
     Write-Host
     Hdr('CleanKtFind')
 
-    $oldPwd = Get-Location
-    Set-Location $ktFindPath
-
-    $gradle = 'gradle'
-    $gradleWrapper = Join-Path '.' 'gradlew'
-    if (Test-Path $gradleWrapper)
+    if (CleanKtVersion $xfindPath 'ktfind')
     {
-        $gradle = $gradleWrapper
+        Log("Clean succeeded")
     }
-    elseif (-not (Get-Command 'gradle' -ErrorAction 'SilentlyContinue')) {
-        PrintError('You need to install gradle')
+    else
+    {
+        PrintError('Clean failed')
         $global:failedBuilds += 'ktfind'
-        Set-Location $oldPwd
-        return
     }
-
-    Log("$gradle --warning-mode all clean")
-    & $gradle --warning-mode all clean
-
-    $resourcesPath = Join-Path $ktFindPath 'lib' 'src' 'main' 'resources'
-    CleanJsonResources($resourcesPath)
-
-    $testResourcesPath = Join-Path $ktFindPath 'lib' 'src' 'test' 'resources'
-    CleanTestResources($testResourcesPath)
-
-    Set-Location $oldPwd
 }
 
 function CleanObjcFind
@@ -501,20 +283,15 @@ function CleanObjcFind
     Write-Host
     Hdr('CleanObjcFind')
 
-    if (-not (Get-Command 'swift' -ErrorAction 'SilentlyContinue'))
+    if (CleanObjcVersion $xfindPath 'objcfind')
     {
-        PrintError('You need to install swift')
-        $global:failedBuilds += 'objcfind'
-        return
+        Log("Clean succeeded")
     }
-
-    $oldPwd = Get-Location
-    Set-Location $objcFindPath
-
-    Log("swift package clean")
-    swift package clean
-
-    Set-Location $oldPwd
+    else
+    {
+        PrintError('Clean failed')
+        $global:failedBuilds += 'objcfind'
+    }
 }
 
 function CleanMlFind
@@ -529,13 +306,14 @@ function CleanPhpFind
     Write-Host
     Hdr('CleanPhpFind')
 
-    $resourcesPath = Join-Path $phpFindPath 'resources'
-    CleanJsonResources($resourcesPath)
-
-    if ($lock -and (Test-Path (Join-Path $phpFindPath 'composer.lock')))
+    if (CleanPhpVersion $xfindPath 'phpfind')
     {
-        Log('Remove-Item composer.lock')
-        Remove-Item (Join-Path $phpFindPath 'composer.lock')
+        Log("Clean succeeded")
+    }
+    else
+    {
+        PrintError('Clean failed')
+        $global:failedBuilds += 'phpfind'
     }
 }
 
@@ -544,16 +322,31 @@ function CleanPlFind
     Write-Host
     Hdr('CleanPlFind')
 
-    $resourcesPath = Join-Path $plFindPath 'share'
-    CleanJsonResources($resourcesPath)
+    if (CleanPlVersion $xfindPath 'plfind')
+    {
+        Log("Clean succeeded")
+    }
+    else
+    {
+        PrintError('Clean failed')
+        $global:failedBuilds += 'plfind'
+    }
 }
 
 function CleanPs1Find
 {
     Write-Host
     Hdr('CleanPs1Find')
-    Log('Nothing to do for powershell')
-    # TODO: do we want to uninstall?
+
+    if (CleanPs1Version $xfindPath 'ps1find')
+    {
+        Log("Clean succeeded")
+    }
+    else
+    {
+        PrintError('Clean failed')
+        $global:failedBuilds += 'ps1find'
+    }
 }
 
 function CleanPyFind
@@ -561,8 +354,15 @@ function CleanPyFind
     Write-Host
     Hdr('CleanPyFind')
 
-    $resourcesPath = Join-Path $pyFindPath 'pyfind' 'data'
-    CleanJsonResources($resourcesPath)
+    if (CleanPyVersion $xfindPath 'pyfind')
+    {
+        Log("Clean succeeded")
+    }
+    else
+    {
+        PrintError('Clean failed')
+        $global:failedBuilds += 'pyfind'
+    }
 }
 
 function CleanRbFind
@@ -570,16 +370,14 @@ function CleanRbFind
     Write-Host
     Hdr('CleanRbFind')
 
-    $resourcesPath = Join-Path $rbFindPath 'data'
-    CleanJsonResources($resourcesPath)
-
-    $testResourcesPath = Join-Path $rbFindPath 'test' 'fixtures'
-    CleanTestResources($testResourcesPath)
-
-    if ($lock -and (Test-Path (Join-Path $rbFindPath 'Gemfile.lock')))
+    if (CleanRbVersion $xfindPath 'rbfind')
     {
-        Log('Remove-Item Gemfile.lock')
-        Remove-Item (Join-Path $rbFindPath 'Gemfile.lock')
+        Log("Clean succeeded")
+    }
+    else
+    {
+        PrintError('Clean failed')
+        $global:failedBuilds += 'rbfind'
     }
 }
 
@@ -588,26 +386,15 @@ function CleanRsFind
     Write-Host
     Hdr('CleanRsFind')
 
-    if (-not (Get-Command 'cargo' -ErrorAction 'SilentlyContinue'))
+    if (CleanRsVersion $xfindPath 'rsfind')
     {
-        PrintError('You need to install cargo')
+        Log("Clean succeeded")
+    }
+    else
+    {
+        PrintError('Clean failed')
         $global:failedBuilds += 'rsfind'
-        return
     }
-
-    $oldPwd = Get-Location
-    Set-Location $rsFindPath
-
-    Log('cargo clean')
-    cargo clean
-
-    if ($lock -and (Test-Path 'Cargo.lock'))
-    {
-        Log('Remove-Item Cargo.lock')
-        Remove-Item 'Cargo.lock'
-    }
-
-    Set-Location $oldPwd
 }
 
 function CleanScalaFind
@@ -615,26 +402,15 @@ function CleanScalaFind
     Write-Host
     Hdr('CleanScalaFind')
 
-    if (-not (Get-Command 'sbt' -ErrorAction 'SilentlyContinue'))
+    if (CleanScalaVersion $xfindPath 'scalafind')
     {
-        PrintError('You need to install scala + sbt')
-        $global:failedBuilds += 'scalafind'
-        return
+        Log("Clean succeeded")
     }
-
-    $oldPwd = Get-Location
-    Set-Location $scalaFindPath
-
-    Log('sbt clean')
-    sbt clean
-
-    $resourcesPath = Join-Path $scalaFindPath 'src' 'main' 'resources'
-    CleanJsonResources($resourcesPath)
-
-    $testResourcesPath = Join-Path $scalaFindPath 'src' 'test' 'resources'
-    CleanTestResources($testResourcesPath)
-
-    Set-Location $oldPwd
+    else
+    {
+        PrintError('Clean failed')
+        $global:failedBuilds += 'scalafind'
+    }
 }
 
 function CleanSwiftFind
@@ -642,20 +418,15 @@ function CleanSwiftFind
     Write-Host
     Hdr('CleanSwiftFind')
 
-    if (-not (Get-Command 'swift' -ErrorAction 'SilentlyContinue'))
+    if (CleanSwiftVersion $xfindPath 'swiftfind')
     {
-        PrintError('You need to install swift')
-        $global:failedBuilds += 'swiftfind'
-        return
+        Log("Clean succeeded")
     }
-
-    $oldPwd = Get-Location
-    Set-Location $swiftFindPath
-
-    Log("swift package clean")
-    swift package clean
-
-    Set-Location $oldPwd
+    else
+    {
+        PrintError('Clean failed')
+        $global:failedBuilds += 'swiftfind'
+    }
 }
 
 function CleanTsFind
@@ -663,29 +434,15 @@ function CleanTsFind
     Write-Host
     Hdr('CleanTsFind')
 
-    if (-not (Get-Command 'npm' -ErrorAction 'SilentlyContinue'))
+    if (CleanTsVersion $xfindPath 'tsfind')
     {
-        PrintError('You need to install node.js/npm')
+        Log("Clean succeeded")
+    }
+    else
+    {
+        PrintError('Clean failed')
         $global:failedBuilds += 'tsfind'
-        return
     }
-
-    $oldPwd = Get-Location
-    Set-Location $tsFindPath
-
-    Log('npm run clean')
-    npm run clean
-
-    $resourcesPath = Join-Path $tsFindPath 'data'
-    CleanJsonResources($resourcesPath)
-
-    if ($lock -and (Test-Path 'package-lock.json'))
-    {
-        Log('Remove-Item package-lock.json')
-        Remove-Item 'package-lock.json'
-    }
-
-    Set-Location $oldPwd
 }
 
 function CleanLinux
@@ -741,7 +498,7 @@ function CleanLinux
 
     CleanTsFind
 
-    PrintFailedBuilds
+    PrintFailedCleans
 
     exit
 }
@@ -781,7 +538,7 @@ function CleanAll
 
     CleanObjcFind
 
-    CleanMlFind
+    # CleanMlFind
 
     CleanPlFind
 
@@ -801,7 +558,7 @@ function CleanAll
 
     CleanTsFind
 
-    PrintFailedBuilds
+    PrintFailedCleans
 
     exit
 }
@@ -874,7 +631,7 @@ function CleanMain
         }
     }
 
-    PrintFailedBuilds
+    PrintFailedCleans
 }
 
 if ($help)
