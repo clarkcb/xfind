@@ -22,8 +22,7 @@ $xfindScriptDir = Split-Path $xfindScriptPath -Parent
 . (Join-Path -Path $xfindScriptDir -ChildPath 'config.ps1')
 . (Join-Path -Path $xfindScriptDir -ChildPath 'build_functions.ps1')
 
-if (-not $release)
-{
+if (-not $release) {
     $debug = $true
 }
 
@@ -34,20 +33,13 @@ $hostname = [System.Net.Dns]::GetHostName()
 Hdr('xfind build script')
 Log("user: $env:USER")
 Log("host: $hostname")
-if ($IsWindows)
-{
+if ($IsWindows) {
     Log("os: $env:OS")
-}
-elseif ($IsLinux)
-{
+} elseif ($IsLinux) {
     Log("os: Linux")
-}
-elseif ($IsMacOS)
-{
+} elseif ($IsMacOS) {
     Log("os: Darwin")
-}
-else
-{
+} else {
     Log("os: unknown")
 }
 
@@ -55,8 +47,7 @@ $gitBranch = git branch --show-current
 $gitCommit = git rev-parse --short HEAD
 Log("git branch: $gitBranch ($gitCommit)")
 
-if ($langs -contains 'all')
-{
+if ($langs -contains 'all') {
     $all = $true
 }
 
@@ -66,14 +57,13 @@ Log("release: $release")
 Log("venv: $venv")
 Log("all: $all")
 Log("args: $args")
-if ($langs.Length -gt 0 -and -not $all)
-{
+if ($langs.Length -gt 0 -and -not $all) {
     Log("langs ($($langs.Length)): $langs")
 }
 
 
 ########################################
-# Utility Functions
+# Common Functions
 ########################################
 
 function Usage
@@ -87,20 +77,33 @@ function Usage
 # Build functions
 ################################################################################
 
+function BuildLangVersion
+{
+    param([string]$langName, [string]$versionName)
+
+    $langName = (Get-Culture).TextInfo.ToTitleCase($langName.ToLower())
+
+    $functionName = "Build${langName}Version"
+
+    if (Get-Command $functionName -ErrorAction 'SilentlyContinue') {
+        & $functionName $xfindPath $versionName
+
+        if ($global:BUILD_LASTEXITCODE -eq 0) {
+            Log("$versionName build succeeded")
+            $global:successfulBuilds += $versionName
+        } else {
+            PrintError("$versionName build failed")
+            $global:failedBuilds += $versionName
+        }
+    }
+}
+
 function BuildBashFind
 {
     Write-Host
     Hdr('BuildBashFind')
 
-    if (BuildBashVersion $xfindPath 'bashfind')
-    {
-        Log('Build succeeded')
-    }
-    else
-    {
-        PrintError('Build failed')
-        $global:failedBuilds += 'bashfind'
-    }
+    BuildLangVersion 'bash' 'bashfind'
 }
 
 function BuildCFind
@@ -108,15 +111,7 @@ function BuildCFind
     Write-Host
     Hdr('BuildCFind')
 
-    if (BuildCVersion $xfindPath 'cfind')
-    {
-        Log('Build succeeded')
-    }
-    else
-    {
-        PrintError('Build failed')
-        $global:failedBuilds += 'cfind'
-    }
+    BuildLangVersion 'c' 'cfind'
 }
 
 function BuildCljFind
@@ -124,15 +119,7 @@ function BuildCljFind
     Write-Host
     Hdr('BuildCljFind')
 
-    if (BuildCljVersion $xfindPath 'cljfind')
-    {
-        Log('Build succeeded')
-    }
-    else
-    {
-        PrintError('Build failed')
-        $global:failedBuilds += 'cljfind'
-    }
+    BuildLangVersion 'clojure' 'cljfind'
 }
 
 function BuildCppFind
@@ -140,15 +127,7 @@ function BuildCppFind
     Write-Host
     Hdr('BuildCppFind')
 
-    if (BuildCppVersion $xfindPath 'cppfind')
-    {
-        Log('Build succeeded')
-    }
-    else
-    {
-        PrintError('Build failed')
-        $global:failedBuilds += 'cppfind'
-    }
+    BuildLangVersion 'cpp' 'cppfind'
 }
 
 function BuildCsFind
@@ -156,15 +135,7 @@ function BuildCsFind
     Write-Host
     Hdr('BuildCsFind')
 
-    if (BuildCsVersion $xfindPath 'csfind')
-    {
-        Log('Build succeeded')
-    }
-    else
-    {
-        PrintError('Build failed')
-        $global:failedBuilds += 'csfind'
-    }
+    BuildLangVersion 'csharp' 'csfind'
 }
 
 function BuildDartFind
@@ -172,15 +143,7 @@ function BuildDartFind
     Write-Host
     Hdr('BuildDartFind')
 
-    if (BuildDartVersion $xfindPath 'dartfind')
-    {
-        Log('Build succeeded')
-    }
-    else
-    {
-        PrintError('Build failed')
-        $global:failedBuilds += 'dartfind'
-    }
+    BuildLangVersion 'dart' 'dartfind'
 }
 
 function BuildExFind
@@ -188,15 +151,7 @@ function BuildExFind
     Write-Host
     Hdr('BuildExFind')
 
-    if (BuildExVersion $xfindPath 'exfind')
-    {
-        Log('Build succeeded')
-    }
-    else
-    {
-        PrintError('Build failed')
-        $global:failedBuilds += 'exfind'
-    }
+    BuildLangVersion 'elixir' 'exfind'
 }
 
 function BuildFsFind
@@ -204,15 +159,7 @@ function BuildFsFind
     Write-Host
     Hdr('BuildFsFind')
 
-    if (BuildFsVersion $xfindPath 'fsfind')
-    {
-        Log('Build succeeded')
-    }
-    else
-    {
-        PrintError('Build failed')
-        $global:failedBuilds += 'fsfind'
-    }
+    BuildLangVersion 'fsharp' 'fsfind'
 }
 
 function BuildGoFind
@@ -220,15 +167,7 @@ function BuildGoFind
     Write-Host
     Hdr('BuildGoFind')
 
-    if (BuildGoVersion $xfindPath 'gofind')
-    {
-        Log('Build succeeded')
-    }
-    else
-    {
-        PrintError('Build failed')
-        $global:failedBuilds += 'gofind'
-    }
+    BuildLangVersion 'go' 'gofind'
 }
 
 function BuildGroovyFind
@@ -236,15 +175,7 @@ function BuildGroovyFind
     Write-Host
     Hdr('BuildGroovyFind')
 
-    if (BuildGroovyVersion $xfindPath 'groovyfind')
-    {
-        Log('Build succeeded')
-    }
-    else
-    {
-        PrintError('Build failed')
-        $global:failedBuilds += 'groovyfind'
-    }
+    BuildLangVersion 'groovy' 'groovyfind'
 }
 
 function BuildHsFind
@@ -252,15 +183,7 @@ function BuildHsFind
     Write-Host
     Hdr('BuildHsFind')
 
-    if (BuildHsVersion $xfindPath 'hsfind')
-    {
-        Log('Build succeeded')
-    }
-    else
-    {
-        PrintError('Build failed')
-        $global:failedBuilds += 'hsfind'
-    }
+    BuildLangVersion 'haskell' 'hsfind'
 }
 
 function BuildJavaFind
@@ -268,15 +191,7 @@ function BuildJavaFind
     Write-Host
     Hdr('BuildJavaFind')
 
-    if (BuildJavaVersion $xfindPath 'javafind')
-    {
-        Log('Build succeeded')
-    }
-    else
-    {
-        PrintError('Build failed')
-        $global:failedBuilds += 'javafind'
-    }
+    BuildLangVersion 'java' 'javafind'
 }
 
 function BuildJsFind
@@ -284,15 +199,7 @@ function BuildJsFind
     Write-Host
     Hdr('BuildJsFind')
 
-    if (BuildJsVersion $xfindPath 'jsfind')
-    {
-        Log('Build succeeded')
-    }
-    else
-    {
-        PrintError('Build failed')
-        $global:failedBuilds += 'jsfind'
-    }
+    BuildLangVersion 'javascript' 'jsfind'
 }
 
 function BuildKtFind
@@ -300,15 +207,7 @@ function BuildKtFind
     Write-Host
     Hdr('BuildKtFind')
 
-    if (BuildKtVersion $xfindPath 'ktfind')
-    {
-        Log('Build succeeded')
-    }
-    else
-    {
-        PrintError('Build failed')
-        $global:failedBuilds += 'ktfind'
-    }
+    BuildLangVersion 'kotlin' 'ktfind'
 }
 
 function BuildMlFind
@@ -325,15 +224,7 @@ function BuildObjcFind
     Write-Host
     Hdr('BuildObjcFind')
 
-    if (BuildObjcVersion $xfindPath 'objcfind')
-    {
-        Log('Build succeeded')
-    }
-    else
-    {
-        PrintError('Build failed')
-        $global:failedBuilds += 'objcfind'
-    }
+    BuildLangVersion 'objc' 'objcfind'
 }
 
 function BuildPlFind
@@ -341,15 +232,7 @@ function BuildPlFind
     Write-Host
     Hdr('BuildPlFind')
 
-    if (BuildPlVersion $xfindPath 'plfind')
-    {
-        Log('Build succeeded')
-    }
-    else
-    {
-        PrintError('Build failed')
-        $global:failedBuilds += 'plfind'
-    }
+    BuildLangVersion 'perl' 'plfind'
 }
 
 function BuildPhpFind
@@ -357,15 +240,7 @@ function BuildPhpFind
     Write-Host
     Hdr('BuildPhpFind')
 
-    if (BuildPhpVersion $xfindPath 'phpfind')
-    {
-        Log('Build succeeded')
-    }
-    else
-    {
-        PrintError('Build failed')
-        $global:failedBuilds += 'phpfind'
-    }
+    BuildLangVersion 'php' 'phpfind'
 }
 
 function BuildPs1Find
@@ -373,15 +248,7 @@ function BuildPs1Find
     Write-Host
     Hdr('BuildPs1Find')
 
-    if (BuildPs1Version $xfindPath 'ps1find')
-    {
-        Log('Build succeeded')
-    }
-    else
-    {
-        PrintError('Build failed')
-        $global:failedBuilds += 'ps1find'
-    }
+    BuildLangVersion 'powershell' 'ps1find'
 }
 
 function BuildPyFind
@@ -389,15 +256,7 @@ function BuildPyFind
     Write-Host
     Hdr('BuildPyFind')
 
-    if (BuildPyVersion $xfindPath 'pyfind')
-    {
-        Log('Build succeeded')
-    }
-    else
-    {
-        PrintError('Build failed')
-        $global:failedBuilds += 'pyfind'
-    }
+    BuildLangVersion 'python' 'pyfind'
 }
 
 function BuildRbFind
@@ -405,15 +264,7 @@ function BuildRbFind
     Write-Host
     Hdr('BuildRbFind')
 
-    if (BuildRbVersion $xfindPath 'rbfind')
-    {
-        Log('Build succeeded')
-    }
-    else
-    {
-        PrintError('Build failed')
-        $global:failedBuilds += 'rbfind'
-    }
+    BuildLangVersion 'ruby' 'rbfind'
 }
 
 function BuildRsFind
@@ -421,15 +272,7 @@ function BuildRsFind
     Write-Host
     Hdr('BuildRsFind')
 
-    if (BuildRsVersion $xfindPath 'rsfind')
-    {
-        Log('Build succeeded')
-    }
-    else
-    {
-        PrintError('Build failed')
-        $global:failedBuilds += 'rsfind'
-    }
+    BuildLangVersion 'rust' 'rsfind'
 }
 
 function BuildScalaFind
@@ -437,15 +280,7 @@ function BuildScalaFind
     Write-Host
     Hdr('BuildScalaFind')
 
-    if (BuildScalaVersion $xfindPath 'scalafind')
-    {
-        Log('Build succeeded')
-    }
-    else
-    {
-        PrintError('Build failed')
-        $global:failedBuilds += 'scalafind'
-    }
+    BuildLangVersion 'scala' 'scalafind'
 }
 
 function BuildSwiftFind
@@ -453,15 +288,7 @@ function BuildSwiftFind
     Write-Host
     Hdr('BuildSwiftFind')
 
-    if (BuildSwiftVersion $xfindPath 'swiftfind')
-    {
-        Log('Build succeeded')
-    }
-    else
-    {
-        PrintError('Build failed')
-        $global:failedBuilds += 'swiftfind'
-    }
+    BuildLangVersion 'swift' 'swiftfind'
 }
 
 function BuildTsFind
@@ -469,15 +296,7 @@ function BuildTsFind
     Write-Host
     Hdr('BuildTsFind')
 
-    if (BuildTsVersion $xfindPath 'tsfind')
-    {
-        Log('Build succeeded')
-    }
-    else
-    {
-        PrintError('Build failed')
-        $global:failedBuilds += 'tsfind'
-    }
+    BuildLangVersion 'typescript' 'tsfind'
 }
 
 function BuildLinux
@@ -525,7 +344,7 @@ function BuildLinux
 
     Measure-Command { BuildTsFind }
 
-    PrintFailedBuilds
+    PrintBuildResults
 
     exit
 }
@@ -585,7 +404,7 @@ function BuildAll
 
     Measure-Command { BuildTsFind }
 
-    PrintFailedBuilds
+    PrintBuildResults
 
     exit
 }
@@ -598,26 +417,21 @@ function BuildMain
 {
     param($langs=@())
 
-    if ($langs.Count -eq 0)
-    {
+    if ($langs.Count -eq 0) {
         Usage
     }
 
-    if ($langs -contains 'all')
-    {
+    if ($langs -contains 'all') {
         BuildAll
         exit
     }
-    if ($langs -contains 'linux')
-    {
+    if ($langs -contains 'linux') {
         BuildLinux
         exit
     }
 
-    ForEach ($lang in $langs)
-    {
-        switch ($lang.ToLower())
-        {
+    ForEach ($lang in $langs) {
+        switch ($lang.ToLower()) {
             'bash'       { Measure-Command { BuildBashFind } }
             'c'          { Measure-Command { BuildCFind } }
             'clj'        { Measure-Command { BuildCljFind } }
@@ -662,27 +476,23 @@ function BuildMain
         }
     }
 
-    PrintFailedBuilds
+    PrintBuildResults
 }
 
-if ($help)
-{
+if ($help) {
     Usage
 }
 
 $oldPwd = Get-Location
 
 try {
-    if ($all)
-    {
+    if ($all) {
         BuildAll
     }
 
     BuildMain $langs
-}
-catch {
+} catch {
     PrintError($_.Exception.Message)
-}
-finally {
+} finally {
     Set-Location $oldPwd
 }

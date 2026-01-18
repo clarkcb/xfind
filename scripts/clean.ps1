@@ -24,16 +24,14 @@ $scriptDir = Split-Path $scriptPath -Parent
 # args holds the remaining arguments
 $langs = $args
 
-if ($langs -contains 'all')
-{
+if ($langs -contains 'all') {
     $all = $true
 }
 
 Log("help: $help")
 Log("lock: $lock")
 Log("all: $all")
-if ($langs.Length -gt 0 -and -not $all)
-{
+if ($langs.Length -gt 0 -and -not $all) {
     Log("langs ($($langs.Length)): $langs")
 }
 
@@ -53,20 +51,33 @@ function Usage
 # Clean functions
 ################################################################################
 
+function CleanLangVersion
+{
+    param([string]$langName, [string]$versionName)
+
+    $langName = (Get-Culture).TextInfo.ToTitleCase($langName.ToLower())
+
+    $functionName = "Clean${langName}Version"
+
+    if (Get-Command $functionName -ErrorAction 'SilentlyContinue') {
+        & $functionName $xfindPath $versionName
+
+        if ($global:CLEAN_LASTEXITCODE -eq 0) {
+            Log("$versionName clean succeeded")
+            $global:successfulCleans += $versionName
+        } else {
+            PrintError("$versionName clean failed")
+            $global:failedCleans += $versionName
+        }
+    }
+}
+
 function CleanBashFind
 {
     Write-Host
     Hdr('CleanBashFind')
 
-    if (CleanBashVersion $xfindPath 'bashfind')
-    {
-        Log("Clean succeeded")
-    }
-    else
-    {
-        PrintError('Clean failed')
-        $global:failedBuilds += 'bashfind'
-    }
+    CleanLangVersion 'bash' 'bashfind'
 }
 
 function CleanCFind
@@ -74,15 +85,7 @@ function CleanCFind
     Write-Host
     Hdr('CleanCFind')
 
-    if (CleanCVersion $xfindPath 'cfind')
-    {
-        Log("Clean succeeded")
-    }
-    else
-    {
-        PrintError('Clean failed')
-        $global:failedBuilds += 'cfind'
-    }
+    CleanLangVersion 'c' 'cfind'
 }
 
 function CleanCljFind
@@ -90,15 +93,7 @@ function CleanCljFind
     Write-Host
     Hdr('CleanCljFind')
 
-    if (CleanCljVersion $xfindPath 'cljfind')
-    {
-        Log("Clean succeeded")
-    }
-    else
-    {
-        PrintError('Clean failed')
-        $global:failedBuilds += 'cljfind'
-    }
+    CleanLangVersion 'clojure' 'cljfind'
 }
 
 function CleanCppFind
@@ -106,15 +101,7 @@ function CleanCppFind
     Write-Host
     Hdr('CleanCppFind')
 
-    if (CleanCppVersion $xfindPath 'cppfind')
-    {
-        Log("Clean succeeded")
-    }
-    else
-    {
-        PrintError('Clean failed')
-        $global:failedBuilds += 'cppfind'
-    }
+    CleanLangVersion 'cpp' 'cppfind'
 }
 
 function CleanCsFind
@@ -122,15 +109,7 @@ function CleanCsFind
     Write-Host
     Hdr('CleanCsFind')
 
-    if (CleanCsVersion $xfindPath 'csfind')
-    {
-        Log("Clean succeeded")
-    }
-    else
-    {
-        PrintError('Clean failed')
-        $global:failedBuilds += 'csfind'
-    }
+    CleanLangVersion 'csharp' 'csfind'
 }
 
 function CleanDartFind
@@ -138,15 +117,7 @@ function CleanDartFind
     Write-Host
     Hdr('CleanDartFind')
 
-    if (CleanDartVersion $xfindPath 'dartfind')
-    {
-        Log("Clean succeeded")
-    }
-    else
-    {
-        PrintError('Clean failed')
-        $global:failedBuilds += 'dartfind'
-    }
+    CleanLangVersion 'dart' 'dartfind'
 }
 
 function CleanExFind
@@ -154,15 +125,7 @@ function CleanExFind
     Write-Host
     Hdr('CleanExFind')
 
-    if (CleanExVersion $xfindPath 'exfind')
-    {
-        Log("Clean succeeded")
-    }
-    else
-    {
-        PrintError('Clean failed')
-        $global:failedBuilds += 'exfind'
-    }
+    CleanLangVersion 'elixir' 'exfind'
 }
 
 function CleanFsFind
@@ -171,15 +134,7 @@ function CleanFsFind
     Write-Host
     Hdr('CleanFsFind')
 
-    if (CleanFsVersion $xfindPath 'fsfind')
-    {
-        Log("Clean succeeded")
-    }
-    else
-    {
-        PrintError('Clean failed')
-        $global:failedBuilds += 'fsfind'
-    }
+    CleanLangVersion 'fsharp' 'fsfind'
 }
 
 function CleanGoFind
@@ -187,15 +142,7 @@ function CleanGoFind
     Write-Host
     Hdr('CleanGoFind')
 
-    if (CleanGoVersion $xfindPath 'gofind')
-    {
-        Log("Clean succeeded")
-    }
-    else
-    {
-        PrintError('Clean failed')
-        $global:failedBuilds += 'gofind'
-    }
+    CleanLangVersion 'go' 'gofind'
 }
 
 function CleanGroovyFind
@@ -203,15 +150,7 @@ function CleanGroovyFind
     Write-Host
     Hdr('CleanGroovyFind')
 
-    if (CleanGroovyVersion $xfindPath 'groovyfind')
-    {
-        Log("Clean succeeded")
-    }
-    else
-    {
-        PrintError('Clean failed')
-        $global:failedBuilds += 'groovyfind'
-    }
+    CleanLangVersion 'groovy' 'groovyfind'
 }
 
 function CleanHsFind
@@ -219,15 +158,7 @@ function CleanHsFind
     Write-Host
     Hdr('CleanHsFind')
 
-    if (CleanHsVersion $xfindPath 'hsfind')
-    {
-        Log("Clean succeeded")
-    }
-    else
-    {
-        PrintError('Clean failed')
-        $global:failedBuilds += 'hsfind'
-    }
+    CleanLangVersion 'haskell' 'hsfind'
 }
 
 function CleanJavaFind
@@ -235,15 +166,7 @@ function CleanJavaFind
     Write-Host
     Hdr('CleanJavaFind')
 
-    if (CleanJavaVersion $xfindPath 'javafind')
-    {
-        Log("Clean succeeded")
-    }
-    else
-    {
-        PrintError('Clean failed')
-        $global:failedBuilds += 'javafind'
-    }
+    CleanLangVersion 'java' 'javafind'
 }
 
 function CleanJsFind
@@ -251,15 +174,7 @@ function CleanJsFind
     Write-Host
     Hdr('CleanJsFind')
 
-    if (CleanJsVersion $xfindPath 'jsfind')
-    {
-        Log("Clean succeeded")
-    }
-    else
-    {
-        PrintError('Clean failed')
-        $global:failedBuilds += 'jsfind'
-    }
+    CleanLangVersion 'javascript' 'jsfind'
 }
 
 function CleanKtFind
@@ -267,15 +182,7 @@ function CleanKtFind
     Write-Host
     Hdr('CleanKtFind')
 
-    if (CleanKtVersion $xfindPath 'ktfind')
-    {
-        Log("Clean succeeded")
-    }
-    else
-    {
-        PrintError('Clean failed')
-        $global:failedBuilds += 'ktfind'
-    }
+    CleanLangVersion 'kotlin' 'ktfind'
 }
 
 function CleanObjcFind
@@ -283,15 +190,7 @@ function CleanObjcFind
     Write-Host
     Hdr('CleanObjcFind')
 
-    if (CleanObjcVersion $xfindPath 'objcfind')
-    {
-        Log("Clean succeeded")
-    }
-    else
-    {
-        PrintError('Clean failed')
-        $global:failedBuilds += 'objcfind'
-    }
+    CleanLangVersion 'objc' 'objcfind'
 }
 
 function CleanMlFind
@@ -306,15 +205,7 @@ function CleanPhpFind
     Write-Host
     Hdr('CleanPhpFind')
 
-    if (CleanPhpVersion $xfindPath 'phpfind')
-    {
-        Log("Clean succeeded")
-    }
-    else
-    {
-        PrintError('Clean failed')
-        $global:failedBuilds += 'phpfind'
-    }
+    CleanLangVersion 'php' 'phpfind'
 }
 
 function CleanPlFind
@@ -322,15 +213,7 @@ function CleanPlFind
     Write-Host
     Hdr('CleanPlFind')
 
-    if (CleanPlVersion $xfindPath 'plfind')
-    {
-        Log("Clean succeeded")
-    }
-    else
-    {
-        PrintError('Clean failed')
-        $global:failedBuilds += 'plfind'
-    }
+    CleanLangVersion 'perl' 'plfind'
 }
 
 function CleanPs1Find
@@ -338,15 +221,7 @@ function CleanPs1Find
     Write-Host
     Hdr('CleanPs1Find')
 
-    if (CleanPs1Version $xfindPath 'ps1find')
-    {
-        Log("Clean succeeded")
-    }
-    else
-    {
-        PrintError('Clean failed')
-        $global:failedBuilds += 'ps1find'
-    }
+    CleanLangVersion 'powershell' 'ps1find'
 }
 
 function CleanPyFind
@@ -354,15 +229,7 @@ function CleanPyFind
     Write-Host
     Hdr('CleanPyFind')
 
-    if (CleanPyVersion $xfindPath 'pyfind')
-    {
-        Log("Clean succeeded")
-    }
-    else
-    {
-        PrintError('Clean failed')
-        $global:failedBuilds += 'pyfind'
-    }
+    CleanLangVersion 'python' 'pyfind'
 }
 
 function CleanRbFind
@@ -370,15 +237,7 @@ function CleanRbFind
     Write-Host
     Hdr('CleanRbFind')
 
-    if (CleanRbVersion $xfindPath 'rbfind')
-    {
-        Log("Clean succeeded")
-    }
-    else
-    {
-        PrintError('Clean failed')
-        $global:failedBuilds += 'rbfind'
-    }
+    CleanLangVersion 'ruby' 'rbfind'
 }
 
 function CleanRsFind
@@ -386,15 +245,7 @@ function CleanRsFind
     Write-Host
     Hdr('CleanRsFind')
 
-    if (CleanRsVersion $xfindPath 'rsfind')
-    {
-        Log("Clean succeeded")
-    }
-    else
-    {
-        PrintError('Clean failed')
-        $global:failedBuilds += 'rsfind'
-    }
+    CleanLangVersion 'rust' 'rsfind'
 }
 
 function CleanScalaFind
@@ -402,15 +253,7 @@ function CleanScalaFind
     Write-Host
     Hdr('CleanScalaFind')
 
-    if (CleanScalaVersion $xfindPath 'scalafind')
-    {
-        Log("Clean succeeded")
-    }
-    else
-    {
-        PrintError('Clean failed')
-        $global:failedBuilds += 'scalafind'
-    }
+    CleanLangVersion 'scala' 'scalafind'
 }
 
 function CleanSwiftFind
@@ -418,15 +261,7 @@ function CleanSwiftFind
     Write-Host
     Hdr('CleanSwiftFind')
 
-    if (CleanSwiftVersion $xfindPath 'swiftfind')
-    {
-        Log("Clean succeeded")
-    }
-    else
-    {
-        PrintError('Clean failed')
-        $global:failedBuilds += 'swiftfind'
-    }
+    CleanLangVersion 'swift' 'swiftfind'
 }
 
 function CleanTsFind
@@ -434,15 +269,7 @@ function CleanTsFind
     Write-Host
     Hdr('CleanTsFind')
 
-    if (CleanTsVersion $xfindPath 'tsfind')
-    {
-        Log("Clean succeeded")
-    }
-    else
-    {
-        PrintError('Clean failed')
-        $global:failedBuilds += 'tsfind'
-    }
+    CleanLangVersion 'typescript' 'tsfind'
 }
 
 function CleanLinux
@@ -498,7 +325,7 @@ function CleanLinux
 
     CleanTsFind
 
-    PrintFailedCleans
+    PrintCleanResults
 
     exit
 }
@@ -558,7 +385,7 @@ function CleanAll
 
     CleanTsFind
 
-    PrintFailedCleans
+    PrintCleanResults
 
     exit
 }
@@ -571,21 +398,17 @@ function CleanMain
 {
     param($langs=@())
 
-    if ($langs.Count -eq 0)
-    {
+    if ($langs.Count -eq 0) {
         Usage
     }
 
-    if ($langs -contains 'all')
-    {
+    if ($langs -contains 'all') {
         CleanAll
         exit
     }
 
-    ForEach ($lang in $langs)
-    {
-        switch ($lang)
-        {
+    ForEach ($lang in $langs) {
+        switch ($lang) {
             'linux'      { CleanLinux }
             'bash'       { CleanBashFind }
             'c'          { CleanCFind }
@@ -631,27 +454,23 @@ function CleanMain
         }
     }
 
-    PrintFailedCleans
+    PrintCleanResults
 }
 
-if ($help)
-{
+if ($help) {
     Usage
 }
 
 $oldPwd = Get-Location
 
 try {
-    if ($all)
-    {
+    if ($all) {
         CleanAll
     }
     
     CleanMain $langs    
-}
-catch {
+} catch {
     PrintError($_.Exception.Message)
-}
-finally {
+} finally {
     Set-Location $oldPwd
 }

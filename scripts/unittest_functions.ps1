@@ -20,7 +20,8 @@ $scriptDir = Split-Path $scriptPath -Parent
 # Global variable to hold last funtion exit code
 $global:UNITTEST_LASTEXITCODE = 0
 
-# Add failed builds to this array and report failed builds at the end
+# Keep track of successful and failed tests and report at the end
+$global:successfulTests = @()
 $global:failedTests = @()
 
 
@@ -28,16 +29,19 @@ $global:failedTests = @()
 # Utility Functions
 ########################################
 
-function PrintFailedTests
+function PrintTestResults
 {
-    if ($global:failedTests.Length -gt 0)
-    {
-        $joinedTests = $global:failedTests -join ', '
-        PrintError("Failed tests: $joinedTests")
+    if ($global:successfulTests.Count -gt 0) {
+        $joinedSuccessfulTests = $global:successfulTests -join ', '
+        Log("Successful tests ($($global:successfulTests.Count)): $joinedSuccessfulTests")
+    } else {
+        Log("Successful tests: 0")
     }
-    else
-    {
-        Log("All tests succeeded")
+    if ($global:failedTests.Count -gt 0) {
+        $joinedFailedTests = $global:failedTests -join ', '
+        PrintError("Failed tests ($($global:succefailedTestsssfulTests.Count)): $joinedFailedTests")
+    } else {
+        Log("Failed tests: 0")
     }
 }
 
@@ -54,8 +58,7 @@ function UnitTestBashVersion
     Log("version: $bashVersionName")
 
     # ensure bash is installed
-    if (-not (Get-Command 'bash' -ErrorAction 'SilentlyContinue'))
-    {
+    if (-not (Get-Command 'bash' -ErrorAction 'SilentlyContinue')) {
         PrintError('You need to install bash')
         $global:UNITTEST_LASTEXITCODE = 1
         return
@@ -67,8 +70,7 @@ function UnitTestBashVersion
     $bashVersionPath = Join-Path $basePath 'bash' $bashVersionName
     Log("bashVersionPath: $bashVersionPath")
 
-    if (-not (Test-Path $bashVersionPath))
-    {
+    if (-not (Test-Path $bashVersionPath)) {
         PrintError("Path not found: $bashVersionPath")
         $global:UNITTEST_LASTEXITCODE = 1
         return
@@ -76,8 +78,7 @@ function UnitTestBashVersion
 
     $bashVersionTestScript = Join-Path $bashVersionPath 'test' "${bashVersionName}tests.bash"
 
-    if (-not (Test-Path $bashVersionTestScript))
-    {
+    if (-not (Test-Path $bashVersionTestScript)) {
         LogError("Test script not found: $bashVersionTestScript")
         $global:UNITTEST_LASTEXITCODE = 1
         return
@@ -98,8 +99,7 @@ function UnitTestCVersion
     Log("version: $cVersionName")
 
     # ensure cmake is installed
-    if (-not (Get-Command 'cmake' -ErrorAction 'SilentlyContinue'))
-    {
+    if (-not (Get-Command 'cmake' -ErrorAction 'SilentlyContinue')) {
         PrintError('You need to install cmake')
         $global:UNITTEST_LASTEXITCODE = 1
         return
@@ -113,23 +113,19 @@ function UnitTestCVersion
     $cVersionPath = Join-Path $basePath 'c' $cVersionName
     Log("cVersionPath: $cVersionPath")
 
-    if (-not (Test-Path $cVersionPath))
-    {
+    if (-not (Test-Path $cVersionPath)) {
         PrintError("Path not found: $cVersionPath")
         $global:UNITTEST_LASTEXITCODE = 1
         return
     }
 
     $configurations = @('debug', 'release')
-    ForEach ($c in $configurations)
-    {
+    ForEach ($c in $configurations) {
         $cmakeBuildDir = Join-Path $cVersionPath "cmake-build-$c"
 
-        if (Test-Path $cmakeBuildDir)
-        {
+        if (Test-Path $cmakeBuildDir) {
             $cVersionTestExe = Join-Path $cmakeBuildDir 'cfind-tests'
-            if (Test-Path $cVersionTestExe)
-            {
+            if (Test-Path $cVersionTestExe) {
                 # run tests
                 Log($cVersionTestExe)
                 & $cVersionTestExe | Write-Host
@@ -137,15 +133,12 @@ function UnitTestCVersion
                 $global:UNITTEST_LASTEXITCODE = $LASTEXITCODE
 
                 # check for success/failure
-                if ($global:UNITTEST_LASTEXITCODE -ne 0)
-                {
+                if ($global:UNITTEST_LASTEXITCODE -ne 0) {
                     # PrintError('Tests failed')
                     # $global:UNITTEST_LASTEXITCODE = 1
                     return
                 }
-            }
-            else
-            {
+            } else {
                 LogError("${cVersionName}-tests not found: $cVersionTestExe")
                 $global:UNITTEST_LASTEXITCODE = 1
                 return
@@ -170,16 +163,14 @@ function UnitTestClojureVersion
     Log("version: $cljVersionName")
 
     # if clojure is installed, display version
-    if (Get-Command 'clj' -ErrorAction 'SilentlyContinue')
-    {
+    if (Get-Command 'clj' -ErrorAction 'SilentlyContinue') {
         # clj -version output looks like this: Clojure CLI version 1.11.4.1474
         $clojureVersion = clj -version 2>&1
         Log("clojure version: $clojureVersion")
     }
 
     # ensure lein is installed
-    if (-not (Get-Command 'lein' -ErrorAction 'SilentlyContinue'))
-    {
+    if (-not (Get-Command 'lein' -ErrorAction 'SilentlyContinue')) {
         PrintError('You need to install leiningen')
         $global:UNITTEST_LASTEXITCODE = 1
         return
@@ -192,8 +183,7 @@ function UnitTestClojureVersion
     $cljVersionPath = Join-Path $basePath 'clojure' $cljVersionName
     Log("cljVersionPath: $cljVersionPath")
 
-    if (-not (Test-Path $cljVersionPath))
-    {
+    if (-not (Test-Path $cljVersionPath)) {
         PrintError("Path not found: $cljVersionPath")
         $global:UNITTEST_LASTEXITCODE = 1
         return
@@ -220,8 +210,7 @@ function UnitTestCppVersion
     Log("version: $cppVersionName")
 
     # ensure cmake is installed
-    if (-not (Get-Command 'cmake' -ErrorAction 'SilentlyContinue'))
-    {
+    if (-not (Get-Command 'cmake' -ErrorAction 'SilentlyContinue')) {
         PrintError('You need to install cmake')
         $global:UNITTEST_LASTEXITCODE = 1
         return
@@ -235,37 +224,30 @@ function UnitTestCppVersion
     $cppVersionPath = Join-Path $basePath 'cpp' $cppVersionName
     Log("cppVersionPath: $cppVersionPath")
 
-    if (-not (Test-Path $cppVersionPath))
-    {
+    if (-not (Test-Path $cppVersionPath)) {
         PrintError("Path not found: $cppVersionPath")
         $global:UNITTEST_LASTEXITCODE = 1
         return
     }
 
     $configurations = @('debug', 'release')
-    ForEach ($c in $configurations)
-    {
+    ForEach ($c in $configurations) {
         $cmakeBuildDir = Join-Path $cppVersionPath "cmake-build-$c"
 
-        if (Test-Path $cmakeBuildDir)
-        {
-            $cppVersionTestExe = Join-Path $cmakeBuildDir 'cppfind-tests'
-            if (Test-Path $cppVersionTestExe)
-            {
+        if (Test-Path $cmakeBuildDir) {
+            $cppVersionTestExe = Join-Path $cmakeBuildDir "${cppVersionName}-tests"
+            if (Test-Path $cppVersionTestExe) {
                 # run tests
                 Log($cppVersionTestExe)
                 & $cppVersionTestExe | Write-Host
 
                 # check for success/failure
-                if ($LASTEXITCODE -ne 0)
-                {
+                if ($LASTEXITCODE -ne 0) {
                     # PrintError('Tests failed')
                     $global:UNITTEST_LASTEXITCODE = 1
                     return
                 }
-            }
-            else
-            {
+            } else {
                 LogError("${cppVersionName}-tests not found: $cppVersionTestExe")
                 $global:UNITTEST_LASTEXITCODE = 1
                 return
@@ -289,8 +271,8 @@ function UnitTestCsharpVersion
     Log('language: C#')
     Log("version: $csVersionName")
 
-    if (-not (Get-Command 'dotnet' -ErrorAction 'SilentlyContinue'))
-    {
+    # ensure dotnet is installed
+    if (-not (Get-Command 'dotnet' -ErrorAction 'SilentlyContinue')) {
         PrintError('You need to install dotnet')
         $global:UNITTEST_LASTEXITCODE = 1
         return
@@ -302,24 +284,18 @@ function UnitTestCsharpVersion
     $csVersionPath = Join-Path $basePath 'csharp' $csVersionName
     Log("csVersionPath: $csVersionPath")
 
-    if (-not (Test-Path $csVersionPath))
-    {
+    if (-not (Test-Path $csVersionPath)) {
         PrintError("Path not found: $csVersionPath")
         $global:UNITTEST_LASTEXITCODE = 1
         return
     }
 
     $projectPrefix = ''
-    if ($csVersionName -ieq 'csfind')
-    {
+    if ($csVersionName -ieq 'csfind') {
         $projectPrefix = 'CsFind'
-    }
-    elseif ($csVersionName -ieq 'cssearch')
-    {
+    } elseif ($csVersionName -ieq 'cssearch') {
         $projectPrefix = 'CsSearch'
-    }
-    else
-    {
+    } else {
         PrintError("Unknown C# version name: $csVersionName")
         $global:UNITTEST_LASTEXITCODE = 1
         return
@@ -347,8 +323,7 @@ function UnitTestDartVersion
     Log("version: $dartVersionName")
 
     # ensure dart is installed
-    if (-not (Get-Command 'dart' -ErrorAction 'SilentlyContinue'))
-    {
+    if (-not (Get-Command 'dart' -ErrorAction 'SilentlyContinue')) {
         PrintError('You need to install dart')
         $global:UNITTEST_LASTEXITCODE = 1
         return
@@ -360,8 +335,7 @@ function UnitTestDartVersion
     $dartVersionPath = Join-Path $basePath 'dart' $dartVersionName
     Log("dartVersionPath: $dartVersionPath")
 
-    if (-not (Test-Path $dartVersionPath))
-    {
+    if (-not (Test-Path $dartVersionPath)) {
         PrintError("Path not found: $dartVersionPath")
         $global:UNITTEST_LASTEXITCODE = 1
         return
@@ -369,7 +343,7 @@ function UnitTestDartVersion
 
     $oldPwd = Get-Location
     Log("Set-Location $dartVersionPath")
-    Set-Location $dartFindPath
+    Set-Location $dartVersionPath
 
     # run tests
     Log('dart run test')
@@ -387,15 +361,13 @@ function UnitTestElixirVersion
     Log('language: elixir')
     Log("version: $exVersionName")
 
-    if (Get-Command 'elixir' -ErrorAction 'SilentlyContinue')
-    {
+    if (Get-Command 'elixir' -ErrorAction 'SilentlyContinue') {
         $elixirVersion = elixir --version | Select-String -Pattern 'Elixir'
         Log("elixir version: $elixirVersion")
     }
 
     # ensure mix is installed
-    if (-not (Get-Command 'mix' -ErrorAction 'SilentlyContinue'))
-    {
+    if (-not (Get-Command 'mix' -ErrorAction 'SilentlyContinue')) {
         PrintError('You need to install mix')
         $global:UNITTEST_LASTEXITCODE = 1
         return
@@ -407,8 +379,7 @@ function UnitTestElixirVersion
     $exVersionPath = Join-Path $basePath 'elixir' $exVersionName
     Log("exVersionPath: $exVersionPath")
 
-    if (-not (Test-Path $exVersionPath))
-    {
+    if (-not (Test-Path $exVersionPath)) {
         PrintError("Path not found: $exVersionPath")
         $global:UNITTEST_LASTEXITCODE = 1
         return
@@ -434,8 +405,7 @@ function UnitTestFsharpVersion
     Log('language: F#')
     Log("version: $fsVersionName")
 
-    if (-not (Get-Command 'dotnet' -ErrorAction 'SilentlyContinue'))
-    {
+    if (-not (Get-Command 'dotnet' -ErrorAction 'SilentlyContinue')) {
         PrintError('You need to install dotnet')
         $global:UNITTEST_LASTEXITCODE = 1
         return
@@ -447,24 +417,18 @@ function UnitTestFsharpVersion
     $fsVersionPath = Join-Path $basePath 'fsharp' $fsVersionName
     Log("fsVersionPath: $fsVersionPath")
 
-    if (-not (Test-Path $fsVersionPath))
-    {
+    if (-not (Test-Path $fsVersionPath)) {
         PrintError("Path not found: $fsVersionPath")
         $global:UNITTEST_LASTEXITCODE = 1
         return
     }
 
     $projectPrefix = ''
-    if ($fsVersionName -ieq 'fsfind')
-    {
+    if ($fsVersionName -ieq 'fsfind') {
         $projectPrefix = 'FsFind'
-    }
-    elseif ($fsVersionName -ieq 'fssearch')
-    {
+    } elseif ($fsVersionName -ieq 'fssearch') {
         $projectPrefix = 'FsSearch'
-    }
-    else
-    {
+    } else {
         PrintError("Unknown F# version name: $fsVersionName")
         $global:UNITTEST_LASTEXITCODE = 1
         return
@@ -491,8 +455,7 @@ function UnitTestGoVersion
     Log('language: go')
     Log("version: $goVersionName")
 
-    if (-not (Get-Command 'go' -ErrorAction 'SilentlyContinue'))
-    {
+    if (-not (Get-Command 'go' -ErrorAction 'SilentlyContinue')) {
         PrintError('You need to install go')
         $global:UNITTEST_LASTEXITCODE = 1
         return
@@ -504,8 +467,7 @@ function UnitTestGoVersion
     $goVersionPath = Join-Path $basePath 'go' $goVersionName
     Log("goVersionPath: $goVersionPath")
 
-    if (-not (Test-Path $goVersionPath))
-    {
+    if (-not (Test-Path $goVersionPath)) {
         PrintError("Path not found: $goVersionPath")
         $global:UNITTEST_LASTEXITCODE = 1
         return
@@ -532,8 +494,7 @@ function UnitTestGroovyVersion
     Log("version: $groovyVersionName")
 
     # ensure groovy is installed
-    if (-not (Get-Command 'groovy' -ErrorAction 'SilentlyContinue'))
-    {
+    if (-not (Get-Command 'groovy' -ErrorAction 'SilentlyContinue')) {
         PrintError('You need to install groovy')
         $global:UNITTEST_LASTEXITCODE = 1
         return
@@ -545,8 +506,7 @@ function UnitTestGroovyVersion
     $groovyVersionPath = Join-Path $basePath 'groovy' $groovyVersionName
     Log("groovyVersionPath: $groovyVersionPath")
 
-    if (-not (Test-Path $groovyVersionPath))
-    {
+    if (-not (Test-Path $groovyVersionPath)) {
         PrintError("Path not found: $groovyVersionPath")
         $global:UNITTEST_LASTEXITCODE = 1
         return
@@ -558,12 +518,9 @@ function UnitTestGroovyVersion
 
     $gradle = 'gradle'
     $gradleWrapper = Join-Path '.' 'gradlew'
-    if (Test-Path $gradleWrapper)
-    {
+    if (Test-Path $gradleWrapper) {
         $gradle = $gradleWrapper
-    }
-    elseif (-not (Get-Command 'gradle' -ErrorAction 'SilentlyContinue'))
-    {
+    } elseif (-not (Get-Command 'gradle' -ErrorAction 'SilentlyContinue')) {
         PrintError('You need to install gradle')
         Set-Location $oldPwd
         $global:UNITTEST_LASTEXITCODE = 1
@@ -598,8 +555,7 @@ function UnitTestHaskellVersion
     Log("version: $hsVersionName")
 
     # ensure ghc is installed
-    if (-not (Get-Command 'ghc' -ErrorAction 'SilentlyContinue'))
-    {
+    if (-not (Get-Command 'ghc' -ErrorAction 'SilentlyContinue')) {
         PrintError('You need to install ghc')
         $global:UNITTEST_LASTEXITCODE = 1
         return
@@ -609,8 +565,7 @@ function UnitTestHaskellVersion
     Log("ghc version: $ghcVersion")
 
     # ensure stack is installed
-    if (-not (Get-Command 'stack' -ErrorAction 'SilentlyContinue'))
-    {
+    if (-not (Get-Command 'stack' -ErrorAction 'SilentlyContinue')) {
         PrintError('You need to install stack')
         $global:UNITTEST_LASTEXITCODE = 1
         return
@@ -622,8 +577,7 @@ function UnitTestHaskellVersion
     $hsVersionPath = Join-Path $basePath 'haskell' $hsVersionName
     Log("hsVersionPath: $hsVersionPath")
 
-    if (-not (Test-Path $hsVersionPath))
-    {
+    if (-not (Test-Path $hsVersionPath)) {
         PrintError("Path not found: $hsVersionPath")
         $global:UNITTEST_LASTEXITCODE = 1
         return
@@ -650,8 +604,7 @@ function UnitTestJavaVersion
     Log("version: $javaVersionName")
 
     # ensure java is installed
-    if (-not (Get-Command 'java' -ErrorAction 'SilentlyContinue'))
-    {
+    if (-not (Get-Command 'java' -ErrorAction 'SilentlyContinue')) {
         PrintError('You need to install java')
         $global:UNITTEST_LASTEXITCODE = 1
         return
@@ -663,8 +616,7 @@ function UnitTestJavaVersion
     $javaVersionPath = Join-Path $basePath 'java' $javaVersionName
     Log("javaVersionPath: $javaVersionPath")
 
-    if (-not (Test-Path $javaVersionPath))
-    {
+    if (-not (Test-Path $javaVersionPath)) {
         PrintError("Path not found: $javaVersionPath")
         $global:UNITTEST_LASTEXITCODE = 1
         return
@@ -676,12 +628,9 @@ function UnitTestJavaVersion
 
     $gradle = 'gradle'
     $gradleWrapper = Join-Path '.' 'gradlew'
-    if (Test-Path $gradleWrapper)
-    {
+    if (Test-Path $gradleWrapper) {
         $gradle = $gradleWrapper
-    }
-    elseif (-not (Get-Command 'gradle' -ErrorAction 'SilentlyContinue'))
-    {
+    } elseif (-not (Get-Command 'gradle' -ErrorAction 'SilentlyContinue')) {
         PrintError('You need to install gradle')
         $global:UNITTEST_LASTEXITCODE = 1
         return
@@ -715,8 +664,7 @@ function UnitTestJavascriptVersion
     Log("version: $jsVersionName")
 
     # ensure node is installed
-    if (-not (Get-Command 'node' -ErrorAction 'SilentlyContinue'))
-    {
+    if (-not (Get-Command 'node' -ErrorAction 'SilentlyContinue')) {
         PrintError('You need to install node.js')
         $global:UNITTEST_LASTEXITCODE = 1
         return
@@ -726,8 +674,7 @@ function UnitTestJavascriptVersion
     Log("node version: $nodeVersion")
 
     # ensure npm is installed
-    if (-not (Get-Command 'npm' -ErrorAction 'SilentlyContinue'))
-    {
+    if (-not (Get-Command 'npm' -ErrorAction 'SilentlyContinue')) {
         PrintError('You need to install npm')
         $global:UNITTEST_LASTEXITCODE = 1
         return
@@ -739,8 +686,7 @@ function UnitTestJavascriptVersion
     $jsVersionPath = Join-Path $basePath 'javascript' $jsVersionName
     Log("jsVersionPath: $jsVersionPath")
 
-    if (-not (Test-Path $jsVersionPath))
-    {
+    if (-not (Test-Path $jsVersionPath)) {
         PrintError("Path not found: $jsVersionPath")
         $global:UNITTEST_LASTEXITCODE = 1
         return
@@ -769,8 +715,7 @@ function UnitTestKotlinVersion
     $ktVersionPath = Join-Path $basePath 'kotlin' $ktVersionName
     Log("ktVersionPath: $ktVersionPath")
 
-    if (-not (Test-Path $ktVersionPath))
-    {
+    if (-not (Test-Path $ktVersionPath)) {
         PrintError("Path not found: $ktVersionPath")
         $global:UNITTEST_LASTEXITCODE = 1
         return
@@ -782,12 +727,9 @@ function UnitTestKotlinVersion
 
     $gradle = 'gradle'
     $gradleWrapper = Join-Path '.' 'gradlew'
-    if (Test-Path $gradleWrapper)
-    {
+    if (Test-Path $gradleWrapper) {
         $gradle = $gradleWrapper
-    }
-    elseif (-not (Get-Command 'gradle' -ErrorAction 'SilentlyContinue'))
-    {
+    } elseif (-not (Get-Command 'gradle' -ErrorAction 'SilentlyContinue')) {
         PrintError('You need to install gradle')
         $global:UNITTEST_LASTEXITCODE = 1
         return
@@ -821,8 +763,7 @@ function UnitTestObjcVersion
     Log("version: $objcVersionName")
 
     # ensure swift is installed
-    if (-not (Get-Command 'swift' -ErrorAction 'SilentlyContinue'))
-    {
+    if (-not (Get-Command 'swift' -ErrorAction 'SilentlyContinue')) {
         PrintError('You need to install swift')
         $global:UNITTEST_LASTEXITCODE = 1
         return
@@ -834,8 +775,7 @@ function UnitTestObjcVersion
     $objcVersionPath = Join-Path $basePath 'objc' $objcVersionName
     Log("objcVersionPath: $objcVersionPath")
 
-    if (-not (Test-Path $objcVersionPath))
-    {
+    if (-not (Test-Path $objcVersionPath)) {
         PrintError("Path not found: $objcVersionPath")
         $global:UNITTEST_LASTEXITCODE = 1
         return
@@ -868,16 +808,14 @@ function UnitTestPerlVersion
     Log('language: perl')
     Log("version: $plVersionName")
 
-    if (-not (Get-Command 'perl' -ErrorAction 'SilentlyContinue'))
-    {
+    if (-not (Get-Command 'perl' -ErrorAction 'SilentlyContinue')) {
         PrintError('You need to install perl')
         $global:UNITTEST_LASTEXITCODE = 1
         return
     }
 
     $perlVersion = perl -e 'print $^V' | Select-String -Pattern 'v5'
-    if (-not $perlVersion)
-    {
+    if (-not $perlVersion) {
         PrintError('A 5.x version of perl is required')
         $global:UNITTEST_LASTEXITCODE = 1
         return
@@ -888,8 +826,7 @@ function UnitTestPerlVersion
     $plVersionPath = Join-Path $basePath 'perl' $plVersionName
     Log("plVersionPath: $plVersionPath")
 
-    if (-not (Test-Path $plVersionPath))
-    {
+    if (-not (Test-Path $plVersionPath)) {
         PrintError("Path not found: $plVersionPath")
         $global:UNITTEST_LASTEXITCODE = 1
         return
@@ -900,14 +837,12 @@ function UnitTestPerlVersion
     # run tests
     $plTests = @(Get-ChildItem $plTestsPath |
         Where-Object{ !$_.PSIsContainer -and $_.Name -like '*_test.pl' })
-    ForEach ($plTest in $plTests)
-    {
+    ForEach ($plTest in $plTests) {
         Log("perl $plTest")
         perl $plTest | Write-Host
 
-        if ($LASTEXITCODE -ne 0)
-        {
-            $global:UNITTEST_LASTEXITCODE = 1
+        $global:UNITTEST_LASTEXITCODE = $LASTEXITCODE
+        if ($global:UNITTEST_LASTEXITCODE -ne 0) {
             return
         }
     }
@@ -923,16 +858,14 @@ function UnitTestPhpVersion
     Log("version: $phpVersionName")
 
     # ensure php is installed
-    if (-not (Get-Command 'php' -ErrorAction 'SilentlyContinue'))
-    {
+    if (-not (Get-Command 'php' -ErrorAction 'SilentlyContinue')) {
         PrintError('You need to install php')
         $global:UNITTEST_LASTEXITCODE = 1
         return
     }
 
     $phpVersion = & php -v | Select-String -Pattern '^PHP [78]' 2>&1
-    if (-not $phpVersion)
-    {
+    if (-not $phpVersion) {
         PrintError('A version of PHP >= 7.x is required')
         $global:failedBuilds += 'phpfind'
         return
@@ -940,8 +873,7 @@ function UnitTestPhpVersion
     Log("php version: $phpVersion")
 
     # ensure composer is installed
-    if (-not (Get-Command 'composer' -ErrorAction 'SilentlyContinue'))
-    {
+    if (-not (Get-Command 'composer' -ErrorAction 'SilentlyContinue')) {
         PrintError('You need to install composer')
         $global:UNITTEST_LASTEXITCODE = 1
         return
@@ -953,8 +885,7 @@ function UnitTestPhpVersion
     $phpVersionPath = Join-Path $basePath 'php' $phpVersionName
     Log("phpVersionPath: $phpVersionPath")
 
-    if (-not (Test-Path $phpVersionPath))
-    {
+    if (-not (Test-Path $phpVersionPath)) {
         PrintError("Path not found: $phpVersionPath")
         $global:UNITTEST_LASTEXITCODE = 1
         return
@@ -962,8 +893,7 @@ function UnitTestPhpVersion
 
     $phpUnit = Join-Path $phpVersionPath 'vendor' 'bin' 'phpunit'
     
-    if (-not (Test-Path $phpUnit))
-    {
+    if (-not (Test-Path $phpUnit)) {
         PrintError('You need to install phpunit')
         $global:UNITTEST_LASTEXITCODE = 1
         return
@@ -996,16 +926,14 @@ function UnitTestPowershellVersion
     $ps1VersionPath = Join-Path $basePath 'powershell' $ps1VersionName
     Log("ps1VersionPath: $ps1VersionPath")
 
-    if (-not (Test-Path $ps1VersionPath))
-    {
+    if (-not (Test-Path $ps1VersionPath)) {
         PrintError("Path not found: $ps1VersionPath")
         $global:UNITTEST_LASTEXITCODE = 1
         return
     }
 
     $testsScriptPath = Join-Path $ps1VersionPath "${ps1VersionName}.tests.ps1"
-    if (-not (Test-Path $testsScriptPath))
-    {
+    if (-not (Test-Path $testsScriptPath)) {
         Log("Test script not found: $testsScriptPath")
         $global:UNITTEST_LASTEXITCODE = 1
         return
@@ -1028,8 +956,7 @@ function UnitTestPythonVersion
     $pyVersionPath = Join-Path $basePath 'python' $pyVersionName
     Log("pyVersionPath: $pyVersionPath")
 
-    if (-not (Test-Path $pyVersionPath))
-    {
+    if (-not (Test-Path $pyVersionPath)) {
         PrintError("Path not found: $pyVersionPath")
         $global:UNITTEST_LASTEXITCODE = 1
         return
@@ -1046,15 +973,11 @@ function UnitTestPythonVersion
     $activatedVenv = $false
 
     $venvPath = Join-Path $pyVersionPath 'venv'
-    if (Test-Path $venvPath)
-    {
+    if (Test-Path $venvPath) {
         # $useVenv = $true
-        if ($env:VIRTUAL_ENV)
-        {
+        if ($env:VIRTUAL_ENV) {
             $activeVenv = $true
-        }
-        else 
-        {
+        } else {
             # activate the virtual env
             $activatePath = Join-Path $venvPath 'bin' 'Activate.ps1'
             Log("$activatePath")
@@ -1065,44 +988,35 @@ function UnitTestPythonVersion
 
     $err = $false
     $pythonCmd = Get-Command 'python3' -ErrorAction 'SilentlyContinue'
-    if ($null -ne $pythonCmd)
-    {
+    if ($null -ne $pythonCmd) {
         $python = 'python3'
-    }
-    else
-    {        
+    } else {        
         PrintError('You need to install python3')
         $err = $true
     }
 
-    if ($err -eq $false)
-    {
+    if ($err -eq $false) {
         # Run the tests
         Log('pytest')
         pytest | Write-Host
 
         # check for success/failure
-        if ($LASTEXITCODE -ne 0)
-        {
+        if ($LASTEXITCODE -ne 0) {
             $err = $true
         }
     }
 
     # deactivate at end of setup process
-    if ($activatedVenv -eq $true)
-    {
+    if ($activatedVenv -eq $true) {
         Log('deactivate venv')
         deactivate
     }
 
     Set-Location $oldPwd
 
-    if ($err -eq $false)
-    {
+    if ($err -eq $false) {
         $global:UNITTEST_LASTEXITCODE = 0
-    }
-    else
-    {
+    } else {
         $global:UNITTEST_LASTEXITCODE = 1
     }
 }
@@ -1115,16 +1029,14 @@ function UnitTestRubyVersion
     Log("version: $rbVersionName")
 
     # ensure ruby3.x is installed
-    if (-not (Get-Command 'ruby' -ErrorAction 'SilentlyContinue'))
-    {
+    if (-not (Get-Command 'ruby' -ErrorAction 'SilentlyContinue')) {
         PrintError('You need to install ruby')
         $global:UNITTEST_LASTEXITCODE = 1
         return
     }
 
     $rubyVersion = & ruby -v 2>&1 | Select-String -Pattern '^ruby 3' 2>&1
-    if (-not $rubyVersion)
-    {
+    if (-not $rubyVersion) {
         PrintError('A version of ruby >= 3.x is required')
         $global:UNITTEST_LASTEXITCODE = 1
         return
@@ -1133,8 +1045,7 @@ function UnitTestRubyVersion
     Log("ruby version: $rubyVersion")
 
     # ensure bundler is installed
-    if (-not (Get-Command 'bundle' -ErrorAction 'SilentlyContinue'))
-    {
+    if (-not (Get-Command 'bundle' -ErrorAction 'SilentlyContinue')) {
         PrintError('You need to install bundler: https://bundler.io/')
         $global:UNITTEST_LASTEXITCODE = 1
         return
@@ -1144,8 +1055,7 @@ function UnitTestRubyVersion
     Log("bundle version: $bundleVersion")
 
     # ensure rake is installed
-    if (-not (Get-Command 'rake' -ErrorAction 'SilentlyContinue'))
-    {
+    if (-not (Get-Command 'rake' -ErrorAction 'SilentlyContinue')) {
         PrintError('You need to install rake')
         $global:UNITTEST_LASTEXITCODE = 1
         return
@@ -1157,8 +1067,7 @@ function UnitTestRubyVersion
     $rbVersionPath = Join-Path $basePath 'ruby' $rbVersionName
     Log("rbVersionPath: $rbVersionPath")
 
-    if (-not (Test-Path $rbVersionPath))
-    {
+    if (-not (Test-Path $rbVersionPath)) {
         PrintError("Path not found: $rbVersionPath")
         $global:UNITTEST_LASTEXITCODE = 1
         return
@@ -1185,8 +1094,7 @@ function UnitTestRustVersion
     Log("version: $rsVersionName")
 
     # ensure rust is installed
-    if (-not (Get-Command 'rustc' -ErrorAction 'SilentlyContinue'))
-    {
+    if (-not (Get-Command 'rustc' -ErrorAction 'SilentlyContinue')) {
         PrintError('You need to install rust')
         $global:UNITTEST_LASTEXITCODE = 1
         return
@@ -1196,8 +1104,7 @@ function UnitTestRustVersion
     Log("rustc version: $rustVersion")
 
     # ensure cargo is installed
-    if (-not (Get-Command 'cargo' -ErrorAction 'SilentlyContinue'))
-    {
+    if (-not (Get-Command 'cargo' -ErrorAction 'SilentlyContinue')) {
         PrintError('You need to install cargo')
         $global:UNITTEST_LASTEXITCODE = 1
         return
@@ -1209,8 +1116,7 @@ function UnitTestRustVersion
     $rsVersionPath = Join-Path $basePath 'rust' $rsVersionName
     Log("rsVersionPath: $rsVersionPath")
 
-    if (-not (Test-Path $rsVersionPath))
-    {
+    if (-not (Test-Path $rsVersionPath)) {
         PrintError("Path not found: $rsVersionPath")
         $global:UNITTEST_LASTEXITCODE = 1
         return
@@ -1237,8 +1143,7 @@ function UnitTestScalaVersion
     Log("version: $scalaVersionName")
 
     # ensure scalac is installed
-    if (-not (Get-Command 'scala' -ErrorAction 'SilentlyContinue'))
-    {
+    if (-not (Get-Command 'scala' -ErrorAction 'SilentlyContinue')) {
         PrintError('You need to install scala')
         $global:UNITTEST_LASTEXITCODE = 1
         return
@@ -1252,8 +1157,7 @@ function UnitTestScalaVersion
     Log("scala version: $scalaVersion")
 
     # ensure sbt is installed
-    if (-not (Get-Command 'sbt' -ErrorAction 'SilentlyContinue'))
-    {
+    if (-not (Get-Command 'sbt' -ErrorAction 'SilentlyContinue')) {
         PrintError('You need to install sbt')
         $global:UNITTEST_LASTEXITCODE = 1
         return
@@ -1273,8 +1177,7 @@ function UnitTestScalaVersion
     $scalaVersionPath = Join-Path $basePath 'scala' $scalaVersionName
     Log("scalaVersionPath: $scalaVersionPath")
 
-    if (-not (Test-Path $scalaVersionPath))
-    {
+    if (-not (Test-Path $scalaVersionPath)) {
         PrintError("Path not found: $scalaVersionPath")
         $global:UNITTEST_LASTEXITCODE = 1
         return
@@ -1301,8 +1204,7 @@ function UnitTestSwiftVersion
     Log("version: $swiftVersionName")
 
     # ensure swift is installed
-    if (-not (Get-Command 'swift' -ErrorAction 'SilentlyContinue'))
-    {
+    if (-not (Get-Command 'swift' -ErrorAction 'SilentlyContinue')) {
         PrintError('You need to install swift')
         $global:UNITTEST_LASTEXITCODE = 1
         return
@@ -1319,8 +1221,7 @@ function UnitTestSwiftVersion
     $swiftVersionPath = Join-Path $basePath 'swift' $swiftVersionName
     Log("swiftVersionPath: $swiftVersionPath")
 
-    if (-not (Test-Path $swiftVersionPath))
-    {
+    if (-not (Test-Path $swiftVersionPath)) {
         PrintError("Path not found: $swiftVersionPath")
         $global:UNITTEST_LASTEXITCODE = 1
         return
@@ -1347,8 +1248,7 @@ function UnitTestTypescriptVersion
     Log("version: $tsVersionName")
 
     # ensure node is installed
-    if (-not (Get-Command 'node' -ErrorAction 'SilentlyContinue'))
-    {
+    if (-not (Get-Command 'node' -ErrorAction 'SilentlyContinue')) {
         PrintError('You need to install node.js')
         $global:UNITTEST_LASTEXITCODE = 1
         return
@@ -1358,8 +1258,7 @@ function UnitTestTypescriptVersion
     Log("node version: $nodeVersion")
 
     # ensure npm is installed
-    if (-not (Get-Command 'npm' -ErrorAction 'SilentlyContinue'))
-    {
+    if (-not (Get-Command 'npm' -ErrorAction 'SilentlyContinue')) {
         PrintError('You need to install npm')
         $global:UNITTEST_LASTEXITCODE = 1
         return
@@ -1371,8 +1270,7 @@ function UnitTestTypescriptVersion
     $tsVersionPath = Join-Path $basePath 'typescript' $tsVersionName
     Log("tsVersionPath: $tsVersionPath")
 
-    if (-not (Test-Path $tsVersionPath))
-    {
+    if (-not (Test-Path $tsVersionPath)) {
         PrintError("Path not found: $tsVersionPath")
         $global:UNITTEST_LASTEXITCODE = 1
         return

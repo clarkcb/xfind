@@ -17,8 +17,12 @@ $xfindScriptDir = Split-Path $xfindScriptPath -Parent
 # . (Join-Path -Path $xfindScriptDir -ChildPath 'config.ps1')
 . (Join-Path -Path $xfindScriptDir -ChildPath 'common.ps1')
 
-# Add failed builds to this array and report failed builds at the end
-$failedBuilds = @()
+# Global variable to hold last funtion exit code
+$global:BUILD_LASTEXITCODE = 0
+
+# Keep track of successful and failed builds and report at the end
+$global:successfulBuilds = @()
+$global:failedBuilds = @()
 
 
 ########################################
@@ -31,8 +35,7 @@ function CopyJsonResources
 
     $jsonFiles = @(Get-ChildItem -Path $sharedPath -File) |
                    Where-Object { $_.Extension -eq '.json' }
-    foreach ($jsonFile in $jsonFiles)
-    {
+    foreach ($jsonFile in $jsonFiles) {
         Log("Copy-Item $jsonFile -Destination $resourcesPath")
         Copy-Item $jsonFile -Destination $resourcesPath
     }
@@ -44,8 +47,7 @@ function CopyTestResources
 
     $testFiles = @(Get-ChildItem -Path $testSharedPath -File) |
                    Where-Object { $_.Name.StartsWith('testFile') -and $_.Extension -eq '.txt' }
-    foreach ($testFile in $testFiles)
-    {
+    foreach ($testFile in $testFiles) {
         Log("Copy-Item $testFile -Destination $testResourcesPath")
         Copy-Item $testFile -Destination $testResourcesPath
     }
@@ -57,17 +59,14 @@ function AddSoftLink
     # Write-Host "linkPath: $linkPath"
     # Write-Host "targetPath: $targetPath"
 
-    if ((Test-Path $linkPath) -and $replaceLink)
-    {
-        if ((Get-Item $linkPath).LinkType -eq 'SymbolicLink')
-        {
+    if ((Test-Path $linkPath) -and $replaceLink) {
+        if ((Get-Item $linkPath).LinkType -eq 'SymbolicLink') {
             # Log("Remove-Item $linkPath")
             Remove-Item $linkPath
         }
     }
 
-    if (-not (Test-Path $linkPath))
-    {
+    if (-not (Test-Path $linkPath)) {
         # from https://winaero.com/create-symbolic-link-windows-10-powershell/
         # New-Item -ItemType SymbolicLink -Path "Link" -Target "Target"
         # Log("New-Item -ItemType SymbolicLink -Path $linkPath -Target $targetPath")
@@ -82,15 +81,13 @@ function AddToBin
     # Log("binPath: $binPath")
     # Log("scriptPath: $scriptPath")
 
-    if (-not (Test-Path $binPath))
-    {
+    if (-not (Test-Path $binPath)) {
         New-Item -ItemType directory -Path $binPath
     }
 
     # get the base filename, minus path and any extension
     $baseName = [io.path]::GetFileNameWithoutExtension($scriptPath)
-    if ($baseName.EndsWith('.debug') -or $baseName.EndsWith('.release'))
-    {
+    if ($baseName.EndsWith('.debug') -or $baseName.EndsWith('.release')) {
         $baseName = $baseName.Split('.')[0]
     }
 
@@ -99,16 +96,19 @@ function AddToBin
     AddSoftLink $linkPath $scriptPath
 }
 
-function PrintFailedBuilds
+function PrintBuildResults
 {
-    if ($global:failedBuilds.Length -gt 0)
-    {
-        $joinedBuilds = $global:failedBuilds -join ', '
-       PrintError("Failed builds: $joinedBuilds")
+    if ($global:successfulBuilds.Count -gt 0) {
+        $joinedSuccessfulBuilds = $global:successfulBuilds -join ', '
+        Log("Successful builds ($($global:successfulBuilds.Count)): $joinedSuccessfulBuilds")
+    } else {
+        Log("Successful builds: 0")
     }
-    else
-    {
-        Log("All builds succeeded")
+    if ($global:failedBuilds.Count -gt 0) {
+        $joinedFailedBuilds = $global:failedBuilds -join ', '
+        PrintError("Failed builds ($($global:failedBuilds.Count)): $joinedFailedBuilds")
+    } else {
+        Log("Failed builds: 0")
     }
 }
 
@@ -122,12 +122,16 @@ function BuildBashVersion
     param([string]$basePath, [string]$bashVersionName)
 
     Log('language: bash')
+    Log("bashVersionName: $bashVersionName")
+
+    # start with non-error code
+    $global:BUILD_LASTEXITCODE = 0
 
     # ensure bash is installed
-    if (-not (Get-Command 'bash' -ErrorAction 'SilentlyContinue'))
-    {
+    if (-not (Get-Command 'bash' -ErrorAction 'SilentlyContinue')) {
         PrintError('You need to install bash')
-        return $false
+        $global:BUILD_LASTEXITCODE = 1
+        return
     }
 
     $bashVersion = bash --version | Select-String -Pattern 'version'
@@ -136,26 +140,24 @@ function BuildBashVersion
     $bashVersionPath = Join-Path $basePath 'bash' $bashVersionName
     Log("bashVersionPath: $bashVersionPath")
 
-    if (-not (Test-Path $bashVersionPath))
-    {
+    if (-not (Test-Path $bashVersionPath)) {
         PrintError("Path not found: $bashVersionPath")
-        return $false
+        $global:BUILD_LASTEXITCODE = 1
+        return
     }
 
     $scriptPath = Join-Path $bashVersionPath 'bin' "$bashVersionName.bash"
 
-    if (-not (Test-Path $scriptPath))
-    {
+    if (-not (Test-Path $scriptPath)) {
         PrintError("File not found: $scriptPath")
-        return $false
+        $global:BUILD_LASTEXITCODE = 1
+        return
     }
 
     # add to bin
     $binPath = Join-Path $basePath 'bin'
     Log("AddToBin $binPath $scriptPath")
     AddToBin $binPath $scriptPath
-
-    return $true
 }
 
 function BuildCVersion
@@ -163,6 +165,10 @@ function BuildCVersion
     param([string]$basePath, [string]$cVersionName)
 
     Log('language: C')
+    Log("cVersionName: $cVersionName")
+
+    # start with non-error code
+    $global:BUILD_LASTEXITCODE = 0
 
     # if ($IsWindows)
     # {
@@ -176,10 +182,10 @@ function BuildCVersion
     # }
 
     # ensure cmake is installed
-    if (-not (Get-Command 'cmake' -ErrorAction 'SilentlyContinue'))
-    {
+    if (-not (Get-Command 'cmake' -ErrorAction 'SilentlyContinue')) {
         PrintError('You need to install cmake')
-        return $false
+        $global:BUILD_LASTEXITCODE = 1
+        return
     }
 
     # cmake --version output looks like this: cmake version 3.30.2
@@ -190,10 +196,10 @@ function BuildCVersion
     $cVersionPath = Join-Path $basePath 'c' $cVersionName
     Log("cVersionPath: $cVersionPath")
 
-    if (-not (Test-Path $cVersionPath))
-    {
+    if (-not (Test-Path $cVersionPath)) {
         PrintError("Path not found: $cVersionPath")
-        return $false
+        $global:BUILD_LASTEXITCODE = 1
+        return
     }
 
     $oldPwd = Get-Location
@@ -201,22 +207,18 @@ function BuildCVersion
     Set-Location $cVersionPath
 
     $configurations = @()
-    if ($debug)
-    {
+    if ($debug) {
         $configurations += 'debug'
     }
-    if ($release)
-    {
+    if ($release) {
         $configurations += 'release'
     }
 
-    ForEach ($c in $configurations)
-    {
+    ForEach ($c in $configurations) {
         $cmakeBuildDir = "cmake-build-$c"
         $cmakeBuildPath = Join-Path $cVersionPath $cmakeBuildDir
 
-        if (-not (Test-Path $cmakeBuildPath))
-        {
+        if (-not (Test-Path $cmakeBuildPath)) {
             Log("New-Item -ItemType directory -Path $cmakeBuildPath")
             New-Item -ItemType directory -Path $cmakeBuildPath
 
@@ -229,24 +231,17 @@ function BuildCVersion
             Set-Location $cVersionPath
         }
 
-        if (Test-Path $cmakeBuildPath)
-        {
+        if (Test-Path $cmakeBuildPath) {
             $targets = @('clean', $cVersionName, "${cVersionName}app", "${cVersionName}-tests")
-            ForEach ($t in $targets)
-            {
+            ForEach ($t in $targets) {
                 Log("cmake --build $cmakeBuildDir --config $c --target $t")
                 cmake --build $cmakeBuildDir --config $c --target $t
 
-                # check for success/failure
-                if ($LASTEXITCODE -eq 0)
-                {
-                    Log("Build target $t succeeded")
-                }
-                else
-                {
-                    PrintError("Build target $t failed")
+                $global:BUILD_LASTEXITCODE = $LASTEXITCODE
+                if ($global:BUILD_LASTEXITCODE -ne 0) {
+                    # PrintError("Build target $t failed")
                     Set-Location $oldPwd
-                    return $false
+                    return
                 }
             }
         }
@@ -255,36 +250,35 @@ function BuildCVersion
     $binPath = Join-Path $basePath 'bin'
     $scriptPath = ''
 
-    if ($release)
-    {
+    if ($release) {
         # add release to bin
         $scriptPath = Join-Path $cVersionPath 'bin' "${cVersionName}.release.ps1"
-    }
-    else
-    {
+    } else {
         # add debug to bin
         $scriptPath = Join-Path $cVersionPath 'bin' "${cVersionName}.debug.ps1"
     }
 
-    Log("AddToBin $binPath $scriptPath")
-    AddToBin $binPath $scriptPath
-
     Set-Location $oldPwd
 
-    return $true
+    Log("AddToBin $binPath $scriptPath")
+    AddToBin $binPath $scriptPath
 }
 
-function BuildCljVersion
+function BuildClojureVersion
 {
     param([string]$basePath, [string]$cljVersionName)
 
     Log('language: clojure')
+    Log("version: $cljVersionName")
+
+    # start with non-error code
+    $global:BUILD_LASTEXITCODE = 0
 
     # ensure clojure is installed
-    if (-not (Get-Command 'clj' -ErrorAction 'SilentlyContinue'))
-    {
+    if (-not (Get-Command 'clj' -ErrorAction 'SilentlyContinue')) {
         PrintError('You need to install clojure')
-        return $false
+        $global:BUILD_LASTEXITCODE = 1
+        return
     }
 
     # clj -version output looks like this: Clojure CLI version 1.11.4.1474
@@ -292,10 +286,10 @@ function BuildCljVersion
     Log("clojure version: $clojureVersion")
 
     # ensure leiningen is installed
-    if (-not (Get-Command 'lein' -ErrorAction 'SilentlyContinue'))
-    {
+    if (-not (Get-Command 'lein' -ErrorAction 'SilentlyContinue')) {
         PrintError('You need to install leiningen')
-        return $false
+        $global:BUILD_LASTEXITCODE = 1
+        return
     }
 
     # lein version output looks like this: Leiningen 2.9.7 on Java 11.0.24 OpenJDK 64-Bit Server VM
@@ -307,14 +301,13 @@ function BuildCljVersion
 
     # copy the shared json files to the local resource location
     $sharedPath = Join-Path $basePath 'shared'
-    if (-not (Test-Path $sharedPath))
-    {
+    if (-not (Test-Path $sharedPath)) {
         PrintError("Path not found: $sharedPath")
-        return $false
+        $global:BUILD_LASTEXITCODE = 1
+        return
     }
     $resourcesPath = Join-Path $cljVersionPath 'resources'
-    if (-not (Test-Path $resourcesPath))
-    {
+    if (-not (Test-Path $resourcesPath)) {
         New-Item -ItemType directory -Path $resourcesPath
     }
     CopyJsonResources $sharedPath $resourcesPath
@@ -323,40 +316,46 @@ function BuildCljVersion
     Log("Set-Location $cljVersionPath")
     Set-Location $cljVersionPath
 
-    # Create uberjar with lein
-    Log("Building $cljVersionName")
+    # run clean
     Log('lein clean')
     lein clean
 
-    # install to local maven repository
-    Log('lein install')
-    lein install
+    $global:BUILD_LASTEXITCODE = $LASTEXITCODE
+    if ($global:BUILD_LASTEXITCODE -ne 0) {
+        # PrintError('Build failed')
+        Set-Location $oldPwd
+        return
+    }
 
     # create uberjar
     Log('lein uberjar')
     lein uberjar
 
-    # check for success/failure
-    if ($LASTEXITCODE -eq 0)
-    {
-        Log('Build succeeded')
-    }
-    else
-    {
-        PrintError('Build failed')
+    $global:BUILD_LASTEXITCODE = $LASTEXITCODE
+    if ($global:BUILD_LASTEXITCODE -ne 0) {
+        # PrintError('Build failed')
         Set-Location $oldPwd
-        return $false
+        return
     }
+
+    # install to local maven repository
+    Log('lein install')
+    lein install
+
+    $global:BUILD_LASTEXITCODE = $LASTEXITCODE
+    if ($global:BUILD_LASTEXITCODE -ne 0) {
+        # PrintError('Build failed')
+        Set-Location $oldPwd
+        return
+    }
+
+    Set-Location $oldPwd
 
     # add to bin
     $binPath = Join-Path $basePath 'bin'
     $scriptPath = Join-Path $cljVersionPath 'bin' "${cljVersionName}.ps1"
     Log("AddToBin $binPath $scriptPath")
     AddToBin $binPath $scriptPath
-
-    Set-Location $oldPwd
-
-    return $true
 }
 
 function BuildCppVersion
@@ -364,6 +363,10 @@ function BuildCppVersion
     param([string]$basePath, [string]$cppVersionName)
 
     Log('language: C++')
+    Log("version: $cppVersionName")
+
+    # start with non-error code
+    $global:BUILD_LASTEXITCODE = 0
 
     # if ($IsWindows)
     # {
@@ -377,10 +380,10 @@ function BuildCppVersion
     # }
 
     # ensure cmake is installed
-    if (-not (Get-Command 'cmake' -ErrorAction 'SilentlyContinue'))
-    {
+    if (-not (Get-Command 'cmake' -ErrorAction 'SilentlyContinue')) {
         PrintError('You need to install cmake')
-        return 1
+        $global:BUILD_LASTEXITCODE = 1
+        return
     }
 
     # cmake --version output looks like this: cmake version 3.30.2
@@ -391,10 +394,10 @@ function BuildCppVersion
     $cppVersionPath = Join-Path $basePath 'cpp' $cppVersionName
     Log("cppVersionPath: $cppVersionPath")
 
-    if (-not (Test-Path $cppVersionPath))
-    {
+    if (-not (Test-Path $cppVersionPath)) {
         PrintError("Path not found: $cppVersionPath")
-        return 1
+        $global:BUILD_LASTEXITCODE = 1
+        return
     }
 
     $oldPwd = Get-Location
@@ -408,21 +411,17 @@ function BuildCppVersion
     # $cmakeCxxFlags = "$cmakeCxxFlags -fsanitize=address -fno-omit-frame-pointer"
 
     $configurations = @()
-    if ($debug)
-    {
+    if ($debug) {
         $configurations += 'debug'
     }
-    if ($release)
-    {
+    if ($release) {
         $configurations += 'release'
     }
-    ForEach ($c in $configurations)
-    {
+    ForEach ($c in $configurations) {
         $cmakeBuildDir = "cmake-build-$c"
         $cmakeBuildPath = Join-Path $cppVersionPath $cmakeBuildDir
 
-        if (-not (Test-Path $cmakeBuildPath))
-        {
+        if (-not (Test-Path $cmakeBuildPath)) {
             Log("New-Item -ItemType directory -Path $cmakeBuildPath")
             New-Item -ItemType directory -Path $cmakeBuildPath
 
@@ -435,61 +434,55 @@ function BuildCppVersion
             Set-Location $cppVersionPath
         }
 
-        if (Test-Path $cmakeBuildPath)
-        {
-            $targets = @('clean', $cppVersionPath, "${cppVersionPath}app", "${cppVersionPath}-tests")
-            ForEach ($t in $targets)
-            {
+        if (Test-Path $cmakeBuildPath) {
+            $targets = @('clean', $cppVersionName, "${cppVersionName}app", "${cppVersionName}-tests")
+            ForEach ($t in $targets) {
                 Log("cmake --build $cmakeBuildDir --config $c --target $t -- $cmakeCxxFlags")
                 cmake --build $cmakeBuildDir --config $c --target $t -- $cmakeCxxFlags
 
-                # check for success/failure
-                if ($LASTEXITCODE -eq 0)
-                {
-                    Log("Build target $t succeeded")
-                }
-                else
-                {
+                $global:BUILD_LASTEXITCODE = $LASTEXITCODE
+                if ($global:BUILD_LASTEXITCODE -eq 0) {
+                    Log "Build target $t succeeded"
+                } else {
                     PrintError("Build target $t failed")
                     Set-Location $oldPwd
-                    return $false
+                    return
                 }
             }
         }
     }
 
+    Set-Location $oldPwd
+
     $binPath = Join-Path $basePath 'bin'
     $scriptPath = ''
-    if ($release)
-    {
+    if ($release) {
         # add release to bin
         $scriptPath = Join-Path $cppVersionPath 'bin' "${cppVersionName}.release.ps1"
-    }
-    else
-    {
+    } else {
         # add debug to bin
         $scriptPath = Join-Path $cppVersionPath 'bin' "${cppVersionName}.debug.ps1"
     }
 
     Log("AddToBin $binPath $scriptPath")
     AddToBin $binPath $scriptPath
-
-    Set-Location $oldPwd
-
-    return $true
 }
 
-function BuildCsVersion
+function BuildCsharpVersion
 {
     param([string]$basePath, [string]$csVersionName)
 
     Log('language: C#')
+    Log("version: $csVersionName")
+
+    # start with non-error code
+    $global:BUILD_LASTEXITCODE = 0
 
     # ensure dotnet is installed
-    if (-not (Get-Command 'dotnet' -ErrorAction 'SilentlyContinue'))
-    {
+    if (-not (Get-Command 'dotnet' -ErrorAction 'SilentlyContinue')) {
         PrintError('You need to install dotnet')
-        return $false
+        $global:BUILD_LASTEXITCODE = 1
+        return
     }
 
     $dotnetVersion = dotnet --version
@@ -498,25 +491,21 @@ function BuildCsVersion
     $csVersionPath = Join-Path $basePath 'csharp' $csVersionName
     Log("csVersionPath: $csVersionPath")
 
-    if (-not (Test-Path $csVersionPath))
-    {
+    if (-not (Test-Path $csVersionPath)) {
         PrintError("Path not found: $csVersionPath")
-        return $false
+        $global:BUILD_LASTEXITCODE = 1
+        return
     }
 
     $projectPrefix = ''
-    if ($csVersionName -ieq 'csfind')
-    {
+    if ($csVersionName -ieq 'csfind') {
         $projectPrefix = 'CsFind'
-    }
-    elseif ($csVersionName -ieq 'cssearch')
-    {
+    } elseif ($csVersionName -ieq 'cssearch') {
         $projectPrefix = 'CsSearch'
-    }
-    else
-    {
+    } else {
         PrintError("Unknown C# version name: $csVersionName")
-        return $false
+        $global:BUILD_LASTEXITCODE = 1
+        return
     }
 
     $resourcesPath = Join-Path $csVersionPath "${projectPrefix}Lib" 'Resources'
@@ -524,16 +513,14 @@ function BuildCsVersion
 
     # copy the shared json files to the local resource location
     $sharedPath = Join-Path $basePath 'shared'
-    if (-not (Test-Path $resourcesPath))
-    {
+    if (-not (Test-Path $resourcesPath)) {
         New-Item -ItemType directory -Path $resourcesPath
     }
     CopyJsonResources $sharedPath $resourcesPath
 
     # copy the shared test files to the local test resource location
     $testFilesPath = Join-Path $sharedPath 'testFiles'
-    if (-not (Test-Path $testResourcesPath))
-    {
+    if (-not (Test-Path $testResourcesPath)) {
         New-Item -ItemType directory -Path $testResourcesPath
     }
     CopyTestResources $testFilesPath $testResourcesPath
@@ -545,45 +532,34 @@ function BuildCsVersion
     $csVersionSolutionPath = Join-Path $csVersionPath "${projectPrefix}.sln"
 
     $configurations = @()
-    if ($debug)
-    {
+    if ($debug) {
         $configurations += 'Debug'
     }
-    if ($release)
-    {
+    if ($release) {
         $configurations += 'Release'
     }
 
     # run dotnet build selected configurations
-    ForEach ($c in $configurations)
-    {
+    ForEach ($c in $configurations) {
         Log("Building $projectPrefix solution for $c configuration")
         Log("dotnet build $csVersionSolutionPath --configuration $c")
         dotnet build $csVersionSolutionPath --configuration $c
 
-        # check for success/failure
-        if ($LASTEXITCODE -eq 0)
-        {
-            Log('Build succeeded')
-        }
-        else
-        {
-            PrintError('Build failed')
+        $global:BUILD_LASTEXITCODE = $LASTEXITCODE
+        if ($global:BUILD_LASTEXITCODE -ne 0) {
+            # PrintError('Build failed')
             # Set-Location $oldPwd
-            return $false
+            return
         }
     }
 
     $binPath = Join-Path $basePath 'bin'
     $scriptPath = ''
 
-    if ($release)
-    {
+    if ($release) {
         # add release to bin
         $scriptPath = Join-Path $csVersionPath 'bin' "${csVersionName}.release.ps1"
-    }
-    else
-    {
+    } else {
         # add debug to bin
         $scriptPath = Join-Path $csVersionPath 'bin' "${csVersionName}.debug.ps1"
     }
@@ -592,8 +568,6 @@ function BuildCsVersion
     AddToBin $binPath $scriptPath
 
     # Set-Location $oldPwd
-
-    return $true
 }
 
 function BuildDartVersion
@@ -601,12 +575,16 @@ function BuildDartVersion
     param([string]$basePath, [string]$dartVersionName)
 
     Log('language: dart')
+    Log("version: $dartVersionName")
+
+    # start with non-error code
+    $global:BUILD_LASTEXITCODE = 0
 
     # ensure dart is installed
-    if (-not (Get-Command 'dart' -ErrorAction 'SilentlyContinue'))
-    {
+    if (-not (Get-Command 'dart' -ErrorAction 'SilentlyContinue')) {
         PrintError('You need to install dart')
-        return $false
+        $global:BUILD_LASTEXITCODE = 1
+        return
     }
 
     $dartVersion = dart --version
@@ -615,10 +593,10 @@ function BuildDartVersion
     $dartVersionPath = Join-Path $basePath 'dart' $dartVersionName
     Log("dartVersionPath: $dartVersionPath")
 
-    if (-not (Test-Path $dartVersionPath))
-    {
+    if (-not (Test-Path $dartVersionPath)) {
         PrintError("Path not found: $dartVersionPath")
-        return $false
+        $global:BUILD_LASTEXITCODE = 1
+        return
     }
 
     $oldPwd = Get-Location
@@ -627,15 +605,19 @@ function BuildDartVersion
 
     Log("Building $dartVersionName")
     if ((-not (Test-Path (Join-Path $dartVersionPath '.dart_tool' 'package_config.json'))) -and
-        (-not (Test-Path (Join-Path $dartVersionPath '.packages'))))
-    {
+        (-not (Test-Path (Join-Path $dartVersionPath '.packages')))) {
         Log('dart pub get')
         dart pub get
-    }
-    else
-    {
+    } else {
         Log('dart pub upgrade')
         dart pub upgrade
+    }
+
+    $global:BUILD_LASTEXITCODE = $LASTEXITCODE
+    if ($global:BUILD_LASTEXITCODE -ne 0) {
+        # PrintError('Build failed')
+        Set-Location $oldPwd
+        return
     }
 
     Log("Compiling $dartVersionName")
@@ -643,60 +625,57 @@ function BuildDartVersion
     Log("dart compile exe $dartScript")
     dart compile exe $dartScript
 
-    # check for success/failure
-    if ($LASTEXITCODE -eq 0)
-    {
-        Log('Build succeeded')
-    }
-    else
-    {
-        PrintError('Build failed')
+    $global:BUILD_LASTEXITCODE = $LASTEXITCODE
+    if ($global:BUILD_LASTEXITCODE -ne 0) {
+        # PrintError('Build failed')
         Set-Location $oldPwd
-        return $false
+        return
     }
 
     # add to bin
     $binPath = Join-Path $basePath 'bin'
-    if (-not (Test-Path $binPath))
-    {
+    if (-not (Test-Path $binPath)) {
         New-Item -ItemType directory -Path $binPath
     }
     $scriptPath = Join-Path $dartVersionPath 'bin' "$dartVersionName.ps1"
-    if (-not (Test-Path $scriptPath))
-    {
+    if (-not (Test-Path $scriptPath)) {
         PrintError("File not found: $scriptPath")
+        $global:BUILD_LASTEXITCODE = 1
         Set-Location $oldPwd
-        return $false
+        return
     }
-    Log("AddToBin $binPath $scriptPath")
-    AddToBin $binPath $scriptPath
 
     Set-Location $oldPwd
 
-    return $true
+    Log("AddToBin $binPath $scriptPath")
+    AddToBin $binPath $scriptPath
 }
 
-function BuildExVersion
+function BuildElixirVersion
 {
     param([string]$basePath, [string]$exVersionName)
 
     Log('language: elixir')
+    Log("version: $exVersionName")
+
+    # start with non-error code
+    $global:BUILD_LASTEXITCODE = 0
 
     # ensure elixir is installed
-    if (-not (Get-Command 'elixir' -ErrorAction 'SilentlyContinue'))
-    {
+    if (-not (Get-Command 'elixir' -ErrorAction 'SilentlyContinue')) {
         PrintError('You need to install elixir')
-        return $false
+        $global:BUILD_LASTEXITCODE = 1
+        return
     }
 
     $elixirVersion = elixir --version | Select-String -Pattern 'Elixir'
     Log("elixir version: $elixirVersion")
 
     # ensure mix is installed
-    if (-not (Get-Command 'mix' -ErrorAction 'SilentlyContinue'))
-    {
+    if (-not (Get-Command 'mix' -ErrorAction 'SilentlyContinue')) {
         PrintError('You need to install mix')
-        return $false
+        $global:BUILD_LASTEXITCODE = 1
+        return
     }
 
     $mixVersion = mix --version | Select-String -Pattern 'Mix'
@@ -705,10 +684,10 @@ function BuildExVersion
     $exVersionPath = Join-Path $basePath 'elixir' $exVersionName
     Log("exVersionPath: $exVersionPath")
 
-    if (-not (Test-Path $exVersionPath))
-    {
+    if (-not (Test-Path $exVersionPath)) {
         PrintError("Path not found: $exVersionPath")
-        return $false
+        $global:BUILD_LASTEXITCODE = 1
+        return
     }
 
     $oldPwd = Get-Location
@@ -719,48 +698,59 @@ function BuildExVersion
     Log('mix deps.get')
     mix deps.get
 
+    $global:BUILD_LASTEXITCODE = $LASTEXITCODE
+    if ($global:BUILD_LASTEXITCODE -ne 0) {
+        # PrintError('Build failed')
+        Set-Location $oldPwd
+        return
+    }
+
     Log("Compiling $exVersionName")
     Log('mix compile')
     mix compile
+
+    $global:BUILD_LASTEXITCODE = $LASTEXITCODE
+    if ($global:BUILD_LASTEXITCODE -ne 0) {
+        # PrintError('Build failed')
+        Set-Location $oldPwd
+        return
+    }
 
     Log("Creating $exVersionName executable")
     Log('mix escript.build')
     mix escript.build
 
-    # check for success/failure
-    if ($LASTEXITCODE -eq 0)
-    {
-        Log('Build succeeded')
-    }
-    else
-    {
-        PrintError('Build failed')
+    $global:BUILD_LASTEXITCODE = $LASTEXITCODE
+    if ($global:BUILD_LASTEXITCODE -ne 0) {
+        # PrintError('Build failed')
         Set-Location $oldPwd
-        return $false
+        return
     }
+
+    Set-Location $oldPwd
 
     # add to bin
     $binPath = Join-Path $basePath 'bin'
     $scriptPath = Join-Path $exVersionPath 'bin' $exVersionName
     Log("AddToBin $binPath $scriptPath")
     AddToBin $binPath $scriptPath
-
-    Set-Location $oldPwd
-
-    return $true
 }
 
-function BuildFsVersion
+function BuildFsharpVersion
 {
     param([string]$basePath, [string]$fsVersionName)
 
     Log('language: F#')
+    Log("version: $fsVersionName")
+
+    # start with non-error code
+    $global:BUILD_LASTEXITCODE = 0
 
     # ensure dotnet is installed
-    if (-not (Get-Command 'dotnet' -ErrorAction 'SilentlyContinue'))
-    {
+    if (-not (Get-Command 'dotnet' -ErrorAction 'SilentlyContinue')) {
         PrintError('You need to install dotnet')
-        return $false
+        $global:BUILD_LASTEXITCODE = 1
+        return
     }
 
     $dotnetVersion = dotnet --version
@@ -769,25 +759,21 @@ function BuildFsVersion
     $fsVersionPath = Join-Path $basePath 'fsharp' $fsVersionName
     Log("fsVersionPath: $fsVersionPath")
 
-    if (-not (Test-Path $fsVersionPath))
-    {
+    if (-not (Test-Path $fsVersionPath)) {
         PrintError("Path not found: $fsVersionPath")
-        return $false
+        $global:BUILD_LASTEXITCODE = 1
+        return
     }
 
     $projectPrefix = ''
-    if ($fsVersionName -ieq 'fsfind')
-    {
+    if ($fsVersionName -ieq 'fsfind') {
         $projectPrefix = 'FsFind'
-    }
-    elseif ($fsVersionName -ieq 'fssearch')
-    {
+    } elseif ($fsVersionName -ieq 'fssearch') {
         $projectPrefix = 'FsSearch'
-    }
-    else
-    {
+    } else {
         PrintError("Unknown F# version name: $fsVersionName")
-        return $false
+        $global:BUILD_LASTEXITCODE = 1
+        return
     }
 
     $resourcesPath = Join-Path $fsVersionPath "${projectPrefix}Lib" 'Resources'
@@ -795,16 +781,14 @@ function BuildFsVersion
 
     # copy the shared json files to the local resource location
     $sharedPath = Join-Path $basePath 'shared'
-    if (-not (Test-Path $resourcesPath))
-    {
+    if (-not (Test-Path $resourcesPath)) {
         New-Item -ItemType directory -Path $resourcesPath
     }
     CopyJsonResources $sharedPath $resourcesPath
 
     # copy the shared test files to the local test resource location
     $testFilesPath = Join-Path $sharedPath 'testFiles'
-    if (-not (Test-Path $testResourcesPath))
-    {
+    if (-not (Test-Path $testResourcesPath)) {
         New-Item -ItemType directory -Path $testResourcesPath
     }
     CopyTestResources $testFilesPath $testResourcesPath
@@ -815,45 +799,34 @@ function BuildFsVersion
     $fsVersionSolutionPath = Join-Path $fsVersionPath "${projectPrefix}.sln"
 
     $configurations = @()
-    if ($debug)
-    {
+    if ($debug) {
         $configurations += 'Debug'
     }
-    if ($release)
-    {
+    if ($release) {
         $configurations += 'Release'
     }
 
     # run dotnet build for selected configurations
-    ForEach ($c in $configurations)
-    {
+    ForEach ($c in $configurations) {
         Log("Building $projectPrefix solution for $c configuration")
         Log("dotnet build $fsVersionSolutionPath --configuration $c")
         dotnet build $fsVersionSolutionPath --configuration $c
 
-        # check for success/failure
-        if ($LASTEXITCODE -eq 0)
-        {
-            Log('Build succeeded')
-        }
-        else
-        {
-            PrintError('Build failed')
+        $global:BUILD_LASTEXITCODE = $LASTEXITCODE
+        if ($global:BUILD_LASTEXITCODE -ne 0) {
+            # PrintError('Build failed')
             # Set-Location $oldPwd
-            return $false
+            return
         }
     }
 
     $binPath = Join-Path $basePath 'bin'
     $scriptPath = ''
 
-    if ($release)
-    {
+    if ($release) {
         # add release to bin
         $scriptPath = Join-Path $fsVersionPath 'bin' "${fsVersionName}.release.ps1"
-    }
-    else
-    {
+    } else {
         # add debug to bin
         $scriptPath = Join-Path $fsVersionPath 'bin' "${fsVersionName}.debug.ps1"
     }
@@ -862,8 +835,6 @@ function BuildFsVersion
     AddToBin $binPath $scriptPath
 
     # Set-Location $oldPwd
-
-    return $true
 }
 
 function BuildGoVersion
@@ -871,12 +842,16 @@ function BuildGoVersion
     param([string]$basePath, [string]$goVersionName)
 
     Log('language: go')
+    Log("version: $goVersionName")
+
+    # start with non-error code
+    $global:BUILD_LASTEXITCODE = 0
 
     # ensure go is installed
-    if (-not (Get-Command 'go' -ErrorAction 'SilentlyContinue'))
-    {
+    if (-not (Get-Command 'go' -ErrorAction 'SilentlyContinue')) {
         PrintError('You need to install go')
-        return $false
+        $global:BUILD_LASTEXITCODE = 1
+        return
     }
 
     $goVersion = (go version) -replace 'go version ', ''
@@ -885,10 +860,10 @@ function BuildGoVersion
     $goVersionPath = Join-Path $basePath 'go' $goVersionName
     Log("goVersionPath: $goVersionPath")
 
-    if (-not (Test-Path $goVersionPath))
-    {
+    if (-not (Test-Path $goVersionPath)) {
         PrintError("Path not found: $goVersionPath")
-        return $false
+        $global:BUILD_LASTEXITCODE = 1
+        return
     }
 
     $oldPwd = Get-Location
@@ -900,16 +875,21 @@ function BuildGoVersion
     Log('go fmt ./...')
     go fmt ./...
 
+    $global:BUILD_LASTEXITCODE = $LASTEXITCODE
+    if ($global:BUILD_LASTEXITCODE -ne 0) {
+        # PrintError('Build failed')
+        Set-Location $oldPwd
+        return
+    }
+
     # create the bin dir if it doesn't already exist
     $binPath = Join-Path $basePath 'bin'
-    if (-not (Test-Path $binPath))
-    {
+    if (-not (Test-Path $binPath)) {
         New-Item -ItemType directory -Path $binPath
     }
 
     # if GOBIN not defined, set to BIN_PATH
-    if (-not (Test-Path Env:GOBIN))
-    {
+    if (-not (Test-Path Env:GOBIN)) {
         $env:GOBIN = $binPath
     }
 
@@ -918,21 +898,9 @@ function BuildGoVersion
     Log('go install ./...')
     go install ./...
 
-    # check for success/failure
-    if ($LASTEXITCODE -eq 0)
-    {
-        Log('Build succeeded')
-    }
-    else
-    {
-        PrintError('Build failed')
-        Set-Location $oldPwd
-        return $false
-    }
+    $global:BUILD_LASTEXITCODE = $LASTEXITCODE
 
     Set-Location $oldPwd
-
-    return $true
 }
 
 function BuildGroovyVersion
@@ -940,12 +908,16 @@ function BuildGroovyVersion
     param([string]$basePath, [string]$groovyVersionName)
 
     Log('language: groovy')
+    Log("version: $groovyVersionName")
+
+    # start with non-error code
+    $global:BUILD_LASTEXITCODE = 0
 
     # ensure groovy is installed
-    if (-not (Get-Command 'groovy' -ErrorAction 'SilentlyContinue'))
-    {
+    if (-not (Get-Command 'groovy' -ErrorAction 'SilentlyContinue')) {
         PrintError('You need to install groovy')
-        return $false
+        $global:BUILD_LASTEXITCODE = 1
+        return
     }
 
     $groovyVersion = groovy --version
@@ -954,10 +926,10 @@ function BuildGroovyVersion
     $groovyVersionPath = Join-Path $basePath 'groovy' $groovyVersionName
     Log("groovyVersionPath: $groovyVersionPath")
 
-    if (-not (Test-Path $groovyVersionPath))
-    {
+    if (-not (Test-Path $groovyVersionPath)) {
         PrintError("Path not found: $groovyVersionPath")
-        return $false
+        $global:BUILD_LASTEXITCODE = 1
+        return
     }
 
     $oldPwd = Get-Location
@@ -966,14 +938,12 @@ function BuildGroovyVersion
 
     $gradle = 'gradle'
     $gradleWrapper = Join-Path '.' 'gradlew'
-    if (Test-Path $gradleWrapper)
-    {
+    if (Test-Path $gradleWrapper) {
         $gradle = $gradleWrapper
-    }
-    elseif (-not (Get-Command 'gradle' -ErrorAction 'SilentlyContinue'))
-    {
+    } elseif (-not (Get-Command 'gradle' -ErrorAction 'SilentlyContinue')) {
         PrintError('You need to install gradle')
-        return $false
+        $global:BUILD_LASTEXITCODE = 1
+        return
     }
 
     $gradleOutput = & $gradle --version
@@ -1002,18 +972,16 @@ function BuildGroovyVersion
 
     # copy the shared json files to the local resource location
     $sharedPath = Join-Path $basePath 'shared'
-    $resourcesPath = Join-Path $groovyVersionPath 'src' 'main' 'resources'
-    if (-not (Test-Path $resourcesPath))
-    {
+    $resourcesPath = Join-Path $groovyVersionPath 'lib' 'src' 'main' 'resources'
+    if (-not (Test-Path $resourcesPath)) {
         New-Item -ItemType directory -Path $resourcesPath
     }
     CopyJsonResources $sharedPath $resourcesPath
 
     # copy the test files to the local test resource location
     $testFilesPath = Join-Path $sharedPath 'testFiles'
-    $testResourcesPath = Join-Path $groovyVersionPath 'src' 'test' 'resources'
-    if (-not (Test-Path $testResourcesPath))
-    {
+    $testResourcesPath = Join-Path $groovyVersionPath 'lib' 'src' 'test' 'resources'
+    if (-not (Test-Path $testResourcesPath)) {
         New-Item -ItemType directory -Path $testResourcesPath
     }
     CopyTestResources $testFilesPath $testResourcesPath
@@ -1026,52 +994,49 @@ function BuildGroovyVersion
     Log("$gradle $gradleArgs $gradleTasks")
     & $gradle --warning-mode all clean jar
 
-    # check for success/failure
-    if ($LASTEXITCODE -eq 0)
-    {
-        Log('Build succeeded')
-    }
-    else
-    {
-        PrintError('Build failed')
+    $global:BUILD_LASTEXITCODE = $LASTEXITCODE
+    if ($global:BUILD_LASTEXITCODE -ne 0) {
+        # PrintError('Build failed')
         Set-Location $oldPwd
-        return $false
+        return
     }
 
     # Command to install to local maven repository
     # What worked for me is gradle install -Dmaven.repo.local=~/.m2/repository.
 
+    Set-Location $oldPwd
+
     # add to bin
     $binPath = Join-Path $basePath 'bin'
     $scriptPath = Join-Path $groovyVersionPath 'bin' "${groovyVersionName}.ps1"
     AddToBin $binPath $scriptPath
-
-    Set-Location $oldPwd
-
-    return $true
 }
 
-function BuildHsVersion
+function BuildHaskellVersion
 {
     param([string]$basePath, [string]$hsVersionName)
 
     Log('language: haskell')
+    Log("version: $hsVersionName")
+
+    # start with non-error code
+    $global:BUILD_LASTEXITCODE = 0
 
     # ensure ghc is installed
-    if (-not (Get-Command 'ghc' -ErrorAction 'SilentlyContinue'))
-    {
+    if (-not (Get-Command 'ghc' -ErrorAction 'SilentlyContinue')) {
         PrintError('You need to install ghc')
-        return $false
+        $global:BUILD_LASTEXITCODE = 1
+        return
     }
 
     $ghcVersion = ghc --version
     Log("ghc version: $ghcVersion")
 
     # ensure stack is installed
-    if (-not (Get-Command 'stack' -ErrorAction 'SilentlyContinue'))
-    {
+    if (-not (Get-Command 'stack' -ErrorAction 'SilentlyContinue')) {
         PrintError('You need to install stack')
-        return $false
+        $global:BUILD_LASTEXITCODE = 1
+        return
     }
 
     $stackVersion = stack --version
@@ -1079,30 +1044,27 @@ function BuildHsVersion
 
     # set the default stack settings, e.g. use system ghc
     $stackDir = Join-Path $HOME '.stack'
-    if (-not (Test-Path $stackDir))
-    {
+    if (-not (Test-Path $stackDir)) {
         New-Item -ItemType directory -Path $stackDir
     }
     $configYaml = Join-Path $stackDir 'config.yaml'
-    if (-not (Test-Path $configYaml))
-    {
+    if (-not (Test-Path $configYaml)) {
         New-Item -ItemType file -Path $stackDir -Name "config.yaml" -Value "install-ghc: false`nsystem-ghc: true"
     }
 
     $hsVersionPath = Join-Path $basePath 'haskell' $hsVersionName
     Log("hsVersionPath: $hsVersionPath")
 
-    if (-not (Test-Path $hsVersionPath))
-    {
+    if (-not (Test-Path $hsVersionPath)) {
         PrintError("Path not found: $hsVersionPath")
-        return $false
+        $global:BUILD_LASTEXITCODE = 1
+        return
     }
 
     # copy the shared json files to the local resource location
     $sharedPath = Join-Path $basePath 'shared'
     $resourcesPath = Join-Path $hsVersionPath 'data'
-    if (-not (Test-Path $resourcesPath))
-    {
+    if (-not (Test-Path $resourcesPath)) {
         New-Item -ItemType directory -Path $resourcesPath
     }
     CopyJsonResources $sharedPath $resourcesPath
@@ -1119,30 +1081,24 @@ function BuildHsVersion
     Log('stack build')
     make build
 
-    # check for success/failure
-    if ($LASTEXITCODE -eq 0)
-    {
-        Log('Build succeeded')
-    }
-    else
-    {
-        PrintError('Build failed')
+    $global:BUILD_LASTEXITCODE = $LASTEXITCODE
+    if ($global:BUILD_LASTEXITCODE -ne 0) {
+        # PrintError('Build failed')
         Set-Location $oldPwd
-        return $false
+        return
     }
 
     $binPath = Join-Path $basePath 'bin'
-    if (-not (Test-Path $binPath))
-    {
+    if (-not (Test-Path $binPath)) {
         New-Item -ItemType directory -Path $binPath
     }
 
     Log("stack install --local-bin-path $binPath")
     stack install --local-bin-path $binPath
 
-    Set-Location $oldPwd
+    $global:BUILD_LASTEXITCODE = $LASTEXITCODE
 
-    return $true
+    Set-Location $oldPwd
 }
 
 function BuildJavaVersion
@@ -1150,12 +1106,16 @@ function BuildJavaVersion
     param([string]$basePath, [string]$javaVersionName)
 
     Log('language: java')
+    Log("version: $javaVersionName")
+
+    # start with non-error code
+    $global:BUILD_LASTEXITCODE = 0
 
     # ensure java is installed
-    if (-not (Get-Command 'java' -ErrorAction 'SilentlyContinue'))
-    {
+    if (-not (Get-Command 'java' -ErrorAction 'SilentlyContinue')) {
         PrintError('You need to install java')
-        return $false
+        $global:BUILD_LASTEXITCODE = 1
+        return
     }
 
     $javaVersion = java -version 2>&1 | Select-String -Pattern 'version'
@@ -1164,10 +1124,10 @@ function BuildJavaVersion
     $javaVersionPath = Join-Path $basePath 'java' $javaVersionName
     Log("javaVersionPath: $javaVersionPath")
 
-    if (-not (Test-Path $javaVersionPath))
-    {
+    if (-not (Test-Path $javaVersionPath)) {
         PrintError("Path not found: $javaVersionPath")
-        return $false
+        $global:BUILD_LASTEXITCODE = 1
+        return
     }
 
     $oldPwd = Get-Location
@@ -1176,14 +1136,12 @@ function BuildJavaVersion
 
     $gradle = 'gradle'
     $gradleWrapper = Join-Path '.' 'gradlew'
-    if (Test-Path $gradleWrapper)
-    {
+    if (Test-Path $gradleWrapper) {
         $gradle = $gradleWrapper
-    }
-    elseif (-not (Get-Command 'gradle' -ErrorAction 'SilentlyContinue'))
-    {
+    } elseif (-not (Get-Command 'gradle' -ErrorAction 'SilentlyContinue')) {
         PrintError('You need to install gradle')
-        return $false
+        $global:BUILD_LASTEXITCODE = 1
+        return
     }
 
     $gradleOutput = & $gradle --version
@@ -1212,18 +1170,16 @@ function BuildJavaVersion
 
     # copy the shared json files to the local resource location
     $sharedPath = Join-Path $basePath 'shared'
-    $resourcesPath = Join-Path $javaVersionPath 'src' 'main' 'resources'
-    if (-not (Test-Path $resourcesPath))
-    {
+    $resourcesPath = Join-Path $javaVersionPath 'lib' 'src' 'main' 'resources'
+    if (-not (Test-Path $resourcesPath)) {
         New-Item -ItemType directory -Path $resourcesPath
     }
     CopyJsonResources $sharedPath $resourcesPath
 
     # copy the test files to the local test resource location
     $testFilesPath = Join-Path $sharedPath 'testFiles'
-    $testResourcesPath = Join-Path $javaVersionPath 'src' 'test' 'resources'
-    if (-not (Test-Path $testResourcesPath))
-    {
+    $testResourcesPath = Join-Path $javaVersionPath 'lib' 'src' 'test' 'resources'
+    if (-not (Test-Path $testResourcesPath)) {
         New-Item -ItemType directory -Path $testResourcesPath
     }
     CopyTestResources $testFilesPath $testResourcesPath
@@ -1235,56 +1191,52 @@ function BuildJavaVersion
     $gradleArgs = '--warning-mode all'
     $gradleTasks = @('clean', ':lib:jar', ':lib:publishToMavenLocal', ':app:jar')
 
-    ForEach ($t in $gradleTasks)
-    {
+    ForEach ($t in $gradleTasks) {
         Log("$gradle $gradleArgs $t")
         & $gradle --warning-mode all $t
     }
 
-    # check for success/failure
-    if ($LASTEXITCODE -eq 0)
-    {
-        Log('Build succeeded')
-    }
-    else
-    {
-        PrintError('Build failed')
+    $global:BUILD_LASTEXITCODE = $LASTEXITCODE
+    if ($global:BUILD_LASTEXITCODE -ne 0) {
+        # PrintError('Build failed')
         Set-Location $oldPwd
-        return $false
+        return
     }
+
+    Set-Location $oldPwd
 
     # add to bin
     $binPath = Join-Path $basePath 'bin'
     $scriptPath = Join-Path $javaVersionPath 'bin' "${javaVersionName}.ps1"
     Log("AddToBin $binPath $scriptPath")
     AddToBin $binPath $scriptPath
-
-    Set-Location $oldPwd
-
-    return $true
 }
 
-function BuildJsVersion
+function BuildJavascriptVersion
 {
     param([string]$basePath, [string]$jsVersionName)
 
     Log('language: javascript')
+    Log("version: $jsVersionName")
+
+    # start with non-error code
+    $global:BUILD_LASTEXITCODE = 0
 
     # ensure node is installed
-    if (-not (Get-Command 'node' -ErrorAction 'SilentlyContinue'))
-    {
+    if (-not (Get-Command 'node' -ErrorAction 'SilentlyContinue')) {
         PrintError('You need to install node.js')
-        return $false
+        $global:BUILD_LASTEXITCODE = 1
+        return
     }
 
     $nodeVersion = node --version
     Log("node version: $nodeVersion")
 
     # ensure npm is installed
-    if (-not (Get-Command 'npm' -ErrorAction 'SilentlyContinue'))
-    {
+    if (-not (Get-Command 'npm' -ErrorAction 'SilentlyContinue')) {
         PrintError('You need to install npm')
-        return $false
+        $global:BUILD_LASTEXITCODE = 1
+        return
     }
 
     $npmVersion = npm --version
@@ -1293,17 +1245,16 @@ function BuildJsVersion
     $jsVersionPath = Join-Path $basePath 'javascript' $jsVersionName
     Log("jsVersionPath: $jsVersionPath")
 
-    if (-not (Test-Path $jsVersionPath))
-    {
+    if (-not (Test-Path $jsVersionPath)) {
         PrintError("Path not found: $jsVersionPath")
-        return $false
+        $global:BUILD_LASTEXITCODE = 1
+        return
     }
 
     # copy the shared json files to the local resource location
     $sharedPath = Join-Path $basePath 'shared'
     $resourcesPath = Join-Path $jsVersionPath 'data'
-    if (-not (Test-Path $resourcesPath))
-    {
+    if (-not (Test-Path $resourcesPath)) {
         New-Item -ItemType directory -Path $resourcesPath
     }
     CopyJsonResources $sharedPath $resourcesPath
@@ -1320,42 +1271,39 @@ function BuildJsVersion
     Log('npm run build')
     npm run build
 
-    # check for success/failure
-    if ($LASTEXITCODE -eq 0)
-    {
-        Log('Build succeeded')
-    }
-    else
-    {
-        PrintError('Build failed')
+    $global:BUILD_LASTEXITCODE = $LASTEXITCODE
+    if ($global:BUILD_LASTEXITCODE -ne 0) {
+        # PrintError('Build failed')
         Set-Location $oldPwd
-        return $false
+        return
     }
+
+    Set-Location $oldPwd
 
     # add to bin
     $binPath = Join-Path $basePath 'bin'
     $scriptPath = Join-Path $jsVersionPath 'bin' "${jsVersionName}.ps1"
     Log("AddToBin $binPath $scriptPath")
     AddToBin $binPath $scriptPath
-
-    Set-Location $oldPwd
-
-    return $true
 }
 
-function BuildKtVersion
+function BuildKotlinVersion
 {
     param([string]$basePath, [string]$ktVersionName)
 
     Log('language: kotlin')
+    Log("version: $ktVersionName")
+
+    # start with non-error code
+    $global:BUILD_LASTEXITCODE = 0
 
     $ktVersionPath = Join-Path $basePath 'kotlin' $ktVersionName
     Log("ktVersionPath: $ktVersionPath")
 
-    if (-not (Test-Path $ktVersionPath))
-    {
+    if (-not (Test-Path $ktVersionPath)) {
         PrintError("Path not found: $ktVersionPath")
-        return $false
+        $global:BUILD_LASTEXITCODE = 1
+        return
     }
 
     $oldPwd = Get-Location
@@ -1364,14 +1312,12 @@ function BuildKtVersion
 
     $gradle = 'gradle'
     $gradleWrapper = Join-Path '.' 'gradlew'
-    if (Test-Path $gradleWrapper)
-    {
+    if (Test-Path $gradleWrapper) {
         $gradle = $gradleWrapper
-    }
-    elseif (-not (Get-Command 'gradle' -ErrorAction 'SilentlyContinue'))
-    {
+    } elseif (-not (Get-Command 'gradle' -ErrorAction 'SilentlyContinue')) {
         PrintError('You need to install gradle')
-        return $false
+        $global:BUILD_LASTEXITCODE = 1
+        return
     }
 
     $gradleOutput = & $gradle --version
@@ -1387,18 +1333,16 @@ function BuildKtVersion
 
     # copy the shared json files to the local resource location
     $sharedPath = Join-Path $basePath 'shared'
-    $resourcesPath = Join-Path $ktVersionPath 'src' 'main' 'resources'
-    if (-not (Test-Path $resourcesPath))
-    {
+    $resourcesPath = Join-Path $ktVersionPath 'lib' 'src' 'main' 'resources'
+    if (-not (Test-Path $resourcesPath)) {
         New-Item -ItemType directory -Path $resourcesPath
     }
     CopyJsonResources $sharedPath $resourcesPath
 
     # copy the test files to the local test resource location
     $testFilesPath = Join-Path $sharedPath 'testFiles'
-    $testResourcesPath = Join-Path $ktVersionPath 'src' 'test' 'resources'
-    if (-not (Test-Path $testResourcesPath))
-    {
+    $testResourcesPath = Join-Path $ktVersionPath 'lib' 'src' 'test' 'resources'
+    if (-not (Test-Path $testResourcesPath)) {
         New-Item -ItemType directory -Path $testResourcesPath
     }
     CopyTestResources $testFilesPath $testResourcesPath
@@ -1410,43 +1354,31 @@ function BuildKtVersion
     $gradleArgs = '--warning-mode all'
     $gradleTasks = 'clean jar'
     $gradleTasks = @('clean', ':lib:jar', ':lib:publishToMavenLocal', ':app:jar')
-    ForEach ($t in $gradleTasks)
-    {
+    ForEach ($t in $gradleTasks) {
         Log("$gradle $gradleArgs $t")
         & $gradle --warning-mode all $t
 
-        if ($LASTEXITCODE -ne 0)
-        {
+        $global:UNITTEST_LASTEXITCODE = $LASTEXITCODE
+
+        if ($global:UNITTEST_LASTEXITCODE -ne 0) {
             break
         }
     }
 
     # check for success/failure
-    if ($LASTEXITCODE -eq 0)
-    {
-        Log('Build succeeded')
-    }
-    else
-    {
-        PrintError('Build failed')
+    if ($global:UNITTEST_LASTEXITCODE -ne 0) {
+        # PrintError('Build failed')
         Set-Location $oldPwd
-        return $false
+        return
     }
+
+    Set-Location $oldPwd
 
     # add to bin
     $binPath = Join-Path $basePath 'bin'
     $scriptPath = Join-Path $ktVersionPath 'bin' "${ktVersionName}.ps1"
     Log("AddToBin $binPath $scriptPath")
     AddToBin $binPath $scriptPath
-
-    Set-Location $oldPwd
-
-    return $true
-}
-
-function BuildMlVersion
-{
-    Log("Not currently implemented")
 }
 
 function BuildObjcVersion
@@ -1454,12 +1386,16 @@ function BuildObjcVersion
     param([string]$basePath, [string]$objcVersionName)
 
     Log('language: objc')
+    Log("version: $objcVersionName")
+
+    # start with non-error code
+    $global:BUILD_LASTEXITCODE = 0
 
     # ensure swift is installed
-    if (-not (Get-Command 'swift' -ErrorAction 'SilentlyContinue'))
-    {
+    if (-not (Get-Command 'swift' -ErrorAction 'SilentlyContinue')) {
         PrintError('You need to install swift')
-        return $false
+        $global:BUILD_LASTEXITCODE = 1
+        return
     }
 
     # swift --version 2>&1 output looks like this:
@@ -1473,10 +1409,10 @@ function BuildObjcVersion
     $objcVersionPath = Join-Path $basePath 'objc' $objcVersionName
     Log("objcVersionPath: $objcVersionPath")
 
-    if (-not (Test-Path $objcVersionPath))
-    {
+    if (-not (Test-Path $objcVersionPath)) {
         PrintError("Path not found: $objcVersionPath")
-        return $false
+        $global:BUILD_LASTEXITCODE = 1
+        return
     }
 
     $oldPwd = Get-Location
@@ -1485,79 +1421,72 @@ function BuildObjcVersion
 
     Log("Building $objcVersionName")
 
-    if ($debug)
-    {
+    if ($debug) {
         Log("swift build")
         swift build
 
-        # check for success/failure
-        if ($LASTEXITCODE -eq 0)
-        {
-            Log('Build succeeded')
-        }
-        else
-        {
-            PrintError('Build failed')
+        $global:BUILD_LASTEXITCODE = $LASTEXITCODE
+        if ($global:BUILD_LASTEXITCODE -ne 0) {
+            # PrintError('Build failed')
             Set-Location $oldPwd
-            return $false
+            return
         }
     }
 
     $binPath = Join-Path $basePath 'bin'
     $scriptPath = ''
 
-    if ($release)
-    {
+    if ($release) {
         Log("swift build --configuration release")
         swift build --configuration release
 
-        # check for success/failure
-        if ($LASTEXITCODE -eq 0)
-        {
-            Log('Build succeeded')
-        }
-        else
-        {
-            PrintError('Build failed')
+        $global:BUILD_LASTEXITCODE = $LASTEXITCODE
+        if ($global:BUILD_LASTEXITCODE -ne 0) {
+            # PrintError('Build failed')
             Set-Location $oldPwd
-            return $false
+            return
         }
 
         # add release to bin
         $scriptPath = Join-Path $objcVersionPath 'bin' "${objcVersionName}.release.ps1"
-    }
-    else
-    {
+    } else {
         # add debug to bin
         $scriptPath = Join-Path $objcVersionPath 'bin' "${objcVersionName}.debug.ps1"
     }
 
-    Log("AddToBin $binPath $scriptPath")
-    AddToBin $binPath $scriptPath
-
     Set-Location $oldPwd
 
-    return $true
+    Log("AddToBin $binPath $scriptPath")
+    AddToBin $binPath $scriptPath
 }
 
-function BuildPlVersion
+function BuildOcamlVersion
+{
+    Log("Not currently implemented")
+}
+
+function BuildPerlVersion
 {
     param([string]$basePath, [string]$plVersionName)
 
     Log('language: perl')
+    Log("version: $plVersionName")
+
+    # start with non-error code
+    $global:BUILD_LASTEXITCODE = 0
 
     # ensure perl is installed
-    if (-not (Get-Command 'perl' -ErrorAction 'SilentlyContinue'))
-    {
+    if (-not (Get-Command 'perl' -ErrorAction 'SilentlyContinue')) {
         PrintError('You need to install perl')
-        return $false
+        $global:BUILD_LASTEXITCODE = 1
+        return
     }
 
     $perlVersion = perl -e 'print $^V' | Select-String -Pattern 'v5'
-    if (-not $perlVersion)
-    {
+    if (-not $perlVersion) {
         PrintError('A 5.x version of perl is required')
-        return $false
+        $global:BUILD_LASTEXITCODE = 1
+        return
     }
 
     Log("perl version: $perlVersion")
@@ -1565,30 +1494,24 @@ function BuildPlVersion
     $plVersionPath = Join-Path $basePath 'perl' $plVersionName
     Log("plVersionPath: $plVersionPath")
 
-    if (-not (Test-Path $plVersionPath))
-    {
+    if (-not (Test-Path $plVersionPath)) {
         PrintError("Path not found: $plVersionPath")
-        return $false
+        $global:BUILD_LASTEXITCODE = 1
+        return
     }
 
     # copy the shared json files to the local resource location
     $sharedPath = Join-Path $basePath 'shared'
     $resourcesPath = Join-Path $plVersionPath 'share'
-    if (-not (Test-Path $resourcesPath))
-    {
+    if (-not (Test-Path $resourcesPath)) {
         New-Item -ItemType directory -Path $resourcesPath
     }
     CopyJsonResources $sharedPath $resourcesPath
 
-    # check for success/failure
-    if ($LASTEXITCODE -eq 0)
-    {
-        Log('Build succeeded')
-    }
-    else
-    {
-        PrintError('Build failed')
-        return $false
+    $global:BUILD_LASTEXITCODE = $LASTEXITCODE
+    if ($global:BUILD_LASTEXITCODE -ne 0) {
+        # PrintError('Build failed')
+        return
     }
 
     # add to bin
@@ -1596,8 +1519,6 @@ function BuildPlVersion
     $scriptPath = Join-Path $plVersionPath 'bin' "${plVersionName}.ps1"
     Log("AddToBin $binPath $scriptPath")
     AddToBin $binPath $scriptPath
-
-    return $true
 }
 
 function BuildPhpVersion
@@ -1605,27 +1526,31 @@ function BuildPhpVersion
     param([string]$basePath, [string]$phpVersionName)
 
     Log('language: php')
+    Log("version: $phpVersionName")
+
+    # start with non-error code
+    $global:BUILD_LASTEXITCODE = 0
 
     # ensure php is installed
-    if (-not (Get-Command 'php' -ErrorAction 'SilentlyContinue'))
-    {
+    if (-not (Get-Command 'php' -ErrorAction 'SilentlyContinue')) {
         PrintError('You need to install php')
-        return $false
+        $global:BUILD_LASTEXITCODE = 1
+        return
     }
 
     $phpVersion = & php -v | Select-String -Pattern '^PHP [78]' 2>&1
-    if (-not $phpVersion)
-    {
+    if (-not $phpVersion) {
         PrintError('A version of PHP >= 7.x is required')
-        return $false
+        $global:BUILD_LASTEXITCODE = 1
+        return
     }
     Log("php version: $phpVersion")
 
     # ensure composer is installed
-    if (-not (Get-Command 'composer' -ErrorAction 'SilentlyContinue'))
-    {
+    if (-not (Get-Command 'composer' -ErrorAction 'SilentlyContinue')) {
         PrintError('You need to install composer')
-        return $false
+        $global:BUILD_LASTEXITCODE = 1
+        return
     }
 
     $composerVersion = composer --version 2>&1 | Select-String -Pattern '^Composer'
@@ -1634,18 +1559,17 @@ function BuildPhpVersion
     $phpVersionPath = Join-Path $basePath 'php' $phpVersionName
     Log("phpVersionPath: $phpVersionPath")
 
-    if (-not (Test-Path $phpVersionPath))
-    {
+    if (-not (Test-Path $phpVersionPath)) {
         PrintError("Path not found: $phpVersionPath")
-        return $false
+        $global:BUILD_LASTEXITCODE = 1
+        return
     }
 
     # copy the shared config json file to the local config location
     $sharedPath = Join-Path $basePath 'shared'
     $configFilePath = Join-Path $sharedPath 'config.json'
     $configPath = Join-Path $phpVersionPath 'config'
-    if (-not (Test-Path $configPath))
-    {
+    if (-not (Test-Path $configPath)) {
         New-Item -ItemType directory -Path $configPath
     }
     Log("Copy-Item $configFilePath -Destination $configPath")
@@ -1653,8 +1577,7 @@ function BuildPhpVersion
 
     # copy the shared json files to the local resource location
     $resourcesPath = Join-Path $phpVersionPath 'resources'
-    if (-not (Test-Path $resourcesPath))
-    {
+    if (-not (Test-Path $resourcesPath)) {
         New-Item -ItemType directory -Path $resourcesPath
     }
     CopyJsonResources $sharedPath $resourcesPath
@@ -1666,45 +1589,39 @@ function BuildPhpVersion
     # run a composer build
     Log("Building $phpVersionName")
 
-    if (Test-Path (Join-Path $phpVersionPath 'vendor'))
-    {
+    if (Test-Path (Join-Path $phpVersionPath 'vendor')) {
         Log('composer update')
         composer update
-    }
-    else
-    {
+    } else {
         Log('composer install')
         composer install
     }
 
-    # check for success/failure
-    if ($LASTEXITCODE -eq 0)
-    {
-        Log('Build succeeded')
-    }
-    else
-    {
-        PrintError('Build failed')
+    $global:BUILD_LASTEXITCODE = $LASTEXITCODE
+    if ($global:BUILD_LASTEXITCODE -ne 0) {
+        # PrintError('Build failed')
         Set-Location $oldPwd
-        return $false
+        return
     }
+
+    Set-Location $oldPwd
 
     # add to bin
     $binPath = Join-Path $basePath 'bin'
     $scriptPath = Join-Path $phpVersionPath 'bin' "${phpVersionName}.ps1"
     Log("AddToBin $binPath $scriptPath")
     AddToBin $binPath $scriptPath
-
-    Set-Location $oldPwd
-
-    return $true
 }
 
-function BuildPs1Version
+function BuildPowershellVersion
 {
     param([string]$basePath, [string]$ps1VersionName)
 
     Log('language: powershell')
+    Log("version: $ps1VersionName")
+
+    # start with non-error code
+    $global:BUILD_LASTEXITCODE = 0
 
     # We don't need to check for powershell, as we're running in it
 
@@ -1714,32 +1631,28 @@ function BuildPs1Version
     $ps1VersionPath = Join-Path $basePath 'powershell' $ps1VersionName
     Log("ps1VersionPath: $ps1VersionPath")
 
-    if (-not (Test-Path $ps1VersionPath))
-    {
+    if (-not (Test-Path $ps1VersionPath)) {
         PrintError("Path not found: $ps1VersionPath")
-        return $false
+        $global:BUILD_LASTEXITCODE = 1
+        return
     }
 
     $projectPrefix = ''
-    if ($ps1VersionName -ieq 'ps1find')
-    {
+    if ($ps1VersionName -ieq 'ps1find') {
         $projectPrefix = 'Ps1Find'
-    }
-    elseif ($ps1VersionName -ieq 'ps1search')
-    {
+    } elseif ($ps1VersionName -ieq 'ps1search') {
         $projectPrefix = 'Ps1Search'
-    }
-    else
-    {
+    } else {
         PrintError("Unknown ps1 version name: $ps1VersionName")
-        return $false
+        $global:BUILD_LASTEXITCODE = 1
+        return
     }
 
     # copy the file to the first of the module paths, if defined
-    if (-not $env:PSModulePath)
-    {
+    if (-not $env:PSModulePath) {
         PrintError("PSModulePath is not defined, cannot copy ${projectPrefix}Module")
-        return $false
+        $global:BUILD_LASTEXITCODE = 1
+        return
     }
 
     Log("Building $ps1VersionName")
@@ -1761,23 +1674,25 @@ function BuildPs1Version
     $scriptPath = Join-Path $ps1VersionPath "${ps1VersionName}.ps1"
     Log("AddToBin $binPath $scriptPath")
     AddToBin $binPath $scriptPath
-
-    return $true
 }
 
-function BuildPyVersion
+function BuildPythonVersion
 {
     param([string]$basePath, [string]$pyVersionName)
 
     Log('language: python')
+    Log("version: $pyVersionName")
+
+    # start with non-error code
+    $global:BUILD_LASTEXITCODE = 0
 
     $pyVersionPath = Join-Path $basePath 'python' $pyVersionName
     Log("pyVersionPath: $pyVersionPath")
 
-    if (-not (Test-Path $pyVersionPath))
-    {
+    if (-not (Test-Path $pyVersionPath)) {
         PrintError("Path not found: $pyVersionPath")
-        return $false
+        $global:BUILD_LASTEXITCODE = 1
+        return
     }
 
     $oldPwd = Get-Location
@@ -1794,8 +1709,7 @@ function BuildPyVersion
 
     $activeVenv = $false
 
-    if ($useVenv)
-    {
+    if ($useVenv) {
         Log('Using venv')
 
         # 3 possibilities:
@@ -1803,8 +1717,7 @@ function BuildPyVersion
         # 2. venv exists and is not active
         # 3. venv does not exist
 
-        if ($env:VIRTUAL_ENV)
-        {
+        if ($env:VIRTUAL_ENV) {
             # 1. venv exists and is active
             Log("Already active venv: $env:VIRTUAL_ENV")
             # $activeVenv = $env:VIRTUAL_ENV
@@ -1821,13 +1734,10 @@ function BuildPyVersion
             # }
 
             $pythonCmd = Get-Command 'python3' -ErrorAction 'SilentlyContinue'
-            if ($null -ne $pythonCmd)
-            {
+            if ($null -ne $pythonCmd) {
                 $python = 'python3'
             }
-        }
-        elseif (Test-Path $venvPath)
-        {
+        } elseif (Test-Path $venvPath) {
             # 2. venv exists and is not active
             Log('Using existing venv')
 
@@ -1847,27 +1757,21 @@ function BuildPyVersion
             # }
 
             $pythonCmd = Get-Command 'python3' -ErrorAction 'SilentlyContinue'
-            if ($null -ne $pythonCmd)
-            {
+            if ($null -ne $pythonCmd) {
                 $python = 'python3'
             }
-        }
-        else
-        {
+        } else {
             # 3. venv does not exist
             # ensure python3.9+ is installed
-            ForEach ($p in $pythonVersions)
-            {
+            ForEach ($p in $pythonVersions) {
                 $pythonCmd = Get-Command $p -ErrorAction 'SilentlyContinue'
-                if ($null -ne $pythonCmd)
-                {
+                if ($null -ne $pythonCmd) {
                     $python = $p
                     break
                 }
             }
 
-            if (-not $python)
-            {
+            if (-not $python) {
                 PrintError('You need to install python(>= 3.9)')
                 return $false
             }
@@ -1883,24 +1787,19 @@ function BuildPyVersion
             Log(". $activatePath")
             . $activatePath
         }
-    }
-    else
-    {
+    } else {
         Log('Not using venv')
 
         # ensure python3.9+ is installed
-        ForEach ($p in $pythonVersions)
-        {
+        ForEach ($p in $pythonVersions) {
             $pythonCmd = Get-Command $p -ErrorAction 'SilentlyContinue'
-            if ($null -ne $pythonCmd)
-            {
+            if ($null -ne $pythonCmd) {
                 $python = $p
                 break
             }
         }
 
-        if (-not $python)
-        {
+        if (-not $python) {
             PrintError('You need to install python(>= 3.9)')
             return $false
         }
@@ -1914,8 +1813,7 @@ function BuildPyVersion
     # copy the shared json files to the local resource location
     $sharedPath = Join-Path $basePath 'shared'
     $resourcesPath = Join-Path $pyVersionPath $pyVersionName 'data'
-    if (-not (Test-Path $resourcesPath))
-    {
+    if (-not (Test-Path $resourcesPath)) {
         New-Item -ItemType directory -Path $resourcesPath
     }
     CopyJsonResources $sharedPath $resourcesPath
@@ -1926,67 +1824,66 @@ function BuildPyVersion
 
     # check for success/failure
     $buildError = $false
-    if ($LASTEXITCODE -eq 0)
-    {
+
+    $global:BUILD_LASTEXITCODE = $LASTEXITCODE
+    if ($global:BUILD_LASTEXITCODE -eq 0) {
         Log('Build succeeded')
-    }
-    else
-    {
+    } else {
         PrintError('Build failed')
         $buildError = $true
     }
 
     # if there was not an active venv before the build, deactivate the venv
-    if ($useVenv -and -not $activeVenv)
-    {
+    if ($useVenv -and -not $activeVenv) {
         # deactivate at end of setup process
         Log('deactivate')
         deactivate
     }
 
-    if ($buildError)
-    {
+    if ($buildError) {
         Set-Location $oldPwd
-        return $false
+        return
     }
+
+    Set-Location $oldPwd
 
     # add to bin
     $binPath = Join-Path $basePath 'bin'
     $scriptPath = Join-Path $pyVersionPath 'bin' "${pyVersionName}.ps1"
     Log("AddToBin $binPath $scriptPath")
     AddToBin $binPath $scriptPath
-
-    Set-Location $oldPwd
-
-    return $true
 }
 
-function BuildRbVersion
+function BuildRubyVersion
 {
     param([string]$basePath, [string]$rbVersionName)
 
     Log('language: ruby')
+    Log("version: $rbVersionName")
+
+    # start with non-error code
+    $global:BUILD_LASTEXITCODE = 0
 
     # ensure ruby3.x is installed
-    if (-not (Get-Command 'ruby' -ErrorAction 'SilentlyContinue'))
-    {
+    if (-not (Get-Command 'ruby' -ErrorAction 'SilentlyContinue')) {
         PrintError('You need to install ruby')
-        return $false
+        $global:BUILD_LASTEXITCODE = 1
+        return
     }
 
     $rubyVersion = & ruby -v 2>&1 | Select-String -Pattern '^ruby 3' 2>&1
-    if (-not $rubyVersion)
-    {
+    if (-not $rubyVersion) {
         PrintError('A version of ruby >= 3.x is required')
-        return $false
+        $global:BUILD_LASTEXITCODE = 1
+        return
     }
     Log("ruby version: $rubyVersion")
 
     # ensure bundler is installed
-    if (-not (Get-Command 'bundle' -ErrorAction 'SilentlyContinue'))
-    {
+    if (-not (Get-Command 'bundle' -ErrorAction 'SilentlyContinue')) {
         PrintError('You need to install bundler: https://bundler.io/')
-        return $false
+        $global:BUILD_LASTEXITCODE = 1
+        return
     }
 
     $bundleVersion = bundle version
@@ -1995,17 +1892,16 @@ function BuildRbVersion
     $rbVersionPath = Join-Path $basePath 'ruby' $rbVersionName
     Log("rbVersionPath: $rbVersionPath")
 
-    if (-not (Test-Path $rbVersionPath))
-    {
+    if (-not (Test-Path $rbVersionPath)) {
         PrintError("Path not found: $rbVersionPath")
-        return $false
+        $global:BUILD_LASTEXITCODE = 1
+        return
     }
 
     # copy the shared json files to the local resource location
     $sharedPath = Join-Path $basePath 'shared'
     $resourcesPath = Join-Path $rbVersionPath 'data'
-    if (-not (Test-Path $resourcesPath))
-    {
+    if (-not (Test-Path $resourcesPath)) {
         New-Item -ItemType directory -Path $resourcesPath
     }
     CopyJsonResources $sharedPath $resourcesPath
@@ -2013,8 +1909,7 @@ function BuildRbVersion
     # copy the shared test files to the local test resource location
     $testFilesPath = Join-Path $sharedPath 'testFiles'
     $testResourcesPath = Join-Path $rbVersionPath 'test' 'fixtures'
-    if (-not (Test-Path $testResourcesPath))
-    {
+    if (-not (Test-Path $testResourcesPath)) {
         New-Item -ItemType directory -Path $testResourcesPath
     }
     CopyTestResources $testFilesPath $testResourcesPath
@@ -2027,66 +1922,62 @@ function BuildRbVersion
     Log('bundle install')
     bundle install
 
-    # check for success/failure
-    if ($LASTEXITCODE -ne 0)
-    {
-        PrintError('bundle install failed')
+    $global:BUILD_LASTEXITCODE = $LASTEXITCODE
+    if ($global:BUILD_LASTEXITCODE -ne 0) {
+        # PrintError('bundle install failed')
         Set-Location $oldPwd
-        return $false
+        return
     }
 
     # Build the gem
     Log("gem build ${rbVersionName}.gemspec")
     gem build "${rbVersionName}.gemspec"
 
-    # check for success/failure
-    if ($LASTEXITCODE -eq 0)
-    {
-        Log('Build succeeded')
-    }
-    else
-    {
-        PrintError('Build failed')
+    $global:BUILD_LASTEXITCODE = $LASTEXITCODE
+    if ($global:BUILD_LASTEXITCODE -ne 0) {
+        # PrintError('Build failed')
         Set-Location $oldPwd
-        return $false
+        return
     }
 
     # TODO: install the gem?
     Log("gem install ${rbVersionName}.1.0.gem")
     gem install "${rbVersionName}.1.0.gem"
 
+    Set-Location $oldPwd
+
     # add to bin
     $binPath = Join-Path $basePath 'bin'
     $scriptPath = Join-Path $rbVersionPath 'bin' "${rbVersionName}.ps1"
     Log("AddToBin $binPath $scriptPath")
     AddToBin $binPath $scriptPath
-
-    Set-Location $oldPwd
-
-    return $true
 }
 
-function BuildRsVersion
+function BuildRustVersion
 {
     param([string]$basePath, [string]$rsVersionName)
 
     Log('language: rust')
+    Log("version: $rsVersionName")
+
+    # start with non-error code
+    $global:BUILD_LASTEXITCODE = 0
 
     # ensure rust is installed
-    if (-not (Get-Command 'rustc' -ErrorAction 'SilentlyContinue'))
-    {
+    if (-not (Get-Command 'rustc' -ErrorAction 'SilentlyContinue')) {
         PrintError('You need to install rust')
-        return $false
+        $global:BUILD_LASTEXITCODE = 1
+        return
     }
 
     $rustVersion = rustc --version | Select-String -Pattern 'rustc'
     Log("rustc version: $rustVersion")
 
     # ensure cargo is installed
-    if (-not (Get-Command 'cargo' -ErrorAction 'SilentlyContinue'))
-    {
+    if (-not (Get-Command 'cargo' -ErrorAction 'SilentlyContinue')) {
         PrintError('You need to install cargo')
-        return $false
+        $global:BUILD_LASTEXITCODE = 1
+        return
     }
 
     $cargoVersion = cargo --version | Select-String -Pattern 'cargo'
@@ -2095,10 +1986,10 @@ function BuildRsVersion
     $rsVersionPath = Join-Path $basePath 'rust' $rsVersionName
     Log("rsVersionPath: $rsVersionPath")
 
-    if (-not (Test-Path $rsVersionPath))
-    {
+    if (-not (Test-Path $rsVersionPath)) {
         PrintError("Path not found: $rsVersionPath")
-        return $false
+        $global:BUILD_LASTEXITCODE = 1
+        return
     }
 
     $oldPwd = Get-Location
@@ -2107,59 +1998,43 @@ function BuildRsVersion
 
     Log("Building $rsVersionName")
 
-    if ($debug)
-    {
+    if ($debug) {
         Log('cargo build')
         cargo build
 
-        # check for success/failure
-        if ($LASTEXITCODE -eq 0)
-        {
-            Log('Build succeeded')
-        }
-        else
-        {
-            PrintError('Build failed')
+        $global:BUILD_LASTEXITCODE = $LASTEXITCODE
+        if ($global:BUILD_LASTEXITCODE -ne 0) {
+            # PrintError('Build failed')
             Set-Location $oldPwd
-            return $false
+            return
         }
     }
 
     $binPath = Join-Path $basePath 'bin'
     $scriptPath = ''
 
-    if ($release)
-    {
+    if ($release) {
         Log('cargo build --release')
         cargo build --release
 
-        # check for success/failure
-        if ($LASTEXITCODE -eq 0)
-        {
-            Log('Build succeeded')
-        }
-        else
-        {
-            PrintError('Build failed')
+        $global:BUILD_LASTEXITCODE = $LASTEXITCODE
+        if ($global:BUILD_LASTEXITCODE -ne 0) {
+            # PrintError('Build failed')
             Set-Location $oldPwd
-            return $false
+            return
         }
 
         # add release to bin
         $scriptPath = Join-Path $rsVersionPath 'bin' "${rsVersionName}.release.ps1"
-    }
-    else
-    {
+    } else {
         # add debug to bin
         $scriptPath = Join-Path $rsVersionPath 'bin' "${rsVersionName}.debug.ps1"
     }
 
-    Log("AddToBin $binPath $scriptPath")
-    AddToBin $binPath $scriptPath
-
     Set-Location $oldPwd
 
-    return $true
+    Log("AddToBin $binPath $scriptPath")
+    AddToBin $binPath $scriptPath
 }
 
 function BuildScalaVersion
@@ -2167,12 +2042,16 @@ function BuildScalaVersion
     param([string]$basePath, [string]$scalaVersionName)
 
     Log('language: scala')
+    Log("version: $scalaVersionName")
+
+    # start with non-error code
+    $global:BUILD_LASTEXITCODE = 0
 
     # ensure scalac is installed
-    if (-not (Get-Command 'scala' -ErrorAction 'SilentlyContinue'))
-    {
+    if (-not (Get-Command 'scala' -ErrorAction 'SilentlyContinue')) {
         PrintError('You need to install scala')
-        return $false
+        $global:BUILD_LASTEXITCODE = 1
+        return
     }
 
     # scala --version output looks like this:
@@ -2183,10 +2062,10 @@ function BuildScalaVersion
     Log("scala version: $scalaVersion")
 
     # ensure sbt is installed
-    if (-not (Get-Command 'sbt' -ErrorAction 'SilentlyContinue'))
-    {
+    if (-not (Get-Command 'sbt' -ErrorAction 'SilentlyContinue')) {
         PrintError('You need to install sbt')
-        return $false
+        $global:BUILD_LASTEXITCODE = 1
+        return
     }
 
     # $sbtOutput = sbt --version
@@ -2203,17 +2082,16 @@ function BuildScalaVersion
     $scalaVersionPath = Join-Path $basePath 'scala' $scalaVersionName
     Log("scalaVersionPath: $scalaVersionPath")
 
-    if (-not (Test-Path $scalaVersionPath))
-    {
+    if (-not (Test-Path $scalaVersionPath)) {
         PrintError("Path not found: $scalaVersionPath")
-        return $false
+        $global:BUILD_LASTEXITCODE = 1
+        return
     }
 
     # copy the shared json files to the local resource location
     $sharedPath = Join-Path $basePath 'shared'
     $resourcesPath = Join-Path $scalaVersionPath 'src' 'main' 'resources'
-    if (-not (Test-Path $resourcesPath))
-    {
+    if (-not (Test-Path $resourcesPath)) {
         New-Item -ItemType directory -Path $resourcesPath
     }
     CopyJsonResources $sharedPath $resourcesPath
@@ -2221,8 +2099,7 @@ function BuildScalaVersion
     # copy the test files to the local test resource location
     $testFilesPath = Join-Path $sharedPath 'testFiles'
     $testResourcesPath = Join-Path $scalaVersionPath 'src' 'test' 'resources'
-    if (-not (Test-Path $testResourcesPath))
-    {
+    if (-not (Test-Path $testResourcesPath)) {
         New-Item -ItemType directory -Path $testResourcesPath
     }
     CopyTestResources $testFilesPath $testResourcesPath
@@ -2236,16 +2113,11 @@ function BuildScalaVersion
     Log("sbt 'set test in assembly := {}' clean package assembly")
     sbt 'set test in assembly := {}' clean package assembly
 
-    # check for success/failure
-    if ($LASTEXITCODE -eq 0)
-    {
-        Log('Build succeeded')
-    }
-    else
-    {
-        PrintError('Build failed')
+    $global:BUILD_LASTEXITCODE = $LASTEXITCODE
+    if ($global:BUILD_LASTEXITCODE -ne 0) {
+        # PrintError('Build failed')
         Set-Location $oldPwd
-        return $false
+        return
     }
 
     # add to bin
@@ -2256,7 +2128,7 @@ function BuildScalaVersion
 
     Set-Location $oldPwd
 
-    return $true
+    $global:BUILD_LASTEXITCODE = 0
 }
 
 function BuildSwiftVersion
@@ -2264,12 +2136,16 @@ function BuildSwiftVersion
     param([string]$basePath, [string]$swiftVersionName)
 
     Log('language: swift')
+    Log("version: $swiftVersionName")
+
+    # start with non-error code
+    $global:BUILD_LASTEXITCODE = 0
 
     # ensure swift is installed
-    if (-not (Get-Command 'swift' -ErrorAction 'SilentlyContinue'))
-    {
+    if (-not (Get-Command 'swift' -ErrorAction 'SilentlyContinue')) {
         PrintError('You need to install swift')
-        return $false
+        $global:BUILD_LASTEXITCODE = 1
+        return
     }
 
     # swift --version 2>&1 output looks like this:
@@ -2283,10 +2159,10 @@ function BuildSwiftVersion
     $swiftVersionPath = Join-Path $basePath 'swift' $swiftVersionName
     Log("swiftVersionPath: $swiftVersionPath")
 
-    if (-not (Test-Path $swiftVersionPath))
-    {
+    if (-not (Test-Path $swiftVersionPath)) {
         PrintError("Path not found: $swiftVersionPath")
-        return $false
+        $global:BUILD_LASTEXITCODE = 1
+        return
     }
 
     $oldPwd = Get-Location
@@ -2295,82 +2171,70 @@ function BuildSwiftVersion
 
     Log("Building $swiftVersionName")
 
-    if ($debug)
-    {
+    if ($debug) {
         Log('swift build')
         swift build
 
-        # check for success/failure
-        if ($LASTEXITCODE -eq 0)
-        {
-            Log('Build succeeded')
-        }
-        else
-        {
-            PrintError('Build failed')
+        $global:BUILD_LASTEXITCODE = $LASTEXITCODE
+        if ($global:BUILD_LASTEXITCODE -ne 0) {
+            # PrintError('Build failed')
             Set-Location $oldPwd
-            return $false
+            return
         }
     }
 
     $binPath = Join-Path $basePath 'bin'
     $scriptPath = ''
 
-    if ($release)
-    {
+    if ($release) {
         Log('swift build --configuration release')
         swift build --configuration release
 
-        # check for success/failure
-        if ($LASTEXITCODE -eq 0)
-        {
-            Log('Build succeeded')
-        }
-        else
-        {
-            PrintError('Build failed')
+        $global:BUILD_LASTEXITCODE = $LASTEXITCODE
+        if ($global:BUILD_LASTEXITCODE -ne 0) {
+            # PrintError('Build failed')
             Set-Location $oldPwd
-            return $false
+            return
         }
 
         # add release to bin
         $scriptPath = Join-Path $swiftVersionPath 'bin' "${swiftVersionName}.release.ps1"
-    }
-    else
-    {
+    } else {
         # add debug to bin
         $scriptPath = Join-Path $swiftVersionPath 'bin' "${swiftVersionName}.debug.ps1"
     }
 
-    Log("AddToBin $binPath $scriptPath")
-    AddToBin $binPath $scriptPath
-
     Set-Location $oldPwd
 
-    return $true
+    Log("AddToBin $binPath $scriptPath")
+    AddToBin $binPath $scriptPath
 }
 
-function BuildTsVersion
+function BuildTypescriptVersion
 {
     param([string]$basePath, [string]$tsVersionName)
 
     Log('language: typescript')
+    Log("version: $tsVersionName")
+
+    # start with non-error code
+    $global:BUILD_LASTEXITCODE = 0
 
     # ensure node is installed
-    if (-not (Get-Command 'node' -ErrorAction 'SilentlyContinue'))
-    {
+    if (-not (Get-Command 'node' -ErrorAction 'SilentlyContinue')) {
         PrintError('You need to install node.js')
-        return $false
+        $global:BUILD_LASTEXITCODE = 1
+        return
     }
 
     $nodeVersion = node --version
     Log("node version: $nodeVersion")
 
     # ensure npm is installed
-    if (-not (Get-Command 'npm' -ErrorAction 'SilentlyContinue'))
-    {
+    if (-not (Get-Command 'npm' -ErrorAction 'SilentlyContinue')) {
         PrintError('You need to install npm')
-        return $false
+        $global:BUILD_LASTEXITCODE = 1
+        return
     }
 
     $npmVersion = npm --version
@@ -2379,16 +2243,15 @@ function BuildTsVersion
     $tsVersionPath = Join-Path $basePath 'typescript' $tsVersionName
     Log("tsVersionPath: $tsVersionPath")
 
-    if (-not (Test-Path $tsVersionPath))
-    {
+    if (-not (Test-Path $tsVersionPath)) {
         PrintError("Path not found: $tsVersionPath")
-        return $false
+        $global:BUILD_LASTEXITCODE = 1
+        return
     }
 
     # copy the shared json files to the local resource location
     $resourcesPath = Join-Path $tsVersionPath 'data'
-    if (-not (Test-Path $resourcesPath))
-    {
+    if (-not (Test-Path $resourcesPath)) {
         New-Item -ItemType directory -Path $resourcesPath
     }
     CopyJsonResources($resourcesPath)
@@ -2405,25 +2268,18 @@ function BuildTsVersion
     Log('npm run build')
     npm run build
 
-    # check for success/failure
-    if ($LASTEXITCODE -eq 0)
-    {
-        Log('Build succeeded')
-    }
-    else
-    {
-        PrintError('Build failed')
+    $global:BUILD_LASTEXITCODE = $LASTEXITCODE
+    if ($global:BUILD_LASTEXITCODE -ne 0) {
+        # PrintError('Build failed')
         Set-Location $oldPwd
-        return $false
+        return
     }
+
+    Set-Location $oldPwd
 
     # add to bin
     $binPath = Join-Path $basePath 'bin'
     $scriptPath = Join-Path $tsVersionPath 'bin' "${tsVersionName}.ps1"
     Log("AddToBin $binPath $scriptPath")
     AddToBin $binPath $scriptPath
-
-    Set-Location $oldPwd
-
-    return $true
 }

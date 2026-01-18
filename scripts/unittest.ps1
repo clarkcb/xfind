@@ -27,20 +27,13 @@ $hostname = [System.Net.Dns]::GetHostName()
 Hdr('xfind unittest script')
 Log("user: $env:USER")
 Log("host: $hostname")
-if ($IsWindows)
-{
+if ($IsWindows) {
     Log("os: $env:OS")
-}
-elseif ($IsLinux)
-{
+} elseif ($IsLinux) {
     Log("os: Linux")
-}
-elseif ($IsMacOS)
-{
+} elseif ($IsMacOS) {
     Log("os: Darwin")
-}
-else
-{
+} else {
     Log("os: unknown")
 }
 
@@ -48,15 +41,13 @@ $gitBranch = git branch --show-current
 $gitCommit = git rev-parse --short HEAD
 Log("git branch: $gitBranch ($gitCommit)")
 
-if ($langs -contains 'all')
-{
+if ($langs -contains 'all') {
     $all = $true
 }
 
 Log("help: $help")
 Log("all: $all")
-if ($langs.Length -gt 0 -and -not $all)
-{
+if ($langs.Length -gt 0 -and -not $all) {
     Log("langs ($($langs.Length)): $langs")
 }
 
@@ -84,16 +75,13 @@ function UnitTestLangVersion
 
     $functionName = "UnitTest${langName}Version"
 
-    if (Get-Command $functionName -ErrorAction 'SilentlyContinue')
-    {
+    if (Get-Command $functionName -ErrorAction 'SilentlyContinue') {
         & $functionName $xfindPath $versionName
 
-        if ($global:UNITTEST_LASTEXITCODE -eq 0)
-        {
+        if ($global:UNITTEST_LASTEXITCODE -eq 0) {
             Log("$versionName tests succeeded")
-        }
-        else
-        {
+            $global:successfulTests += $versionName
+        } else {
             PrintError("$versionName tests failed")
             $global:failedTests += $versionName
         }
@@ -354,7 +342,7 @@ function UnitTestAll
 
     Measure-Command { UnitTestTsFind }
 
-    PrintFailedTests
+    PrintTestResults
 
     exit
 }
@@ -367,20 +355,16 @@ function UnitTestMain
 {
     param($langs=@())
 
-    if ($langs.Count -eq 0)
-    {
+    if ($langs.Count -eq 0) {
         Usage
     }
 
-    if ($langs -contains 'all')
-    {
+    if ($langs -contains 'all') {
         UnitTestAll
     }
 
-    ForEach ($lang in $langs)
-    {
-        switch ($lang)
-        {
+    ForEach ($lang in $langs) {
+        switch ($lang) {
             # 'bash'       { UnitTestBashFind }
             'bash'       { Measure-Command { UnitTestBashFind } }
             'c'          { Measure-Command { UnitTestCFind } }
@@ -426,27 +410,23 @@ function UnitTestMain
         }
     }
 
-    PrintFailedTests
+    PrintTestResults
 }
 
-if ($help)
-{
+if ($help) {
     Usage
 }
 
 $oldPwd = Get-Location
 
 try {
-    if ($all)
-    {
+    if ($all) {
         UnitTestAll
     }
 
     UnitTestMain $langs
-}
-catch {
+} catch {
     PrintError($_.Exception.Message)
-}
-finally {
+} finally {
     Set-Location $oldPwd
 }

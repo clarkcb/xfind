@@ -19,7 +19,7 @@ source "$DIR/common.sh"
 # Global variable to hold last funtion exit code
 BUILD_LASTEXITCODE=0
 
-# Keep track of successful and failed builds
+# Keep track of successful and failed builds and report at the end
 SUCCESSFUL_BUILDS=()
 FAILED_BUILDS=()
 
@@ -320,17 +320,17 @@ build_clojure_version () {
         return
     fi
 
-    # Create uberjar with lein
+    # run clean
     log "lein clean"
     lein clean
-
-    # install to local maven repository
-    log "lein install"
-    lein install
 
     # create uberjar
     log "lein uberjar"
     lein uberjar
+
+    # install to local maven repository
+    log "lein install"
+    lein install
 
     # check for success/failure
     if [ "$?" -eq 0 ]
@@ -2396,6 +2396,7 @@ build_typescript_version () {
     # run npm install and build
     log "npm install"
     npm install
+
     log "npm run build"
     npm run build
 

@@ -1530,10 +1530,14 @@ unittest_typescript_version () {
     log "cd $ts_version_path"
     cd "$ts_version_path"
 
+    # Disable web storage
+    NODE_OPTIONS="--no-experimental-webstorage"
+
     # run tests
     log "npm test"
-    npm test
-
+    # npm test
+    NODE_OPTIONS="$NODE_OPTIONS" npm test
+    
     UNITTEST_LASTEXITCODE=$?
 
     cd -

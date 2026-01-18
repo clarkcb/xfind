@@ -308,16 +308,13 @@ class Benchmarker(object):
             update_replace_values[k] = self.replace_values[k]
         self.replace_values = update_replace_values
         self.exe_name_regex = re.compile(r'\b({})(\.exe)?\b'.format('|'.join(self.exe_names)), re.I | re.S)
-        # read from scenarios files
-        if self.scenarios_files and all([os.path.isfile(f) for f in self.scenarios_files]):
-            for f in self.scenarios_files:
-                self.load_scenarios_file(f)
+        for f in self.scenarios_files:
+            self.load_scenarios_file(f)
 
     def load_scenarios_file(self, scenarios_file: str):
             scenarios_file_group_dict = {}
-            if not os.path.isfile(scenarios_file):
-                print(f'Error: scenarios file not found: {scenarios_file}')
-                return
+            if not os.path.exists(scenarios_file) or not  os.path.isfile(scenarios_file):
+                raise FileNotFoundError(f'Scenarios file {scenarios_file} not found')
             with open(scenarios_file, 'r') as sf:
                 scenarios_dict = json.load(sf)
             # XSEARCH_PATH = os.environ.get('XSEARCH_PATH', XSEARCHPATH)
