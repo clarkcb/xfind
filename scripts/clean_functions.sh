@@ -83,6 +83,9 @@ clean_c_version () {
     local base_path="$1"
     local c_version_name="$2"
 
+    log "language: C"
+    log "version: $c_version_name"
+
     c_version_path="$base_path/c/$c_version_name"
     log "c_version_path: $c_version_path"
 
@@ -115,6 +118,9 @@ clean_c_version () {
 clean_clojure_version () {
     local base_path="$1"
     local clj_version_name="$2"
+
+    log "language: clojure"
+    log "version: $clj_version_name"
 
     # ensure lein is installed
     if [ -z "$(which lein)" ]
@@ -154,6 +160,9 @@ clean_cpp_version () {
     local base_path="$1"
     local cpp_version_name="$2"
 
+    log "language: C++"
+    log "version: $cpp_version_name"
+
     cpp_version_path="$base_path/cpp/$cpp_version_name"
     log "cpp_version_path: $cpp_version_path"
 
@@ -186,6 +195,9 @@ clean_cpp_version () {
 clean_csharp_version () {
     local base_path="$1"
     local cs_version_name="$2"
+
+    log "language: C#"
+    log "version: $cs_version_name"
 
     # ensure dotnet is installed
     if [ -z "$(which dotnet)" ]
@@ -255,6 +267,9 @@ clean_dart_version () {
     local base_path="$1"
     local dart_version_name="$2"
 
+    log "language: dart"
+    log "version: $dart_version_name"
+
     # ensure dart is installed
     if [ -z "$(which dart)" ]
     then
@@ -293,6 +308,9 @@ clean_dart_version () {
 clean_elixir_version () {
     local base_path="$1"
     local ex_version_name="$2"
+
+    log "language: elixir"
+    log "version: $ex_version_name"
 
     # ensure elixir is installed
     if [ -z "$(which elixir)" ]
@@ -338,6 +356,9 @@ clean_elixir_version () {
 clean_fsharp_version () {
     local base_path="$1"
     local fs_version_name="$2"
+
+    log "language: F#"
+    log "version: $fs_version_name"
 
     # ensure dotnet is installed
     if [ -z "$(which dotnet)" ]
@@ -407,6 +428,9 @@ clean_go_version () {
     local base_path="$1"
     local go_version_name="$2"
 
+    log "language: go"
+    log "version: $go_version_name"
+
     # ensure go is installed
     if [ -z "$(which go)" ]
     then
@@ -439,6 +463,9 @@ clean_go_version () {
 clean_groovy_version () {
     local base_path="$1"
     local groovy_version_name="$2"
+
+    log "language: groovy"
+    log "version: $groovy_version_name"
 
     groovy_version_path="$base_path/groovy/$groovy_version_name"
     log "groovy_version_path: $groovy_version_path"
@@ -486,6 +513,9 @@ clean_groovy_version () {
 clean_haskell_version () {
     local base_path="$1"
     local hs_version_name="$2"
+
+    log "language: haskell"
+    log "version: $hs_version_name"
 
     # ensure stack is installed
     if [ -z "$(which stack)" ]
@@ -536,6 +566,9 @@ clean_java_version () {
     local base_path="$1"
     local java_version_name="$2"
 
+    log "language: java"
+    log "version: $java_version_name"
+
     java_version_path="$base_path/java/$java_version_name"
     log "java_version_path: $java_version_path"
 
@@ -583,6 +616,9 @@ clean_java_version () {
 clean_javascript_version () {
     local base_path="$1"
     local js_version_name="$2"
+
+    log "language: javascript"
+    log "version: $js_version_name"
 
     # ensure npm is installed
     if [ -z "$(which npm)" ]
@@ -632,6 +668,9 @@ clean_javascript_version () {
 clean_kotlin_version () {
     local base_path="$1"
     local kt_version_name="$2"
+
+    log "language: kotlin"
+    log "version: $kt_version_name"
 
     kt_version_path="$base_path/kotlin/$kt_version_name"
     log "kt_version_path: $kt_version_path"
@@ -697,6 +736,9 @@ clean_objc_version () {
     local base_path="$1"
     local objc_version_name="$2"
 
+    log "language: objc"
+    log "version: $objc_version_name"
+
     # ensure swift is installed
     if [ -z "$(which swift)" ]
     then
@@ -730,6 +772,9 @@ clean_perl_version () {
     local base_path="$1"
     local pl_version_name="$2"
 
+    log "language: perl"
+    log "version: $pl_version_name"
+
     pl_version_path="$base_path/perl/$pl_version_name"
     log "pl_version_path: $pl_version_path"
 
@@ -749,6 +794,9 @@ clean_perl_version () {
 clean_php_version () {
     local base_path="$1"
     local php_version_name="$2"
+
+    log "language: php"
+    log "version: $php_version_name"
 
     php_version_path="$base_path/php/$php_version_name"
     log "php_version_path: $php_version_path"
@@ -783,6 +831,9 @@ clean_python_version () {
     local base_path="$1"
     local py_version_name="$2"
 
+    log "language: python"
+    log "version: $py_version_name"
+
     py_version_path="$base_path/python/$py_version_name"
     log "py_version_path: $py_version_path"
 
@@ -802,6 +853,9 @@ clean_python_version () {
 clean_ruby_version () {
     local base_path="$1"
     local rb_version_name="$2"
+
+    log "language: ruby"
+    log "version: $rb_version_name"
 
     rb_version_path="$base_path/ruby/$rb_version_name"
     log "rb_version_path: $rb_version_path"
@@ -833,6 +887,9 @@ clean_ruby_version () {
 clean_rust_version () {
     local base_path="$1"
     local rs_version_name="$2"
+
+    log "language: rust"
+    log "version: $rs_version_name"
 
     # ensure cargo is installed
     if [ -z "$(which cargo)" ]
@@ -877,6 +934,9 @@ clean_rust_version () {
 clean_scala_version () {
     local base_path="$1"
     local scala_version_name="$2"
+
+    log "language: scala"
+    log "version: $scala_version_name"
 
     # ensure sbt is installed
     if [ -z "$(which sbt)" ]
@@ -928,6 +988,9 @@ clean_swift_version () {
     local base_path="$1"
     local swift_version_name="$2"
 
+    log "language: swift"
+    log "version: $swift_version_name"
+
     # ensure swift is installed
     if [ -z "$(which swift)" ]
     then
@@ -960,6 +1023,9 @@ clean_swift_version () {
 clean_typescript_version () {
     local base_path="$1"
     local ts_version_name="$2"
+
+    log "language: typescript"
+    log "version: $ts_version_name"
 
     # ensure npm is installed
     if [ -z "$(which npm)" ]

@@ -117,7 +117,7 @@ function CleanCVersion
     param([string]$basePath, [string]$cVersionName)
 
     Log('language: C')
-    Log("cVersionName: $cVersionName")
+    Log("version: $cVersionName")
 
     $cVersionPath = Join-Path $basePath 'c' $cVersionName
     Log("cVersionPath: $cVersionPath")

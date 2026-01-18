@@ -94,7 +94,7 @@ unittest_c_version () {
     local base_path="$1"
     local c_version_name="$2"
 
-    log "language: c"
+    log "language: C"
     log "version: $c_version_name"
 
     # ensure cmake is installed

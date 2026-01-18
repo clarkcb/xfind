@@ -159,8 +159,8 @@ namespace cppfind {
         return settings;
     }
 
-    void FindOptions::update_settings_from_json(FindSettings& settings, const std::string_view json) {
-        const auto arg_tokens = m_arg_tokenizer.tokenize_json(json);
+    void FindOptions::update_settings_from_json(FindSettings& settings, const std::string_view json_str) {
+        const auto arg_tokens = m_arg_tokenizer.tokenize_json(json_str);
         update_settings_from_arg_tokens(settings, arg_tokens);
     }
 

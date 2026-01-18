@@ -80,7 +80,7 @@ bool unordered_set_has_pattern(const std::unordered_set<cppfind::RegexPattern, c
 }
 
 TEST_CASE("Get FindSettings from JSON", "[FindOptions]") {
-    std::string json = R"(
+    std::string json_str = R"(
 {
     "path": "~/src/xfind/",
     "in-ext": ["js","ts"],
@@ -94,8 +94,9 @@ TEST_CASE("Get FindSettings from JSON", "[FindOptions]") {
 
     auto options = cppfind::FindOptions();
     auto settings = cppfind::FindSettings();
-    options.update_settings_from_json(settings, json);
+    options.update_settings_from_json(settings, json_str);
 
+    REQUIRE(!settings.paths().empty());
     REQUIRE(settings.paths().size() == 1);
     REQUIRE(settings.paths().contains("~/src/xfind/"));
     REQUIRE(settings.in_extensions().size() == 2);

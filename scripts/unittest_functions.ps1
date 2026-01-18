@@ -39,7 +39,7 @@ function PrintTestResults
     }
     if ($global:failedTests.Count -gt 0) {
         $joinedFailedTests = $global:failedTests -join ', '
-        PrintError("Failed tests ($($global:succefailedTestsssfulTests.Count)): $joinedFailedTests")
+        PrintError("Failed tests ($($global:failedTests.Count)): $joinedFailedTests")
     } else {
         Log("Failed tests: 0")
     }

@@ -2250,11 +2250,12 @@ function BuildTypescriptVersion
     }
 
     # copy the shared json files to the local resource location
+    $sharedPath = Join-Path $basePath 'shared'
     $resourcesPath = Join-Path $tsVersionPath 'data'
     if (-not (Test-Path $resourcesPath)) {
         New-Item -ItemType directory -Path $resourcesPath
     }
-    CopyJsonResources($resourcesPath)
+    CopyJsonResources $sharedPath $resourcesPath
 
     $oldPwd = Get-Location
     Log("Set-Location $tsVersionPath")
