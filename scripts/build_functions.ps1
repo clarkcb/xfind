@@ -327,9 +327,9 @@ function BuildClojureVersion
         return
     }
 
-    # create uberjar
-    Log('lein uberjar')
-    lein uberjar
+    # install to local maven repository
+    Log('lein install')
+    lein install
 
     $global:BUILD_LASTEXITCODE = $LASTEXITCODE
     if ($global:BUILD_LASTEXITCODE -ne 0) {
@@ -338,9 +338,9 @@ function BuildClojureVersion
         return
     }
 
-    # install to local maven repository
-    Log('lein install')
-    lein install
+    # create uberjar - this must come last
+    Log('lein uberjar')
+    lein uberjar
 
     $global:BUILD_LASTEXITCODE = $LASTEXITCODE
     if ($global:BUILD_LASTEXITCODE -ne 0) {

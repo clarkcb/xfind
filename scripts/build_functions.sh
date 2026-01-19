@@ -324,13 +324,13 @@ build_clojure_version () {
     log "lein clean"
     lein clean
 
-    # create uberjar
-    log "lein uberjar"
-    lein uberjar
-
     # install to local maven repository
     log "lein install"
     lein install
+
+    # create uberjar this must come last
+    log "lein uberjar"
+    lein uberjar
 
     # check for success/failure
     if [ "$?" -eq 0 ]
