@@ -22,7 +22,7 @@ sub log_err {
     my $msg = shift;
     my $colorize = shift;
     if (!defined($colorize)) {
-        $colorize = $1;
+        $colorize = 1;
     }
     my $err = 'ERROR: ' . $msg;
     if ($colorize == 1) {

@@ -22,6 +22,26 @@ namespace cppfind {
         return split_string(s, delims, true);
     }
 
+    long StringUtil::leading_whitespace(std::string& s) {
+        const auto it = std::ranges::find_if(s, [](const unsigned char ch) {
+            return !std::isspace(ch);
+        });
+
+        // The distance between the start of the string and the first non-whitespace
+        // character is the number of leading whitespaces.
+        return std::distance(s.begin(), it);
+    }
+
+    long StringUtil::trailing_whitespace(std::string& s) {
+        const auto it = std::find_if(s.rbegin(), s.rend(), [](const unsigned char ch) {
+            return !std::isspace(ch);
+        });
+
+        // The distance between the reverse iterator and the reverse end iterator
+        // gives the count of trailing whitespace characters.
+        return std::distance(s.rbegin(), it);
+    }
+
     void StringUtil::ltrim(std::string& s) {
         s.erase(s.begin(), std::ranges::find_if(s.begin(), s.end(), [](const int ch) {
             return !std::isspace(ch);

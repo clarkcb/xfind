@@ -289,6 +289,9 @@ func (f *Finder) setFileResults() error {
 	//	Log("\nBuilding file result list")
 	//}
 
+	// start the find channels with goroutine
+	go f.activateFindChannels()
+
 	for _, p := range f.Settings.Paths() {
 		if err := f.setFileResultsForPath(p); err != nil {
 			return err
@@ -303,9 +306,6 @@ func (f *Finder) Find() (*FileResults, error) {
 	if err := f.Settings.Validate(); err != nil {
 		return nil, err
 	}
-
-	// start the find channels with goroutine
-	go f.activateFindChannels()
 
 	// send to the find channels
 	if err := f.setFileResults(); err != nil {

@@ -96,7 +96,7 @@ sub tokenize_args {
                             my $arg_token = plfind::ArgToken->new($self->{str_hash}->{$arg_name}, plfind::ArgTokenType->STR, $val);
                             push(@arg_tokens, $arg_token);
                         } elsif (exists $self->{int_hash}->{$arg_name}) {
-                            if ($val =~ /^\d+$/) {
+                            if ($val =~ /^[\+-]?\d+$/) {
                                 my $arg_token = plfind::ArgToken->new($self->{int_hash}->{$arg_name}, plfind::ArgTokenType->INT, int($val));
                                 push(@arg_tokens, $arg_token);
                             } else {

@@ -28,4 +28,13 @@ public final class StringUtil {
         }
         return trimmed;
     }
+
+    public static boolean isNullOrEmpty(final String s) {
+        return s == null || s.isEmpty();
+    }
+
+    public static boolean isNullOrWhitespace(final String s) {
+        if (isNullOrEmpty(s)) return true;
+        return s.trim().isEmpty();
+    }
 }

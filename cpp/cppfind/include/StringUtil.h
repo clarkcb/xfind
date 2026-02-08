@@ -11,6 +11,8 @@ namespace cppfind {
     public:
         static std::vector<std::string> split_string(std::string_view s, std::string_view delims);
         static std::vector<std::string> split_string(std::string_view s, std::string_view delims, bool exclude_empty);
+        static long leading_whitespace(std::string& s);
+        static long trailing_whitespace(std::string& s);
         static void ltrim(std::string& s);
         static std::string ltrim_copy(std::string s);
         static void rtrim(std::string& s);

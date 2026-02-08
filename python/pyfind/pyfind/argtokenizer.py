@@ -121,9 +121,6 @@ class ArgTokenizer:
                                     i = int(arg_val)
                                 except ValueError:
                                     invalid_int = True
-                                else:
-                                    if i < 0:
-                                        invalid_int = True
                                 if invalid_int:
                                     err = f'Invalid value for option {used_name}: {arg_val}'
                                     raise FindException(err)
