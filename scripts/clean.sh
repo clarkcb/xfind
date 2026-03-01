@@ -38,6 +38,9 @@ clean_xfind_version () {
     local lang_name="$1"
     local version_name="$2"
 
+    # reset before calling
+    CLEAN_LASTEXITCODE=0
+
     function_name="clean_${lang_name}_version"
     # log "function_name: $function_name"
 

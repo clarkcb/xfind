@@ -1417,26 +1417,26 @@ build_kotlin_version () {
     cd -
 }
 
-build_ocaml_version () {
-    local base_path="$1"
-    local ml_version_name="$2"
+# build_ocaml_version () {
+#     local base_path="$1"
+#     local ml_version_name="$2"
 
-    log "language: ocaml"
-    log "version: $ml_version_name"
+#     log "language: ocaml"
+#     log "version: $ml_version_name"
 
-    ml_version_path="$base_path/ocaml/$ml_version_name"
-    log "ml_version_path: $ml_version_path"
+#     ml_version_path="$base_path/ocaml/$ml_version_name"
+#     log "ml_version_path: $ml_version_path"
 
-    cd "$MLFIND_PATH"
-    ./build.sh
-    # if [ -L ~/bin/mlfind ]
-    # then
-    #     rm ~/bin/mlfind
-    # fi
-    ln -sf "$MLFIND_PATH/_build/src/mlfind.native" ~/bin/mlfind
+#     cd "$MLFIND_PATH"
+#     ./build.sh
+#     # if [ -L ~/bin/mlfind ]
+#     # then
+#     #     rm ~/bin/mlfind
+#     # fi
+#     ln -sf "$MLFIND_PATH/_build/src/mlfind.native" ~/bin/mlfind
 
-    cd -
-}
+#     cd -
+# }
 
 build_objc_version () {
     local base_path="$1"

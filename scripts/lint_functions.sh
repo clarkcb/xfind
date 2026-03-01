@@ -66,7 +66,7 @@ lint_c_version () {
     log "not implemented at this time"
 }
 
-lint_clj_version () {
+lint_clojure_version () {
     local base_path="$1"
     local clj_version_name="$2"
 
@@ -120,15 +120,19 @@ lint_clj_version () {
 }
 
 lint_cpp_version () {
-    echo
-    hdr "lint_cpp_version"
+    local base_path="$1"
+    local cpp_version_name="$2"
+
+    log "language: C++"
 
     log "not implemented at this time"
 }
 
-lint_cs_version () {
-    echo
-    hdr "lint_cs_version"
+lint_csharp_version () {
+    local base_path="$1"
+    local cs_version_name="$2"
+
+    log "language: C#"
 
     log "not implemented at this time"
 }
@@ -167,7 +171,7 @@ lint_dart_version () {
     LINT_LASTEXITCODE=$?
 }
 
-lint_ex_version () {
+lint_elixir_version () {
     local base_path="$1"
     local ex_version_name="$2"
 
@@ -217,9 +221,11 @@ lint_ex_version () {
     cd -
 }
 
-lint_fs_version () {
-    echo
-    hdr "lint_fs_version"
+lint_fsharp_version () {
+    local base_path="$1"
+    local fs_version_name="$2"
+
+    log "language: F#"
 
     log "not implemented at this time"
 }
@@ -304,7 +310,7 @@ lint_groovy_version () {
     cd -
 }
 
-lint_hs_version () {
+lint_haskell_version () {
     local base_path="$1"
     local hs_version_name="$2"
 
@@ -352,6 +358,7 @@ lint_java_version () {
 
     CHECKSTYLE_VERSION="8.41"
     # CHECKSTYLE_VERSION="10.17.0"
+    # CHECKSTYLE_VERSION="13.3.0"
     CHECKSTYLE_JAR=$(find "$TOOLS_PATH" -name "checkstyle*.jar" | grep $CHECKSTYLE_VERSION | head -n 1)
     if [ -z "$CHECKSTYLE_JAR" ]
     then
@@ -390,21 +397,27 @@ lint_java_version () {
             )
 
     log "Linting $java_version_name"
-    FILES=$(find "$java_version_path/src" -name "*.java")
-    for f in ${FILES[*]}
+
+    MODULES=(app lib)
+    for m in ${MODULES[*]}
     do
-        echo
-        log "$JAVA -jar $CHECKSTYLE_JAR -c $CONFIG $f"
-        output=$("$JAVA" -jar "$CHECKSTYLE_JAR" -c "$CONFIG" "$f")
-        # for g in ${GREPVS[*]}
-        # do
-        #     output=$(echo $output | grep -v $g)
-        # done
-        echo -e "$output"
+        FILES=$(find "$java_version_path/$m/src" -name "*.java")
+        for f in ${FILES[*]}
+        do
+            echo
+            log "$JAVA -jar $CHECKSTYLE_JAR -c $CONFIG $f"
+            output=$("$JAVA" -jar "$CHECKSTYLE_JAR" -c "$CONFIG" "$f")
+            # for g in ${GREPVS[*]}
+            # do
+            #     output=$(echo $output | grep -v $g)
+            # done
+            echo -e "$output"
+        done
     done
+
 }
 
-lint_js_version () {
+lint_javascript_version () {
     local base_path="$1"
     local js_version_name="$2"
 
@@ -420,25 +433,18 @@ lint_js_version () {
         return
     fi
 
-    JSSRC_PATH="$js_version_path/src"
-    JSHINT="$js_version_path/node_modules/jshint/bin/jshint"
+    log "cd $js_version_path"
+    cd "$js_version_path"
 
-    if [ ! -f "$JSHINT" ]
-    then
-        cd "$js_version_path"
-        npm install jshint
-        cd -
-    fi
+    log "npm run lint"
+    npm run lint
 
-    FILES=$(find "$JSSRC_PATH" -name "*.js")
-    for f in ${FILES[*]}
-    do
-        log "$JSHINT $f"
-        "$JSHINT" "$f"
-    done
+    LINT_LASTEXITCODE=$?
+
+    cd -
 }
 
-lint_kt_version () {
+lint_kotlin_version () {
     local base_path="$1"
     local kt_version_name="$2"
 
@@ -473,22 +479,28 @@ lint_kt_version () {
 }
 
 lint_objc_version () {
-    echo
-    hdr "lint_objc_version"
+    local base_path="$1"
+    local objc_version_name="$2"
+
+    log "language: objc"
 
     log "not implemented at this time"
 }
 
 lint_ocaml_version () {
-    echo
-    hdr "lint_ocaml_version"
+    local base_path="$1"
+    local ml_version_name="$2"
+
+    log "language: OCaml"
 
     log "not implemented at this time"
 }
 
-lint_pl_version () {
-    echo
-    hdr "lint_pl_version"
+lint_perl_version () {
+    local base_path="$1"
+    local pl_version_name="$2"
+
+    log "language: perl"
 
     log "not implemented at this time"
 }
@@ -527,7 +539,7 @@ lint_php_version () {
     cd -
 }
 
-lint_ps1_version () {
+lint_powershell_version () {
     local base_path="$1"
     local ps1_version_name="$2"
 
@@ -566,7 +578,7 @@ lint_ps1_version () {
     cd -
 }
 
-lint_py_version () {
+lint_python_version () {
     local base_path="$1"
     local py_version_name="$2"
 
@@ -609,7 +621,7 @@ lint_py_version () {
     cd -
 }
 
-lint_rb_version () {
+lint_ruby_version () {
     local base_path="$1"
     local rb_version_name="$2"
 
@@ -641,8 +653,10 @@ lint_rb_version () {
 }
 
 lint_rust_version () {
-    echo
-    hdr "lint_rust_version"
+    local base_path="$1"
+    local rs_version_name="$2"
+
+    log "language: rust"
 
     log "not implemented at this time"
 }
@@ -727,9 +741,29 @@ lint_swift_version () {
     LINT_LASTEXITCODE=$?
 }
 
-lint_ts_version () {
-    echo
-    hdr "lint_ts_version"
+lint_typescript_version () {
+    local base_path="$1"
+    local ts_version_name="$2"
 
-    log "Not supported at this time"
+    log "language: typescript"
+
+    ts_version_path="$base_path/typescript/$ts_version_name"
+    log "ts_version_path: $ts_version_path"
+
+    if [ ! -d "$ts_version_path" ]
+    then
+        log_error "Path not found: $ts_version_path"
+        LINT_LASTEXITCODE=1
+        return
+    fi
+
+    log "cd $ts_version_path"
+    cd "$ts_version_path"
+
+    log "npm run lint"
+    npm run lint
+
+    LINT_LASTEXITCODE=$?
+
+    cd -
 }

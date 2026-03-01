@@ -35,6 +35,9 @@ lint_xfind_version () {
     local lang_name="$1"
     local version_name="$2"
 
+    # reset before calling
+    LINT_LASTEXITCODE=0
+
     function_name="lint_${lang_name}_version"
     # log "function_name: $function_name"
 
@@ -61,14 +64,14 @@ lint_bashfind () {
     echo
     hdr "lint_bashfind"
 
-    log "not implemented at this time"
+    lint_xfind_version "bash" "bashfind"
 }
 
 lint_cfind () {
     echo
     hdr "lint_cfind"
 
-    log "not implemented at this time"
+    lint_xfind_version "c" "cfind"
 }
 
 lint_cljfind () {
@@ -82,14 +85,14 @@ lint_cppfind () {
     echo
     hdr "lint_cppfind"
 
-    log "not implemented at this time"
+    lint_xfind_version "cpp" "cppfind"
 }
 
 lint_csfind () {
     echo
     hdr "lint_csfind"
 
-    log "not implemented at this time"
+    lint_xfind_version "csharp" "csfind"
 }
 
 lint_dartfind () {
@@ -110,7 +113,7 @@ lint_fsfind () {
     echo
     hdr "lint_fsfind"
 
-    log "not implemented at this time"
+    lint_xfind_version "fsharp" "fsfind"
 }
 
 lint_gofind () {
@@ -166,7 +169,7 @@ lint_objcfind () {
     echo
     hdr "lint_objcfind"
 
-    log "not implemented at this time"
+    lint_xfind_version "objc" "objcfind"
 }
 
 lint_phpfind () {
@@ -180,14 +183,14 @@ lint_plfind () {
     echo
     hdr "lint_plfind"
 
-    log "not implemented at this time"
+    lint_xfind_version "perl" "plfind"
 }
 
 lint_ps1find () {
     echo
     hdr "lint_ps1find"
-    log "Nothing to do for powershell"
-    # TODO: do we want to uninstall?
+
+    lint_xfind_version "powershell" "ps1find"
 }
 
 lint_pyfind () {
@@ -208,7 +211,7 @@ lint_rsfind () {
     echo
     hdr "lint_rsfind"
 
-    log "not implemented at this time"
+    lint_xfind_version "rust" "rsfind"
 }
 
 lint_scalafind () {
@@ -229,7 +232,7 @@ lint_tsfind () {
     echo
     hdr "lint_tsfind"
 
-    log "not implemented at this time"
+    lint_xfind_version "typescript" "tsfind"
 }
 
 lint_linux () {
