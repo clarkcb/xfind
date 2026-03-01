@@ -203,6 +203,9 @@ class ArgTokenizer {
         } catch (IOException ignored) {
             throw new FindException("IOException reading settings file: " + filePath)
         } catch (Exception e) {
+            if (e instanceof FindException) {
+                throw e
+            }
             throw new FindException("Exception: " + e.getMessage())
         }
     }

@@ -16,15 +16,15 @@ import {FindOption} from './findoption';
 import {FindSettings} from './findsettings';
 import {SortUtil} from "./sortutil";
 
-interface StringActionMap {
-    [key: string]: any
-}
+type BoolAction = (b: boolean, settings: FindSettings) => void;
+type NumAction = (n: number, settings: FindSettings) => void;
+type StringAction = (s: string, settings: FindSettings) => void;
 
 export class FindOptions {
     options: FindOption[];
-    boolActionMap: StringActionMap;
-    stringActionMap: StringActionMap;
-    intActionMap: StringActionMap;
+    boolActionMap: {[key: string]: BoolAction};
+    stringActionMap: {[key: string]: StringAction};
+    intActionMap: {[key: string]: NumAction};
     argTokenizer: ArgTokenizer;
 
     constructor() {
@@ -166,7 +166,7 @@ export class FindOptions {
                 }
             } else if (argToken.type === ArgTokenType.Str) {
                 if (argToken.name === 'settings-file') {
-                    err = this.updateSettingsFromFile(settings, argToken.value);
+                    err = this.updateSettingsFromFile(settings, argToken.value as string);
                 } else if (typeof argToken.value === 'string') {
                     this.stringActionMap[argToken.name](argToken.value, settings);
                 } else if (typeof argToken.value === 'object' && Array.isArray(argToken.value)) {
@@ -194,34 +194,34 @@ export class FindOptions {
     }
 
     public updateSettingsFromJson(settings: FindSettings, json: string): Error | undefined {
-        let { err, argTokens } = this.argTokenizer.tokenizeJson(json);
-        if (!err) {
-            err = this.updateSettingsFromArgTokens(settings, argTokens);
+        const { err, argTokens } = this.argTokenizer.tokenizeJson(json);
+        if (err) {
+            return err;
         }
-        return err;
+        return this.updateSettingsFromArgTokens(settings, argTokens);
     }
 
     public updateSettingsFromFile(settings: FindSettings, filePath: string): Error | undefined {
-        let { err, argTokens } = this.argTokenizer.tokenizeFile(filePath);
-        if (!err) {
-            err = this.updateSettingsFromArgTokens(settings, argTokens);
+        const { err, argTokens } = this.argTokenizer.tokenizeFile(filePath);
+        if (err) {
+            return err;
         }
-        return err;
+        return this.updateSettingsFromArgTokens(settings, argTokens);
     }
 
     public updateSettingsFromArgs(settings: FindSettings, args: string[]): Error | undefined {
-        let { err, argTokens } = this.argTokenizer.tokenizeArgs(args);
-        if (!err) {
-            err = this.updateSettingsFromArgTokens(settings, argTokens);
+        const { err, argTokens } = this.argTokenizer.tokenizeArgs(args);
+        if (err) {
+            return err;
         }
-        return err;
+        return this.updateSettingsFromArgTokens(settings, argTokens);
     }
 
     public settingsFromArgs(args: string[], cb: (err: Error | undefined, settings: FindSettings) => void): void {
         const settings: FindSettings = new FindSettings();
         // default printFiles to true since it's being run from cmd line
         settings.printFiles = true;
-        let err = this.updateSettingsFromArgs(settings, args);
+        const err = this.updateSettingsFromArgs(settings, args);
         cb(err, settings);
     }
 

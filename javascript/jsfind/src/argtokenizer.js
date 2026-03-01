@@ -100,7 +100,7 @@ class ArgTokenizer {
                                 argTokens.push(new ArgToken('settings-file', ArgTokenType.Str, argValue));
                             }
                         } else {
-                            err = new Error(`Missing argument for option ${arg}`);
+                            err = new Error(`Missing value for option ${arg}`);
                             break;
                         }
                     } else {
@@ -166,7 +166,7 @@ class ArgTokenizer {
     }
 
     tokenizeJson(json) {
-        let err = null;
+        let err;
         let argTokens = [];
         try {
             const obj = JSON.parse(json);
@@ -182,7 +182,7 @@ class ArgTokenizer {
     }
 
     tokenizeFile(filePath) {
-        let err = null;
+        let err;
         let argTokens = [];
         const expandedPath = FileUtil.expandPath(filePath);
         if (fs.existsSync(expandedPath)) {

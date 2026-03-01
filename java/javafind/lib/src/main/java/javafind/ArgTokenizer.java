@@ -130,26 +130,25 @@ public class ArgTokenizer {
         return argTokens;
     }
 
-    public List<ArgToken> tokenizeJson(final String json) throws FindException {
+    public List<ArgToken> tokenizeMap(final Map<String, Object> argMap) throws FindException {
         List<ArgToken> argTokens = new ArrayList<>();
         try {
-            var jsonObj = new JSONObject(new JSONTokener(json));
             // keys are sorted so that output is consistent across all versions
-            var keys = jsonObj.keySet().stream().sorted().toList();
+            var keys = argMap.keySet().stream().sorted().toList();
             for (var k : keys) {
-                var v = jsonObj.get(k);
+                var v = argMap.get(k);
                 if (this.boolMap.containsKey(k)) {
                     if (v instanceof Boolean b) {
                         argTokens.add(new ArgToken(k, ArgTokenType.BOOL, b));
                     } else {
-                        throw new FindException("Missing value for option " + k);
+                        throw new FindException("Invalid value for option: " + k);
                     }
                 } else if (this.strMap.containsKey(k)) {
                     if (v instanceof String s) {
                         argTokens.add(new ArgToken(k, ArgTokenType.STR, s));
-                    } else if (v instanceof JSONArray jsonArray) {
-                        for (var i = 0; i < jsonArray.length(); i++) {
-                            Object item = jsonArray.get(i);
+                    } else if (v instanceof ArrayList argList) {
+                        for (var i = 0; i < argList.size(); i++) {
+                            Object item = argList.get(i);
                             if (item instanceof String s) {
                                 argTokens.add(new ArgToken(k, ArgTokenType.STR, s));
                             } else {
@@ -157,7 +156,7 @@ public class ArgTokenizer {
                             }
                         }
                     } else {
-                        throw new FindException("Missing value for option " + k);
+                        throw new FindException("Invalid value for option: " + k);
                     }
                 } else if (this.intMap.containsKey(k)) {
                     if (v instanceof Integer i) {
@@ -165,7 +164,7 @@ public class ArgTokenizer {
                     } else if (v instanceof Long l) {
                         argTokens.add(new ArgToken(k, ArgTokenType.INT, l.intValue()));
                     } else {
-                        throw new FindException("Missing value for option " + k);
+                        throw new FindException("Invalid value for option: " + k);
                     }
                 } else if (this.longMap.containsKey(k)) {
                     if (v instanceof Long l) {
@@ -173,7 +172,7 @@ public class ArgTokenizer {
                     } else if (v instanceof Integer i) {
                         argTokens.add(new ArgToken(k, ArgTokenType.LONG, i.longValue()));
                     } else {
-                        throw new FindException("Missing value for option " + k);
+                        throw new FindException("Invalid value for option: " + k);
                     }
                 } else {
                     throw new FindException("Invalid key in JSON: " + k);
@@ -185,6 +184,18 @@ public class ArgTokenizer {
             throw new FindException("Invalid value type in JSON: " + e.getMessage());
         }
         return argTokens;
+    }
+
+    public List<ArgToken> tokenizeJson(final String json) throws FindException {
+        try {
+            var jsonObj = new JSONObject(new JSONTokener(json));
+            var jsonMap = jsonObj.toMap();
+            return tokenizeMap(jsonMap);
+        } catch (JSONException e) {
+            throw new FindException("Invalid JSON format: " + e.getMessage());
+        } catch (ClassCastException e) {
+            throw new FindException("Invalid value type in JSON: " + e.getMessage());
+        }
     }
 
     public List<ArgToken> tokenizeFilePath(final String filePath) throws FindException {
@@ -202,6 +213,9 @@ public class ArgTokenizer {
         } catch (IOException e) {
             throw new FindException("IOException reading settings file: " + filePath);
         } catch (Exception e) {
+            if (e instanceof FindException) {
+                throw e;
+            }
             throw new FindException("Exception: " + e.getMessage());
         }
     }

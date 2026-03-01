@@ -114,11 +114,11 @@ tokenizeHashMap argTokenizer hashMap = recTokenizeHashMap (sort (keys hashMap)) 
         Bool b ->
           if isBoolKey key
           then Right [ArgToken {name=key, argType=ArgTokenTypeBool, value=TypeA b}]
-          else Left $ "Invalid boolean key in JSON: " ++ key
+          else Left $ "Invalid value for option: " ++ key
         String s ->
           if isStringKey key
           then Right [ArgToken {name=key, argType=ArgTokenTypeString, value=TypeB (unpack s)}]
-          else Left $ "Invalid string key in JSON: " ++ key
+          else Left $ "Invalid value for option: " ++ key
         Array arr ->
           if isStringKey key
           then
@@ -129,7 +129,7 @@ tokenizeHashMap argTokenizer hashMap = recTokenizeHashMap (sort (keys hashMap)) 
         Number n ->
           if isIntKey key
           then Right [ArgToken {name=key, argType=ArgTokenTypeInt, value=TypeC (round n)}]
-          else Left $ "Invalid integer key in JSON: " ++ key
+          else Left $ "Invalid integer value for option: " ++ key
         _ -> Left $ "Unsupported JSON value type for key: " ++ key
     isBoolKey :: String -> Bool
     isBoolKey k = isJust $ Prelude.lookup k $ boolMap argTokenizer

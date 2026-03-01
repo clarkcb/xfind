@@ -147,7 +147,7 @@ class FindOptions
 
     /**
      * @param FindSettings $settings
-     * @param array $arg_tokens
+     * @param ArgToken[] $arg_tokens
      * @return void
      * @throws FindException
      */

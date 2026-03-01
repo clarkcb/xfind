@@ -5,10 +5,23 @@ declare(strict_types=1);
 namespace phpfind;
 
 class ArgTokenizer {
+    /**
+     * @var array<string, string> $bool_map
+     */
     private array $bool_map;
+    /**
+     * @var array<string, string> $str_map
+     */
     private array $str_map;
+    /**
+     * @var array<string, string> $int_map
+     */
     private array $int_map;
 
+    /**
+     * @param FindOption[] $options
+     * @return void
+     */
     public function __construct(array $options)
     {
         $this->bool_map = [];
@@ -36,7 +49,7 @@ class ArgTokenizer {
 
     /**
      * @param string[] $args
-     * @return array
+     * @return ArgToken[]
      * @throws FindException
      */
     public function tokenize_args(array $args): array
@@ -111,7 +124,7 @@ class ArgTokenizer {
 
     /**
      * @param array $arg_map
-     * @return array
+     * @return ArgToken[]
      * @throws FindException
      */
     public function tokenize_arg_map(array $arg_map): array
@@ -165,7 +178,7 @@ class ArgTokenizer {
 
     /**
      * @param string $json
-     * @return array
+     * @return ArgToken[]
      * @throws FindException
      */
     public function tokenize_json(string $json): array
@@ -183,7 +196,7 @@ class ArgTokenizer {
 
     /**
      * @param string $file_path
-     * @return array
+     * @return ArgToken[]
      * @throws FindException
      */
     public function tokenize_file(string $file_path): array

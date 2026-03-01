@@ -102,7 +102,7 @@
                             argVal = args[i+1];
                             i++;
                         } else {
-                            setError(error, [NSString stringWithFormat:@"Missing argument for option %@", arg]);
+                            setError(error, [NSString stringWithFormat:@"Missing value for option %@", arg]);
                             return nil;
                         }
                     }

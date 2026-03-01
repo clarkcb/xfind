@@ -153,6 +153,8 @@ error_t tokenize_json_obj(const cJSON *settings_json, Options *options, ArgToken
 {
     const cJSON *setting_json = NULL;
 
+    // TODO: get the list of json keys and sort them for consistent processing
+
     cJSON_ArrayForEach(setting_json, settings_json) {
         const Option *o = find_option_for_long_arg(setting_json->string, options);
         if (o == NULL || o->arg_type == ARG_TOKEN_TYPE_UNKNOWN) {
@@ -252,7 +254,7 @@ error_t tokenize_json_file(const char *json_file_path, Options *options, ArgToke
     // Verify json file (has .json extension)
     const size_t file_path_len = strlen(json_file_path);
     if (file_path_len < 6 || strcmp(json_file_path + file_path_len - 5, ".json") != 0) {
-        err = E_INVALID_ARG;
+        err = E_INVALID_SETTINGS_FILE;
         free(expanded_path);
         return err;
     }

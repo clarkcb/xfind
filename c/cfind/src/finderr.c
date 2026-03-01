@@ -153,6 +153,9 @@ void get_error_message(const error_t err, char *err_msg)
     case E_INVALID_SIZE_RANGE:
         strncpy(err_buf, "Invalid range for minsize and maxsize", 100);
         break;
+    case E_INVALID_SETTINGS_FILE:
+        strncpy(err_buf, "Invalid settings file (must be JSON)", 100);
+        break;
     case E_JSON_PARSE_ERROR:
         strncpy(err_buf, "Unable to parse JSON", 100);
         break;

@@ -50,7 +50,7 @@ export class ArgTokenizer {
 
     public tokenizeArgs(args: string[]): ArgTokenizerResult {
         let err: Error | undefined = undefined;
-        let argTokens: ArgToken[] = [];
+        const argTokens: ArgToken[] = [];
 
         while(args && !err) {
             let arg = args.shift();
@@ -58,13 +58,13 @@ export class ArgTokenizer {
                 break;
             }
             if (arg.charAt(0) === '-') {
-                let argNames: string[] = [];
+                const argNames: string[] = [];
                 if (arg.length > 1) {
                     if (arg.charAt(1) === '-') {
                         if (arg.length > 2) {
                             arg = arg.substring(2);
                             if (arg.indexOf('=') > -1) {
-                                let parts = arg.split('=');
+                                const parts = arg.split('=');
                                 if (parts.length > 0) {
                                     arg = parts[0];
                                 }
@@ -109,7 +109,7 @@ export class ArgTokenizer {
                                 argTokens.push(new ArgToken('settings-file', ArgTokenType.Str, argValue));
                             }
                         } else {
-                            err = new Error(`Missing argument for option ${arg}`);
+                            err = new Error(`Missing value for option ${arg}`);
                             break;
                         }
                     } else {
@@ -127,7 +127,7 @@ export class ArgTokenizer {
 
     public tokenizeArgsObj(argsObj: {[argName: string]:any}): ArgTokenizerResult {
         let err: Error | undefined = undefined;
-        let argTokens: ArgToken[] = [];
+        const argTokens: ArgToken[] = [];
         // keys are sorted so that output is consistent across all versions
         const argNames = Object.keys(argsObj).sort();
         for (const argName of argNames) {
@@ -174,8 +174,8 @@ export class ArgTokenizer {
     }
 
     public tokenizeJson(json: string): ArgTokenizerResult {
-        let err: Error | undefined = undefined;
-        let argTokens: ArgToken[] = [];
+        let err: Error | undefined;
+        const argTokens: ArgToken[] = [];
         try {
             const obj = JSON.parse(json);
             return this.tokenizeArgsObj(obj);
@@ -190,12 +190,12 @@ export class ArgTokenizer {
     }
 
     public tokenizeFile(filePath: string): ArgTokenizerResult {
-        let err: Error | undefined = undefined;
-        let argTokens: ArgToken[] = [];
+        let err: Error | undefined;
+        const argTokens: ArgToken[] = [];
         const expandedPath = FileUtil.expandPath(filePath);
         if (fs.existsSync(expandedPath)) {
             if (expandedPath.endsWith('.json')) {
-                let json = FileUtil.getFileContentsSync(expandedPath, 'utf-8');
+                const json = FileUtil.getFileContentsSync(expandedPath, 'utf-8');
                 return this.tokenizeJson(json);
             }
             err = new FindError(`Invalid settings file (must be JSON): ${filePath}`);

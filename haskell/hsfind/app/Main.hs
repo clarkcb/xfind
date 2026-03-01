@@ -13,7 +13,7 @@ logMsg :: String -> IO ()
 logMsg = putStr
 
 logErr :: String -> IO ()
-logErr s = hPutStr stderr $ "ERROR: " ++ s
+logErr s = logErrColor s True
 
 logErrColor :: String -> Bool -> IO ()
 logErrColor s colorize =

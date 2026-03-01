@@ -188,7 +188,7 @@ defmodule ExFind.FindOptions do
             cond do
               Map.has_key?(bool_arg_action_map, k) ->
                 update_settings_from_tokens!(Map.get(bool_arg_action_map, k).(v, settings), ts, arg_tokenizer, arg_action_maps)
-              true -> raise FindError, message: "Invalid option: #{k}"
+              true -> raise FindError, message: "Invalid value for option: #{k}"
             end
           :integer ->
             k = t.name
@@ -196,7 +196,7 @@ defmodule ExFind.FindOptions do
             cond do
               Map.has_key?(int_arg_action_map, k) ->
                 update_settings_from_tokens!(Map.get(int_arg_action_map, k).(v, settings), ts, arg_tokenizer, arg_action_maps)
-              true -> raise FindError, message: "Invalid option: #{k}"
+              true -> raise FindError, message: "Invalid value for option: #{k}"
             end
           :string ->
             k = t.name
@@ -208,7 +208,7 @@ defmodule ExFind.FindOptions do
                 {:ok, new_settings} -> update_settings_from_tokens!(new_settings, ts, arg_tokenizer, arg_action_maps)
                 {:error, message} -> raise FindError, message: message
               end
-              true -> raise FindError, message: "Invalid option: #{k}"
+              true -> raise FindError, message: "Invalid value for option: #{k}"
             end
           :unknown ->
             raise FindError, message: "Invalid option: #{t.name}"

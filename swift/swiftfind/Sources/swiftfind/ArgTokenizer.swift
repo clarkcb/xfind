@@ -106,7 +106,7 @@ public class ArgTokenizer {
                                 i += 1
                                 argVal = args[i]
                             } else {
-                                throw FindError(msg: "Missing argument for option \(arg)")
+                                throw FindError(msg: "Missing value for option \(arg)")
                             }
                         }
                         if stringDict.index(forKey: argName) != nil {

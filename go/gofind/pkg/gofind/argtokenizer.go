@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"reflect"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -164,7 +165,15 @@ type ArgMap map[string]interface{}
 
 func (at *ArgTokenizer) tokenizeArgMap(argMap ArgMap) ([]*ArgToken, error) {
 	var argTokens []*ArgToken
+
+	// Get the keys and sort for consistent processing
+	keys := make([]string, 0, len(argMap))
 	for k := range argMap {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
+	for _, k := range keys {
 		v := argMap[k]
 		if bName, isBool := at.BoolMap[k]; isBool {
 			switch v := v.(type) {
@@ -265,7 +274,7 @@ func (at *ArgTokenizer) TokenizeFile(filePath string) ([]*ArgToken, error) {
 		argTokens, err := at.tokenizeJsonByteArray(data)
 		if err != nil {
 			if err.Error() == "Unable to parse JSON" {
-				return nil, fmt.Errorf("Invalid JSON settings file: %v", filePath)
+				return nil, fmt.Errorf("Invalid settings file (must be JSON): %v", filePath)
 			}
 			return nil, err
 		}
