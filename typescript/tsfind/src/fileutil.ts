@@ -30,7 +30,7 @@ export class FileUtil {
             if (filePath.startsWith("~/")) {
                 return path.join(userPath, filePath.substring(2));
             }
-            let homePath = path.dirname(userPath);
+            const homePath = path.dirname(userPath);
             return path.join(homePath, filePath.substring(1));
         }
         return filePath;

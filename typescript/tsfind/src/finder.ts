@@ -45,7 +45,7 @@ export class Finder {
                 // Validate existence, accessibility and "findability" of file path (directory or regular file)
                 try {
                     fs.accessSync(p, fs.constants.F_OK | fs.constants.R_OK);
-                } catch (err: Error | any) {
+                } catch {
                     p = FileUtil.expandPath(p);
                     fs.accessSync(p, fs.constants.F_OK | fs.constants.R_OK);
                 }
@@ -218,9 +218,9 @@ export class Finder {
             return [];
         }
         const findDirs: string[] = [];
-        let filePaths = fs.readdirSync(currentDir, { recursive: false })
+        const filePaths = fs.readdirSync(currentDir, { recursive: false })
             .map(f =>  path.join(currentDir, f.toString()));
-        for (let filePath of filePaths) {
+        for (const filePath of filePaths) {
             let stats = fs.lstatSync(filePath);
             if (!stats.isSymbolicLink() || this._settings.followSymlinks) {
                 stats = fs.statSync(filePath);
@@ -244,7 +244,7 @@ export class Finder {
     private async getFileResults(filePath: string): Promise<FileResult[]> {
         try {
             fs.accessSync(filePath, fs.constants.F_OK | fs.constants.R_OK);
-        } catch (err) {
+        } catch {
             filePath = FileUtil.expandPath(filePath);
         }
         const stats = await stat(filePath);
@@ -285,7 +285,7 @@ export class Finder {
             fileResults = fileResults.concat(pathFileResults);
         });
 
-        let fileResultSorter = new FileResultSorter(this._settings);
+        const fileResultSorter = new FileResultSorter(this._settings);
         fileResultSorter.sort(fileResults);
         return fileResults;
     }

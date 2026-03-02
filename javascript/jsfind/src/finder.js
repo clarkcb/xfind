@@ -45,7 +45,7 @@ class Finder {
                 // Validate existence, accessibility and "findability" of file path (directory or regular file)
                 try {
                     fs.accessSync(p, fs.constants.F_OK | fs.constants.R_OK);
-                } catch (err) {
+                } catch {
                     p = FileUtil.expandPath(p);
                     fs.accessSync(p, fs.constants.F_OK | fs.constants.R_OK);
                 }
@@ -240,7 +240,7 @@ class Finder {
     async getFileResults(filePath) {
         try {
             fs.accessSync(filePath, fs.constants.F_OK | fs.constants.R_OK);
-        } catch (err) {
+        } catch {
             filePath = FileUtil.expandPath(filePath);
         }
         const stats = await fsStatAsync(filePath);

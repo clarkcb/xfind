@@ -51,8 +51,8 @@ export class FileResultFormatter {
         let formattedPath = '.';
         if (dirPath) {
             formattedPath = dirPath;
-            for (let p of this.settings.inDirPatterns) {
-                let m = p.exec(formattedPath);
+            for (const p of this.settings.inDirPatterns) {
+                const m = p.exec(formattedPath);
                 if (m) {
                     formattedPath = this.colorize(formattedPath, m.index, m.index + m[0].length, this.settings.dirColor);
                     break;
@@ -68,8 +68,8 @@ export class FileResultFormatter {
 
     private formatFileNameWithColor(fileName: string): string {
         let formattedFileName = fileName;
-        for (let p of this.settings.inFilePatterns) {
-            let m = p.exec(formattedFileName);
+        for (const p of this.settings.inFilePatterns) {
+            const m = p.exec(formattedFileName);
             if (m) {
                 formattedFileName = this.colorize(formattedFileName, m.index, m.index + m[0].length, this.settings.fileColor);
                 break;
@@ -89,8 +89,8 @@ export class FileResultFormatter {
     }
 
     public formatFileResult(result: FileResult): string {
-        let parent = this.formatDirPath(result.path);
-        let fileName = this.formatFileName(result.fileName);
+        const parent = this.formatDirPath(result.path);
+        const fileName = this.formatFileName(result.fileName);
         return path.join(parent, fileName);
     }
 }
