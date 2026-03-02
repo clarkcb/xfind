@@ -9,7 +9,7 @@ $csFindPath = Join-Path $env:XFIND_PATH 'csharp' 'CsFind'
 
 # $configuration = 'Debug'
 $configuration = 'Release'
-$dotNetVersion = 'net9.0'
+$dotNetVersion = 'net10.0'
 $csFindExe = Join-Path $csFindPath 'CsFind' 'bin' $configuration $dotNetVersion 'CsFind'
 
 if (Test-Path $csFindExe -PathType Leaf)

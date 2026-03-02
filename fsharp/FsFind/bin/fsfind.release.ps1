@@ -9,7 +9,7 @@ $fsFindPath = Join-Path $env:XFIND_PATH 'fsharp' 'FsFind'
 
 # $configuration = 'Debug'
 $configuration = 'Release'
-$dotNetVersion = 'net9.0'
+$dotNetVersion = 'net10.0'
 $fsFindExe = Join-Path $fsFindPath 'FsFind' 'bin' $configuration $dotNetVersion 'FsFind'
 
 if (Test-Path $fsFindExe -PathType Leaf)
