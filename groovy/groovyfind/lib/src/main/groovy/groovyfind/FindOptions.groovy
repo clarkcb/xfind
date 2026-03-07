@@ -4,6 +4,9 @@ import groovy.json.JsonSlurper
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 
+import java.nio.file.Files
+import java.nio.file.Paths
+
 interface Option {
     String shortArg()
     String longArg()
@@ -249,16 +252,24 @@ class FindOptions {
         return settings
     }
 
+    final FindSettings getDefaultSettings(final boolean defaultFiles) throws FindException {
+        var settings = new FindSettings()
+        if (defaultFiles) {
+            var defaultSettingsPath = Paths.get(System.getProperty("user.home"), ".config", "xfind", "settings.json")
+            if (Files.exists(defaultSettingsPath)) {
+                updateSettingsFromFilePath(settings, defaultSettingsPath.toString())
+            }
+        }
+        return settings
+    }
+
     final void updateSettingsFromArgs(FindSettings settings, final String[] args) throws FindException {
         var argTokens = argTokenizer.tokenizeArgs(args)
         updateSettingsFromArgTokens(settings, argTokens)
     }
 
     final FindSettings settingsFromArgs(final String[] args) throws FindException {
-        if (args == null || args.length == 0) {
-            throw new FindException(FindError.STARTPATH_NOT_DEFINED.getMessage())
-        }
-        var settings = new FindSettings()
+        var settings = getDefaultSettings(true)
         // default printFiles to true since running from command line
         settings.setPrintFiles(true)
 
