@@ -2,6 +2,8 @@ package ktfind
 
 import org.json.JSONObject
 import org.json.JSONTokener
+import java.nio.file.Files
+import java.nio.file.Paths
 
 /**
  * @author cary on 7/23/16.
@@ -220,16 +222,24 @@ class FindOptions {
         return updateSettingsFromArgTokens(settings, argTokens)
     }
 
+    fun getDefaultConfig(defaultFiles: Boolean = true): FindSettings {
+        val settings = getDefaultSettings().copy()
+        if (defaultFiles) {
+            val defaultSettingsPath = Paths.get(System.getProperty("user.home"), ".config", "xfind", "settings.json")
+            if (Files.exists(defaultSettingsPath)) {
+                return updateSettingsFromFile(settings, defaultSettingsPath.toString())
+            }
+        }
+        return settings
+    }
+
     fun updateSettingsFromArgs(settings: FindSettings, args: Array<String>): FindSettings {
         val argTokens = argTokenizer.tokenizeArgs(args)
         return updateSettingsFromArgTokens(settings, argTokens)
     }
 
     fun settingsFromArgs(args: Array<String>): FindSettings {
-        if (args.isEmpty()) {
-            throw FindException(FindError.STARTPATH_NOT_DEFINED.message)
-        }
-        val settings = getDefaultSettings().copy(printFiles = true)
+        val settings = getDefaultConfig().copy(printFiles = true)
         return updateSettingsFromArgs(settings, args)
     }
 
