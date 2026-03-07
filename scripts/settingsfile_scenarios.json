@@ -24,19 +24,19 @@
             "group": "settings-file",
             "name": "use invalid settings-file",
             "args": ["--settings-file", "$XFIND_PATH/shared/config.json"],
-            "replace_xfind_name": true
+            "replace_exe_name": true
         },
         {
             "group": "settings-file",
             "name": "use non-json settings-file",
             "args": ["--settings-file", "$XFIND_PATH/shared/filetypes.xml"],
-            "replace_xfind_name": true
+            "replace_exe_name": true
         },
         {
             "group": "settings-file",
             "name": "use non-existing settings-file",
             "args": ["--settings-file", "$XFIND_PATH/shared/nonexistant.json"],
-            "replace_xfind_name": true
+            "replace_exe_name": true
         }
     ]
 }

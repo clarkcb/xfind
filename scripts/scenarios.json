@@ -14,13 +14,13 @@
             "group": "help/usage",
             "name": "no args",
             "args": [],
-            "replace_xfind_name": true
+            "replace_exe_name": true
         },
         {
             "group": "help/usage",
             "name": "help",
             "args": ["-h"],
-            "replace_xfind_name": true
+            "replace_exe_name": true
         },
         {
             "group": "match filename",
@@ -287,7 +287,7 @@
             "common_args": [
                 "common_out_dirpatterns", "scriptpath"
             ],
-            "replace_xfind_name": true
+            "replace_exe_name": true
         },
 
         {
@@ -321,7 +321,7 @@
             "common_args": [
                 "common_out_dirpatterns", "scriptpath"
             ],
-            "replace_xfind_name": true
+            "replace_exe_name": true
         },
         {
             "group": "filter by maxsize/minsize",
@@ -354,14 +354,14 @@
             "common_args": [
                 "common_out_dirpatterns", "scriptpath"
             ],
-            "replace_xfind_name": true
+            "replace_exe_name": true
         },
         {
             "group": "settings-only",
             "name": "settings-only",
             "args": ["-t", "code", "--settingsonly"],
             "case_insensitive_cmp": true,
-            "replace_xfind_name": true
+            "replace_exe_name": true
         }
     ]
 }

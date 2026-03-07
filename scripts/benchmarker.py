@@ -285,7 +285,11 @@ class Benchmarker(object):
         self.include_scenarios = []
         self.skip_groups = ['settings-only']
         self.skip_scenarios = ['use invalid settings-file']
-        self.replace_values = {}
+        # TODO: a more general way of replacing env vars
+        self.replace_values = {
+            '$XFIND_PATH': os.environ.get('XFIND_PATH', os.path.join(os.environ.get('HOME'), 'src/xfind')),
+            '$XSEARCH_PATH': os.environ.get('XSEARCH_PATH', os.path.join(os.environ.get('HOME'), 'src/xsearch')),
+        }
         self.__dict__.update(kwargs)
         # if not self.langs:
         #     self.langs = all_langs
