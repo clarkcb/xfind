@@ -90,6 +90,7 @@ namespace cppfind {
         std::vector<std::unique_ptr<Option>> load_options();
         void update_settings_from_arg_token(FindSettings& settings, const ArgToken& arg_tokens);
         void update_settings_from_arg_tokens(FindSettings& settings, const std::vector<ArgToken>& arg_tokens);
+        FindSettings get_default_settings(bool default_files);
     };
 }
 

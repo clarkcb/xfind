@@ -17,7 +17,7 @@ namespace cppfind {
     }
 
     void FileTypes::load_file_types() {
-        const auto file_types_path = std::filesystem::path(xfindpath()) / "shared/filetypes.json";
+        const auto file_types_path = std::filesystem::path(xfindpath()) / FILE_TYPES_REL_PATH;
 
         if (!std::filesystem::exists(file_types_path)) {
             throw FindException("Filetypes file not found: " + file_types_path.string());

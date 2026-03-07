@@ -20,7 +20,7 @@ namespace cppfind {
 
     std::vector<std::unique_ptr<Option>> FindOptions::load_options() {
         std::vector<std::unique_ptr<Option>> options;
-        auto find_options_path = std::filesystem::path(xfindpath()) / "shared/findoptions.json";
+        auto find_options_path = std::filesystem::path(xfindpath()) / FIND_OPTIONS_REL_PATH;
 
         if (!std::filesystem::exists(find_options_path)) {
             std::string msg{"Findoptions file not found: "};
@@ -143,13 +143,27 @@ namespace cppfind {
         }
     }
 
+    FindSettings FindOptions::get_default_settings(const bool default_files) {
+        auto settings = FindSettings();
+
+        if (default_files) {
+            const std::string home = std::getenv("HOME");
+            if (const auto default_settings_path = std::filesystem::path(home) / DEFAULT_SETTINGS_REL_PATH;
+                std::filesystem::exists(default_settings_path)) {
+                update_settings_from_file(settings, default_settings_path);
+            }
+        }
+
+        return settings;
+    }
+
     void FindOptions::update_settings_from_args(FindSettings& settings, int argc, char **argv) {
         const auto arg_tokens = m_arg_tokenizer.tokenize_args(argc, argv);
         update_settings_from_arg_tokens(settings, arg_tokens);
     }
 
     FindSettings FindOptions::settings_from_args(int argc, char **argv) {
-        auto settings = FindSettings();
+        auto settings = get_default_settings(true);
 
         // set print_files to true since we are running the executable
         settings.print_files(true);
