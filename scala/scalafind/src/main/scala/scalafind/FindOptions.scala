@@ -3,7 +3,7 @@ package scalafind
 import org.json.{JSONArray, JSONException, JSONObject, JSONTokener}
 
 import java.io.{IOException, InputStreamReader}
-import java.nio.file.Paths
+import java.nio.file.{Files, Paths}
 import scala.annotation.tailrec
 import scala.collection.mutable
 import scala.jdk.CollectionConverters.*
@@ -234,13 +234,32 @@ object FindOptions {
     updateSettingsFromArgTokens(settings, argTokens)
   }
 
+  def settingsFromFile(filePath: String): FindSettings = {
+    val argTokens = argTokenizer.tokenizeFile(filePath)
+    updateSettingsFromArgTokens(FindSettings(), argTokens)
+  }
+
+  def getDefaultSettings(defaultFiles: Boolean = true): FindSettings = {
+    if (defaultFiles) {
+      val defaultSettingsPath = Paths.get(System.getProperty("user.home"), ".config", "xfind", "settings.json")
+      if (Files.exists(defaultSettingsPath)) {
+        settingsFromFile(defaultSettingsPath.toString)
+      } else {
+        FindSettings()
+      }
+    } else {
+      FindSettings()
+    }
+  }
+
   def updateSettingsFromArgs(settings: FindSettings, args: Array[String]): FindSettings = {
     val argTokens = argTokenizer.tokenizeArgs(args)
     updateSettingsFromArgTokens(settings, argTokens)
   }
 
   def settingsFromArgs(args: Array[String]): FindSettings = {
-    updateSettingsFromArgs(FindSettings(printFiles = true), args)
+    val settings = getDefaultSettings()
+    updateSettingsFromArgs(settings.copy(printFiles = true), args)
   }
 
   private def getUsageString: String = {
