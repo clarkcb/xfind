@@ -19,6 +19,8 @@ module RbFind
 
     def update_settings_from_file: (FindSettings settings, String file_path) -> void
 
+    def get_default_settings: -> FindSettings
+
     def update_settings_from_args: (FindSettings settings, Array[String] args) -> void
 
     def find_settings_from_args: (Array[String] args) -> FindSettings

@@ -35,13 +35,24 @@ module RbFind
       update_settings_from_arg_tokens(settings, arg_tokens)
     end
 
+    def get_default_settings(default_files = true)
+      settings = FindSettings.new
+      if default_files
+        default_settings_path = Pathname.new(Dir.home).join('.config', 'xfind', 'settings.json')
+        if default_settings_path.exist?
+          update_settings_from_file(settings, default_settings_path.to_s)
+        end
+      end
+      settings
+    end
+
     def update_settings_from_args(settings, args)
       arg_tokens = @arg_tokenizer.tokenize_args(args)
       update_settings_from_arg_tokens(settings, arg_tokens)
     end
 
     def find_settings_from_args(args)
-      settings = FindSettings.new
+      settings = get_default_settings
       # default print_files to true since running as cli
       settings.print_files = true
       update_settings_from_args(settings, args)
