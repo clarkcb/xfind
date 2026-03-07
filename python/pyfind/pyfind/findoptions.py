@@ -11,12 +11,14 @@
 """
 import importlib.resources
 import json
+import os
 import sys
 from datetime import datetime
 from io import StringIO
 from typing import Any
 
 from .argtokenizer import ArgToken, ArgTokenType, ArgTokenizer
+from .config import DEFAULT_SETTINGS_PATH
 from .findexception import FindException
 from .findoption import FindOption
 from .findsettings import FindSettings
@@ -277,6 +279,13 @@ class FindOptions:
         self.update_settings_from_file(settings, file_path)
         return settings
 
+    def get_default_settings(self, default_files: bool = True) -> FindSettings:
+        settings = FindSettings()
+        if default_files:
+            if os.path.exists(DEFAULT_SETTINGS_PATH):
+                self.update_settings_from_file(settings, DEFAULT_SETTINGS_PATH)
+        return settings
+
     def update_settings_from_args(self, settings: FindSettings, args: list[str]):
         """Update settings from a given list of args"""
         arg_tokens = self.arg_tokenizer.tokenize_args(args)
@@ -284,8 +293,9 @@ class FindOptions:
 
     def find_settings_from_args(self, args: list[str]) -> FindSettings:
         """Read settings from a given list of args"""
+        settings = self.get_default_settings()
         # default print_files to True since running from command line
-        settings = FindSettings(print_files=True)
+        settings.set_property('print_files', True)
         self.update_settings_from_args(settings, args)
         return settings
 
