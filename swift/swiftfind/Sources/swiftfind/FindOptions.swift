@@ -272,13 +272,23 @@ public class FindOptions {
         return settings
     }
 
+    private func getDefaultSettings(_ defaultFiles: Bool) throws -> FindSettings {
+        let settings = FindSettings()
+        if defaultFiles {
+            if FileUtil.exists(config.defaultSettingsPath) {
+                try updateSettingsFromFile(settings, filePath: config.defaultSettingsPath)
+            }
+        }
+        return settings
+    }
+
     public func updateSettingsFromArgs(_ settings: FindSettings, args: [String]) throws {
         let argTokens = try argTokenizer!.tokenizeArgs(args)
         try updateSettingsFromArgTokens(settings, argTokens: argTokens)
     }
 
     public func settingsFromArgs(_ args: [String]) throws -> FindSettings {
-        let settings = FindSettings()
+        let settings = try getDefaultSettings(true)
         // default printFiles to true since running in cli
         settings.printFiles = true
         try updateSettingsFromArgs(settings, args: args)
