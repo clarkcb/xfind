@@ -5,6 +5,7 @@
  */
 
 const config = require('./config');
+const path = require('path');
 const {ArgTokenizer} = require('./argtokenizer');
 const {ArgTokenType} = require('./argtokentype');
 const {FileUtil} = require('./fileutil');
@@ -12,6 +13,7 @@ const {FindError} = require('./finderror');
 const {FindOption} = require('./findoption');
 const {FindSettings} = require('./findsettings');
 const {nameToSortBy} = require("./sortby");
+const fs = require('fs')
 
 class FindOptions {
     constructor() {
@@ -193,6 +195,17 @@ class FindOptions {
         return err;
     }
 
+    getDefaultSettings(defaultFiles) {
+        let settings = new FindSettings();
+        let err;
+        if (defaultFiles) {
+            if (fs.existsSync(config.DEFAULT_SETTINGS_PATH)) {
+                err = this.updateSettingsFromFile(settings, config.DEFAULT_SETTINGS_PATH);
+            }
+        }
+        return {settings, err};
+    }
+
     updateSettingsFromArgs(settings, args) {
         let { err, argTokens } = this.argTokenizer.tokenizeArgs(args);
         if (!err) {
@@ -202,10 +215,12 @@ class FindOptions {
     }
 
     settingsFromArgs(args, cb) {
-        let settings = new FindSettings();
-        // default printFiles to true since running as cli
-        settings.printFiles = true;
-        let err = this.updateSettingsFromArgs(settings, args);
+        let {settings, err} = this.getDefaultSettings(true);
+        if (!err) {
+            // default printFiles to true since running as cli
+            settings.printFiles = true;
+            err = this.updateSettingsFromArgs(settings, args);
+        }
         cb(err, settings);
     }
 
