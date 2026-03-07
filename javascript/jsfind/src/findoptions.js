@@ -5,7 +5,6 @@
  */
 
 const config = require('./config');
-const path = require('path');
 const {ArgTokenizer} = require('./argtokenizer');
 const {ArgTokenType} = require('./argtokentype');
 const {FileUtil} = require('./fileutil');
