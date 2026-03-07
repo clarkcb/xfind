@@ -15,6 +15,8 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 
 import static javafind.FindError.STARTPATH_NOT_DEFINED;
@@ -228,17 +230,24 @@ public class FindOptions {
         return settings;
     }
 
+    public FindSettings getDefaultSettings(final boolean defaultFiles) throws FindException {
+        var settings = new FindSettings();
+        if (defaultFiles) {
+            var defaultSettingsPath = Paths.get(System.getProperty("user.home"), ".config", "xfind", "settings.json");
+            if (Files.exists(defaultSettingsPath)) {
+                updateSettingsFromFilePath(settings, defaultSettingsPath.toString());
+            }
+        }
+        return settings;
+    }
+
     public final void updateSettingsFromArgs(FindSettings settings, final String[] args) throws FindException {
         var argTokens = argTokenizer.tokenizeArgs(args);
         updateSettingsFromArgTokens(settings, argTokens);
     }
 
     public final FindSettings settingsFromArgs(final String[] args) throws FindException {
-        if (args == null || args.length == 0) {
-            throw new FindException(STARTPATH_NOT_DEFINED.getMessage());
-        }
-
-        var settings = new FindSettings();
+        var settings = getDefaultSettings(true);
         // default printFiles to true since running from command line
         settings.setPrintFiles(true);
         updateSettingsFromArgs(settings, args);
