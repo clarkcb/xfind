@@ -316,6 +316,20 @@ sub settings_from_file {
     return ($settings, $errs);
 }
 
+sub get_default_settings {
+    my ($self, $default_files) = @_;
+    $default_files ||= 1;
+    my $settings = plfind::FindSettings->new();
+    my @errs;
+    if ($default_files == 1) {
+        if (-e $DEFAULT_SETTINGS_PATH) {
+            my $e = $self->update_settings_from_file($settings, $DEFAULT_SETTINGS_PATH);
+            @errs = @$e;
+        }
+    }
+    return ($settings, \@errs);
+}
+
 sub update_settings_from_args {
     my ($self, $settings, $args) = @_;
     my ($arg_tokens, $errs) = $self->{arg_tokenizer}->tokenize_args($args);
@@ -327,10 +341,13 @@ sub update_settings_from_args {
 
 sub settings_from_args {
     my ($self, $args) = @_;
-    my $settings = plfind::FindSettings->new();
+    my ($settings, $errs) = $self->get_default_settings();
+    if (scalar @$errs) {
+        return ($settings, $errs);
+    }
     # default print_files to true since running as cli
     $settings->set_property('print_files', 1);
-    my $errs = $self->update_settings_from_args($settings, $args);
+    $errs = $self->update_settings_from_args($settings, $args);
     return ($settings, $errs);
 }
 

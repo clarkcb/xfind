@@ -26,8 +26,9 @@ if (defined $ENV{XFIND_PATH}) {
 our $SHARED_PATH = $XFIND_PATH->subdir('shared');
 our $FILE_TYPES_PATH = $SHARED_PATH->file('filetypes.json');
 our $FIND_OPTIONS_PATH = $SHARED_PATH->file('findoptions.json');
+our $DEFAULT_SETTINGS_PATH = file($ENV{'HOME'}, '.config', 'xfind', 'settings.json');
 
-our @EXPORT = qw($XFIND_PATH $SHARED_PATH $FILE_TYPES_PATH $FIND_OPTIONS_PATH);
+our @EXPORT = qw($XFIND_PATH $SHARED_PATH $FILE_TYPES_PATH $FIND_OPTIONS_PATH $DEFAULT_SETTINGS_PATH);
 
 1;
 
