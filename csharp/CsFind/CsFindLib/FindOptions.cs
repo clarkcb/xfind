@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
@@ -288,6 +289,21 @@ public class FindOptions
 		return settings;
 	}
 
+	public FindSettings GetDefaultSettings(bool defaultFiles)
+	{
+		var settings = new FindSettings();
+		if (defaultFiles)
+		{
+			var homePath = FileUtil.GetHomePath();
+			var defaultSettingsPath = Path.Join(homePath, ".config", "xfind", "settings.json");
+			if (Path.Exists(defaultSettingsPath))
+			{
+				UpdateSettingsFromFile(settings, defaultSettingsPath);
+			}
+		}
+		return settings;
+	}
+
 	public void UpdateSettingsFromArgs(FindSettings settings, IEnumerable<string> args)
 	{
 		var argTokens = ArgTokenizer.TokenizeArgs(args);
@@ -296,8 +312,9 @@ public class FindOptions
 
 	public FindSettings SettingsFromArgs(IEnumerable<string> args)
 	{
+		var settings = GetDefaultSettings(true);
 		// default to PrintFiles = true since this is called from CLI
-		var settings = new FindSettings {PrintFiles = true};
+		settings.PrintFiles = true;
 		UpdateSettingsFromArgs(settings, args);
 		return settings;
 	}
