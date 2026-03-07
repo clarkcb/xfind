@@ -24,6 +24,7 @@ BASHFIND_PATH="$XFIND_PATH/bash/bashfind"
 SHARED_PATH="$XFIND_PATH/shared"
 FILE_TYPES_PATH="$XFIND_PATH/shared/filetypes.json"
 FIND_OPTIONS_PATH="$XFIND_PATH/shared/findoptions.json"
+DEFAULT_SETTINGS_PATH="$HOME/.config/xfind/settings.json"
 
 # this will be contain the contents of FIND_OPTIONS_PATH if needed
 FIND_OPTIONS_JSON=
@@ -1241,6 +1242,18 @@ arg_wants_val () {
 
 settings_from_args () {
     local args=("$@")
+
+    # load default settings file if it exists
+    if [ -f "$DEFAULT_SETTINGS_PATH" ]
+    then
+        update_settings_from_file "$DEFAULT_SETTINGS_PATH"
+    fi
+
+    update_settings_from_args ${args[*]}
+}
+
+update_settings_from_args () {
+    local args=("$@")
     local i=0
 
     while [ $i -lt ${#args[*]} ]
@@ -1495,7 +1508,7 @@ settings_from_args () {
                     exit_with_error "Missing argument for option $arg"
                 fi
                 # SETTINGS_FILE="$arg2"
-                update_settings_from_file $arg2
+                update_settings_from_file "$arg2"
                 i=$(($i + 1))
                 ;;
             --sort-ascending)
@@ -1532,7 +1545,7 @@ settings_from_args () {
                     IFS='=' read -ra ARG_VAL <<< "$arg"
                     if [ ${#ARG_VAL[@]} -eq 2 ]
                     then
-                        settings_from_args ${ARG_VAL[*]}
+                        update_settings_from_args ${ARG_VAL[*]}
                     else
                         exit_with_error "Invalid option: $no_dash_arg"
                     fi
@@ -1566,7 +1579,7 @@ settings_from_args () {
                     SHORT_ARGS+=($arg2)
                     i=$(($i + 1))
                 fi
-                settings_from_args ${SHORT_ARGS[*]}
+                update_settings_from_args ${SHORT_ARGS[*]}
                 ;;
             *)
                 PATHS+=($arg)
@@ -1632,7 +1645,7 @@ update_settings_from_json () {
                 arr_args+=("--$k")
                 arr_args+=("$a")
             done
-            settings_from_args ${arr_args[*]}
+            update_settings_from_args ${arr_args[*]}
         else
             exit_with_error "Invalid option: $k"
         fi
@@ -1686,7 +1699,7 @@ update_settings_from_json () {
     done
     if [ ${#other_args[@]} -gt 0 ]
     then
-        settings_from_args ${other_args[*]}
+        update_settings_from_args ${other_args[*]}
     fi
 }
 
