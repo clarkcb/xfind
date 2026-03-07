@@ -6,3 +6,5 @@ final String xFindPath = Platform.environment.containsKey('XFIND_PATH')
 final String sharedPath = '$xFindPath/shared';
 final String fileTypesPath = '$sharedPath/filetypes.json';
 final String findOptionsPath = '$sharedPath/findoptions.json';
+final String defaultSettingsPath =
+    '${Platform.environment['HOME']!}/.config/xfind/settings.json';

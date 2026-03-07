@@ -3,7 +3,8 @@ import 'dart:io';
 
 import 'package:dartfind/src/arg_tokenizer.dart';
 import 'package:dartfind/src/common.dart';
-import 'package:dartfind/src/config.dart' show findOptionsPath;
+import 'package:dartfind/src/config.dart'
+    show findOptionsPath, defaultSettingsPath;
 import 'package:dartfind/src/file_types.dart';
 import 'package:dartfind/src/find_exception.dart';
 import 'package:dartfind/src/find_settings.dart';
@@ -202,8 +203,21 @@ class FindOptions {
 
   Future<void> updateSettingsFromFile(
       FindSettings settings, String filePath) async {
-    List<ArgToken> argTokens = await argTokenizer!.tokenizeFile(filePath);
-    await updateSettingsFromArgTokens(settings, argTokens);
+    await ready.then((_) async {
+      List<ArgToken> argTokens = await argTokenizer!.tokenizeFile(filePath);
+      await updateSettingsFromArgTokens(settings, argTokens);
+    });
+  }
+
+  Future<FindSettings> getDefaultSettings(bool defaultFiles) async {
+    var settings = FindSettings();
+    if (defaultFiles) {
+      if (FileSystemEntity.typeSync(defaultSettingsPath) ==
+          FileSystemEntityType.file) {
+        await updateSettingsFromFile(settings, defaultSettingsPath);
+      }
+    }
+    return settings;
   }
 
   Future<void> updateSettingsFromArgs(
@@ -216,7 +230,7 @@ class FindOptions {
   }
 
   Future<FindSettings> settingsFromArgs(List<String> args) async {
-    var settings = FindSettings();
+    var settings = await getDefaultSettings(true);
     settings.printFiles = true; // default to printing files
     await updateSettingsFromArgs(settings, args);
     return settings;
