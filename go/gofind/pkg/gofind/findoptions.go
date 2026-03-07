@@ -317,6 +317,19 @@ func (fo *FindOptions) UpdateSettingsFromFile(settings *FindSettings, filePath s
 	return fo.updateSettingsFromArgTokens(settings, argTokens)
 }
 
+func (fo *FindOptions) GetDefaultConfigSettings(defaultFiles bool) (*FindSettings, error) {
+	settings := GetDefaultFindSettings()
+	config := NewFindConfig()
+	var err error
+	if defaultFiles {
+		_, err = os.Stat(config.DEFAULTSETTINGSPATH)
+		if err == nil {
+			err = fo.UpdateSettingsFromFile(settings, config.DEFAULTSETTINGSPATH)
+		}
+	}
+	return settings, err
+}
+
 func (fo *FindOptions) UpdateSettingsFromArgs(settings *FindSettings, args []string) error {
 	argTokens, err := fo.ArgTokenizer.TokenizeArgs(args)
 	if err != nil {
@@ -326,12 +339,12 @@ func (fo *FindOptions) UpdateSettingsFromArgs(settings *FindSettings, args []str
 }
 
 func (fo *FindOptions) FindSettingsFromArgs(args []string) (*FindSettings, error) {
-	settings := GetDefaultFindSettings()
-	// default printFiles to true since running as cli
+	settings, err := fo.GetDefaultConfigSettings(true)
+	if err != nil {
+		return settings, err
+	}
 	settings.SetPrintFiles(true)
-
-	err := fo.UpdateSettingsFromArgs(settings, args)
-
+	err = fo.UpdateSettingsFromArgs(settings, args)
 	return settings, err
 }
 
