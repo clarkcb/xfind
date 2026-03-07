@@ -241,9 +241,24 @@ defmodule ExFind.FindOptions do
     end
   end
 
+  def get_default_settings(default_file, options) do
+    if default_file do
+      if File.exists?(ExFind.Config.default_settings_path) do
+        get_settings_from_file(ExFind.Config.default_settings_path, options)
+      else
+        {:ok, FindSettings.new()}
+      end
+    else
+      {:ok, FindSettings.new()}
+    end
+  end
+
   def get_settings_from_args(args, options) do
-    settings = FindSettings.new([print_files: true])
-    update_settings_from_args(settings, args, options)
+    case get_default_settings(true, options) do
+      {:error, message} -> {:error, message}
+      {:ok, settings} ->
+        update_settings_from_args(%{settings | print_files: true}, args, options)
+    end
   end
 
   def get_settings_from_args!(args, options) do
