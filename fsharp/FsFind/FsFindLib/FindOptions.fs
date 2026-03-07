@@ -2,6 +2,7 @@
 
 open System
 open System.Collections.Generic
+open System.IO
 open System.Text.Json
 
 module FindOptions =
@@ -162,14 +163,29 @@ module FindOptions =
         let settings = FindSettings()
         UpdateSettingsFromFile settings filePath
 
+    let GetDefaultSettings (defaultFiles : bool) : Result<FindSettings, string> =
+        let settings = FindSettings()
+        if defaultFiles then
+            let homePath = FileUtil.GetHomePath()
+            let defaultSettingsPath = Path.Join(homePath, ".config", "xfind", "settings.json")
+            if Path.Exists(defaultSettingsPath) then
+                UpdateSettingsFromFile settings defaultSettingsPath
+            else
+                Ok settings
+        else
+            Ok settings
+
     let UpdateSettingsFromArgs (settings : FindSettings) (args : string[]) : Result<FindSettings, string> =
         match argTokenizer.TokenizeArgs(args) with
         | Ok argTokens -> UpdateSettingsFromArgTokens settings argTokens
         | Error e -> Error e
 
     let SettingsFromArgs (args : string[]) : Result<FindSettings, string> =
-        let settings = FindSettings(PrintFiles=true)
-        UpdateSettingsFromArgs settings args
+        match GetDefaultSettings(true) with
+        | Ok settings ->
+            settings.PrintFiles <- true
+            UpdateSettingsFromArgs settings args
+        | Error e -> Error e
 
     let SortOption (o1 : FindOption) (o2 : FindOption) : int =
         let os1 = if o1.ShortArg <> "" then o1.ShortArg + "@" + o1.LongArg else o1.LongArg
