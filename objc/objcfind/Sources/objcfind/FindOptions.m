@@ -285,6 +285,18 @@ typedef void (^IntegerActionBlockType)(NSInteger, FindSettings*);
     return settings;
 }
 
+// this is intended to be private, so not including in the header file
+- (FindSettings *) getDefaultSettings:(BOOL)defaultFiles error:(NSError **)error {
+    FindSettings *settings = [[FindSettings alloc] init];
+    if (defaultFiles) {
+        NSString *defaultSettingsPath = getXfindDefaultSettingsPath();
+        if ([FileUtil exists:defaultSettingsPath]) {
+            [self updateSettingsFromFile:settings filePath:defaultSettingsPath error:error];
+        }
+    }
+    return settings;
+}
+
 - (void) updateSettingsFromArgs:(FindSettings *)settings args:(NSArray *)args error:(NSError **)error {
     NSArray<ArgToken*> *argTokens = [self.argTokenizer tokenizeArgs:args error:error];
     if (*error) {
@@ -294,7 +306,10 @@ typedef void (^IntegerActionBlockType)(NSInteger, FindSettings*);
 }
 
 - (FindSettings *) settingsFromArgs:(NSArray<NSString*> *)args error:(NSError **)error {
-    FindSettings *settings = [[FindSettings alloc] init];
+    FindSettings *settings = [self getDefaultSettings:TRUE error:error];
+    if (*error) {
+        return settings;
+    }
     // default printFiles to true since running as cli
     settings.printFiles = true;
     [self updateSettingsFromArgs:settings args:args error:error];

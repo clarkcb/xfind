@@ -18,3 +18,8 @@ NSString* getXfindBinPath() {
     NSString *xfindPath = getXfindPath();
     return [xfindPath stringByAppendingPathComponent:@"bin"];
 }
+
+NSString* getXfindDefaultSettingsPath() {
+    NSString *xfindDefaultSettingsPath = [[[[NSProcessInfo processInfo] environment] objectForKey:@"HOME"] stringByAppendingString:@"/.config/xfind/settings.json"];
+    return xfindDefaultSettingsPath;
+}
