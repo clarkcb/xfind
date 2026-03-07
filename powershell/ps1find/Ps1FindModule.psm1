@@ -19,6 +19,7 @@ $xfindPath = $env:XFIND_PATH
 $sharedPath = Join-Path -Path $xfindPath -ChildPath 'shared'
 $fileTypesPath = Join-Path -Path $sharedPath -ChildPath 'filetypes.json'
 $findOptionsPath = Join-Path -Path $sharedPath -ChildPath 'findoptions.json'
+$defaultSettingsPath = Join-Path $HOME '.config' 'xfind' 'settings.json'
 #endregion
 
 
@@ -1050,13 +1051,23 @@ class FindOptions {
         $this.UpdateSettingsFromArgTokens($settings, $argTokens)
     }
 
+    [FindSettings]GetDefaultSettings([bool]$defaultFiles) {
+        $settings = [FindSettings]::new()
+        if ($defaultFiles) {
+            if (Test-Path $script:defaultSettingsPath) {
+                $this.UpdateSettingsFromFilePath($settings, $script:defaultSettingsPath)
+            }
+        }
+        return $settings
+    }
+
     [void]UpdateSettingsFromArgs([FindSettings]$settings, [string[]]$argList) {
         $argTokens = $this.ArgTokenizer.TokenizeArgs($argList)
         $this.UpdateSettingsFromArgTokens($settings, $argTokens)
     }
 
     [FindSettings]SettingsFromArgs([string[]]$argList) {
-        $settings = [FindSettings]::new()
+        $settings = $this.GetDefaultSettings($true)
         # default PrintFiles to true since we're using via CLI
         $settings.PrintFiles = $true
         $this.UpdateSettingsFromArgs($settings, $argList)
