@@ -214,6 +214,22 @@ class FindOptions
     }
 
     /**
+     * @param bool $default_files
+     * @return FindSettings
+     * @throws FindException
+     */
+    public function get_default_settings(bool $default_files = true): FindSettings
+    {
+        $settings = new FindSettings();
+        if ($default_files) {
+            if (file_exists(Config::DEFAULT_SETTINGS_PATH)) {
+                $this->update_settings_from_file($settings, Config::DEFAULT_SETTINGS_PATH);
+            }
+        }
+        return $settings;
+    }
+
+    /**
      * @param FindSettings $settings
      * @param string[] $args
      * @return void
@@ -232,7 +248,7 @@ class FindOptions
      */
     public function settings_from_args(array $args): FindSettings
     {
-        $settings = new FindSettings();
+        $settings = $this->get_default_settings();
         // default print_files to true since running as cli
         $settings->print_files = true;
         $this->update_settings_from_args($settings, $args);
