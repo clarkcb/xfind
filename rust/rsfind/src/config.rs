@@ -9,6 +9,7 @@ pub struct Config {
     pub shared_path: String,
     pub file_types_path: String,
     pub find_options_path: String,
+    pub default_settings_path: String,
     pub version: String,
 }
 
@@ -35,6 +36,7 @@ impl Config {
             shared_path: shared_path.clone(),
             file_types_path: shared_path.clone() + "/filetypes.json",
             find_options_path: shared_path.clone() + "/findoptions.json",
+            default_settings_path: env::var("HOME").unwrap() + "/.config/xfind/settings.json",
             version,
         }
     }

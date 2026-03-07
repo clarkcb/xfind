@@ -9,6 +9,7 @@ use core::slice::Iter;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs;
+use std::path::Path;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct JsonFindOption {
@@ -31,8 +32,8 @@ type IntAction = Box<dyn Fn(i32, &mut FindSettings) -> Result<(), FindError>>;
 type LongAction = Box<dyn Fn(u64, &mut FindSettings) -> Result<(), FindError>>;
 
 pub struct FindOptions {
+    pub config: Config,
     pub find_options: Vec<FindOption>,
-    pub version: String,
     pub bool_action_map: HashMap<String, BoolAction>,
     pub string_action_map: HashMap<String, StringAction>,
     pub int_action_map: HashMap<String, IntAction>,
@@ -43,7 +44,7 @@ pub struct FindOptions {
 impl FindOptions {
     pub fn new() -> Result<FindOptions, FindError> {
         let config = Config::new();
-        let contents: String = match fs::read_to_string(config.find_options_path) {
+        let contents: String = match fs::read_to_string(&config.find_options_path) {
             Ok(contents) => contents,
             Err(error) => return Err(FindError::new(&error.to_string())),
         };
@@ -63,8 +64,8 @@ impl FindOptions {
                                          &long_action_map);
         let arg_tokenizer = ArgTokenizer::new(&find_options);
         Ok(FindOptions {
+            config,
             find_options,
-            version: config.version.clone(),
             bool_action_map,
             string_action_map,
             int_action_map,
@@ -229,6 +230,25 @@ impl FindOptions {
         }
     }
 
+    pub fn get_default_settings(
+        &self,
+        default_files: bool,
+    ) -> Result<FindSettings, FindError> {
+        let mut settings = FindSettings::default();
+        if default_files {
+            if Path::new(&self.config.default_settings_path).exists() {
+                match self.update_settings_from_file(&mut settings, &self.config.default_settings_path) {
+                    Ok(()) => Ok(settings),
+                    Err(error) => Err(error),
+                }
+            } else {
+                Ok(settings)
+            }
+        } else {
+            Ok(settings)
+        }
+    }
+
     pub fn update_settings_from_args(
         &self,
         settings: &mut FindSettings,
@@ -244,10 +264,14 @@ impl FindOptions {
         &self,
         args: Iter<String>,
     ) -> Result<FindSettings, FindError> {
-        let mut settings = FindSettings::default();
-        settings.set_print_files(true); // default to true when running from main
-        match self.update_settings_from_args(&mut settings, args) {
-            Ok(()) => Ok(settings),
+        match self.get_default_settings(true) {
+            Ok(mut settings) => {
+                settings.set_print_files(true);
+                match self.update_settings_from_args(&mut settings, args) {
+                    Ok(()) => Ok(settings),
+                    Err(error) => Err(error),
+                }
+            },
             Err(error) => Err(error),
         }
     }
@@ -305,7 +329,7 @@ impl FindOptions {
     }
 
     pub fn print_version(&self) {
-        log(format!("xfind version {}", self.version).as_str());
+        log(format!("xfind version {}", self.config.version).as_str());
     }
 }
 
