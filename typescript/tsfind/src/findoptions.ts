@@ -15,10 +15,16 @@ import {FindError} from "./finderror";
 import {FindOption} from './findoption';
 import {FindSettings} from './findsettings';
 import {SortUtil} from "./sortutil";
+import fs from "fs";
 
 type BoolAction = (b: boolean, settings: FindSettings) => void;
 type NumAction = (n: number, settings: FindSettings) => void;
 type StringAction = (s: string, settings: FindSettings) => void;
+
+export interface SettingsResult {
+    err: Error | undefined;
+    settings: FindSettings;
+}
 
 export class FindOptions {
     options: FindOption[];
@@ -209,6 +215,17 @@ export class FindOptions {
         return this.updateSettingsFromArgTokens(settings, argTokens);
     }
 
+    public getDefaultSettings(defaultFiles: boolean = true): SettingsResult {
+        const settings: FindSettings = new FindSettings();
+        let err: Error | undefined;
+        if (defaultFiles) {
+            if (fs.existsSync(config.DEFAULT_SETTINGS_PATH)) {
+                err = this.updateSettingsFromFile(settings, config.DEFAULT_SETTINGS_PATH);
+            }
+        }
+        return {err, settings};
+    }
+
     public updateSettingsFromArgs(settings: FindSettings, args: string[]): Error | undefined {
         const { err, argTokens } = this.argTokenizer.tokenizeArgs(args);
         if (err) {
@@ -218,10 +235,14 @@ export class FindOptions {
     }
 
     public settingsFromArgs(args: string[], cb: (err: Error | undefined, settings: FindSettings) => void): void {
-        const settings: FindSettings = new FindSettings();
-        // default printFiles to true since it's being run from cmd line
-        settings.printFiles = true;
-        const err = this.updateSettingsFromArgs(settings, args);
+        const result: SettingsResult = this.getDefaultSettings(true);
+        let settings = result.settings;
+        let err = result.err;
+        if (!err) {
+            // default printFiles to true since it's being run from cmd line
+            settings.printFiles = true;
+            err = this.updateSettingsFromArgs(settings, args);
+        }
         cb(err, settings);
     }
 
