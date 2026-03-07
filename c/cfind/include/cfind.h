@@ -55,6 +55,7 @@ void time_to_datestring(long t, char *s);
 #define MAX_HOMEPATH_LENGTH 100
 #define FILE_TYPES_REL_PATH "shared/filetypes.json"
 #define FIND_OPTIONS_REL_PATH "shared/findoptions.json"
+#define DEFAULT_SETTINGS_REL_PATH ".config/xfind/settings.json"
 
 void get_home_path(char *dest);
 
@@ -63,6 +64,8 @@ void get_xfind_path(char *dest);
 void get_file_types_path(char *dest);
 
 void get_find_options_path(char *dest);
+
+void get_default_settings_path(char *dest);
 
 
 // consolecolor.h

@@ -241,7 +241,7 @@ error_t get_find_options(FindOptions *options)
 {
     error_t err = E_OK;
 
-    size_t maxlen = MAX_HOMEPATH_LENGTH + 21;
+    const size_t maxlen = MAX_HOMEPATH_LENGTH + 21;
     char *full_path = malloc(maxlen * sizeof(char));
     get_find_options_path(full_path);
 
@@ -566,10 +566,33 @@ error_t update_settings_from_arg_token_node(const ArgTokenNode *arg_token_node, 
     return E_OK;
 }
 
+error_t settings_from_default_files(FindOptions *options, FindSettings *settings)
+{
+    error_t err = E_OK;
+
+    const size_t maxlen = MAX_HOMEPATH_LENGTH + 28;
+    char *default_settings_path = malloc(maxlen * sizeof(char));
+    get_default_settings_path(default_settings_path);
+
+    assert(default_settings_path != NULL);
+
+    if (dir_or_file_exists(default_settings_path)) {
+        err = settings_from_json_file(default_settings_path, options, settings);
+    }
+
+    free(default_settings_path);
+    return err;
+}
+
 error_t settings_from_args(const int argc, char *argv[], FindOptions *options, FindSettings *settings)
 {
+    // Load default settings, if found
+    // In the future, we'll call this conditionally
+    error_t err = settings_from_default_files(options, settings);
+    if (err != E_OK) return err;
+
     ArgTokenNode *arg_token_node = empty_arg_token_node();
-    error_t err = tokenize_args(argc, argv, options, arg_token_node);
+    err = tokenize_args(argc, argv, options, arg_token_node);
     if (err != E_OK) return err;
     settings->print_files = 1;
     err = update_settings_from_arg_token_node(arg_token_node, options, settings);
