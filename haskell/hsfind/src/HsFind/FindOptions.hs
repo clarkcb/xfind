@@ -19,8 +19,9 @@ import GHC.Generics
 
 import HsFind.Paths_hsfind (getDataFileName)
 import HsFind.ArgTokenizer
+import HsFind.Config
 import HsFind.FileTypes (getFileTypeForName)
-import HsFind.FileUtil (getFileString)
+import HsFind.FileUtil (getFileString, pathExists)
 import HsFind.FindSettings
 import HsFind.StringUtil (padString)
 
@@ -258,6 +259,17 @@ updateSettingsFromFile settings findOptions filePath = do
 settingsFromFile :: FindOptions -> FilePath -> IO (Either String FindSettings)
 settingsFromFile = updateSettingsFromFile defaultFindSettings
 
+getDefaultSettings :: FindOptions -> Bool -> IO (Either String FindSettings)
+getDefaultSettings findOptions defaultFiles = do
+  if defaultFiles
+  then do
+    defaultSettingsPath <- getDefaultSettingsPath
+    defaultSettingsPathExists <- pathExists defaultSettingsPath
+    if defaultSettingsPathExists
+    then updateSettingsFromFile defaultFindSettings findOptions defaultSettingsPath
+    else return $ Right defaultFindSettings
+  else return $ Right defaultFindSettings
+
 updateSettingsFromArgs :: FindSettings -> FindOptions -> [String] -> IO (Either String FindSettings)
 updateSettingsFromArgs settings findOptions arguments = do
   case tokenizeArgs (argTokenizer findOptions) arguments of
@@ -265,4 +277,8 @@ updateSettingsFromArgs settings findOptions arguments = do
     Right tokens -> updateSettingsFromTokens settings findOptions tokens
 
 settingsFromArgs :: FindOptions -> [String] -> IO (Either String FindSettings)
-settingsFromArgs = updateSettingsFromArgs defaultFindSettings{printFiles=True}
+settingsFromArgs findOptions arguments = do
+  eitherSettings <- getDefaultSettings findOptions True
+  case eitherSettings of
+    Left e -> return $ Left e
+    Right settings -> updateSettingsFromArgs settings{printFiles=True} findOptions arguments
