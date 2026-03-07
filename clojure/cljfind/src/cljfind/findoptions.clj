@@ -21,6 +21,7 @@
         [clojure.set :only (union)]
         [clojure.string :as str :only (lower-case)]
         [cljfind.common :only (as-keyword as-string log-msg)]
+        [cljfind.config :only (DEFAULTSETTINGSPATH)]
         [cljfind.argtokenizer]
         [cljfind.fileutil :only (exists-path? expand-path path-str to-path)]
         [cljfind.findsettings :only
@@ -187,7 +188,7 @@
       (update-settings-from-tokens settings tokens))))
 
 (defn settings-from-arg-map [arg-map]
-  (update-settings-from-arg-map DEFAULT-FIND-SETTINGS (get-long-arg-map) arg-map))
+  (update-settings-from-arg-map DEFAULT-FIND-SETTINGS arg-map))
 
 (defn update-settings-from-json [^FindSettings settings ^String json]
   (let [[tokens errs] (tokenize-json arg-tokenizer json)]
@@ -205,7 +206,15 @@
       (update-settings-from-tokens settings tokens))))
 
 (defn settings-from-file [f]
-  (update-settings-from-file DEFAULT-FIND-SETTINGS (get-long-arg-map) f))
+  (update-settings-from-file DEFAULT-FIND-SETTINGS f))
+
+(defn get-default-settings
+  ([]
+    (get-default-settings true))
+  ([default-files]
+   (if (and default-files (exists-path? (to-path DEFAULTSETTINGSPATH)))
+     (settings-from-file DEFAULTSETTINGSPATH)
+     [DEFAULT-FIND-SETTINGS []])))
 
 (defn update-settings-from-args [^FindSettings settings args]
   (let [[tokens errs] (tokenize-args arg-tokenizer args)]
@@ -214,8 +223,11 @@
       (update-settings-from-tokens settings tokens))))
 
 (defn settings-from-args [args]
-  ;; default print-files to true since running as cli
-  (update-settings-from-args (assoc DEFAULT-FIND-SETTINGS :print-files true) args))
+  (let [[settings errs] (get-default-settings true)]
+    (if (not (empty? errs))
+      [settings errs]
+      ;; default print-files to true since running as cli
+      (update-settings-from-args (assoc settings :print-files true) args))))
 
 (defn longest-length [options]
   (let [lens (map #(+ (count (:long-arg %)) (if (:short-arg %) 3 0)) options)]
