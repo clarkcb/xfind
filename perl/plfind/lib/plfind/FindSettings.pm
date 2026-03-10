@@ -25,6 +25,7 @@ sub new {
         archives_only => 0,
         colorize => 1,
         debug => 0,
+        default_files => 1,
         dir_color => plfind::Color->CYAN,
         ext_color => plfind::Color->YELLOW,
         file_color => plfind::Color->MAGENTA,
@@ -172,6 +173,7 @@ sub to_string {
         'archives_only=' . plfind::common::bool_to_string($self->{archives_only}) .
         ', colorize=' . plfind::common::bool_to_string($self->{colorize}) .
         ', debug=' . plfind::common::bool_to_string($self->{debug}) .
+        ', default_files=' . plfind::common::bool_to_string($self->{default_files}) .
         ', follow_symlinks=' . plfind::common::bool_to_string($self->{follow_symlinks}) .
         ', in_archive_extensions=' . plfind::common::strings_aref_to_string($self->{in_archive_extensions}) .
         ', in_archive_file_patterns=' . plfind::common::strings_aref_to_string($self->{in_archive_file_patterns}) .

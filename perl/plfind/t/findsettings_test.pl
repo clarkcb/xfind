@@ -17,14 +17,16 @@ BEGIN {
     unshift @INC, $lib_path;
 }
 
-use Test::Simple tests => 30;
+use Test::Simple tests => 32;
 
 use plfind::FindSettings;
 
 sub test_default_settings {
     my $settings = plfind::FindSettings->new();
     ok(!$settings->{archives_only}, "archives_only is false by default");
+    ok($settings->{colorize}, "colorize is true by default");
     ok(!$settings->{debug}, "debug is false by default");
+    ok($settings->{default_files}, "default_files is true by default");
     ok(!$settings->{follow_symlinks}, "follow_symlinks is false by default");
     ok(!$settings->{include_archives}, "include_archives is false by default");
     ok(!$settings->{include_hidden}, "include_hidden is false by default");

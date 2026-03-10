@@ -36,6 +36,10 @@ my $bool_action_hash = {
         my ($bool, $settings) = @_;
         $settings->set_property('debug', $bool);
     },
+    'defaultfiles' => sub {
+        my ($bool, $settings) = @_;
+        $settings->set_property('default_files', $bool);
+    },
     'excludearchives' => sub {
         my ($bool, $settings) = @_;
         $settings->set_property('include_archives', !$bool);
@@ -63,6 +67,10 @@ my $bool_action_hash = {
     'nocolorize' => sub {
         my ($bool, $settings) = @_;
         $settings->set_property('colorize', plfind::common::neg_bool($bool));
+    },
+    'nodefaultfiles' => sub {
+        my ($bool, $settings) = @_;
+        $settings->set_property('default_files', plfind::common::neg_bool($bool));
     },
     'nofollowsymlinks' => sub {
         my ($bool, $settings) = @_;
@@ -251,6 +259,15 @@ sub update_settings_from_arg_tokens {
         if ($arg_token->{type} eq plfind::ArgTokenType->BOOL) {
             if (plfind::common::is_bool($arg_value)) {
                 &{$bool_action_hash->{$arg_token->{name}}}($arg_value, $settings);
+                if ($arg_token->{name} eq 'help' || $arg_token->{name} eq 'version') {
+                    return;
+                }
+                if ($arg_token->{name} eq 'defaultfiles') {
+                    my $e = $self->update_settings_from_default_files($settings);
+                    if (scalar @$e) {
+                        push(@errs, @$e);
+                    }
+                }
             } else {
                 push(@errs, 'Invalid value for option: ' . $arg_token->{name});
             }
@@ -316,18 +333,14 @@ sub settings_from_file {
     return ($settings, $errs);
 }
 
-sub get_default_settings {
-    my ($self, $default_files) = @_;
-    $default_files ||= 1;
-    my $settings = plfind::FindSettings->new();
+sub update_settings_from_default_files {
+    my ($self, $settings) = @_;
     my @errs;
-    if ($default_files == 1) {
-        if (-e $DEFAULT_SETTINGS_PATH) {
-            my $e = $self->update_settings_from_file($settings, $DEFAULT_SETTINGS_PATH);
-            @errs = @$e;
-        }
+    if (-e $DEFAULT_SETTINGS_PATH) {
+        my $e = $self->update_settings_from_file($settings, $DEFAULT_SETTINGS_PATH);
+        @errs = @$e;
     }
-    return ($settings, \@errs);
+    return \@errs;
 }
 
 sub update_settings_from_args {
@@ -341,13 +354,17 @@ sub update_settings_from_args {
 
 sub settings_from_args {
     my ($self, $args) = @_;
-    my ($settings, $errs) = $self->get_default_settings();
-    if (scalar @$errs) {
-        return ($settings, $errs);
+    my $settings = plfind::FindSettings->new();
+    # if a defaultfiles option isn't included, go ahead and apply default files now
+    if (!(grep { $_ eq '--defaultfiles' } @$args) && !(grep { $_ eq '--nodefaultfiles' } @$args)) {
+        my $errs = $self->update_settings_from_default_files($settings);
+        if (scalar @$errs) {
+            return ($settings, $errs);
+        }
     }
     # default print_files to true since running as cli
     $settings->set_property('print_files', 1);
-    $errs = $self->update_settings_from_args($settings, $args);
+    my $errs = $self->update_settings_from_args($settings, $args);
     return ($settings, $errs);
 }
 
