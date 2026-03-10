@@ -34,6 +34,7 @@ public class FindSettings
 		}
 	}
 
+	public bool DefaultFiles { get; set; }
 	public Color DirColor { get; set; }
 	public Color ExtColor { get; set; }
 	public Color FileColor { get; set; }
@@ -74,6 +75,7 @@ public class FindSettings
 		ArchivesOnly = false;
 		Colorize = true;
 		Debug = false;
+		DefaultFiles = true;
 		DirColor = Color.Cyan;
 		ExtColor = Color.Yellow;
 		FileColor = Color.Magenta;
@@ -236,6 +238,7 @@ public class FindSettings
 		       "ArchivesOnly=" + ArchivesOnly +
 		       ", Colorize: " + Colorize +
 		       ", Debug=" + Debug +
+		       ", DefaultFiles=" + DefaultFiles +
 		       ", FollowSymlinks=" + FollowSymlinks +
 		       ", InArchiveExtensions=" + EnumerableToString(InArchiveExtensions) +
 		       ", InArchiveFilePatterns=" + EnumerableToString(InArchiveFilePatterns) +

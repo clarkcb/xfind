@@ -18,6 +18,7 @@ public class FindOptions
 			{ "archivesonly", (b, settings) => settings.ArchivesOnly = b },
 			{ "colorize", (b, settings) => settings.Colorize = b },
 			{ "debug", (b, settings) => settings.Debug = b },
+			{ "defaultfiles", (b, settings) => settings.DefaultFiles = b },
 			{ "excludearchives", (b, settings) => settings.IncludeArchives = !b },
 			{ "excludehidden", (b, settings) => settings.IncludeHidden = !b },
 			{ "followsymlinks", (b, settings) => settings.FollowSymlinks = b },
@@ -25,6 +26,7 @@ public class FindOptions
 			{ "includearchives", (b, settings) => settings.IncludeArchives = b },
 			{ "includehidden", (b, settings) => settings.IncludeHidden = b },
 			{ "nocolorize", (b, settings) => settings.Colorize = !b },
+			{ "nodefaultfiles", (b, settings) => settings.DefaultFiles = !b },
 			{ "nofollowsymlinks", (b, settings) => settings.FollowSymlinks = !b },
 			{ "noprintdirs", (b, settings) => settings.PrintDirs = !b },
 			{ "noprintfiles", (b, settings) => settings.PrintFiles = !b },
@@ -145,6 +147,10 @@ public class FindOptions
 				else
 				{
 					throw new FindException($"Invalid value for option: {argToken.Name}");
+				}
+				if (argToken.Name == "defaultfiles")
+				{
+					UpdateSettingsFromDefaultFiles(settings);
 				}
 			}
 			else
@@ -289,19 +295,14 @@ public class FindOptions
 		return settings;
 	}
 
-	public FindSettings GetDefaultSettings(bool defaultFiles)
+	private void UpdateSettingsFromDefaultFiles(FindSettings settings)
 	{
-		var settings = new FindSettings();
-		if (defaultFiles)
+		var homePath = FileUtil.GetHomePath();
+		var defaultSettingsPath = Path.Join(homePath, ".config", "xfind", "settings.json");
+		if (Path.Exists(defaultSettingsPath))
 		{
-			var homePath = FileUtil.GetHomePath();
-			var defaultSettingsPath = Path.Join(homePath, ".config", "xfind", "settings.json");
-			if (Path.Exists(defaultSettingsPath))
-			{
-				UpdateSettingsFromFile(settings, defaultSettingsPath);
-			}
+			UpdateSettingsFromFile(settings, defaultSettingsPath);
 		}
-		return settings;
 	}
 
 	public void UpdateSettingsFromArgs(FindSettings settings, IEnumerable<string> args)
@@ -312,10 +313,20 @@ public class FindOptions
 
 	public FindSettings SettingsFromArgs(IEnumerable<string> args)
 	{
-		var settings = GetDefaultSettings(true);
-		// default to PrintFiles = true since this is called from CLI
-		settings.PrintFiles = true;
-		UpdateSettingsFromArgs(settings, args);
+		var settings = new FindSettings
+		{
+			// default to PrintFiles = true since this is called from CLI
+			PrintFiles = true
+		};
+
+		var argList = args.ToList();
+		// if a defaultfiles option isn't included, go ahead and apply default files now
+		if (!argList.Contains("--defaultfiles") && !argList.Contains("--nodefaultfiles"))
+		{
+			UpdateSettingsFromDefaultFiles(settings);
+		}
+
+		UpdateSettingsFromArgs(settings, argList);
 		return settings;
 	}
 
