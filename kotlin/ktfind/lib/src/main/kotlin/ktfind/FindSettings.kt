@@ -47,6 +47,7 @@ data class FindSettings(
     val archivesOnly: Boolean,
     val colorize: Boolean,
     val debug: Boolean,
+    val defaultFiles: Boolean,
     val dirColor: Color,
     val extColor: Color,
     val fileColor: Color,
@@ -87,6 +88,7 @@ data class FindSettings(
                 "archivesOnly=$archivesOnly, " +
                 "colorize=$colorize, " +
                 "debug=$debug, " +
+                "defaultFiles=$defaultFiles, " +
                 "followSymlinks=$followSymlinks, " +
                 "inArchiveExtensions=${stringSetToString(inArchiveExtensions)}, " +
                 "inArchiveFilePatterns=${patternSetToString(inArchiveFilePatterns)}, " +
@@ -161,6 +163,7 @@ fun getDefaultSettings(): FindSettings {
         archivesOnly = false,
         colorize = true,
         debug = false,
+        defaultFiles = true,
         dirColor = Color.CYAN,
         extColor = Color.YELLOW,
         fileColor = Color.MAGENTA,

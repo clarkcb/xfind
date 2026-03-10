@@ -42,6 +42,7 @@ class FindOptions {
             if (b) ss.copy(debug = true, verbose = true) else
                 ss.copy(debug = false)
         },
+        "defaultfiles" to { b, ss -> ss.copy(defaultFiles = b) },
         "excludearchives" to { b, ss -> ss.copy(includeArchives = !b) },
         "excludehidden" to { b, ss -> ss.copy(includeHidden = !b) },
         "followsymlinks" to { b, ss -> ss.copy(followSymlinks = b) },
@@ -49,6 +50,7 @@ class FindOptions {
         "includearchives" to { b, ss -> ss.copy(includeArchives = b) },
         "includehidden" to { b, ss -> ss.copy(includeHidden = b) },
         "nocolorize" to { b, ss -> ss.copy(colorize = !b) },
+        "nodefaultfiles" to { b, ss -> ss.copy(defaultFiles = !b) },
         "nofollowsymlinks" to { b, ss -> ss.copy(followSymlinks = !b) },
         "noprintdirs" to { b, ss -> ss.copy(printDirs = !b) },
         "noprintfiles" to { b, ss -> ss.copy(printFiles = !b) },
@@ -151,7 +153,12 @@ class FindOptions {
     private fun applyArgTokenToSettings(argToken: ArgToken, settings: FindSettings): FindSettings {
         if (argToken.type == ArgTokenType.BOOL) {
             if (argToken.value is Boolean) {
-                return this.boolActionMap[argToken.name]!!.invoke(argToken.value, settings)
+                val updatedSettings = this.boolActionMap[argToken.name]!!.invoke(argToken.value, settings)
+                return if (argToken.name == "defaultfiles") {
+                    updateSettingsFromDefaultFiles(updatedSettings)
+                } else {
+                    updatedSettings
+                }
             } else {
                 throw FindException("Invalid value for option: ${argToken.name}")
             }
@@ -222,13 +229,10 @@ class FindOptions {
         return updateSettingsFromArgTokens(settings, argTokens)
     }
 
-    fun getDefaultConfig(defaultFiles: Boolean = true): FindSettings {
-        val settings = getDefaultSettings().copy()
-        if (defaultFiles) {
-            val defaultSettingsPath = Paths.get(System.getProperty("user.home"), ".config", "xfind", "settings.json")
-            if (Files.exists(defaultSettingsPath)) {
-                return updateSettingsFromFile(settings, defaultSettingsPath.toString())
-            }
+    fun updateSettingsFromDefaultFiles(settings: FindSettings): FindSettings {
+        val defaultSettingsPath = Paths.get(System.getProperty("user.home"), ".config", "xfind", "settings.json")
+        if (Files.exists(defaultSettingsPath)) {
+            return updateSettingsFromFile(settings, defaultSettingsPath.toString())
         }
         return settings
     }
@@ -239,8 +243,13 @@ class FindOptions {
     }
 
     fun settingsFromArgs(args: Array<String>): FindSettings {
-        val settings = getDefaultConfig().copy(printFiles = true)
-        return updateSettingsFromArgs(settings, args)
+        val settings = getDefaultSettings().copy(printFiles = true)
+        // if a defaultfiles option isn't included, go ahead and apply default files now
+        return if (!args.contains("--defaultfiles") && !args.contains("--nodefaultfiles")) {
+            updateSettingsFromArgs(updateSettingsFromDefaultFiles(settings), args)
+        } else {
+            updateSettingsFromArgs(settings, args)
+        }
     }
 
     private fun getUsageString(): String {

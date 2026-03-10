@@ -13,7 +13,9 @@ class FindSettingsTest {
     fun testDefaultSettings() {
         val settings = getDefaultSettings()
         assertFalse(settings.archivesOnly)
+        assertTrue(settings.colorize)
         assertFalse(settings.debug)
+        assertTrue(settings.defaultFiles)
         assertFalse(settings.followSymlinks)
         assertFalse(settings.includeArchives)
         assertFalse(settings.includeHidden)
