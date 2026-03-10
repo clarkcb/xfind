@@ -9,6 +9,7 @@ module RbFind
     attr_reader :archives_only
     attr_accessor :colorize
     attr_reader :debug
+    attr_accessor :default_files
     attr_accessor :dir_color
     attr_accessor :ext_color
     attr_accessor :file_color
@@ -48,6 +49,7 @@ module RbFind
       @archives_only = false
       @colorize = true
       @debug = false
+      @default_files = true
       @dir_color = Color::CYAN
       @ext_color = Color::YELLOW
       @file_color = Color::MAGENTA
@@ -172,6 +174,7 @@ module RbFind
         "archives_only=#{@archives_only}" +
         ", colorize=#{@colorize}" +
         ", debug=#{@debug}" +
+        ", default_files=#{@default_files}" +
         ", follow_symlinks=#{@follow_symlinks}" +
         ', ' + set_to_s('in_archive_extensions', @in_archive_extensions) +
         ', ' + array_to_s('in_archive_file_patterns', @in_archive_file_patterns.map { |p| p.source }) +

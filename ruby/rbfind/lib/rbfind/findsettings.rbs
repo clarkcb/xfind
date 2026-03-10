@@ -4,6 +4,7 @@ module RbFind
     attr_reader archives_only: bool
     attr_accessor colorize: bool
     attr_reader debug: bool
+    attr_accessor default_files: bool
     attr_accessor dir_color: Color
     attr_accessor ext_color: Color
     attr_accessor file_color: Color

@@ -35,24 +35,17 @@ module RbFind
       update_settings_from_arg_tokens(settings, arg_tokens)
     end
 
-    def get_default_settings(default_files = true)
-      settings = FindSettings.new
-      if default_files
-        default_settings_path = Pathname.new(Dir.home).join('.config', 'xfind', 'settings.json')
-        if default_settings_path.exist?
-          update_settings_from_file(settings, default_settings_path.to_s)
-        end
-      end
-      settings
-    end
-
     def update_settings_from_args(settings, args)
       arg_tokens = @arg_tokenizer.tokenize_args(args)
       update_settings_from_arg_tokens(settings, arg_tokens)
     end
 
     def find_settings_from_args(args)
-      settings = get_default_settings
+      settings = FindSettings.new
+      # if a defaultfiles option isn't included, go ahead and apply default files now
+      unless args.include?('--defaultfiles') || args.include?('--nodefaultfiles')
+        update_settings_from_default_files(settings)
+      end
       # default print_files to true since running as cli
       settings.print_files = true
       update_settings_from_args(settings, args)
@@ -98,6 +91,7 @@ module RbFind
         casesensitive: ->(b, settings) { settings.sort_case_insensitive = !b },
         colorize: ->(b, settings) { settings.colorize = b },
         debug: ->(b, settings) { settings.debug = b },
+        defaultfiles: ->(b, settings) { update_settings_from_default_files(settings) },
         excludearchives: ->(b, settings) { settings.include_archives = !b },
         excludehidden: ->(b, settings) { settings.include_hidden = !b },
         followsymlinks: ->(b, settings) { settings.follow_symlinks = b },
@@ -105,6 +99,7 @@ module RbFind
         includearchives: ->(b, settings) { settings.include_archives = b },
         includehidden: ->(b, settings) { settings.include_hidden = b },
         nocolorize: ->(b, settings) { settings.colorize = !b },
+        nodefaultfiles: ->(b, settings) { settings.default_files = !b },
         nofollowsymlinks: ->(b, settings) { settings.follow_symlinks = !b },
         noprintdirs: ->(b, settings) { settings.print_dirs = !b },
         noprintfiles: ->(b, settings) { settings.print_files = !b },
@@ -183,6 +178,9 @@ module RbFind
           if arg_token.value == true || arg_token.value == false
             @bool_action_dict[arg_token.name].call(arg_token.value, settings)
             return if [:help, :version].include?(arg_token.name)
+            if arg_token.name == :defaultfiles
+              update_settings_from_default_files(settings)
+            end
           else
             raise FindError, "Invalid value for option: #{arg_token.name}"
           end
@@ -209,6 +207,13 @@ module RbFind
         else
           raise FindError, "Invalid option: #{arg_token.name}"
         end
+      end
+    end
+
+    def update_settings_from_default_files(settings)
+      default_settings_path = Pathname.new(Dir.home).join('.config', 'xfind', 'settings.json')
+      if default_settings_path.exist?
+        update_settings_from_file(settings, default_settings_path.to_s)
       end
     end
   end

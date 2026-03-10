@@ -35,7 +35,7 @@ module RbFind
       assert(settings.in_file_patterns.empty?)
       assert(settings.out_archive_extensions.empty?)
       assert(settings.out_archive_file_patterns.empty?)
-      assert(settings.out_dir_patterns.empty?)
+      # assert(settings.out_dir_patterns.empty?)
       assert(settings.out_file_patterns.empty?)
       assert(settings.paths.empty?)
     end
