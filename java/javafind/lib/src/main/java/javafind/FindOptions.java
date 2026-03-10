@@ -19,8 +19,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 
-import static javafind.FindError.STARTPATH_NOT_DEFINED;
-
 public class FindOptions {
     private static final String FIND_OPTIONS_JSON_PATH = "/findoptions.json";
     private final List<FindOption> options;
@@ -43,12 +41,14 @@ public class FindOptions {
             put("archivesonly", (b, settings) -> settings.setArchivesOnly(b));
             put("colorize", (b, settings) -> settings.setColorize(b));
             put("debug", (b, settings) -> settings.setDebug(b));
+            put("defaultfiles", (b, settings) -> settings.setDefaultFiles(b));
             put("excludehidden", (b, settings) -> settings.setIncludeHidden(!b));
             put("followsymlinks", (b, settings) -> settings.setFollowSymlinks(b));
             put("help", (b, settings) -> settings.setPrintUsage(b));
             put("includearchives", (b, settings) -> settings.setIncludeArchives(b));
             put("includehidden", (b, settings) -> settings.setIncludeHidden(b));
             put("nocolorize", (b, settings) -> settings.setColorize(!b));
+            put("nodefaultfiles", (b, settings) -> settings.setDefaultFiles(!b));
             put("nofollowsymlinks", (b, settings) -> settings.setFollowSymlinks(!b));
             put("noprintdirs", (b, settings) -> settings.setPrintDirs(!b));
             put("noprintfiles", (b, settings) -> settings.setPrintFiles(!b));
@@ -151,6 +151,9 @@ public class FindOptions {
         if (argToken.type().equals(ArgTokenType.BOOL)) {
             if (argToken.value() instanceof Boolean b) {
                 this.boolActionMap.get(argToken.name()).set(b, settings);
+                if (argToken.name().equals("defaultfiles")) {
+                    updateSettingsFromDefaultFiles(settings);
+                }
             } else {
                 throw new FindException("Invalid value for option: " + argToken.name());
             }
@@ -230,15 +233,11 @@ public class FindOptions {
         return settings;
     }
 
-    public FindSettings getDefaultSettings(final boolean defaultFiles) throws FindException {
-        var settings = new FindSettings();
-        if (defaultFiles) {
-            var defaultSettingsPath = Paths.get(System.getProperty("user.home"), ".config", "xfind", "settings.json");
-            if (Files.exists(defaultSettingsPath)) {
-                updateSettingsFromFilePath(settings, defaultSettingsPath.toString());
-            }
+    private void updateSettingsFromDefaultFiles(FindSettings settings) throws FindException {
+        var defaultSettingsPath = Paths.get(System.getProperty("user.home"), ".config", "xfind", "settings.json");
+        if (Files.exists(defaultSettingsPath)) {
+            updateSettingsFromFilePath(settings, defaultSettingsPath.toString());
         }
-        return settings;
     }
 
     public final void updateSettingsFromArgs(FindSettings settings, final String[] args) throws FindException {
@@ -247,9 +246,15 @@ public class FindOptions {
     }
 
     public final FindSettings settingsFromArgs(final String[] args) throws FindException {
-        var settings = getDefaultSettings(true);
+        var settings = new FindSettings();
         // default printFiles to true since running from command line
         settings.setPrintFiles(true);
+
+        // if a defaultfiles option isn't included, go ahead and apply default files now
+        if (Arrays.stream(args).noneMatch(a -> a.equals("--defaultfiles") || a.equals("--nodefaultfiles"))) {
+            updateSettingsFromDefaultFiles(settings);
+        }
+
         updateSettingsFromArgs(settings, args);
         return settings;
     }

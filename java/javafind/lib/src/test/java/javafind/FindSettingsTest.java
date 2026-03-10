@@ -15,7 +15,9 @@ public class FindSettingsTest {
     public final void testDefaultSettings() {
         var settings = new FindSettings();
         assertEquals(DefaultFindSettings.ARCHIVES_ONLY, settings.getArchivesOnly());
+        assertEquals(DefaultFindSettings.COLORIZE, settings.getColorize());
         assertEquals(DefaultFindSettings.DEBUG, settings.getDebug());
+        assertEquals(DefaultFindSettings.DEFAULT_FILES, settings.getDefaultFiles());
         assertEquals(DefaultFindSettings.FOLLOW_SYMLINKS, settings.getFollowSymlinks());
         assertEquals(DefaultFindSettings.INCLUDE_HIDDEN, settings.getIncludeHidden());
         assertEquals(DefaultFindSettings.INCLUDE_ARCHIVES, settings.getIncludeArchives());

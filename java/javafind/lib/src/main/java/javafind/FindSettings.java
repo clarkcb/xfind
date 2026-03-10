@@ -26,6 +26,7 @@ public class FindSettings {
     private boolean archivesOnly;
     private boolean colorize;
     private boolean debug;
+    private boolean defaultFiles;
     private Color dirColor;
     private Color extColor;
     private Color fileColor;
@@ -65,6 +66,7 @@ public class FindSettings {
         this.archivesOnly = DefaultFindSettings.ARCHIVES_ONLY;
         this.colorize = DefaultFindSettings.COLORIZE;
         this.debug = DefaultFindSettings.DEBUG;
+        this.defaultFiles = DefaultFindSettings.DEFAULT_FILES;
         this.dirColor = DefaultFindSettings.DIR_COLOR;
         this.extColor = DefaultFindSettings.EXT_COLOR;
         this.fileColor = DefaultFindSettings.FILE_COLOR;
@@ -149,6 +151,14 @@ public class FindSettings {
         if (debug) {
             this.verbose = true;
         }
+    }
+
+    public boolean getDefaultFiles() {
+        return defaultFiles;
+    }
+
+    public void setDefaultFiles(boolean defaultFiles) {
+        this.defaultFiles = defaultFiles;
     }
 
     public Color getDirColor() {
@@ -527,6 +537,7 @@ public class FindSettings {
                 + "archivesOnly=" + this.archivesOnly
                 + ", colorize=" + this.colorize
                 + ", debug=" + this.debug
+                + ", defaultFiles=" + this.defaultFiles
                 + ", followSymlinks=" + this.followSymlinks
                 + ", inArchiveExtensions=" + stringSetToString(this.inArchiveExtensions)
                 + ", inArchiveFilePatterns=" + patternSetToString(this.inArchiveFilePatterns)
