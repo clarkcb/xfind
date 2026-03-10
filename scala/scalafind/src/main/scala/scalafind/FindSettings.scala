@@ -35,6 +35,7 @@ object DefaultFindSettings {
   val archivesOnly = false
   val colorize = true
   val debug = false
+  val defaultFiles = true
   val dirColor: Color = Color.CYAN
   val extColor: Color = Color.YELLOW
   val fileColor: Color = Color.MAGENTA
@@ -60,6 +61,7 @@ object DefaultFindSettings {
 case class FindSettings(archivesOnly: Boolean = DefaultFindSettings.archivesOnly,
                         colorize: Boolean = DefaultFindSettings.colorize,
                         debug: Boolean = DefaultFindSettings.debug,
+                        defaultFiles: Boolean = DefaultFindSettings.defaultFiles,
                         dirColor: Color = DefaultFindSettings.dirColor,
                         extColor: Color = DefaultFindSettings.extColor,
                         fileColor: Color = DefaultFindSettings.fileColor,
@@ -143,6 +145,7 @@ case class FindSettings(archivesOnly: Boolean = DefaultFindSettings.archivesOnly
       "archivesOnly=" + archivesOnly +
       ", colorize=" + colorize +
       ", debug=" + debug +
+      ", defaultFiles=" + defaultFiles +
       ", followSymlinks=" + followSymlinks +
       ", inArchiveExtensions=" + setToString(inArchiveExtensions) +
       ", inArchiveFilePatterns=" + regexSetToString(inArchiveFilePatterns) +

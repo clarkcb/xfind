@@ -7,7 +7,9 @@ class FindSettingsTest extends AnyFunSuite with BeforeAndAfterAll {
 
   def assertDefaultSettings(settings:FindSettings): Unit = {
     assert(settings.archivesOnly == DefaultFindSettings.archivesOnly)
+    assert(settings.colorize == DefaultFindSettings.colorize)
     assert(settings.debug == DefaultFindSettings.debug)
+    assert(settings.defaultFiles == DefaultFindSettings.defaultFiles)
     assert(settings.followSymlinks == DefaultFindSettings.followSymlinks)
     assert(settings.includeHidden == DefaultFindSettings.includeHidden)
     assert(settings.includeArchives == DefaultFindSettings.includeArchives)
