@@ -24,7 +24,9 @@ class FindSettingsTest(unittest.TestCase):
     def test_default_settings(self):
         # test the props
         self.assertFalse(self.settings.archives_only)
+        self.assertTrue(self.settings.colorize)
         self.assertFalse(self.settings.debug)
+        self.assertTrue(self.settings.default_files)
         self.assertFalse(self.settings.follow_symlinks)
         self.assertFalse(self.settings.include_archives)
         self.assertFalse(self.settings.include_hidden)

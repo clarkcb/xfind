@@ -27,20 +27,21 @@ class FindSettings:
     """a class to encapsulate find settings for a particular find session"""
 
     __slots__ = [
-        'archives_only', 'colorize', 'debug', 'dir_color', 'ext_color', 'file_color',
-        'follow_symlinks', 'in_archive_extensions', 'in_archive_file_patterns', 'in_dir_patterns',
-        'in_extensions', 'in_file_patterns', 'in_file_types', 'include_archives', 'include_hidden',
-        'max_depth', 'max_last_mod', 'max_size', 'min_depth', 'min_last_mod', 'min_size',
-        'out_archive_extensions', 'out_archive_file_patterns', 'out_dir_patterns',
-        'out_extensions', 'out_file_patterns', 'out_file_types', 'paths', 'print_dirs',
-        'print_files', 'print_usage', 'print_version', 'recursive', 'sort_by',
-        'sort_case_insensitive', 'sort_descending', 'verbose'
+        'archives_only', 'colorize', 'debug', 'default_files', 'dir_color', 'ext_color',
+        'file_color', 'follow_symlinks', 'in_archive_extensions', 'in_archive_file_patterns',
+        'in_dir_patterns', 'in_extensions', 'in_file_patterns', 'in_file_types',
+        'include_archives', 'include_hidden', 'max_depth', 'max_last_mod', 'max_size',
+        'min_depth', 'min_last_mod', 'min_size', 'out_archive_extensions',
+        'out_archive_file_patterns', 'out_dir_patterns', 'out_extensions', 'out_file_patterns',
+        'out_file_types', 'paths', 'print_dirs', 'print_files', 'print_usage', 'print_version',
+        'recursive', 'sort_by', 'sort_case_insensitive', 'sort_descending', 'verbose'
     ]
 
     def __init__(self,
                  archives_only: bool = False,
                  colorize: bool = True,
                  debug: bool = False,
+                 default_files: bool = True,
                  dir_color: Color = Color.CYAN,
                  ext_color: Color = Color.YELLOW,
                  file_color: Color = Color.MAGENTA,
@@ -78,6 +79,7 @@ class FindSettings:
         self.archives_only = archives_only
         self.colorize = colorize
         self.debug = debug
+        self.default_files = default_files
         self.dir_color = dir_color
         self.ext_color = ext_color
         self.file_color = file_color

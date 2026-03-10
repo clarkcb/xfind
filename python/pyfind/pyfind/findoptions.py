@@ -44,6 +44,9 @@ class FindOptions:
             'debug':
                 lambda b, settings:
                 settings.set_property('debug', b),
+            'defaultfiles':
+                lambda b, settings:
+                settings.set_property('default_files', b),
             'followsymlinks':
                 lambda b, settings:
                 settings.set_property('follow_symlinks', b),
@@ -65,6 +68,9 @@ class FindOptions:
             'nocolorize':
                 lambda b, settings:
                 settings.set_property('colorize', not b),
+            'nodefaultfiles':
+                lambda b, settings:
+                settings.set_property('default_files', not b),
             'nofollowsymlinks':
                 lambda b, settings:
                 settings.set_property('follow_symlinks', not b),
@@ -219,6 +225,10 @@ class FindOptions:
                 if arg_token.name in self.__bool_action_dict:
                     if type(arg_token.value) is bool:
                         self.__bool_action_dict[arg_token.name](arg_token.value, settings)
+                        if arg_token.name in ('help', 'version'):
+                            return
+                        if arg_token.name == 'defaultfiles':
+                            self.__update_settings_from_default_files(settings)
                     else:
                         raise FindException(f'Invalid value for option: {arg_token.name}')
                 else:
@@ -279,12 +289,10 @@ class FindOptions:
         self.update_settings_from_file(settings, file_path)
         return settings
 
-    def get_default_settings(self, default_files: bool = True) -> FindSettings:
-        settings = FindSettings()
-        if default_files:
-            if os.path.exists(DEFAULT_SETTINGS_PATH):
-                self.update_settings_from_file(settings, DEFAULT_SETTINGS_PATH)
-        return settings
+    def __update_settings_from_default_files(self, settings: FindSettings):
+        """Update settings from default file(s)"""
+        if os.path.exists(DEFAULT_SETTINGS_PATH):
+            self.update_settings_from_file(settings, DEFAULT_SETTINGS_PATH)
 
     def update_settings_from_args(self, settings: FindSettings, args: list[str]):
         """Update settings from a given list of args"""
@@ -293,7 +301,10 @@ class FindOptions:
 
     def find_settings_from_args(self, args: list[str]) -> FindSettings:
         """Read settings from a given list of args"""
-        settings = self.get_default_settings()
+        settings = FindSettings()
+        # if a defaultfiles option isn't included, go ahead and apply default files now
+        if '--defaultfiles' not in args and '--nodefaultfiles' not in args:
+            self.__update_settings_from_default_files(settings)
         # default print_files to True since running from command line
         settings.set_property('print_files', True)
         self.update_settings_from_args(settings, args)
