@@ -21,6 +21,7 @@
     ^Boolean archives-only
     ^Boolean colorize
     ^Boolean debug
+    ^Boolean default-files
     ^String dir-color
     ^String ext-color
     ^String file-color
@@ -62,6 +63,7 @@
    false     ; archives-only
    true      ; colorize
    false     ; debug
+   true      ; default-files
    :cyan     ; dir-color
    :yellow   ; ext-color
    :magenta  ; file-color
@@ -218,6 +220,7 @@
              "FindSettings(archives-only=" (:archives-only settings)
              ", colorize=" (:colorize settings)
              ", debug=" (:debug settings)
+             ", default-files=" (:default-files settings)
              ", follow-symlinks=" (:follow-symlinks settings)
              ", in-archive-extensions=" (string-set-to-string (:in-archive-extensions settings))
              ", in-archive-file-patterns=" (pattern-set-to-string (:in-archive-file-patterns settings))

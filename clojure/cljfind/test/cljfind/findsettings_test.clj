@@ -8,7 +8,9 @@
   (let [settings DEFAULT-FIND-SETTINGS]
     (testing "test-default-settings"
       (is (not (:archives-only settings)))
+      (is (:colorize settings))
       (is (not (:debug settings)))
+      (is (:default-files settings))
       (is (not (:follow-symlinks settings)))
       (is (not (:include-archives settings)))
       (is (not (:include-hidden settings)))
