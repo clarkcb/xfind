@@ -4,6 +4,7 @@ open System
 open System.Collections.Generic
 open System.IO
 open System.Text.Json
+open FsFindLib
 
 module FindOptions =
 
@@ -14,6 +15,7 @@ module FindOptions =
             ("archivesonly", (fun (b : bool) (settings : FindSettings) -> settings.ArchivesOnly <- b));
             ("colorize", (fun (b : bool) (settings : FindSettings) -> settings.Colorize <- b));
             ("debug", (fun (b : bool) (settings : FindSettings) -> settings.Debug <- b));
+            ("defaultfiles", (fun (b : bool) (settings : FindSettings) -> settings.DefaultFiles <- b));
             ("excludearchives", (fun (b : bool) (settings : FindSettings) -> settings.IncludeArchives <- not b));
             ("excludehidden", (fun (b : bool) (settings : FindSettings) -> settings.IncludeHidden <- not b));
             ("followsymlinks", (fun (b : bool) (settings : FindSettings) -> settings.FollowSymlinks <- b));
@@ -21,6 +23,7 @@ module FindOptions =
             ("includearchives", (fun (b : bool) (settings : FindSettings) -> settings.IncludeArchives <- b));
             ("includehidden", (fun (b : bool) (settings : FindSettings) -> settings.IncludeHidden <- b));
             ("nocolorize", (fun (b : bool) (settings : FindSettings) -> settings.Colorize <- not b));
+            ("nodefaultfiles", (fun (b : bool) (settings : FindSettings) -> settings.DefaultFiles <- not b));
             ("nofollowsymlinks", (fun (b : bool) (settings : FindSettings) -> settings.FollowSymlinks <- not b));
             ("noprintdirs", (fun (b : bool) (settings : FindSettings) -> settings.PrintDirs <- not b));
             ("noprintfiles", (fun (b : bool) (settings : FindSettings) -> settings.PrintFiles <- not b));
@@ -95,13 +98,20 @@ module FindOptions =
     let argTokenizer : ArgTokenizer =
         ArgTokenizer(options)
 
+    // These are required to do a "forward declaration" of the UpdateSettingsFromDefaultFiles
+    let dummyUpdateSettingsFromDefaultFiles: FindSettings -> Result<FindSettings, string> = (fun (settings : FindSettings) -> Error "not implemented")
+    let mutable forwardUpdateSettingsFromDefaultFiles = ref dummyUpdateSettingsFromDefaultFiles
+    
     let rec ApplyArgTokenToSettings (argToken : ArgToken) (settings : FindSettings) : Result<FindSettings, string> =
         if argToken.Type = ArgTokenType.Bool then
             if boolActionMap.ContainsKey(argToken.Name) then
                 match argToken.Value with
                 | :? Boolean as b ->
                     boolActionMap[argToken.Name] b settings
-                    Ok settings
+                    if argToken.Name = "defaultfiles" then
+                        forwardUpdateSettingsFromDefaultFiles.Value settings
+                    else
+                        Ok settings
                 | _ -> Error $"Invalid value for option: {argToken.Name}"
             else
                 Error $"Invalid value for option: {argToken.Name}"
@@ -163,17 +173,15 @@ module FindOptions =
         let settings = FindSettings()
         UpdateSettingsFromFile settings filePath
 
-    let GetDefaultSettings (defaultFiles : bool) : Result<FindSettings, string> =
-        let settings = FindSettings()
-        if defaultFiles then
-            let homePath = FileUtil.GetHomePath()
-            let defaultSettingsPath = Path.Join(homePath, ".config", "xfind", "settings.json")
-            if Path.Exists(defaultSettingsPath) then
-                UpdateSettingsFromFile settings defaultSettingsPath
-            else
-                Ok settings
+    let UpdateSettingsFromDefaultFiles (settings : FindSettings) : Result<FindSettings, string> =
+        let homePath = FileUtil.GetHomePath()
+        let defaultSettingsPath = Path.Join(homePath, ".config", "xfind", "settings.json")
+        if Path.Exists(defaultSettingsPath) then
+            UpdateSettingsFromFile settings defaultSettingsPath
         else
             Ok settings
+
+    forwardUpdateSettingsFromDefaultFiles.Value <- UpdateSettingsFromDefaultFiles
 
     let UpdateSettingsFromArgs (settings : FindSettings) (args : string[]) : Result<FindSettings, string> =
         match argTokenizer.TokenizeArgs(args) with
@@ -181,11 +189,16 @@ module FindOptions =
         | Error e -> Error e
 
     let SettingsFromArgs (args : string[]) : Result<FindSettings, string> =
-        match GetDefaultSettings(true) with
-        | Ok settings ->
-            settings.PrintFiles <- true
+        let settings = FindSettings()
+        settings.PrintFiles <- true
+        // if a defaultfiles option isn't included, go ahead and apply default files now
+        if not (Array.contains "--defaultfiles" args) && not (Array.contains "--nodefaultfiles" args) then
+            match UpdateSettingsFromDefaultFiles(settings) with
+            | Ok settings ->
+                UpdateSettingsFromArgs settings args
+            | Error e -> Error e
+        else
             UpdateSettingsFromArgs settings args
-        | Error e -> Error e
 
     let SortOption (o1 : FindOption) (o2 : FindOption) : int =
         let os1 = if o1.ShortArg <> "" then o1.ShortArg + "@" + o1.LongArg else o1.LongArg

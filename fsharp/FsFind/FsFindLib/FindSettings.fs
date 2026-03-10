@@ -22,6 +22,7 @@ type FindSettings() =
             _debug <- value
             this.Verbose <- value
 
+    member val DefaultFiles : bool = true with get, set
     member val DirColor : Color = Color.Cyan with get, set
     member val ExtColor : Color = Color.Yellow with get, set
     member val FileColor : Color = Color.Magenta with get, set
@@ -95,6 +96,7 @@ type FindSettings() =
             $"ArchivesOnly=%b{this.ArchivesOnly}";
             $", Colorize: %b{this.Colorize}";
             $", Debug=%b{this.Debug}";
+            $", DefaultFiles=%b{this.DefaultFiles}";
             $", FollowSymlinks=%b{this.FollowSymlinks}";
             $", InArchiveExtensions=%s{Common.ListToString(this.InArchiveExtensions)}";
             $", InArchiveFilePatterns=%s{Common.ListToString(this.InArchiveFilePatterns)}";
