@@ -75,7 +75,7 @@ describe('testing findoptions', () => {
         const args = ['-x'];
         findOptions.settingsFromArgs(args, (err) => {
             if (err) {
-                const expected = 'Missing argument for option x';
+                const expected = 'Missing value for option x';
                 expect(err.message).toEqual(expected);
             } else {
                 console.log('Did not get expected missing argument error');

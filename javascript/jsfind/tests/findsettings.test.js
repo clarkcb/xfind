@@ -10,7 +10,9 @@ describe('testing findsettings', () => {
     it('testDefaultSettings', () => {
         const settings = new FindSettings();
         expect(settings.archivesOnly).toBeFalsy();
+        expect(settings.colorize).toBeTruthy();
         expect(settings.debug).toBeFalsy();
+        expect(settings.defaultFiles).toBeTruthy();
         expect(settings.followSymlinks).toBeFalsy();
         expect(settings.includeArchives).toBeFalsy();
         expect(settings.includeHidden).toBeFalsy();

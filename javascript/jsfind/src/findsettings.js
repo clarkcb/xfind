@@ -13,6 +13,7 @@ class FindSettings {
     _archivesOnly = false;
     colorize = true;
     _debug = false;
+    defaultFiles = true;
     dirColor = Color.CYAN;
     extColor = Color.YELLOW;
     fileColor = Color.MAGENTA;
@@ -167,6 +168,7 @@ class FindSettings {
           'archivesOnly=' + this.archivesOnly +
           ', colorize=' + this.colorize +
           ', debug=' + this.debug +
+          ', defaultFiles=' + this.defaultFiles +
           ', followSymlinks=' + this.followSymlinks +
           ', ' + StringUtil.stringListToString('inArchiveExtensions', this.inArchiveExtensions) +
           ', ' + StringUtil.patternListToString('inArchiveFilePatterns', this.inArchiveFilePatterns) +

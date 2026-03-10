@@ -23,6 +23,8 @@ class FindOptions {
               (b, settings) => { settings.colorize = b; },
             'debug':
               (b, settings) => { settings.debug = b; },
+            'defaultfiles':
+              (b, settings) => { settings.defaultFiles = b; },
             'excludearchives':
               (b, settings) => { settings.includeArchives = !b; },
             'excludehidden':
@@ -37,6 +39,8 @@ class FindOptions {
               (b, settings) => { settings.includeHidden = b; },
             'nocolorize':
               (b, settings) => { settings.colorize = !b; },
+            'nodefaultfiles':
+                (b, settings) => { settings.defaultFiles = !b; },
             'nofollowsymlinks':
               (b, settings) => { settings.followSymlinks = !b; },
             'noprintdirs':
@@ -146,6 +150,12 @@ class FindOptions {
             if (argToken.type === ArgTokenType.Bool) {
                 if (typeof argToken.value === 'boolean') {
                     this.boolActionMap[argToken.name](argToken.value, settings);
+                    if (argToken.name === 'help' || argToken.name === 'version') {
+                        return;
+                    }
+                    if (argToken.name === 'defaultfiles' && argToken.value) {
+                        err = this.updateSettingsFromDefaultFiles(settings);
+                    }
                 } else {
                     err = new FindError(`Invalid value for option: ${argToken}`);
                 }
@@ -194,15 +204,12 @@ class FindOptions {
         return err;
     }
 
-    getDefaultSettings(defaultFiles) {
-        let settings = new FindSettings();
+    updateSettingsFromDefaultFiles(settings) {
         let err;
-        if (defaultFiles) {
-            if (fs.existsSync(config.DEFAULT_SETTINGS_PATH)) {
-                err = this.updateSettingsFromFile(settings, config.DEFAULT_SETTINGS_PATH);
-            }
+        if (fs.existsSync(config.DEFAULT_SETTINGS_PATH)) {
+            err = this.updateSettingsFromFile(settings, config.DEFAULT_SETTINGS_PATH);
         }
-        return {settings, err};
+        return err;
     }
 
     updateSettingsFromArgs(settings, args) {
@@ -214,7 +221,12 @@ class FindOptions {
     }
 
     settingsFromArgs(args, cb) {
-        let {settings, err} = this.getDefaultSettings(true);
+        let settings = new FindSettings();
+        let err;
+        // if a defaultfiles option isn't included, go ahead and apply default files now
+        if (!args.includes('--defaultfiles') && !args.includes('--nodefaultfiles')) {
+            err = this.updateSettingsFromDefaultFiles(settings);
+        }
         if (!err) {
             // default printFiles to true since running as cli
             settings.printFiles = true;
