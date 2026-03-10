@@ -43,6 +43,8 @@ export class FindOptions {
                 (b: boolean, settings: FindSettings) => { settings.colorize = b; },
             'debug':
                 (b: boolean, settings: FindSettings) => { settings.debug = b; },
+            'defaultfiles':
+                (b: boolean, settings: FindSettings) => { settings.defaultFiles = b; },
             'excludearchives':
                 (b: boolean, settings: FindSettings) => { settings.includeArchives = !b; },
             'excludehidden':
@@ -57,6 +59,8 @@ export class FindOptions {
                 (b: boolean, settings: FindSettings) => { settings.printUsage = b; },
             'nocolorize':
                 (b: boolean, settings: FindSettings) => { settings.colorize = !b; },
+            'nodefaultfiles':
+                (b: boolean, settings: FindSettings) => { settings.defaultFiles = !b; },
             'nofollowsymlinks':
                 (b: boolean, settings: FindSettings) => { settings.followSymlinks = !b; },
             'noprintdirs':
@@ -167,6 +171,12 @@ export class FindOptions {
             if (argToken.type === ArgTokenType.Bool) {
                 if (typeof argToken.value === 'boolean') {
                     this.boolActionMap[argToken.name](argToken.value, settings);
+                    if (argToken.name === 'help' || argToken.name === 'version') {
+                        return;
+                    }
+                    if (argToken.name === 'defaultfiles' && argToken.value) {
+                        err = this.updateSettingsFromDefaultFiles(settings);
+                    }
                 } else {
                     err = new FindError(`Invalid value for option: ${argToken}`);
                 }
@@ -215,15 +225,12 @@ export class FindOptions {
         return this.updateSettingsFromArgTokens(settings, argTokens);
     }
 
-    public getDefaultSettings(defaultFiles: boolean = true): SettingsResult {
-        const settings: FindSettings = new FindSettings();
+    public updateSettingsFromDefaultFiles(settings: FindSettings): Error | undefined {
         let err: Error | undefined;
-        if (defaultFiles) {
-            if (fs.existsSync(config.DEFAULT_SETTINGS_PATH)) {
-                err = this.updateSettingsFromFile(settings, config.DEFAULT_SETTINGS_PATH);
-            }
+        if (fs.existsSync(config.DEFAULT_SETTINGS_PATH)) {
+            err = this.updateSettingsFromFile(settings, config.DEFAULT_SETTINGS_PATH);
         }
-        return {err, settings};
+        return err;
     }
 
     public updateSettingsFromArgs(settings: FindSettings, args: string[]): Error | undefined {
@@ -235,9 +242,12 @@ export class FindOptions {
     }
 
     public settingsFromArgs(args: string[], cb: (err: Error | undefined, settings: FindSettings) => void): void {
-        const result: SettingsResult = this.getDefaultSettings(true);
-        let settings = result.settings;
-        let err = result.err;
+        const settings: FindSettings = new FindSettings();
+        let err: Error | undefined;
+        // if a defaultfiles option isn't included, go ahead and apply default files now
+        if (!args.includes('--defaultfiles') && !args.includes('--nodefaultfiles')) {
+            err = this.updateSettingsFromDefaultFiles(settings);
+        }
         if (!err) {
             // default printFiles to true since it's being run from cmd line
             settings.printFiles = true;

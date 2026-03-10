@@ -10,13 +10,13 @@ import {Color} from "./color";
 import {FileType} from './filetype';
 import {FileTypes} from './filetypes';
 import {SortBy} from "./sortby";
-import {SortUtil} from "./sortutil";
 import {StringUtil} from "./stringutil";
 
 export class FindSettings {
     #archivesOnly = false;
     colorize = true;
     #debug = false;
+    defaultFiles = true;
     dirColor = Color.CYAN;
     extColor = Color.YELLOW;
     fileColor = Color.MAGENTA;
@@ -172,6 +172,7 @@ export class FindSettings {
             + 'archivesOnly=' + this.archivesOnly
             + ', colorize=' + this.colorize
             + ', debug=' + this.debug
+            + ', defaultFiles=' + this.defaultFiles
             + ', followSymlinks=' + this.followSymlinks
             + ', ' + StringUtil.stringListToString('inArchiveExtensions', this.inArchiveExtensions)
             + ', ' + StringUtil.patternListToString('inArchiveFilePatterns', this.inArchiveFilePatterns)
