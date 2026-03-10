@@ -14,6 +14,7 @@ class FindSettings
     public bool $archives_only = false;
     public bool $colorize = true;
     public bool $debug = false;
+    public bool $default_files = true;
     public Color $dir_color = Color::Cyan;
     public Color $ext_color = Color::Yellow;
     public Color $file_color = Color::Magenta;
@@ -204,6 +205,7 @@ class FindSettings
             'archives_only=' . StringUtil::bool_to_string($this->archives_only) .
             ', colorize=' . StringUtil::bool_to_string($this->colorize) .
             ', debug=' . StringUtil::bool_to_string($this->debug) .
+            ', default_files=' . StringUtil::bool_to_string($this->default_files) .
             ', follow_symlinks=' . StringUtil::bool_to_string($this->follow_symlinks) .
             ', in_archive_extensions=' . StringUtil::string_array_to_string($this->in_archive_extensions) .
             ', in_archive_file_patterns=' . StringUtil::string_array_to_string($this->in_archive_file_patterns) .

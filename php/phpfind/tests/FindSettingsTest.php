@@ -22,7 +22,9 @@ class FindSettingsTest extends TestCase
     public static function settings_equals_defaults(FindSettings $settings): bool {
         return
             !$settings->archives_only &&
+            $settings->colorize &&
             !$settings->debug &&
+            $settings->default_files &&
             !$settings->follow_symlinks &&
             count($settings->in_archive_extensions) == 0 &&
             count($settings->in_archive_file_patterns) == 0 &&

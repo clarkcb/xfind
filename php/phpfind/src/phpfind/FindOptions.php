@@ -44,6 +44,7 @@ class FindOptions
             'archivesonly' => fn(bool $b, FindSettings $fs) => $fs->set_archives_only($b),
             'colorize' => fn(bool $b, FindSettings $fs) => $fs->colorize = $b,
             'debug' => fn(bool $b, FindSettings $fs) => $fs->set_debug($b),
+            'defaultfiles' => fn(bool $b, FindSettings $fs) => $fs->default_files = $b,
             'followsymlinks' => fn(bool $b, FindSettings $fs) => $fs->follow_symlinks = $b,
             'excludearchives' => fn(bool $b, FindSettings $fs) => $fs->include_archives = !$b,
             'excludehidden' => fn(bool $b, FindSettings $fs) => $fs->include_hidden = !$b,
@@ -51,6 +52,7 @@ class FindOptions
             'includearchives' => fn(bool $b, FindSettings $fs) => $fs->include_archives = $b,
             'includehidden' => fn(bool $b, FindSettings $fs) => $fs->include_hidden = $b,
             'nocolorize' => fn(bool $b, FindSettings $fs) => $fs->colorize = !$b,
+            'nodefaultfiles' => fn(bool $b, FindSettings $fs) => $fs->default_files = !$b,
             'nofollowsymlinks' => fn(bool $b, FindSettings $fs) => $fs->follow_symlinks = !$b,
             'noprintdirs' => fn(bool $b, FindSettings $fs) => $fs->print_dirs = !$b,
             'noprintfiles' => fn(bool $b, FindSettings $fs) => $fs->print_files = !$b,
@@ -160,6 +162,9 @@ class FindOptions
                     if (in_array($arg_token->name, array("help", "version"))) {
                         return;
                     }
+                    if ($arg_token->name == "defaultfiles" && $arg_token->value) {
+                        $this->update_settings_from_default_files($settings);
+                    }
                 } else {
                     throw new FindException("Invalid value for option: $arg_token->name");
                 }
@@ -214,19 +219,15 @@ class FindOptions
     }
 
     /**
-     * @param bool $default_files
-     * @return FindSettings
+     * @param FindSettings $settings
+     * @return void
      * @throws FindException
      */
-    public function get_default_settings(bool $default_files = true): FindSettings
+    private function update_settings_from_default_files(FindSettings $settings): void
     {
-        $settings = new FindSettings();
-        if ($default_files) {
-            if (file_exists(Config::DEFAULT_SETTINGS_PATH)) {
-                $this->update_settings_from_file($settings, Config::DEFAULT_SETTINGS_PATH);
-            }
+        if (file_exists(Config::DEFAULT_SETTINGS_PATH)) {
+            $this->update_settings_from_file($settings, Config::DEFAULT_SETTINGS_PATH);
         }
-        return $settings;
     }
 
     /**
@@ -248,7 +249,11 @@ class FindOptions
      */
     public function settings_from_args(array $args): FindSettings
     {
-        $settings = $this->get_default_settings();
+        $settings = new FindSettings();
+        # if a defaultfiles option isn't included, go ahead and apply default files now
+        if (!in_array('--defaultfiles', $args) && !in_array('--nodefaultfiles', $args)) {
+            $this->update_settings_from_default_files($settings);
+        }
         // default print_files to true since running as cli
         $settings->print_files = true;
         $this->update_settings_from_args($settings, $args);

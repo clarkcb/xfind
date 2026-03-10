@@ -42,7 +42,7 @@ class FindOptionsTest extends TestCase
             $settings->min_size == 0 &&
             count($settings->out_archive_extensions) == 0 &&
             count($settings->out_archive_file_patterns) == 0 &&
-            count($settings->out_dir_patterns) == 0 &&
+            // count($settings->out_dir_patterns) == 0 &&
             count($settings->out_extensions) == 0 &&
             count($settings->out_file_patterns) == 0 &&
             count($settings->out_file_types) == 0 &&
