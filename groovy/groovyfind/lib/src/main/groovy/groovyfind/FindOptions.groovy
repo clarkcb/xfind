@@ -78,12 +78,14 @@ class FindOptions {
             archivesonly: { Boolean b, FindSettings settings -> settings.archivesOnly = b },
             colorize: { Boolean b, FindSettings settings -> settings.colorize = b },
             debug: { Boolean b, FindSettings settings -> settings.debug = b },
+            defaultfiles: { Boolean b, FindSettings settings -> settings.defaultFiles = b },
             excludehidden: { Boolean b, FindSettings settings -> settings.includeHidden = !b },
             followsymlinks: { Boolean b, FindSettings settings -> settings.followSymlinks = b },
             help: { Boolean b, FindSettings settings -> settings.printUsage = b },
             includearchives: { Boolean b, FindSettings settings -> settings.includeArchives = b },
             includehidden: { Boolean b, FindSettings settings -> settings.includeHidden = b },
             nocolorize: { Boolean b, FindSettings settings -> settings.colorize = !b },
+            nodefaultfiles: { Boolean b, FindSettings settings -> settings.defaultFiles = !b },
             nofollowsymlinks: { Boolean b, FindSettings settings -> settings.followSymlinks = !b },
             noprintdirs: { Boolean b, FindSettings settings -> settings.printDirs = !b },
             noprintfiles: { Boolean b, FindSettings settings -> settings.printFiles = !b },
@@ -181,6 +183,9 @@ class FindOptions {
         if (argToken.type == ArgTokenType.BOOL) {
             if (argToken.value instanceof Boolean) {
                 ((BooleanSetter)this.boolActionMap[argToken.name]).set((Boolean)argToken.value, settings)
+                if (argToken.name == 'defaultfiles') {
+                    updateSettingsFromDefaultFiles(settings)
+                }
             } else {
                 throw new FindException("Invalid value for option: ${argToken.name}")
             }
@@ -252,15 +257,11 @@ class FindOptions {
         return settings
     }
 
-    final FindSettings getDefaultSettings(final boolean defaultFiles) throws FindException {
-        var settings = new FindSettings()
-        if (defaultFiles) {
-            var defaultSettingsPath = Paths.get(System.getProperty("user.home"), ".config", "xfind", "settings.json")
-            if (Files.exists(defaultSettingsPath)) {
-                updateSettingsFromFilePath(settings, defaultSettingsPath.toString())
-            }
+    final void updateSettingsFromDefaultFiles(FindSettings settings) throws FindException {
+        var defaultSettingsPath = Paths.get(System.getProperty("user.home"), ".config", "xfind", "settings.json")
+        if (Files.exists(defaultSettingsPath)) {
+            updateSettingsFromFilePath(settings, defaultSettingsPath.toString())
         }
-        return settings
     }
 
     final void updateSettingsFromArgs(FindSettings settings, final String[] args) throws FindException {
@@ -269,12 +270,16 @@ class FindOptions {
     }
 
     final FindSettings settingsFromArgs(final String[] args) throws FindException {
-        var settings = getDefaultSettings(true)
+        var settings = new FindSettings()
         // default printFiles to true since running from command line
         settings.setPrintFiles(true)
 
-        updateSettingsFromArgs(settings, args)
+        // if a defaultfiles option isn't included, go ahead and apply default files now
+        if (!args.any {it == '--defaultfiles' || it == '--nodefaultfiles'}) {
+            updateSettingsFromDefaultFiles(settings)
+        }
 
+        updateSettingsFromArgs(settings, args)
         return settings
     }
 

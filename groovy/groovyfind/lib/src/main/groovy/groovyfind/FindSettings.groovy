@@ -15,6 +15,7 @@ class DefaultFindSettings {
     static final boolean ARCHIVES_ONLY = false
     static final boolean COLORIZE = true
     static final boolean DEBUG = false
+    static final boolean DEFAULT_FILES = true
     static final Color DIR_COLOR = Color.CYAN
     static final Color EXT_COLOR = Color.YELLOW
     static final Color FILE_COLOR = Color.MAGENTA
@@ -44,6 +45,7 @@ class FindSettings {
     boolean archivesOnly
     boolean colorize
     boolean debug
+    boolean defaultFiles
     Color dirColor
     Color extColor
     Color fileColor
@@ -83,6 +85,7 @@ class FindSettings {
         this.archivesOnly = DefaultFindSettings.ARCHIVES_ONLY
         this.colorize = DefaultFindSettings.COLORIZE
         this.debug = DefaultFindSettings.DEBUG
+        this.defaultFiles = DefaultFindSettings.DEFAULT_FILES
         this.dirColor = DefaultFindSettings.DIR_COLOR
         this.extColor = DefaultFindSettings.EXT_COLOR
         this.fileColor = DefaultFindSettings.FILE_COLOR
@@ -298,6 +301,7 @@ class FindSettings {
                 'archivesOnly=' + this.archivesOnly +
                 ', colorize=' + this.colorize +
                 ', debug=' + this.debug +
+                ', defaultFiles=' + this.defaultFiles +
                 ', followSymlinks=' + this.followSymlinks +
                 ', inArchiveExtensions=' + stringSetToString(this.inArchiveExtensions) +
                 ', inArchiveFilePatterns=' + patternSetToString(this.inArchiveFilePatterns) +
