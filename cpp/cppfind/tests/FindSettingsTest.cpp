@@ -5,7 +5,9 @@ TEST_CASE("Get default FindSettings", "[FindSettings]") {
     auto settings = cppfind::FindSettings();
 
     REQUIRE(!settings.archives_only());
+    REQUIRE(settings.colorize());
     REQUIRE(!settings.debug());
+    REQUIRE(settings.default_files());
     REQUIRE(!settings.follow_symlinks());
     REQUIRE(!settings.include_archives());
     REQUIRE(!settings.include_hidden());

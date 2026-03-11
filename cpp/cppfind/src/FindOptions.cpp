@@ -29,8 +29,8 @@ namespace cppfind {
         }
 
         const uint64_t file_size = std::filesystem::file_size(find_options_path);
-        // current size is 5263, make sure it's not dramatically bigger than that
-        if (file_size > 5300) {
+        // current size is 5457, make sure it's not dramatically bigger than that
+        if (file_size > 5500) {
             throw FindException("Invalid findoptions file");
         }
 
@@ -87,6 +87,9 @@ namespace cppfind {
             if (m_bool_arg_map.contains(arg_token.name())) {
                 if (arg_token.value().type() == typeid(bool)) {
                     m_bool_arg_map[arg_token.name()](std::any_cast<bool>(arg_token.value()), settings);
+                    if (arg_token.name() == "defaultfiles") {
+                        update_settings_from_default_files(settings);
+                    }
                 } else {
                     std::string msg{"Invalid value for option: " + arg_token.name()};
                     throw FindException(msg);
@@ -143,30 +146,36 @@ namespace cppfind {
         }
     }
 
-    FindSettings FindOptions::get_default_settings(const bool default_files) {
-        auto settings = FindSettings();
-
-        if (default_files) {
-            const std::string home = std::getenv("HOME");
-            if (const auto default_settings_path = std::filesystem::path(home) / DEFAULT_SETTINGS_REL_PATH;
-                std::filesystem::exists(default_settings_path)) {
-                update_settings_from_file(settings, default_settings_path);
-            }
+    void FindOptions::update_settings_from_default_files(FindSettings& settings) {
+        const std::string home = std::getenv("HOME");
+        if (const auto default_settings_path = std::filesystem::path(home) / DEFAULT_SETTINGS_REL_PATH;
+            std::filesystem::exists(default_settings_path)) {
+            update_settings_from_file(settings, default_settings_path);
         }
-
-        return settings;
     }
 
-    void FindOptions::update_settings_from_args(FindSettings& settings, int argc, char **argv) {
+    void FindOptions::update_settings_from_args(FindSettings& settings, const int argc, char **argv) {
         const auto arg_tokens = m_arg_tokenizer.tokenize_args(argc, argv);
         update_settings_from_arg_tokens(settings, arg_tokens);
     }
 
-    FindSettings FindOptions::settings_from_args(int argc, char **argv) {
-        auto settings = get_default_settings(true);
-
+    FindSettings FindOptions::settings_from_args(const int argc, char **argv) {
+        auto settings = FindSettings();
         // set print_files to true since we are running the executable
         settings.print_files(true);
+
+        bool has_default_files_arg = false;
+        for (int i=1; i < argc; ++i) {
+            if (strncmp(argv[i], "--defaultfiles", strlen("--defaultfiles")) == 0
+                || strncmp(argv[i], "--nodefaultfiles", strlen("--nodefaultfiles")) == 0) {
+                has_default_files_arg = true;
+                break;
+            }
+        }
+
+        if (!has_default_files_arg) {
+            update_settings_from_default_files(settings);
+        }
 
         update_settings_from_args(settings, argc, argv);
 

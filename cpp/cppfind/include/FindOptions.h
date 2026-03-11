@@ -29,6 +29,7 @@ namespace cppfind {
             {"archivesonly", [](const bool b, FindSettings& ss) -> void { ss.archives_only(b); }},
             {"colorize", [](const bool b, FindSettings& ss) { ss.colorize(b); }},
             {"debug", [](const bool b, FindSettings& ss) { ss.debug(b); }},
+            {"defaultfiles", [](const bool b, FindSettings& ss) { ss.default_files(b); }},
             {"excludearchives", [](const bool b, FindSettings& ss) { ss.include_archives(!b); }},
             {"excludehidden", [](const bool b, FindSettings& ss) { ss.include_hidden(!b); }},
             {"followsymlinks", [](const bool b, FindSettings& ss) { ss.follow_symlinks(b); }},
@@ -36,6 +37,7 @@ namespace cppfind {
             {"includearchives", [](const bool b, FindSettings& ss) { ss.include_archives(b); }},
             {"includehidden", [](const bool b, FindSettings& ss) { ss.include_hidden(b); }},
             {"nocolorize", [](const bool b, FindSettings& ss) { ss.colorize(!b); }},
+            {"nodefaultfiles", [](const bool b, FindSettings& ss) { ss.default_files(!b); }},
             {"nofollowsymlinks", [](const bool b, FindSettings& ss) { ss.follow_symlinks(!b); }},
             {"noprintdirs", [](const bool b, FindSettings& ss) { ss.print_dirs(!b); }},
             {"noprintfiles", [](const bool b, FindSettings& ss) { ss.print_files(!b); }},
@@ -90,7 +92,7 @@ namespace cppfind {
         std::vector<std::unique_ptr<Option>> load_options();
         void update_settings_from_arg_token(FindSettings& settings, const ArgToken& arg_tokens);
         void update_settings_from_arg_tokens(FindSettings& settings, const std::vector<ArgToken>& arg_tokens);
-        FindSettings get_default_settings(bool default_files);
+        void update_settings_from_default_files(FindSettings& settings);
     };
 }
 

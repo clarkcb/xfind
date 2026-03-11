@@ -10,6 +10,7 @@ namespace cppfind {
     m_archives_only{false},
     m_colorize{true},
     m_debug{false},
+    m_default_files{true},
     m_dir_color{Color::CYAN},
     m_ext_color{Color::YELLOW},
     m_file_color{Color::MAGENTA},
@@ -54,6 +55,14 @@ namespace cppfind {
     void FindSettings::debug(const bool debug) {
         m_debug = debug;
         if (debug) m_verbose = true;
+    }
+
+    bool FindSettings::default_files() const {
+        return m_default_files;
+    }
+
+    void FindSettings::default_files(const bool default_files) {
+        m_default_files = default_files;
     }
 
     Color FindSettings::dir_color() const {
@@ -489,6 +498,7 @@ namespace cppfind {
                 + "archives_only=" + StringUtil::bool_to_string(m_archives_only)
                 + ", colorize=" + StringUtil::bool_to_string(m_colorize)
                 + ", debug=" + StringUtil::bool_to_string(m_debug)
+                + ", default_files=" + StringUtil::bool_to_string(m_default_files)
                 + ", follow_symlinks=" + StringUtil::bool_to_string(m_follow_symlinks)
                 + ", in_archive_extensions=" + StringUtil::unordered_string_set_to_string(m_in_archive_extensions)
                 + ", in_archive_file_patterns=" + patterns_to_string(m_in_archive_file_patterns)

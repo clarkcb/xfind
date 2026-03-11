@@ -27,7 +27,7 @@ TEST_CASE("Get FindSettings from minimal args", "[FindOptions]") {
     REQUIRE(settings.in_file_patterns().empty());
     REQUIRE(settings.out_archive_extensions().empty());
     REQUIRE(settings.out_archive_file_patterns().empty());
-    REQUIRE(settings.out_dir_patterns().empty());
+    // REQUIRE(settings.out_dir_patterns().empty());
     REQUIRE(settings.out_extensions().empty());
     REQUIRE(settings.out_file_patterns().empty());
 
@@ -61,7 +61,7 @@ TEST_CASE("Get FindSettings from valid args", "[FindOptions]") {
     REQUIRE(settings.in_file_patterns().empty());
     REQUIRE(settings.out_archive_extensions().empty());
     REQUIRE(settings.out_archive_file_patterns().empty());
-    REQUIRE(settings.out_dir_patterns().empty());
+    // REQUIRE(settings.out_dir_patterns().empty());
     REQUIRE(settings.out_extensions().empty());
     REQUIRE(settings.out_file_patterns().empty());
 

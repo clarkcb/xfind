@@ -42,6 +42,7 @@ namespace cppfind {
         [[nodiscard]] bool archives_only() const;
         [[nodiscard]] bool colorize() const;
         [[nodiscard]] bool debug() const;
+        [[nodiscard]] bool default_files() const;
         [[nodiscard]] Color dir_color() const;
         [[nodiscard]] Color ext_color() const;
         [[nodiscard]] Color file_color() const;
@@ -82,6 +83,7 @@ namespace cppfind {
         void archives_only(bool archives_only);
         void colorize(bool colorize);
         void debug(bool debug);
+        void default_files(bool default_files);
         void dir_color(Color dir_color);
         void ext_color(Color ext_color);
         void file_color(Color file_color);
@@ -151,6 +153,7 @@ namespace cppfind {
         bool m_archives_only;
         bool m_colorize;
         bool m_debug;
+        bool m_default_files;
 
         Color m_dir_color;
         Color m_ext_color;
