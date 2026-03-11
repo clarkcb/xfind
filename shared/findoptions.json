@@ -14,6 +14,10 @@
       "desc": "Set output mode to debug"
     },
     {
+      "long": "defaultfiles",
+      "desc": "Load default settings files, if found*"
+    },
+    {
       "long": "excludearchives",
       "short": "Z",
       "desc": "Exclude archive files (bz2, gz, tar, zip)*"
@@ -108,6 +112,10 @@
       "long": "nocolorize",
       "short": "C",
       "desc": "Do not colorize console output"
+    },
+    {
+      "long": "nodefaultfiles",
+      "desc": "Do not load default settings files"
     },
     {
       "long": "nofollowsymlinks",
