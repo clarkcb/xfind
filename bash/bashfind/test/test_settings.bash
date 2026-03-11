@@ -18,11 +18,14 @@ test_default_settings () {
     # not sure if this works to reset the imported variables
     source "$BASHFIND_PATH/lib/bashfindlib.bash"
 
-    args=()
-    settings_from_args $args
+    # commenting out because the function can pull in default settings
+    # args=()
+    # settings_from_args $args
 
     assert_equals_string ARCHIVES_ONLY $ARCHIVES_ONLY false
+    assert_equals_string COLORIZE $COLORIZE true
     assert_equals_string DEBUG $DEBUG false
+    assert_equals_string DEFAULT_FILES $DEFAULT_FILES true
     assert_equals_string FOLLOW_SYMLINKS $FOLLOW_SYMLINKS false
     assert_equals_string INCLUDE_ARCHIVES $INCLUDE_ARCHIVES false
     assert_equals_string INCLUDE_HIDDEN $INCLUDE_HIDDEN false
@@ -66,13 +69,15 @@ test_settings_from_args () {
     source "$BASHFIND_PATH/lib/bashfindlib.bash"
     # DEBUG=true
 
-    args=(-D build --debug --followsymlinks --includehidden --maxdepth 5 --maxlastmod '2024-01-01' --mindepth 2 --minlastmod '2020-01-01' --printdirs --printfiles --sort-by size --sort-casesensitive --sort-descending -t code -x c,h .)
+    args=(-D build --debug --followsymlinks --includehidden --maxdepth 5 --maxlastmod '2024-01-01' --mindepth 2 --minlastmod '2020-01-01' --nodefaultfiles --printdirs --printfiles --sort-by size --sort-casesensitive --sort-descending -t code -x c,h .)
 
     echo "args: ${args[@]}"
 
     settings_from_args "${args[@]}"
 
+    assert_equals_string COLORIZE $COLORIZE true
     assert_equals_string DEBUG $DEBUG true
+    assert_equals_string DEFAULT_FILES $DEFAULT_FILES false
     assert_equals_string FOLLOW_SYMLINKS $FOLLOW_SYMLINKS true
     assert_equals_string INCLUDE_HIDDEN $INCLUDE_HIDDEN true
     assert_equals_number '${#IN_EXTENSIONS[@]}' ${#IN_EXTENSIONS[@]} 2
@@ -92,6 +97,7 @@ test_settings_from_args () {
     assert_equals_string '${PATHS[0]}' ${PATHS[0]} .
     assert_equals_string PRINT_DIRS $PRINT_DIRS true
     assert_equals_string PRINT_FILES $PRINT_FILES true
+    assert_equals_string RECURSIVE $RECURSIVE true
     assert_equals_string SORT_BY $SORT_BY size
     assert_equals_string SORT_CASE_SENSITIVE $SORT_CASE_SENSITIVE true
     assert_equals_string SORT_DESCENDING $SORT_DESCENDING true

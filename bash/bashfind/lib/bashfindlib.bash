@@ -63,6 +63,7 @@ SORT_BY_TYPES=(path name size type lastmod)
 ARCHIVES_ONLY=false
 COLORIZE=true
 DEBUG=false
+DEFAULT_FILES=true
 DIR_COLOR=cyan
 EXT_COLOR=yellow
 FILE_COLOR=magenta
@@ -104,10 +105,12 @@ SORT_CASE_SENSITIVE=false
 SORT_DESCENDING=false
 VERBOSE=false
 
-BOOL_OPTS=(archivesonly debug followsymlinks help includearchives includehidden printdirs printfiles recursive sort-casesensitive sort-descending verbose version)
+BOOL_OPTS=(archivesonly debug defaultfiles followsymlinks help includearchives includehidden
+           printdirs printfiles recursive sort-casesensitive sort-descending verbose version)
 NUM_OPTS=(maxdepth maxlastmod maxsize mindepth minlastmod minsize)
-STR_OPTS=(in-archiveext in-archivefilepattern in-dirpattern in-ext in-filepattern in-filetype out-archiveext out-archivefilepattern out-dirpattern out-ext
-          out-filepattern out-filetype path settings-file sort-by)
+STR_OPTS=(in-archiveext in-archivefilepattern in-dirpattern in-ext in-filepattern in-filetype
+          out-archiveext out-archivefilepattern out-dirpattern out-ext out-filepattern out-filetype
+          path settings-file sort-by)
 
 ARG_TYPES=(unknown bool num str)
 
@@ -1109,6 +1112,7 @@ usage () {
     s+="\n -d,--in-dirpattern        $(get_option_desc 'in-dirpattern')"
     s+="\n -D,--out-dirpattern       $(get_option_desc 'out-dirpattern')"
     s+="\n --debug                   $(get_option_desc 'debug')"
+    s+="\n --defaultfiles            $(get_option_desc 'defaultfiles')"
     s+="\n --excludehidden           $(get_option_desc 'excludehidden')"
     s+="\n --followsymlinks          $(get_option_desc 'followsymlinks')"
     s+="\n -f,--in-filepattern       $(get_option_desc 'in-filepattern')"
@@ -1123,6 +1127,7 @@ usage () {
     s+="\n --mindepth                $(get_option_desc 'mindepth')"
     s+="\n --minlastmod              $(get_option_desc 'minlastmod')"
     s+="\n --minsize                 $(get_option_desc 'minsize')"
+    s+="\n --nodefaultfiles          $(get_option_desc 'nodefaultfiles')"
     s+="\n --nofollowsymlinks        $(get_option_desc 'nofollowsymlinks')"
     s+="\n --noprintdirs             $(get_option_desc 'noprintdirs')"
     s+="\n --noprintfiles            $(get_option_desc 'noprintfiles')"
@@ -1240,13 +1245,32 @@ arg_wants_val () {
     return 0
 }
 
-settings_from_args () {
-    local args=("$@")
-
+update_settings_from_default_files () {
     # load default settings file if it exists
     if [ -f "$DEFAULT_SETTINGS_PATH" ]
     then
         update_settings_from_file "$DEFAULT_SETTINGS_PATH"
+    fi
+}
+
+settings_from_args () {
+    local args=("$@")
+    local HAS_DEFAULT_FILES_ARG=false
+
+    if [[ " ${args[*]} " =~ [[:space:]]--defaultfiles[[:space:]] ]]
+    then
+        HAS_DEFAULT_FILES_ARG=true
+    else
+        if [[ " ${args[*]} " =~ [[:space:]]--nodefaultfiles[[:space:]] ]]
+        then
+            HAS_DEFAULT_FILES_ARG=true
+        fi
+    fi
+
+    # if a defaultfiles option isn't included, go ahead and apply default files now
+    if [ "$HAS_DEFAULT_FILES_ARG" == false ]
+    then
+        update_settings_from_default_files
     fi
 
     update_settings_from_args ${args[*]}
@@ -1275,6 +1299,10 @@ update_settings_from_args () {
             --debug)
                 DEBUG=true
                 VERBOSE=true
+                ;;
+            --defaultfiles)
+                DEFAULT_FILES=true
+                update_settings_from_default_files
                 ;;
             -Z | --excludearchives)
                 INCLUDE_ARCHIVES=false
@@ -1415,6 +1443,9 @@ update_settings_from_args () {
                 ;;
             --nodebug)
                 DEBUG=false
+                ;;
+            --nodefaultfiles)
+                DEFAULT_FILES=false
                 ;;
             --nofollowsymlinks)
                 FOLLOW_SYMLINKS=false
@@ -1726,6 +1757,7 @@ settings_to_string () {
     s="archives_only=$ARCHIVES_ONLY"
     s+=", colorize=$COLORIZE"
     s+=", debug=$DEBUG"
+    s+=", default_files=$DEFAULT_FILES"
     s+=", follow_symlinks=$FOLLOW_SYMLINKS"
     s+=", include_archives=$INCLUDE_ARCHIVES"
     s+=", include_hidden=$INCLUDE_HIDDEN"
