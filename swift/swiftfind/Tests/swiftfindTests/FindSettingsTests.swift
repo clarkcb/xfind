@@ -21,7 +21,9 @@ class FindSettingsTests: XCTestCase {
 
     func testDefaultFindSettings() {
         XCTAssert(DefaultFindSettings.archivesOnly == false, "archivesOnly == false")
+        XCTAssert(DefaultFindSettings.colorize == true, "colorize == true")
         XCTAssert(DefaultFindSettings.debug == false, "debug == false")
+        XCTAssert(DefaultFindSettings.defaultFiles == true, "defaultFiles == true")
         XCTAssert(DefaultFindSettings.followSymlinks == false, "followSymlinks == false")
         XCTAssert(DefaultFindSettings.includeArchives == false, "includeArchives == false")
         XCTAssert(DefaultFindSettings.includeHidden == false, "includeHidden == false")
@@ -33,6 +35,7 @@ class FindSettingsTests: XCTestCase {
         XCTAssert(DefaultFindSettings.printFiles == false, "printFiles == false")
         XCTAssert(DefaultFindSettings.printUsage == false, "printUsage == false")
         XCTAssert(DefaultFindSettings.printVersion == false, "printVersion == false")
+        XCTAssert(DefaultFindSettings.recursive == true, "recursive == true")
         XCTAssert(DefaultFindSettings.sortCaseInsensitive == false, "sortCaseInsensitive == false")
         XCTAssert(DefaultFindSettings.sortDescending == false, "sortDescending == false")
         XCTAssert(DefaultFindSettings.verbose == false, "verbose == false")
@@ -41,7 +44,9 @@ class FindSettingsTests: XCTestCase {
     func testInitialSettingsEqualDefaultFindSettings() {
         let settings = FindSettings()
         XCTAssert(settings.archivesOnly == DefaultFindSettings.archivesOnly, "archivesOnly == false")
+        XCTAssert(settings.colorize == DefaultFindSettings.colorize, "colorize == true")
         XCTAssert(settings.debug == DefaultFindSettings.debug, "debug == false")
+        XCTAssert(settings.defaultFiles == DefaultFindSettings.defaultFiles, "defaultFiles == true")
         XCTAssert(settings.followSymlinks == DefaultFindSettings.followSymlinks, "followSymlinks == false")
         XCTAssert(settings.includeArchives == DefaultFindSettings.includeArchives,
                   "includeArchives == false")
@@ -54,6 +59,7 @@ class FindSettingsTests: XCTestCase {
         XCTAssert(settings.printFiles == DefaultFindSettings.printFiles, "printFiles == false")
         XCTAssert(settings.printUsage == DefaultFindSettings.printUsage, "printUsage == false")
         XCTAssert(settings.printVersion == DefaultFindSettings.printVersion, "printVersion == false")
+        XCTAssert(settings.recursive == DefaultFindSettings.recursive, "recursive == true")
         XCTAssert(settings.sortCaseInsensitive == DefaultFindSettings.sortCaseInsensitive,
                   "sortCaseInsensitive == false")
         XCTAssert(settings.sortDescending == DefaultFindSettings.sortDescending, "sortDescending == false")

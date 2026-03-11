@@ -79,6 +79,9 @@ public class FindOptions {
         "debug": { (bool: Bool, settings: FindSettings) in
             settings.debug = bool
         },
+        "defaultfiles": { (bool: Bool, settings: FindSettings) in
+            settings.defaultFiles = bool
+        },
         "excludearchives": { (bool: Bool, settings: FindSettings) in
             settings.includeArchives = !bool
         },
@@ -99,6 +102,9 @@ public class FindOptions {
         },
         "nocolorize": { (bool: Bool, settings: FindSettings) in
             settings.colorize = !bool
+        },
+        "nodefaultfiles": { (bool: Bool, settings: FindSettings) in
+            settings.defaultFiles = !bool
         },
         "nofollowsymlinks": { (bool: Bool, settings: FindSettings) in
             settings.followSymlinks = !bool
@@ -215,6 +221,9 @@ public class FindOptions {
             if argToken.type == ArgTokenType.bool {
                 if let bool = argToken.value as? Bool {
                     boolActionDict[argToken.name]!(bool, settings)
+                    if argToken.name == "defaultfiles" {
+                        try updateSettingsFromDefaultFiles(settings)
+                    }
                 } else {
                     throw FindError(msg: "Invalid value for option: \(argToken.name)")
                 }
@@ -272,14 +281,10 @@ public class FindOptions {
         return settings
     }
 
-    private func getDefaultSettings(_ defaultFiles: Bool) throws -> FindSettings {
-        let settings = FindSettings()
-        if defaultFiles {
-            if FileUtil.exists(config.defaultSettingsPath) {
-                try updateSettingsFromFile(settings, filePath: config.defaultSettingsPath)
-            }
+    private func updateSettingsFromDefaultFiles(_ settings: FindSettings) throws {
+        if FileUtil.exists(config.defaultSettingsPath) {
+            try updateSettingsFromFile(settings, filePath: config.defaultSettingsPath)
         }
-        return settings
     }
 
     public func updateSettingsFromArgs(_ settings: FindSettings, args: [String]) throws {
@@ -288,9 +293,15 @@ public class FindOptions {
     }
 
     public func settingsFromArgs(_ args: [String]) throws -> FindSettings {
-        let settings = try getDefaultSettings(true)
+        let settings = FindSettings()
         // default printFiles to true since running in cli
         settings.printFiles = true
+
+        // if a defaultfiles option isn't included, go ahead and apply default files now
+        if !args.contains("--defaultfiles") && !args.contains("--nodefaultfiles") {
+            try updateSettingsFromDefaultFiles(settings)
+        }
+
         try updateSettingsFromArgs(settings, args: args)
         return settings
     }
