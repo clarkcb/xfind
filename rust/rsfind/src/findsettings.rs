@@ -10,6 +10,7 @@ pub struct FindSettings {
     _archives_only: bool,
     _colorize: bool,
     _debug: bool,
+    _default_files: bool,
     _dir_color: Color,
     _ext_color: Color,
     _file_color: Color,
@@ -52,6 +53,7 @@ impl FindSettings {
             _archives_only: false,
             _colorize: true,
             _debug: false,
+            _default_files: true,
             _dir_color: Color::Cyan,
             _ext_color: Color::Yellow,
             _file_color: Color::Magenta,
@@ -117,6 +119,14 @@ impl FindSettings {
         if b {
             self._verbose = b;
         }
+    }
+
+    pub fn default_files(&self) -> bool {
+        self._default_files
+    }
+
+    pub fn set_default_files(&mut self, b: bool) {
+        self._default_files = b
     }
 
     pub fn dir_color(&self) -> Color {
@@ -408,6 +418,7 @@ impl FindSettings {
         s.push_str(format!("archives_only={}", &self.archives_only()).as_str());
         s.push_str(format!(", colorize={}", &self.colorize()).as_str());
         s.push_str(format!(", debug={}", &self.debug()).as_str());
+        s.push_str(format!(", default_files={}", &self.default_files()).as_str());
         s.push_str(format!(", follow_symlinks={}", &self.follow_symlinks()).as_str());
         s.push_str(format!(", in_archive_extensions={:?}", &self.in_archive_extensions()).as_str());
         s.push_str(format!(", in_archive_file_patterns={}", get_regex_vec_string(&self.in_archive_file_patterns())).as_str());
@@ -486,6 +497,7 @@ mod tests {
         assert_eq!(settings.archives_only(), false);
         assert_eq!(settings.colorize(), true);
         assert_eq!(settings.debug(), false);
+        assert_eq!(settings.default_files(), true);
         assert_eq!(settings.follow_symlinks(), false);
         assert!(settings.in_archive_extensions().is_empty());
         assert!(settings.in_archive_file_patterns().is_empty());
