@@ -12,12 +12,13 @@
 #include "fileutil.h"
 #include "findoptions.h"
 
-#define BOOL_OPTION_COUNT 23
+#define BOOL_OPTION_COUNT 25
 const size_t bool_option_count = BOOL_OPTION_COUNT;
 char **bool_option_names = (char *[]) {
     "archivesonly",
     "colorize",
     "debug",
+    "defaultfiles",
     "excludearchives",
     "excludehidden",
     "followsymlinks",
@@ -25,6 +26,7 @@ char **bool_option_names = (char *[]) {
     "includehidden",
     "help",
     "nocolorize",
+    "nodefaultfiles",
     "nofollowsymlinks",
     "noprintdirs",
     "noprintfiles",
@@ -44,6 +46,7 @@ char **bool_option_abbrs = (char *[]) {
     "a", // archivesonly
     "c", // colorize
     "",  // debug
+    "",  // defaultfiles
     "Z", // excludearchives
     "",  // excludehidden
     "",  // followsymlinks
@@ -51,6 +54,7 @@ char **bool_option_abbrs = (char *[]) {
     "",  // includehidden
     "h", // help
     "C", // nocolorize
+    "",  // nodefaultfiles
     "",  // nofollowsymlinks
     "",  // noprintdirs
     "",  // noprintfiles
@@ -255,8 +259,8 @@ error_t get_find_options(FindOptions *options)
 
     // load the file
     const long fsize = file_size(full_path);
-    // current size is 5263, make sure it's not dramatically bigger than that
-    assert(fsize <= 5300);
+    // current size is 5457, make sure it's not dramatically bigger than that
+    assert(fsize <= 5500);
     char contents[fsize];
     contents[0] = '\0';
     FILE *fp = fopen(full_path, "r");
@@ -293,6 +297,9 @@ static error_t set_bool_setting(const int bool_idx, const bool bool_val, FindSet
         case DEBUG:
             set_debug(settings, bool_val);
             break;
+        case DEFAULT_FILES:
+            settings->default_files = bool_val;
+            break;
         case EXCLUDE_ARCHIVES:
             settings->include_archives = !bool_val;
             break;
@@ -313,6 +320,9 @@ static error_t set_bool_setting(const int bool_idx, const bool bool_val, FindSet
             break;
         case NO_COLORIZE:
             settings->colorize = !bool_val;
+            break;
+        case NO_DEFAULT_FILES:
+            settings->default_files = !bool_val;
             break;
         case NO_FOLLOW_SYMLINKS:
             settings->follow_symlinks = !bool_val;
@@ -531,6 +541,11 @@ error_t update_settings_from_arg_token_node(const ArgTokenNode *arg_token_node, 
             } else {
                 return E_INVALID_OPTION;
             }
+            if (strcmp(temp->token->name, "defaultfiles") == 0) {
+                // TODO: load default files
+                const error_t e = settings_from_default_files(options, settings);
+                if (e != E_OK) return e;
+            }
         } else if (temp->token->token_type == ARG_TOKEN_TYPE_STR) {
             if (strcmp(temp->token->name, "settings-file") == 0) {
                 const error_t e = settings_from_json_file(temp->token->value.string_val, options, settings);
@@ -586,10 +601,23 @@ error_t settings_from_default_files(FindOptions *options, FindSettings *settings
 
 error_t settings_from_args(const int argc, char *argv[], FindOptions *options, FindSettings *settings)
 {
-    // Load default settings, if found
-    // In the future, we'll call this conditionally
-    error_t err = settings_from_default_files(options, settings);
-    if (err != E_OK) return err;
+    // check if a defaultfiles option is included
+    int has_default_files_arg = 0;
+    for (int i=1; i < argc; ++i) {
+        if (strncmp(argv[i], "--defaultfiles", strlen("--defaultfiles")) == 0
+            || strncmp(argv[i], "--nodefaultfiles", strlen("--nodefaultfiles")) == 0) {
+            has_default_files_arg = 1;
+            break;
+        }
+    }
+
+    error_t err;
+
+    // if a defaultfiles option isn't included, go ahead and apply default files now
+    if (has_default_files_arg == 0) {
+        err = settings_from_default_files(options, settings);
+        if (err != E_OK) return err;
+    }
 
     ArgTokenNode *arg_token_node = empty_arg_token_node();
     err = tokenize_args(argc, argv, options, arg_token_node);

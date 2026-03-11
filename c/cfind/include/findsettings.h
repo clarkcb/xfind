@@ -17,6 +17,7 @@ typedef struct FindSettings {
     bool archives_only : 1;
     bool colorize : 1;
     bool debug : 1;
+    bool default_files : 1;
     Color dir_color;
     Color ext_color;
     Color file_color;

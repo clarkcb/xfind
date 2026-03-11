@@ -15,26 +15,28 @@ typedef enum {
     ARCHIVES_ONLY         = 0,
     COLORIZE              = 1,
     DEBUG                 = 2,
-    EXCLUDE_ARCHIVES      = 3,
-    EXCLUDE_HIDDEN        = 4,
-    FOLLOW_SYMLINKS       = 5,
-    INCLUDE_ARCHIVES      = 6,
-    INCLUDE_HIDDEN        = 7,
-    HELP                  = 8,
-    NO_COLORIZE           = 9,
-    NO_FOLLOW_SYMLINKS    = 10,
-    NO_PRINT_DIRS         = 11,
-    NO_PRINT_FILES        = 12,
-    NO_RECURSIVE          = 13,
-    PRINT_DIRS            = 14,
-    PRINT_FILES           = 15,
-    RECURSIVE             = 16,
-    SORT_ASCENDING        = 17,
-    SORT_CASE_INSENSITIVE = 18,
-    SORT_CASE_SENSITIVE   = 19,
-    SORT_DESCENDING       = 20,
-    VERBOSE               = 21,
-    VERSION               = 22
+    DEFAULT_FILES         = 3,
+    EXCLUDE_ARCHIVES      = 4,
+    EXCLUDE_HIDDEN        = 5,
+    FOLLOW_SYMLINKS       = 6,
+    INCLUDE_ARCHIVES      = 7,
+    INCLUDE_HIDDEN        = 8,
+    HELP                  = 9,
+    NO_COLORIZE           = 10,
+    NO_DEFAULT_FILES      = 11,
+    NO_FOLLOW_SYMLINKS    = 12,
+    NO_PRINT_DIRS         = 13,
+    NO_PRINT_FILES        = 14,
+    NO_RECURSIVE          = 15,
+    PRINT_DIRS            = 16,
+    PRINT_FILES           = 17,
+    RECURSIVE             = 18,
+    SORT_ASCENDING        = 19,
+    SORT_CASE_INSENSITIVE = 20,
+    SORT_CASE_SENSITIVE   = 21,
+    SORT_DESCENDING       = 22,
+    VERBOSE               = 23,
+    VERSION               = 24
 } SettingsBoolType;
 
 typedef enum {
@@ -82,6 +84,8 @@ error_t settings_from_args(int argc, char *argv[], FindOptions *options, FindSet
 error_t settings_from_json_string(const char *settings_json_str, FindOptions *options, FindSettings *settings);
 
 error_t settings_from_json_file(const char *settings_json_file_path, FindOptions *options, FindSettings *settings);
+
+error_t settings_from_default_files(FindOptions *options, FindSettings *settings);
 
 size_t find_options_count(FindOptions *options);
 

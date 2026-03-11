@@ -467,9 +467,9 @@ void print_dir_results(const FileResults *results, const FindSettings *settings)
 
 void print_file_results(const FileResults *results, const FindSettings *settings)
 {
-    if (settings->debug) {
-        printf("DEBUG: print_file_results\n");
-    }
+    // if (settings->debug) {
+    //     printf("DEBUG: print_file_results\n");
+    // }
     const size_t results_count = file_results_count(results);
 
     if (results_count > 0) {
@@ -502,11 +502,11 @@ void print_file_results(const FileResults *results, const FindSettings *settings
                 const size_t dir_len = strnlen(fr->path->dir, path_len);
                 const size_t file_name_len = strnlen(fr->path->file_name, path_len);
 
-                if (settings->debug) {
-                    printf("DEBUG: path_len: %zu\n", path_len);
-                    printf("DEBUG: dir_len: %zu\n", dir_len);
-                    printf("DEBUG: file_name_len: %zu\n", file_name_len);
-                }
+                // if (settings->debug) {
+                //     printf("DEBUG: path_len: %zu\n", path_len);
+                //     printf("DEBUG: dir_len: %zu\n", dir_len);
+                //     printf("DEBUG: file_name_len: %zu\n", file_name_len);
+                // }
 
                 // colorized lengths (lengths + 9 for color+reset)
                 size_t cdir_len = dir_len;
@@ -521,10 +521,10 @@ void print_file_results(const FileResults *results, const FindSettings *settings
                     cfile_name_len += 9;
                 }
 
-                if (settings->debug) {
-                    printf("DEBUG: cdir_len: %zu\n", cdir_len);
-                    printf("DEBUG: cfile_name_len: %zu\n", cfile_name_len);
-                }
+                // if (settings->debug) {
+                //     printf("DEBUG: cdir_len: %zu\n", cdir_len);
+                //     printf("DEBUG: cfile_name_len: %zu\n", cfile_name_len);
+                // }
 
                 char file_path_str[cdir_len + cfile_name_len + 1];
                 file_path_str[0] = '\0';

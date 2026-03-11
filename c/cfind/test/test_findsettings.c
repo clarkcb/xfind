@@ -15,9 +15,17 @@ void test_default_settings(void)
     printf("%ssettings->archives_only: %d%s\n", color, settings->archives_only, CONSOLE_COLOR_RESET);
     assert(settings->archives_only == false);
 
+    color = settings->colorize == true ? CONSOLE_COLOR_GREEN : CONSOLE_COLOR_RED;
+    printf("%ssettings->colorize: %d%s\n", color, settings->colorize, CONSOLE_COLOR_RESET);
+    assert(settings->colorize == true);
+
     color = settings->debug == false ? CONSOLE_COLOR_GREEN : CONSOLE_COLOR_RED;
     printf("%ssettings->debug: %d%s\n", color, settings->debug, CONSOLE_COLOR_RESET);
     assert(settings->debug == false);
+
+    color = settings->default_files == true ? CONSOLE_COLOR_GREEN : CONSOLE_COLOR_RED;
+    printf("%ssettings->default_files: %d%s\n", color, settings->default_files, CONSOLE_COLOR_RESET);
+    assert(settings->default_files == true);
 
     color = settings->follow_symlinks == false ? CONSOLE_COLOR_GREEN : CONSOLE_COLOR_RED;
     printf("%ssettings->follow_symlinks: %d%s\n", color, settings->follow_symlinks, CONSOLE_COLOR_RESET);

@@ -17,6 +17,7 @@ FindSettings *default_settings(void)
     settings->archives_only = false;
     settings->colorize = true;
     settings->debug = false;
+    settings->default_files = true;
     settings->dir_color = CYAN;
     settings->ext_color = YELLOW;
     settings->file_color = MAGENTA;
@@ -54,7 +55,7 @@ FindSettings *default_settings(void)
     return settings;
 }
 
-const int SETTINGS_BOOL_FIELD_COUNT = 13;
+const int SETTINGS_BOOL_FIELD_COUNT = 15;
 const int SETTINGS_LONG_FIELD_COUNT = 4;
 const int SETTINGS_STRING_NODE_FIELD_COUNT = 13;
 const int SETTINGS_SORTBY_FIELD_COUNT = 1;
@@ -64,6 +65,7 @@ const char *SETTINGS_TEMPLATE = "FindSettings("
             "archives_only=%s"
             ", colorize=%s"
             ", debug=%s"
+            ", default_files=%s"
             ", follow_symlinks=%s"
             ", in_archive_extensions=%s"
             ", in_archive_file_patterns=%s"
@@ -103,6 +105,7 @@ static size_t all_bools_strlen(const FindSettings *settings)
             (settings->archives_only == false ? 5 : 4) +
             (settings->colorize == false ? 5 : 4) +
             (settings->debug == false ? 5 : 4) +
+            (settings->default_files == false ? 5 : 4) +
             (settings->follow_symlinks == false ? 5 : 4) +
             (settings->include_archives == false ? 5 : 4) +
             (settings->include_hidden == false ? 5 : 4) +
@@ -136,7 +139,7 @@ static size_t all_strings_strlen(const FindSettings *settings)
             path_node_strlen(settings->paths);
 }
 
-static size_t last_mod_strlen(long last_mod)
+static size_t last_mod_strlen(const long last_mod)
 {
     return last_mod == 0 ? 1 : 12; // 10 for "yyyy-MM-dd" plus 2 for surrounding double quotes
 }
@@ -165,6 +168,7 @@ void settings_to_string(const FindSettings *settings, char *s)
     regex_node_to_string(settings->in_archive_file_patterns, in_archive_file_patterns_s);
     const char *colorize_s = settings->colorize == false ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
     const char *debug_s = settings->debug == false ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
+    const char *default_files_s = settings->default_files == false ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
     const char *follow_symlinks_s = settings->follow_symlinks == false ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
     char *in_dir_patterns_s = malloc(regex_node_strlen(settings->in_dir_patterns) + 1);
     in_dir_patterns_s[0] = '\0';
@@ -240,6 +244,7 @@ void settings_to_string(const FindSettings *settings, char *s)
         archives_only_s,
         colorize_s,
         debug_s,
+        default_files_s,
         follow_symlinks_s,
         in_archive_extensions_s,
         in_archive_file_patterns_s,
@@ -272,7 +277,7 @@ void settings_to_string(const FindSettings *settings, char *s)
         sort_descending_s,
         verbose_s);
 
-    size_t total_len = settings_strlen(settings) + 1;
+    const size_t total_len = settings_strlen(settings) + 1;
 
     s[total_len - 1] = '\0';
 
