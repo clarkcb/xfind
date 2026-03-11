@@ -62,6 +62,7 @@ defmodule ExFind.FindOptions do
       archivesonly: fn b, settings -> FindSettings.set_archives_only(settings, b) end,
       colorize: fn b, settings -> %{settings | colorize: b} end,
       debug: fn b, settings -> FindSettings.set_debug(settings, b) end,
+      defaultfiles: fn b, settings -> %{settings | default_files: b} end,
       excludearchives: fn b, settings -> %{settings | include_archives: not b} end,
       excludehidden: fn b, settings -> %{settings | include_hidden: not b} end,
       followsymlinks: fn b, settings -> %{settings | follow_symlinks: b} end,
@@ -69,6 +70,7 @@ defmodule ExFind.FindOptions do
       includearchives: fn b, settings -> %{settings | include_archives: b} end,
       includehidden: fn b, settings -> %{settings | include_hidden: b} end,
       nocolorize: fn b, settings -> %{settings | colorize: not b} end,
+      nodefaultfiles: fn b, settings -> %{settings | default_files: not b} end,
       nofollowsymlinks: fn b, settings -> %{settings | follow_symlinks: not b} end,
       noprintdirs: fn b, settings -> %{settings | print_dirs: not b} end,
       noprintfiles: fn b, settings -> %{settings | print_files: not b} end,
@@ -186,6 +188,11 @@ defmodule ExFind.FindOptions do
             k = t.name
             v = t.value
             cond do
+              k == :defaultfiles && v == true ->
+                case update_settings_from_default_files(settings, arg_tokenizer, arg_action_maps) do
+                  {:ok, new_settings} -> update_settings_from_tokens!(new_settings, ts, arg_tokenizer, arg_action_maps)
+                  {:error, message} -> raise FindError, message: message
+                end
               Map.has_key?(bool_arg_action_map, k) ->
                 update_settings_from_tokens!(Map.get(bool_arg_action_map, k).(v, settings), ts, arg_tokenizer, arg_action_maps)
               true -> raise FindError, message: "Invalid value for option: #{k}"
@@ -204,7 +211,7 @@ defmodule ExFind.FindOptions do
             cond do
               Map.has_key?(str_arg_action_map, k) ->
                 update_settings_from_tokens!(Map.get(str_arg_action_map, k).(v, settings), ts, arg_tokenizer, arg_action_maps)
-              k == :settings_file -> case update_settings_from_file(settings, v, arg_tokenizer, arg_action_maps) do
+              k == :settings_file ->  case update_settings_from_file(settings, v, arg_tokenizer, arg_action_maps) do
                 {:ok, new_settings} -> update_settings_from_tokens!(new_settings, ts, arg_tokenizer, arg_action_maps)
                 {:error, message} -> raise FindError, message: message
               end
@@ -224,40 +231,46 @@ defmodule ExFind.FindOptions do
     end
   end
 
-  def update_settings_from_args!(settings, args, options) do
-    arg_action_maps = arg_action_maps()
-    arg_tokenizer = get_arg_tokenizer(options, arg_action_maps)
+  def update_settings_from_args!(settings, args, arg_tokenizer, arg_action_maps) do
     case ArgTokenizer.tokenize_args(args, arg_tokenizer) do
       {:ok, tokens} -> update_settings_from_tokens!(settings, tokens, arg_tokenizer, arg_action_maps)
       {:error, message} -> raise FindError, message: message
     end
   end
 
-  def update_settings_from_args(settings, args, options) do
+  def update_settings_from_args(settings, args, arg_tokenizer, arg_action_maps) do
     try do
-      {:ok, update_settings_from_args!(settings, args, options)}
+      {:ok, update_settings_from_args!(settings, args, arg_tokenizer, arg_action_maps)}
     rescue
       e in FindError -> {:error, e.message}
     end
   end
 
-  def get_default_settings(default_file, options) do
-    if default_file do
-      if File.exists?(ExFind.Config.default_settings_path) do
-        get_settings_from_file(ExFind.Config.default_settings_path, options)
-      else
-        {:ok, FindSettings.new()}
-      end
+  def update_settings_from_default_files(settings, arg_tokenizer, arg_action_maps) do
+    if File.exists?(ExFind.Config.default_settings_path) do
+      update_settings_from_file(settings, ExFind.Config.default_settings_path, arg_tokenizer, arg_action_maps)
     else
-      {:ok, FindSettings.new()}
+      {:ok, settings}
     end
   end
 
   def get_settings_from_args(args, options) do
-    case get_default_settings(true, options) do
-      {:error, message} -> {:error, message}
-      {:ok, settings} ->
-        update_settings_from_args(%{settings | print_files: true}, args, options)
+    settings = FindSettings.new([print_files: true])
+    if Enum.empty?(args) do
+      {:ok, settings}
+    else
+      arg_action_maps = arg_action_maps()
+      arg_tokenizer = get_arg_tokenizer(options, arg_action_maps)
+      if Enum.any?(args, fn a -> a == "--defaultfiles" || a == "--nodefaultfiles" end) do
+        update_settings_from_args(settings, args, arg_tokenizer, arg_action_maps)
+      else
+        # if a defaultfiles option isn't included, go ahead and apply default files now
+        case update_settings_from_default_files(settings, arg_tokenizer, arg_action_maps) do
+          {:error, message} -> {:error, message}
+          {:ok, settings} ->
+            update_settings_from_args(settings, args, arg_tokenizer, arg_action_maps)
+        end
+      end
     end
   end
 

@@ -8,6 +8,7 @@ defmodule ExFind.FindSettings do
   defstruct archives_only: false,
             colorize: true,
             debug: false,
+            default_files: true,
             dir_color: :cyan,
             ext_color: :yellow,
             file_color: :magenta,
