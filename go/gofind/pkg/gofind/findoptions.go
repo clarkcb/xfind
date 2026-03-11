@@ -53,6 +53,9 @@ func getBoolActionMap() map[string]boolAction {
 		"debug": func(b bool, settings *FindSettings) {
 			settings.SetDebug(b)
 		},
+		"defaultfiles": func(b bool, settings *FindSettings) {
+			settings.SetDefaultFiles(b)
+		},
 		"excludearchives": func(b bool, settings *FindSettings) {
 			settings.SetIncludeArchives(!b)
 		},
@@ -73,6 +76,9 @@ func getBoolActionMap() map[string]boolAction {
 		},
 		"nocolorize": func(b bool, settings *FindSettings) {
 			settings.SetColorize(!b)
+		},
+		"nodefaultfiles": func(b bool, settings *FindSettings) {
+			settings.SetDefaultFiles(!b)
 		},
 		"nofollowsymlinks": func(b bool, settings *FindSettings) {
 			settings.SetFollowSymlinks(!b)
@@ -268,6 +274,12 @@ func (fo *FindOptions) updateSettingsFromArgTokens(settings *FindSettings, argTo
 		if argToken.Type == ArgTokenTypeBool {
 			if bf, isBool := fo.BoolActionMap[argToken.Name]; isBool {
 				bf(argToken.Value.(bool), settings)
+				if argToken.Name == "defaultfiles" {
+					err := fo.updateSettingsFromDefaultFiles(settings)
+					if err != nil {
+						return err
+					}
+				}
 			} else {
 				return fmt.Errorf("Invalid value for option: %v", argToken.Name)
 			}
@@ -317,17 +329,14 @@ func (fo *FindOptions) UpdateSettingsFromFile(settings *FindSettings, filePath s
 	return fo.updateSettingsFromArgTokens(settings, argTokens)
 }
 
-func (fo *FindOptions) GetDefaultConfigSettings(defaultFiles bool) (*FindSettings, error) {
-	settings := GetDefaultFindSettings()
+func (fo *FindOptions) updateSettingsFromDefaultFiles(settings *FindSettings) error {
 	config := NewFindConfig()
 	var err error
-	if defaultFiles {
-		_, err = os.Stat(config.DEFAULTSETTINGSPATH)
-		if err == nil {
-			err = fo.UpdateSettingsFromFile(settings, config.DEFAULTSETTINGSPATH)
-		}
+	_, statErr := os.Stat(config.DEFAULTSETTINGSPATH)
+	if statErr == nil {
+		err = fo.UpdateSettingsFromFile(settings, config.DEFAULTSETTINGSPATH)
 	}
-	return settings, err
+	return err
 }
 
 func (fo *FindOptions) UpdateSettingsFromArgs(settings *FindSettings, args []string) error {
@@ -339,11 +348,19 @@ func (fo *FindOptions) UpdateSettingsFromArgs(settings *FindSettings, args []str
 }
 
 func (fo *FindOptions) FindSettingsFromArgs(args []string) (*FindSettings, error) {
-	settings, err := fo.GetDefaultConfigSettings(true)
-	if err != nil {
-		return settings, err
-	}
+	settings := GetDefaultFindSettings()
+	// default printFiles to true since running from command line
 	settings.SetPrintFiles(true)
+	var err error
+
+	// if a defaultfiles option isn't included, go ahead and apply default files now
+	if !Contains(args, "--defaultfiles") && !Contains(args, "--nodefaultfiles") {
+		err = fo.updateSettingsFromDefaultFiles(settings)
+		if err != nil {
+			return settings, err
+		}
+	}
+
 	err = fo.UpdateSettingsFromArgs(settings, args)
 	return settings, err
 }

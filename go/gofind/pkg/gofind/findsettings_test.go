@@ -5,7 +5,9 @@ import "testing"
 func TestDefaultFindSettings(t *testing.T) {
 	settings := GetDefaultFindSettings()
 	if settings.ArchivesOnly() ||
+		!settings.Colorize() ||
 		settings.Debug() ||
+		!settings.DefaultFiles() ||
 		settings.FollowSymlinks() ||
 		settings.IncludeArchives() ||
 		settings.IncludeHidden() ||
