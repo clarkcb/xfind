@@ -144,6 +144,7 @@ boolActions :: [(String, BoolAction)]
 boolActions = [ ("archivesonly", \ss b -> ss {archivesOnly=b, includeArchives=b})
               , ("colorize", \ss b -> ss {colorize=b})
               , ("debug", \ss b -> ss {debug=b, verbose=b})
+              , ("defaultfiles", \ss b -> ss {defaultFiles=b})
               , ("excludearchives", \ss b -> ss {includeArchives=not b})
               , ("excludehidden", \ss b -> ss {includeHidden=not b})
               , ("followsymlinks", \ss b -> ss {followSymlinks=b})
@@ -151,6 +152,7 @@ boolActions = [ ("archivesonly", \ss b -> ss {archivesOnly=b, includeArchives=b}
               , ("includearchives", \ss b -> ss {includeArchives=b})
               , ("includehidden", \ss b -> ss {includeHidden=b})
               , ("nocolorize", \ss b -> ss {colorize=not b})
+              , ("nodefaultfiles", \ss b -> ss {defaultFiles=not b})
               , ("nofollowsymlinks", \ss b -> ss {followSymlinks=not b})
               , ("noprintdirs", \ss b -> ss {printDirs=b})
               , ("noprintfiles", \ss b -> ss {printFiles=not b})
@@ -200,7 +202,14 @@ updateSettingsFromTokens settings findOptions tokens = do
       case getActionType (name t) of
         BoolActionType ->
           case value t of
-            TypeA b -> updateSettingsFromTokens (getBoolAction (name t) settings b) findOptions ts
+            TypeA b ->
+              if name t == "defaultfiles"
+              then do
+                settingsEither <- updateSettingsFromDefaultFiles settings findOptions
+                case settingsEither of
+                  Left e -> return $ Left e
+                  Right settings' -> updateSettingsFromTokens settings' findOptions ts
+              else updateSettingsFromTokens (getBoolAction (name t) settings b) findOptions ts
             _ -> return $ Left $ "Invalid boolean value for option: " ++ name t
         StringActionType ->
           case value t of
@@ -259,16 +268,13 @@ updateSettingsFromFile settings findOptions filePath = do
 settingsFromFile :: FindOptions -> FilePath -> IO (Either String FindSettings)
 settingsFromFile = updateSettingsFromFile defaultFindSettings
 
-getDefaultSettings :: FindOptions -> Bool -> IO (Either String FindSettings)
-getDefaultSettings findOptions defaultFiles = do
-  if defaultFiles
-  then do
-    defaultSettingsPath <- getDefaultSettingsPath
-    defaultSettingsPathExists <- pathExists defaultSettingsPath
-    if defaultSettingsPathExists
-    then updateSettingsFromFile defaultFindSettings findOptions defaultSettingsPath
-    else return $ Right defaultFindSettings
-  else return $ Right defaultFindSettings
+updateSettingsFromDefaultFiles :: FindSettings -> FindOptions -> IO (Either String FindSettings)
+updateSettingsFromDefaultFiles settings findOptions = do
+  defaultSettingsPath <- getDefaultSettingsPath
+  defaultSettingsPathExists <- pathExists defaultSettingsPath
+  if defaultSettingsPathExists
+  then updateSettingsFromFile settings findOptions defaultSettingsPath
+  else return $ Right settings
 
 updateSettingsFromArgs :: FindSettings -> FindOptions -> [String] -> IO (Either String FindSettings)
 updateSettingsFromArgs settings findOptions arguments = do
@@ -278,7 +284,10 @@ updateSettingsFromArgs settings findOptions arguments = do
 
 settingsFromArgs :: FindOptions -> [String] -> IO (Either String FindSettings)
 settingsFromArgs findOptions arguments = do
-  eitherSettings <- getDefaultSettings findOptions True
-  case eitherSettings of
-    Left e -> return $ Left e
-    Right settings -> updateSettingsFromArgs settings{printFiles=True} findOptions arguments
+  if "--defaultfiles" `elem` arguments || "--nodefaultfiles" `elem` arguments
+  then updateSettingsFromArgs defaultFindSettings{printFiles=True} findOptions arguments
+  else do
+    settingsWithDefaultsEither <- updateSettingsFromDefaultFiles defaultFindSettings{printFiles=True} findOptions
+    case settingsWithDefaultsEither of
+      Left e -> return $ Left e
+      Right settingsWithDefaults -> updateSettingsFromArgs settingsWithDefaults findOptions arguments

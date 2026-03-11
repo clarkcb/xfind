@@ -33,6 +33,7 @@ data FindSettings = FindSettings {
                                    archivesOnly :: Bool
                                  , colorize :: Bool
                                  , debug :: Bool
+                                 , defaultFiles :: Bool
                                  , dirColor :: Color
                                  , extColor :: Color
                                  , fileColor :: Color
@@ -74,6 +75,7 @@ defaultFindSettings = FindSettings {
                                      archivesOnly=False
                                    , colorize=True
                                    , debug=False
+                                   , defaultFiles=True
                                    , dirColor=ColorCyan
                                    , extColor=ColorYellow
                                    , fileColor=ColorMagenta
@@ -122,6 +124,7 @@ findSettingsToString settings =
   "archivesOnly=" ++ show (archivesOnly settings) ++
   ", colorize=" ++ show (colorize settings) ++
   ", debug=" ++ show (debug settings) ++
+  ", defaultFiles=" ++ show (defaultFiles settings) ++
   ", followSymlinks=" ++ show (followSymlinks settings) ++
   ", inArchiveExtensions=" ++ listToString (inArchiveExtensions settings) ++
   ", inArchiveFilePatterns=" ++ listToString (inArchiveFilePatterns settings) ++
@@ -170,8 +173,8 @@ needLastMods settings = isJust (minLastMod settings) || isJust (maxLastMod setti
 
 -- JSON parsing stuff below here
 validKeys :: [Text]
-validKeys = ["archivesonly", "colorize", "debug", "dircolor", "excludearchives", "excludehidden",
-             "extcolor", "filecolor", "followsymlinks", "help", "in-archiveext",
+validKeys = ["archivesonly", "colorize", "debug", "defaultFiles", "dircolor", "excludearchives",
+             "excludehidden", "extcolor", "filecolor", "followsymlinks", "help", "in-archiveext",
              "in-archivefilepattern", "in-dirpattern", "in-ext", "in-filepattern", "in-filetype",
              "includearchives", "includehidden", "maxdepth", "maxlastmod", "maxsize", "mindepth",
              "minlastmod", "minsize", "out-archiveextension", "out-archivefilepattern",
@@ -192,6 +195,7 @@ instance FromJSON FindSettings where
     archivesOnly' <- obj .:? "archivesonly" .!= False
     colorize' <- obj .:? "colorize" .!= True
     debug' <- obj .:? "debug" .!= False
+    defaultFiles' <- obj .:? "defaultFiles" .!= True
     -- dirColor' <- obj .:? "dircolor" .!= ColorCyan
     -- extColor' <- obj .:? "extcolor" .!= ColorYellow
     -- fileColor' <- obj .:? "filecolor" .!= ColorMagenta
@@ -230,6 +234,7 @@ instance FromJSON FindSettings where
       archivesOnly=archivesOnly'
     , colorize=colorize'
     , debug=debug'
+    , defaultFiles=defaultFiles'
     , dirColor=ColorCyan
     , extColor=ColorYellow
     , fileColor=ColorMagenta
@@ -336,8 +341,9 @@ updateFindSettingsFromJsonValue settings jsonVal =
 mergeFindSettings :: FindSettings -> FindSettings -> FindSettings
 mergeFindSettings old new = FindSettings
   { archivesOnly = archivesOnly new || archivesOnly old
-  , colorize = colorize new || colorize old
+  , colorize = if not (colorize new) then colorize new else colorize old
   , debug = debug new || debug old
+  , defaultFiles = if not (defaultFiles new) then defaultFiles new else defaultFiles old
   -- , dirColor = dirColor new || dirColor old
   -- , extColor = extColor new || extColor old
   -- , fileColor = fileColor new || fileColor old
