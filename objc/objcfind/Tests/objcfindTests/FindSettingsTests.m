@@ -26,7 +26,9 @@
 - (void)testDefaultSettings {
     FindSettings *settings = [[FindSettings alloc] init];
     XCTAssert(![settings archivesOnly]);
+    XCTAssert([settings colorize]);
     XCTAssert(![settings debug]);
+    XCTAssert([settings defaultFiles]);
     XCTAssert(![settings followSymlinks]);
     XCTAssert(![settings includeArchives]);
     XCTAssert(![settings includeHidden]);
@@ -34,6 +36,7 @@
     XCTAssert(![settings printFiles]);
     XCTAssert(![settings printUsage]);
     XCTAssert(![settings printVersion]);
+    XCTAssert([settings recursive]);
     XCTAssert(![settings verbose]);
 }
 

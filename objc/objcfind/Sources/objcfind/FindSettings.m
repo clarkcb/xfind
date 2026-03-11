@@ -13,6 +13,7 @@
         self.archivesOnly = false;
         self.colorize = true;
         self.debug = false;
+        self.defaultFiles = true;
         self.dirColor = ColorCyan;
         self.extColor = ColorYellow;
         self.fileColor = ColorMagenta;
@@ -58,6 +59,7 @@
     [d appendFormat:@"archivesOnly=%@", boolToNSString(self.archivesOnly)];
     [d appendFormat:@", colorize=%@", boolToNSString(self.colorize)];
     [d appendFormat:@", debug=%@", boolToNSString(self.debug)];
+    [d appendFormat:@", defaultFiles=%@", boolToNSString(self.defaultFiles)];
     [d appendFormat:@", followSymlinks=%@", boolToNSString(self.followSymlinks)];
     [d appendFormat:@", inArchiveExtensions=%@", arrayToNSString(self.inArchiveExtensions)];
     [d appendFormat:@", inArchiveFilePatterns=%@", arrayToNSString(self.inArchiveFilePatterns)];

@@ -99,6 +99,7 @@ typedef void (^BoolActionBlockType)(BOOL, FindSettings*);
             ss.debug = b;
             if (b) ss.verbose = true;
         } copy],
+        @"defaultfiles" : [^void (BOOL b, FindSettings *ss) { ss.defaultFiles = b; } copy],
         @"excludearchives" : [^void (BOOL b, FindSettings *ss) { ss.includeArchives = !b; } copy],
         @"excludehidden" : [^void (BOOL b, FindSettings *ss) { ss.includeHidden = !b; } copy],
         @"followsymlinks" : [^void (BOOL b, FindSettings *ss) { ss.followSymlinks = b; } copy],
@@ -106,6 +107,7 @@ typedef void (^BoolActionBlockType)(BOOL, FindSettings*);
         @"includearchives" : [^void (BOOL b, FindSettings *ss) { ss.includeArchives = b; } copy],
         @"includehidden" : [^void (BOOL b, FindSettings *ss) { ss.includeHidden = b; } copy],
         @"nocolorize" : [^void (BOOL b, FindSettings *ss) { ss.colorize = !b; } copy],
+        @"nodefaultfiles" : [^void (BOOL b, FindSettings *ss) { ss.defaultFiles = !b; } copy],
         @"nofollowsymlinks" : [^void (BOOL b, FindSettings *ss) { ss.followSymlinks = !b; } copy],
         @"noprintdirs" : [^void (BOOL b, FindSettings *ss) { ss.printDirs = !b; } copy],
         @"noprintfiles" : [^void (BOOL b, FindSettings *ss) { ss.printFiles = !b; } copy],
@@ -195,6 +197,9 @@ typedef void (^IntegerActionBlockType)(NSInteger, FindSettings*);
             BOOL b = [num boolValue];
             void(^block)(BOOL, FindSettings*) = self.boolActionDict[argToken.name];
             block(b, settings);
+            if ([argToken.name isEqualToString:@"defaultfiles"]) {
+                [self updateSettingsFromDefaultFiles:settings error:error];
+            }
         } else {
             setError(error, [@"Invalid value for option: " stringByAppendingString:argToken.name]);
             return;
@@ -286,15 +291,11 @@ typedef void (^IntegerActionBlockType)(NSInteger, FindSettings*);
 }
 
 // this is intended to be private, so not including in the header file
-- (FindSettings *) getDefaultSettings:(BOOL)defaultFiles error:(NSError **)error {
-    FindSettings *settings = [[FindSettings alloc] init];
-    if (defaultFiles) {
-        NSString *defaultSettingsPath = getXfindDefaultSettingsPath();
-        if ([FileUtil exists:defaultSettingsPath]) {
-            [self updateSettingsFromFile:settings filePath:defaultSettingsPath error:error];
-        }
+- (void) updateSettingsFromDefaultFiles:(FindSettings *)settings error:(NSError **)error {
+    NSString *defaultSettingsPath = getXfindDefaultSettingsPath();
+    if ([FileUtil exists:defaultSettingsPath]) {
+        [self updateSettingsFromFile:settings filePath:defaultSettingsPath error:error];
     }
-    return settings;
 }
 
 - (void) updateSettingsFromArgs:(FindSettings *)settings args:(NSArray *)args error:(NSError **)error {
@@ -306,12 +307,18 @@ typedef void (^IntegerActionBlockType)(NSInteger, FindSettings*);
 }
 
 - (FindSettings *) settingsFromArgs:(NSArray<NSString*> *)args error:(NSError **)error {
-    FindSettings *settings = [self getDefaultSettings:TRUE error:error];
-    if (*error) {
-        return settings;
-    }
+    FindSettings *settings = [[FindSettings alloc] init];
     // default printFiles to true since running as cli
     settings.printFiles = true;
+
+    // if a defaultfiles option isn't included, go ahead and apply default files now
+    if (![args containsObject:@"--defaultfiles"] && ![args containsObject:@"--nodefaultfiles"]) {
+        [self updateSettingsFromDefaultFiles:settings error:error];
+        if (*error) {
+            return settings;
+        }
+    }
+
     [self updateSettingsFromArgs:settings args:args error:error];
     return settings;
 }

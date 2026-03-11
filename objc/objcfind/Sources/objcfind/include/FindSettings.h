@@ -16,6 +16,7 @@
 @property(nonatomic) BOOL archivesOnly;
 @property(nonatomic) BOOL colorize;
 @property(nonatomic) BOOL debug;
+@property(nonatomic) BOOL defaultFiles;
 @property(nonatomic) Color dirColor;
 @property(nonatomic) Color extColor;
 @property(nonatomic) Color fileColor;
