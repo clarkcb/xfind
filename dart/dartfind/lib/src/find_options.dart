@@ -92,6 +92,7 @@ class FindOptions {
       'archivesonly': (bool b, FindSettings ss) => ss.archivesOnly = b,
       'colorize': (bool b, FindSettings ss) => ss.colorize = b,
       'debug': (bool b, FindSettings ss) => ss.debug = b,
+      'defaultfiles': (bool b, FindSettings ss) => ss.defaultFiles = b,
       'excludearchives': (bool b, FindSettings ss) => ss.includeArchives = !b,
       'excludehidden': (bool b, FindSettings ss) => ss.includeHidden = !b,
       'followsymlinks': (bool b, FindSettings ss) => ss.followSymlinks = b,
@@ -99,6 +100,7 @@ class FindOptions {
       'includearchives': (bool b, FindSettings ss) => ss.includeArchives = b,
       'includehidden': (bool b, FindSettings ss) => ss.includeHidden = b,
       'nocolorize': (bool b, FindSettings ss) => ss.colorize = !b,
+      'nodefaultfiles': (bool b, FindSettings ss) => ss.defaultFiles = !b,
       'nofollowsymlinks': (bool b, FindSettings ss) => ss.followSymlinks = !b,
       'noprintdirs': (bool b, FindSettings ss) => ss.printDirs = !b,
       'noprintfiles': (bool b, FindSettings ss) => ss.printFiles = !b,
@@ -169,6 +171,9 @@ class FindOptions {
         if (argToken.tokenType == ArgTokenType.boolType) {
           if (boolActionMap.containsKey(argToken.name)) {
             boolActionMap[argToken.name](argToken.value, settings);
+            if (argToken.name == 'defaultfiles') {
+              await updateSettingsFromDefaultFiles(settings);
+            }
           } else {
             throw FindException('Invalid option: ${argToken.name}');
           }
@@ -209,15 +214,11 @@ class FindOptions {
     });
   }
 
-  Future<FindSettings> getDefaultSettings(bool defaultFiles) async {
-    var settings = FindSettings();
-    if (defaultFiles) {
-      if (FileSystemEntity.typeSync(defaultSettingsPath) ==
-          FileSystemEntityType.file) {
-        await updateSettingsFromFile(settings, defaultSettingsPath);
-      }
+  Future<void> updateSettingsFromDefaultFiles(FindSettings settings) async {
+    if (FileSystemEntity.typeSync(defaultSettingsPath) ==
+        FileSystemEntityType.file) {
+      await updateSettingsFromFile(settings, defaultSettingsPath);
     }
-    return settings;
   }
 
   Future<void> updateSettingsFromArgs(
@@ -230,8 +231,15 @@ class FindOptions {
   }
 
   Future<FindSettings> settingsFromArgs(List<String> args) async {
-    var settings = await getDefaultSettings(true);
+    var settings = FindSettings();
     settings.printFiles = true; // default to printing files
+
+    // if a defaultfiles option isn't included, go ahead and apply default files now
+    if (!args.contains('--defaultfiles') &&
+        !args.contains('--nodefaultfiles')) {
+      await updateSettingsFromDefaultFiles(settings);
+    }
+
     await updateSettingsFromArgs(settings, args);
     return settings;
   }

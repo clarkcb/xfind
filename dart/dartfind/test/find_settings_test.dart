@@ -5,7 +5,9 @@ void main() {
   test('test default settings', () {
     var settings = FindSettings();
     expect(settings.archivesOnly, false);
+    expect(settings.colorize, true);
     expect(settings.debug, false);
+    expect(settings.defaultFiles, true);
     expect(settings.followSymlinks, false);
     expect(settings.includeArchives, false);
     expect(settings.includeHidden, false);

@@ -75,6 +75,8 @@ class FindSettings {
     }
   }
 
+  bool defaultFiles = true;
+
   Color dirColor = Color.cyan;
   Color extColor = Color.yellow;
   Color fileColor = Color.magenta;
@@ -177,6 +179,7 @@ class FindSettings {
   String toString() => 'FindSettings(archivesOnly=$archivesOnly'
       ', colorize=$colorize'
       ', debug=$debug'
+      ', defaultFiles=$defaultFiles'
       ', followSymlinks=$followSymlinks'
       ', inArchiveExtensions=${stringSetToString(inArchiveExtensions)}'
       ', inArchiveFilePatterns=${patternSetToString(inArchiveFilePatterns)}'
