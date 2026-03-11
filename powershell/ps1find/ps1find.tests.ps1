@@ -210,7 +210,9 @@ Describe -tag "FindSettings" -name "test_default_settings" {
         $settings = [FindSettings]::new()
 
         $settings.ArchivesOnly | Should -BeFalse
+        $settings.Colorize | Should -BeTrue
         $settings.Debug | Should -BeFalse
+        $settings.DefaultFiles | Should -BeTrue
         $settings.IncludeHidden | Should -BeFalse
         $settings.IncludeArchives | Should -BeFalse
         $settings.PrintDirs | Should -BeFalse

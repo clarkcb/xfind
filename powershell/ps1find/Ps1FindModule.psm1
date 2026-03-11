@@ -400,6 +400,7 @@ class FindSettings {
     [bool]$ArchivesOnly
     [bool]$Colorize
     [bool]$Debug
+    [bool]$DefaultFiles
     [Color]$DirColor
     [Color]$ExtColor
     [Color]$FileColor
@@ -439,6 +440,7 @@ class FindSettings {
 		$this.ArchivesOnly = $false
 		$this.Colorize = $true
 		$this.Debug = $false
+		$this.DefaultFiles = $true
 		$this.DirColor = [Color]::Cyan
 		$this.ExtColor = [Color]::Yellow
 		$this.FileColor = [Color]::Magenta
@@ -520,6 +522,7 @@ class FindSettings {
         "ArchivesOnly=$($this.ArchivesOnly)" +
         ", Colorize=$($this.Colorize)" +
         ", Debug=$($this.Debug)" +
+        ", DefaultFiles=$($this.DefaultFiles)" +
         ", FollowSymlinks=$($this.FollowSymlinks)" +
         ", InArchiveExtensions=$($this.StringArrayToString($this.InArchiveExtensions))" +
         ", InArchiveFilePatterns=$($this.StringArrayToString($this.InArchiveFilePatterns))" +
@@ -803,6 +806,10 @@ class FindOptions {
             param([bool]$b, [FindSettings]$settings)
             $settings.SetDebug($b)
         }
+        "defaultfiles" = {
+            param([bool]$b, [FindSettings]$settings)
+            $settings.DefaultFiles = $b
+        }
         "excludearchives" = {
             param([bool]$b, [FindSettings]$settings)
             $settings.IncludeArchives = !$b
@@ -830,6 +837,10 @@ class FindOptions {
         "nocolorize" = {
             param([bool]$b, [FindSettings]$settings)
             $settings.Colorize = !$b
+        }
+        "nodefaultfiles" = {
+            param([bool]$b, [FindSettings]$settings)
+            $settings.DefaultFiles = !$b
         }
         "nofollowsymlinks" = {
             param([bool]$b, [FindSettings]$settings)
@@ -1009,6 +1020,9 @@ class FindOptions {
                 if ($this.BoolActionMap.ContainsKey($argToken.Name)) {
                     if ($argToken.Value -is [bool]) {
                         $this.BoolActionMap[$argToken.Name].Invoke($argToken.Value, $settings)
+                        if ($argToken.Name -eq 'defaultfiles') {
+                            $this.UpdateSettingsFromDefaultFiles($settings)
+                        }
                     } else {
                         throw "Invalid value for option: " + $argToken.Name
                     }
@@ -1051,14 +1065,10 @@ class FindOptions {
         $this.UpdateSettingsFromArgTokens($settings, $argTokens)
     }
 
-    [FindSettings]GetDefaultSettings([bool]$defaultFiles) {
-        $settings = [FindSettings]::new()
-        if ($defaultFiles) {
-            if (Test-Path $script:defaultSettingsPath) {
-                $this.UpdateSettingsFromFilePath($settings, $script:defaultSettingsPath)
-            }
+    [void]UpdateSettingsFromDefaultFiles([FindSettings]$settings) {
+        if (Test-Path $script:defaultSettingsPath) {
+            $this.UpdateSettingsFromFilePath($settings, $script:defaultSettingsPath)
         }
-        return $settings
     }
 
     [void]UpdateSettingsFromArgs([FindSettings]$settings, [string[]]$argList) {
@@ -1067,9 +1077,16 @@ class FindOptions {
     }
 
     [FindSettings]SettingsFromArgs([string[]]$argList) {
-        $settings = $this.GetDefaultSettings($true)
+        $settings = [FindSettings]::new()
         # default PrintFiles to true since we're using via CLI
         $settings.PrintFiles = $true
+
+        # if a defaultfiles option isn't included, go ahead and apply default files now
+        $defaultFilesArgs = $argList | Where-Object { $_.EndsWith('defaultfiles') }
+        if (-not $defaultFilesArgs) {
+            $this.UpdateSettingsFromDefaultFiles($settings)
+        }
+
         $this.UpdateSettingsFromArgs($settings, $argList)
         return $settings
     }
