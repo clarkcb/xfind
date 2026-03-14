@@ -9,7 +9,9 @@
 (ns cljfind.findsettings
   #^{:author "Cary Clark",
      :doc "Defines the settings for a given find instance"}
-  (:require [clojure.string :as str])
+  (:require [clojure.string :as str]
+            ;; [java-time :as jt]
+            )
   (:use [clojure.set :only (union)]
         [clojure.string :as str :only (split lower-case)]
         [cljfind.consolecolor]
@@ -21,10 +23,9 @@
     ^Boolean archives-only
     ^Boolean colorize
     ^Boolean debug
-    ^Boolean default-files
-    ^String dir-color
-    ^String ext-color
-    ^String file-color
+    ^clojure.lang.Keyword dir-color
+    ^clojure.lang.Keyword ext-color
+    ^clojure.lang.Keyword file-color
     ^Boolean follow-symlinks
     ^clojure.lang.PersistentHashSet in-archive-extensions
     ^clojure.lang.PersistentHashSet in-archive-file-patterns
@@ -202,54 +203,47 @@
 (defn string-set-to-string ^String [ss]
   (if (empty? ss)
     "[]"
-    (str "[\"" (str/join "\", \"" ss) "\"]")))
+    (str "[\"" (str/join "\", \"" (sort ss)) "\"]")))
 
 (defn pattern-set-to-string ^String [ps]
   (if (empty? ps)
     "[]"
-    (str "[\"" (str/join "\", \"" (map #(.pattern %) ps)) "\"]")))
+    (str "[\"" (str/join "\", \"" (sort (map #(.pattern %) ps))) "\"]")))
 
 (defn filetype-set-to-string ^String [fts]
   (if (empty? fts)
     "[]"
-    (str "[" (str/join ", " (map #(to-name %) fts)) "]")))
+    (str "[" (str/join ", " (sort (map #(to-name %) fts))) "]")))
+
+(defmulti setting-to-string
+  (fn [k v] (type v)))
+
+(defmethod setting-to-string clojure.lang.PersistentHashSet [k v]
+  (let [n (name k)]
+    (cond
+      (.endsWith n "patterns") (str n "=" (pattern-set-to-string v))
+      (.endsWith n "file-types") (str n "=" (filetype-set-to-string v))
+      :else (str n "=" (string-set-to-string v)))))
+
+(defmethod setting-to-string clojure.lang.Keyword [k v]
+  (str (name k) "=" (name v)))
+
+;(defmethod setting-to-string java.util.Date [k v]
+;  (str (name k) "=" (jt/format (jt/formatter "YYYY-MM-dd") (.toInstant v))))
+
+(defmethod setting-to-string java.util.Date [k v]
+  (str (name k) "=" \" v \"))
+
+(defmethod setting-to-string :default [k v]
+  (if (nil? v)
+    (str (name k) "=0")
+    (str (name k) "=" v)))
+
+(defn settings-to-string ^String [settings]
+  (let [ks (sort (keys settings))
+        ss (map #(setting-to-string % (% settings)) ks)]
+    (str "FindSettings(" (str/join ", " ss) ")")))
 
 (defmethod print-method FindSettings
   [^FindSettings settings ^java.io.Writer w]
-  (.write w (str
-             "FindSettings(archives-only=" (:archives-only settings)
-             ", colorize=" (:colorize settings)
-             ", debug=" (:debug settings)
-             ", default-files=" (:default-files settings)
-             ", follow-symlinks=" (:follow-symlinks settings)
-             ", in-archive-extensions=" (string-set-to-string (:in-archive-extensions settings))
-             ", in-archive-file-patterns=" (pattern-set-to-string (:in-archive-file-patterns settings))
-             ", in-dir-patterns=" (pattern-set-to-string (:in-dir-patterns settings))
-             ", in-extensions=" (string-set-to-string (:in-extensions settings))
-             ", in-file-patterns=" (pattern-set-to-string (:in-file-patterns settings))
-             ", in-file-types=" (filetype-set-to-string (:in-file-types settings))
-             ", include-archives=" (:include-archives settings)
-             ", include-hidden=" (:include-hidden settings)
-             ", max-depth=" (:max-depth settings)
-             ", max-last-mod=" (if (nil? (:max-last-mod settings)) "0" (:max-last-mod settings))
-             ", max-size=" (:max-size settings)
-             ", min-depth=" (:min-depth settings)
-             ", min-last-mod=" (if (nil? (:min-last-mod settings)) "0" (:min-last-mod settings))
-             ", min-size=" (:min-size settings)
-             ", out-archive-extensions=" (string-set-to-string (:out-archive-extensions settings))
-             ", out-archive-file-patterns=" (pattern-set-to-string (:out-archive-file-patterns settings))
-             ", out-dir-patterns=" (pattern-set-to-string (:out-dir-patterns settings))
-             ", out-extensions=" (string-set-to-string (:out-extensions settings))
-             ", out-file-patterns=" (pattern-set-to-string (:out-file-patterns settings))
-             ", out-file-types=" (filetype-set-to-string (:out-file-types settings))
-             ", paths=" (string-set-to-string (:paths settings))
-             ", print-dirs=" (:print-dirs settings)
-             ", print-files=" (:print-files settings)
-             ", print-usage=" (:print-usage settings)
-             ", print-version=" (:print-version settings)
-             ", recursive=" (:recursive settings)
-             ", sort-by=" (get-sort-by-name (:sort-by settings))
-             ", sort-case-insensitive=" (:sort-case-insensitive settings)
-             ", sort-descending=" (:sort-descending settings)
-             ", verbose=" (:verbose settings)
-             ")")))
+  (.write w (settings-to-string settings)))
