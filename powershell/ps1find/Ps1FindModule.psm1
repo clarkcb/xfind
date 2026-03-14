@@ -517,44 +517,28 @@ class FindSettings {
         return $dt.ToString('yyyy-MM-dd')
     }
 
+    [string]PropertiesToString() {
+        $properties = [FindSettings].GetProperties([Reflection.BindingFlags]::Public -bor [Reflection.BindingFlags]::Instance)
+        $propStrings = @()
+        foreach ($prop in $properties)
+        {
+            if ($prop.PropertyType.Name -eq 'String[]' -or $prop.PropertyType.Name -eq 'Regex[]') {
+                $propStrings += "$($prop.Name)=$($this.StringArrayToString($prop.GetValue($this)))"
+            } elseif ($prop.PropertyType.Name -eq 'FileType[]') {
+                $propStrings += "$($prop.Name)=$($this.FileTypeArrayToString($prop.GetValue($this)))"
+            } elseif ($prop.PropertyType.Name -eq 'DateTime') {
+                $propStrings += "$($prop.Name)=$($this.DateTimeToString($prop.GetValue($this)))"
+            } elseif ($prop.PropertyType.Name -eq 'SortBy') {
+                $propStrings += "$($prop.Name)=$(SortByToName($prop.GetValue($this)))"
+            } else {
+                $propStrings += "$($prop.Name)=$($prop.GetValue($this))"
+            }
+        }
+        return $propStrings -join ', '
+    }
+
     [string]ToString() {
-        return "FindSettings(" +
-        "ArchivesOnly=$($this.ArchivesOnly)" +
-        ", Colorize=$($this.Colorize)" +
-        ", Debug=$($this.Debug)" +
-        ", DefaultFiles=$($this.DefaultFiles)" +
-        ", FollowSymlinks=$($this.FollowSymlinks)" +
-        ", InArchiveExtensions=$($this.StringArrayToString($this.InArchiveExtensions))" +
-        ", InArchiveFilePatterns=$($this.StringArrayToString($this.InArchiveFilePatterns))" +
-        ", InDirPatterns=$($this.StringArrayToString($this.InDirPatterns))" +
-        ", InExtensions=$($this.StringArrayToString($this.InExtensions))" +
-        ", InFilePatterns=$($this.StringArrayToString($this.InFilePatterns))" +
-        ", InFileTypes=$($this.FileTypeArrayToString($this.InFileTypes))" +
-        ", IncludeArchives=$($this.IncludeArchives)" +
-        ", IncludeHidden=$($this.IncludeHidden)" +
-        ", MaxDepth=$($this.MaxDepth)" +
-        ", MaxLastMod=$($this.DateTimeToString($this.MaxLastMod))" +
-        ", MaxSize=$($this.MaxSize)" +
-        ", MinDepth=$($this.MinDepth)" +
-        ", MinLastMod=$($this.DateTimeToString($this.MinLastMod))" +
-        ", MinSize=$($this.MinSize)" +
-        ", OutArchiveExtensions=$($this.StringArrayToString($this.OutArchiveExtensions))" +
-        ", OutArchiveFilePatterns=$($this.StringArrayToString($this.OutArchiveFilePatterns))" +
-        ", OutDirPatterns=$($this.StringArrayToString($this.OutDirPatterns))" +
-        ", OutExtensions=$($this.StringArrayToString($this.OutExtensions))" +
-        ", OutFilePatterns=$($this.StringArrayToString($this.OutFilePatterns))" +
-        ", OutFileTypes=$($this.FileTypeArrayToString($this.OutFileTypes))" +
-        ", Paths=$($this.StringArrayToString($this.Paths))" +
-        ", PrintDirs=$($this.PrintDirs)" +
-        ", PrintFiles=$($this.PrintFiles)" +
-        ", PrintUsage=$($this.PrintUsage)" +
-        ", PrintVersion=$($this.PrintVersion)" +
-        ", Recursive=$($this.Recursive)" +
-        ", SortBy=$(SortByToName($this.SortBy))" +
-        ", SortCaseInsensitive=$($this.SortCaseInsensitive)" +
-        ", SortDescending=$($this.SortDescending)" +
-        ", Verbose=$($this.Verbose)" +
-        ")"
+        return "FindSettings(" + $this.PropertiesToString() + ")"
     }
 }
 #endregion
