@@ -6,6 +6,8 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
+import kotlin.reflect.full.memberProperties
+import kotlin.reflect.typeOf
 
 /**
  * @author cary on 7/23/16.
@@ -84,42 +86,7 @@ data class FindSettings(
     val verbose: Boolean
 ) {
     override fun toString(): String {
-        return "FindSettings(" +
-                "archivesOnly=$archivesOnly, " +
-                "colorize=$colorize, " +
-                "debug=$debug, " +
-                "defaultFiles=$defaultFiles, " +
-                "followSymlinks=$followSymlinks, " +
-                "inArchiveExtensions=${stringSetToString(inArchiveExtensions)}, " +
-                "inArchiveFilePatterns=${patternSetToString(inArchiveFilePatterns)}, " +
-                "inDirPatterns=${patternSetToString(inDirPatterns)}, " +
-                "inExtensions=${stringSetToString(inExtensions)}, " +
-                "inFilePatterns=${patternSetToString(inFilePatterns)}, " +
-                "inFileTypes=${fileTypeSetToString(inFileTypes)}, " +
-                "includeArchives=$includeArchives, " +
-                "includeHidden=$includeHidden, " +
-                "maxDepth=$maxDepth, " +
-                "maxLastMod=${maxLastMod ?: 0}, " +
-                "maxSize=$maxSize, " +
-                "minDepth=$minDepth, " +
-                "minLastMod=${minLastMod ?: 0}, " +
-                "minSize=$minSize, " +
-                "outArchiveExtensions=${stringSetToString(outArchiveExtensions)}, " +
-                "outArchiveFilePatterns=${patternSetToString(outArchiveFilePatterns)}, " +
-                "outDirPatterns=${patternSetToString(outDirPatterns)}, " +
-                "outExtensions=${stringSetToString(outExtensions)}, " +
-                "outFilePatterns=${patternSetToString(outFilePatterns)}, " +
-                "outFileTypes=${fileTypeSetToString(outFileTypes)}, " +
-                "paths=${pathSetToString(paths)}, " +
-                "printDirs=$printDirs, " +
-                "printFiles=$printFiles, " +
-                "printUsage=$printUsage, " +
-                "printVersion=$printVersion, " +
-                "recursive=$recursive, " +
-                "sortBy=$sortBy, " +
-                "sortCaseInsensitive=$sortCaseInsensitive, " +
-                "sortDescending=$sortDescending, " +
-                "verbose=$verbose)"
+        return settingsToString(this)
     }
 }
 
@@ -156,6 +123,40 @@ fun patternSetToString(set: Set<Regex>): String {
 fun fileTypeSetToString(set: Set<FileType>): String {
     val stringSet = set.map { it.value }.toSet()
     return setToString(stringSet, false)
+}
+
+private fun settingsToString(settings: FindSettings): String {
+    val settingsClass = FindSettings::class
+    val sb = StringBuilder("FindSettings(")
+
+    var count = 0
+    for (prop in settingsClass.memberProperties) {
+        if (count > 0) {
+            sb.append(", ")
+        }
+        sb.append(prop.name).append("=")
+        val value = prop.get(settings)
+        if (prop.returnType == typeOf<Set<String>>()) {
+            sb.append(stringSetToString(value as Set<String>))
+        } else if (prop.returnType == typeOf<Set<Regex>>()) {
+            sb.append(patternSetToString(value as Set<Regex>))
+        } else if (prop.returnType == typeOf<Set<FileType>>()) {
+            sb.append(fileTypeSetToString(value as Set<FileType>))
+        } else if (prop.returnType == typeOf<Set<Path>>()) {
+            sb.append(pathSetToString(value as Set<Path>))
+        } else if (prop.returnType == typeOf<LocalDateTime?>()) {
+            if ((value as LocalDateTime?) == null) {
+                sb.append(0)
+            } else {
+                sb.append('"').append(value).append('"')
+            }
+        } else {
+            sb.append(value);
+        }
+        count++
+    }
+    sb.append(")")
+    return sb.toString()
 }
 
 fun getDefaultSettings(): FindSettings {
