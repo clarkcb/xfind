@@ -264,42 +264,31 @@ open class FindSettings: CustomStringConvertible {
     }
 
     open var description: String {
-        "FindSettings(" +
-            "archivesOnly=\(archivesOnly)" +
-            ", colorize=\(colorize)" +
-            ", debug=\(debug)" +
-            ", defaultFiles=\(defaultFiles)" +
-            ", followSymlinks=\(followSymlinks)" +
-            ", inArchiveExtensions=\(setToString(inArchiveExtensions))" +
-            ", inArchiveFilePatterns=\(arrayToString(inArchiveFilePatterns))" +
-            ", inDirPatterns=\(arrayToString(inDirPatterns))" +
-            ", inExtensions=\(setToString(inExtensions))" +
-            ", inFilePatterns=\(arrayToString(inFilePatterns))" +
-            ", inFileTypes=\(arrayToString(inFileTypes.map { FileTypes.toName($0) }, false))" +
-            ", includeArchives=\(includeArchives)" +
-            ", includeHidden=\(includeHidden)" +
-            ", maxDepth=\(maxDepth)" +
-            ", maxLastMod=\(dateToString(maxLastMod))" +
-            ", maxSize=\(maxSize)" +
-            ", minDepth=\(minDepth)" +
-            ", minLastMod=\(dateToString(minLastMod))" +
-            ", minSize=\(minSize)" +
-            ", outArchiveExtensions=\(setToString(outArchiveExtensions))" +
-            ", outArchiveFilePatterns=\(arrayToString(outArchiveFilePatterns))" +
-            ", outDirPatterns=\(arrayToString(outDirPatterns))" +
-            ", outExtensions=\(setToString(outExtensions))" +
-            ", outFilePatterns=\(arrayToString(outFilePatterns))" +
-            ", outFileTypes=\(arrayToString(outFileTypes.map { FileTypes.toName($0) }, false))" +
-            ", paths=\(setToString(paths))" +
-            ", printDirs=\(printDirs)" +
-            ", printFiles=\(printFiles)" +
-            ", printUsage=\(printUsage)" +
-            ", printVersion=\(printVersion)" +
-            ", recursive=\(recursive)" +
-            ", sortBy=\(sortByToName(sortBy))" +
-            ", sortCaseInsensitive=\(sortCaseInsensitive)" +
-            ", sortDescending=\(sortDescending)" +
-            ", verbose=\(verbose)" +
-            ")"
+        var propStrings = Array<String>()
+        var propDict: [String: Any] = [:]
+        let mirror = Mirror(reflecting: self)
+        for child in mirror.children {
+            var name = child.label ?? "bla"
+            if name.starts(with: "_") {
+                name = name.trimmingCharacters(in: ["_"])
+            }
+            propDict[name] = child.value
+        }
+        let names = propDict.keys.sorted()
+        for name in names {
+            let value = propDict[name]!
+            if value is Set<String> {
+                propStrings.append("\(name)=\(setToString(value as! Set<String>))")
+            } else if value is Array<Regex> {
+                propStrings.append("\(name)=\(arrayToString(value as! Array<Regex>))")
+            } else if value is Array<FileType> {
+                propStrings.append("\(name)=\(arrayToString((value as! Array<FileType>).map { FileTypes.toName($0) }))")
+            } else if value is Optional<Date> {
+                propStrings.append("\(name)=\(dateToString(value as! Optional<Date>))")
+            } else {
+                propStrings.append("\(name)=\(value)")
+            }
+        }
+        return "FindSettings(\(propStrings.joined(separator: ", ")))"
     }
 }

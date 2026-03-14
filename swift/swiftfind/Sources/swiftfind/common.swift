@@ -68,7 +68,7 @@ public func dateToString(_ date: Date?) -> String {
     if date == nil {
         "0"
     } else {
-        date!.description
+        "\"\(date!.description)\""
     }
 }
 
