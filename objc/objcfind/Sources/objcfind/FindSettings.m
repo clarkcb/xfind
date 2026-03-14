@@ -1,6 +1,7 @@
 #import "common.h"
 #import "FileTypes.h"
 #import "FindSettings.h"
+#import <objc/runtime.h>
 
 @implementation FindSettings
 
@@ -55,42 +56,77 @@
 }
 
 - (NSString *) description {
-    NSMutableString *d = [[NSMutableString alloc] initWithString:@"FindSettings("];
-    [d appendFormat:@"archivesOnly=%@", boolToNSString(self.archivesOnly)];
-    [d appendFormat:@", colorize=%@", boolToNSString(self.colorize)];
-    [d appendFormat:@", debug=%@", boolToNSString(self.debug)];
-    [d appendFormat:@", defaultFiles=%@", boolToNSString(self.defaultFiles)];
-    [d appendFormat:@", followSymlinks=%@", boolToNSString(self.followSymlinks)];
-    [d appendFormat:@", inArchiveExtensions=%@", arrayToNSString(self.inArchiveExtensions)];
-    [d appendFormat:@", inArchiveFilePatterns=%@", arrayToNSString(self.inArchiveFilePatterns)];
-    [d appendFormat:@", inDirPatterns=%@", arrayToNSString(self.inDirPatterns)];
-    [d appendFormat:@", inExtensions=%@", arrayToNSString(self.inExtensions)];
-    [d appendFormat:@", inFilePatterns=%@", arrayToNSString(self.inFilePatterns)];
-    [d appendFormat:@", inFileTypes=%@", [FindSettings fileTypesArrayToNSString:self.inFileTypes]];
-    [d appendFormat:@", includeArchives=%@", boolToNSString(self.includeArchives)];
-    [d appendFormat:@", includeHidden=%@", boolToNSString(self.includeHidden)];
-    [d appendFormat:@", maxDepth=%ld", (long)self.maxDepth];
-    [d appendFormat:@", maxLastMod=%@", [FindSettings lastModToNSString:self.maxLastMod]];
-    [d appendFormat:@", maxSize=%lu", (long)self.maxSize];
-    [d appendFormat:@", minDepth=%ld", (long)self.minDepth];
-    [d appendFormat:@", minLastMod=%@", [FindSettings lastModToNSString:self.minLastMod]];
-    [d appendFormat:@", minSize=%lu", (long)self.minSize];
-    [d appendFormat:@", outArchiveExtensions=%@", arrayToNSString(self.outArchiveExtensions)];
-    [d appendFormat:@", outArchiveFilePatterns=%@", arrayToNSString(self.outArchiveFilePatterns)];
-    [d appendFormat:@", outDirPatterns=%@", arrayToNSString(self.outDirPatterns)];
-    [d appendFormat:@", outExtensions=%@", arrayToNSString(self.outExtensions)];
-    [d appendFormat:@", outFilePatterns=%@", arrayToNSString(self.outFilePatterns)];
-    [d appendFormat:@", outFileTypes=%@", [FindSettings fileTypesArrayToNSString:self.outFileTypes]];
-    [d appendFormat:@", paths=%@", arrayToNSString(self.paths)];
-    [d appendFormat:@", printDirs=%@", boolToNSString(self.printDirs)];
-    [d appendFormat:@", printFiles=%@", boolToNSString(self.printFiles)];
-    [d appendFormat:@", printUsage=%@", boolToNSString(self.printUsage)];
-    [d appendFormat:@", printVersion=%@", boolToNSString(self.printVersion)];
-    [d appendFormat:@", recursive=%@", boolToNSString(self.recursive)];
-    [d appendFormat:@", sortBy=%@", [FindSettings getNameFromSortBy:self.sortBy]];
-    [d appendFormat:@", sortCaseInsensitive=%@", boolToNSString(self.sortCaseInsensitive)];
-    [d appendFormat:@", sortDescending=%@", boolToNSString(self.sortDescending)];
-    [d appendFormat:@", verbose=%@", boolToNSString(self.verbose)];
+
+    unsigned int count;
+    // Get the list of all properties for the class
+    objc_property_t *properties = class_copyPropertyList([self class], &count);
+
+    NSMutableDictionary *propDict = [[NSMutableDictionary alloc] initWithCapacity:count];
+
+    for (unsigned int i = 0; i < count; i++) {
+        objc_property_t property = properties[i];
+        // Get the property name (label)
+        const char *propertyName = property_getName(property);
+        NSString *name = [NSString stringWithUTF8String:propertyName];
+
+        // Get the property value using Key-Value Coding (KVC)
+        id value = [self valueForKey:name];
+
+        if (value == nil) {
+            value = @"0";
+        }
+        propDict[name] = value;
+    }
+    
+    // Free the list of properties
+    free(properties);
+
+    NSMutableString *d = [[NSMutableString alloc] initWithString:@"ZZFindSettings("];
+
+    NSArray<NSString*> *keys = [[propDict allKeys] sortedArrayUsingSelector:@selector(compare:)];
+    int idx = 0;
+    for (NSString *key in keys) {
+        NSObject *val = propDict[key];
+        if (idx > 0) {
+            [d appendString:@", "];
+        }
+        if ([key hasSuffix:@"Color"]) {
+            NSNumber *num = (NSNumber *)val;
+            NSInteger i = [num integerValue];
+            NSString *colorName = getNameFromColor((int)i);
+            [d appendFormat:@"%@=%@", key, colorName];
+        } else if ([key hasSuffix:@"Depth"] || [key hasSuffix:@"Size"]) {
+            NSNumber *num = (NSNumber *)val;
+            [d appendFormat:@"%@=%@", key, num];
+        } else if ([key hasSuffix:@"LastMod"]) {
+            if ([val isKindOfClass:[NSString class]]) {
+                [d appendFormat:@"%@=%@", key, val];
+            } else {
+                NSDate *date = (NSDate *)val;
+                [d appendFormat:@"%@=%@", key, [FindSettings lastModToNSString:date]];
+            }
+        } else if ([key isEqualToString:@"sortBy"]) {
+            NSNumber *num = (NSNumber *)val;
+            NSInteger i = [num integerValue];
+            NSString *sortByName = [FindSettings getNameFromSortBy:(int)i];
+            [d appendFormat:@"%@=%@", key, sortByName];
+
+        } else if ([val isKindOfClass:[NSArray class]]) {
+            NSArray *arr = (NSArray *)val;
+            if ([key hasSuffix:@"FileTypes"]) {
+                [d appendFormat:@"%@=%@", key, [FindSettings fileTypesArrayToNSString:arr]];
+            } else {
+                [d appendFormat:@"%@=%@", key, arrayToNSString(arr)];
+            }
+        } else {
+            NSNumber *num = (NSNumber *)val;
+            BOOL b = [num boolValue];
+            [d appendFormat:@"%@=%@", key, boolToNSString(b)];
+        }
+
+        idx++;
+    }
+
     [d appendString:@")"];
     return d;
 }
@@ -248,14 +284,13 @@
 
 - (void) setSortByFromName:(NSString*)sortByName {
     self.sortBy = [FindSettings getSortByFromName:sortByName];
-
 }
 
 + (NSString*) lastModToNSString:(NSDate *)lastMod {
     if (lastMod == nil) {
         return @"0";
     }
-    return dateToNSString(lastMod);
+    return [NSString stringWithFormat:@"\"%@\"", dateToNSString(lastMod)];
 }
 
 + (NSString*) fileTypesArrayToNSString:(NSArray<NSNumber*>*)arr {

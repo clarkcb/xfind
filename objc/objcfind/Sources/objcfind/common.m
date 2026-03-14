@@ -96,3 +96,50 @@ NSString* colorToConsoleColor(Color color) {
             return [NSString stringWithUTF8String:ANSI_WHITE];
     }
 }
+
+Color getColorFromName(NSString *colorName) {
+    NSString *lname = [colorName lowercaseString];
+    if (lname == [NSString stringWithUTF8String:C_BLACK]) {
+        return ColorBlack;
+    }
+    if (lname == [NSString stringWithUTF8String:C_RED]) {
+        return ColorRed;
+    }
+    if (lname == [NSString stringWithUTF8String:C_GREEN]) {
+        return ColorGreen;
+    }
+    if (lname == [NSString stringWithUTF8String:C_YELLOW]) {
+        return ColorYellow;
+    }
+    if (lname == [NSString stringWithUTF8String:C_BLUE]) {
+        return ColorBlue;
+    }
+    if (lname == [NSString stringWithUTF8String:C_MAGENTA]) {
+        return ColorMagenta;
+    }
+    if (lname == [NSString stringWithUTF8String:C_CYAN]) {
+        return ColorCyan;
+    }
+    return ColorWhite;
+}
+
+NSString* getNameFromColor(Color color) {
+    switch (color) {
+        case ColorBlack:
+            return [NSString stringWithUTF8String:C_BLACK];
+        case ColorRed:
+            return [NSString stringWithUTF8String:C_RED];
+        case ColorGreen:
+            return [NSString stringWithUTF8String:C_GREEN];
+        case ColorYellow:
+            return [NSString stringWithUTF8String:C_YELLOW];
+        case ColorBlue:
+            return [NSString stringWithUTF8String:C_BLUE];
+        case ColorMagenta:
+            return [NSString stringWithUTF8String:C_MAGENTA];
+        case ColorCyan:
+            return [NSString stringWithUTF8String:C_CYAN];
+        case ColorWhite:
+            return [NSString stringWithUTF8String:C_WHITE];
+    }
+}

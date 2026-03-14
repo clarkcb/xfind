@@ -3,6 +3,16 @@
 
 #import <Foundation/Foundation.h>
 
+// color names
+#define C_BLACK   "black"
+#define C_RED     "red"
+#define C_GREEN   "green"
+#define C_YELLOW  "yellow"
+#define C_BLUE    "blue"
+#define C_MAGENTA "magenta"
+#define C_CYAN    "cyan"
+#define C_WHITE   "white"
+
 // file type names
 #define T_ARCHIVE "archive"
 #define T_AUDIO "audio"
@@ -81,5 +91,7 @@ NSString * arrayToNSString(NSArray *arr);
 NSString* dateToNSString(NSDate *date);
 NSDate* stringToNSDate(NSString *dateStr);
 NSString* colorToConsoleColor(Color color);
+Color getColorFromName(NSString *colorName);
+NSString* getNameFromColor(Color color);
 
 #endif /* common_h */
