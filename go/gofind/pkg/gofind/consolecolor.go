@@ -1,6 +1,19 @@
 package gofind
 
+import "strings"
+
 type Color int
+
+const (
+	ColorBlackName   = "black"
+	ColorRedName     = "red"
+	ColorGreenName   = "green"
+	ColorYellowName  = "yellow"
+	ColorBlueName    = "blue"
+	ColorMagentaName = "magenta"
+	ColorCyanName    = "cyan"
+	ColorWhiteName   = "white"
+)
 
 const (
 	ColorBlack   Color = iota
@@ -12,6 +25,57 @@ const (
 	ColorCyan    Color = iota
 	ColorWhite   Color = iota
 )
+
+func ColorForName(name string) Color {
+	lname := strings.ToLower(name)
+	if lname == ColorBlackName {
+		return ColorBlack
+	}
+	if lname == ColorRedName {
+		return ColorRed
+	}
+	if lname == ColorGreenName {
+		return ColorGreen
+	}
+	if lname == ColorYellowName {
+		return ColorYellow
+	}
+	if lname == ColorBlueName {
+		return ColorBlue
+	}
+	if lname == ColorMagentaName {
+		return ColorMagenta
+	}
+	if lname == ColorCyanName {
+		return ColorCyan
+	}
+	return ColorWhite
+}
+
+func NameForColor(color Color) string {
+	if color == ColorBlack {
+		return ColorBlackName
+	}
+	if color == ColorRed {
+		return ColorRedName
+	}
+	if color == ColorGreen {
+		return ColorGreenName
+	}
+	if color == ColorYellow {
+		return ColorYellowName
+	}
+	if color == ColorBlue {
+		return ColorBlueName
+	}
+	if color == ColorMagenta {
+		return ColorMagentaName
+	}
+	if color == ColorCyan {
+		return ColorCyanName
+	}
+	return ColorWhiteName
+}
 
 const (
 	ConsoleColorReset   = "\033[0m"
@@ -39,51 +103,43 @@ func ConsoleColorForColorBold(color Color, bold bool) string {
 	case ColorBlack:
 		if bold {
 			return ConsoleBoldBlack
-		} else {
-			return ConsoleColorBlack
 		}
+		return ConsoleColorBlack
 	case ColorRed:
 		if bold {
 			return ConsoleBoldRed
-		} else {
-			return ConsoleColorRed
 		}
+		return ConsoleColorRed
 	case ColorGreen:
 		if bold {
 			return ConsoleBoldGreen
-		} else {
-			return ConsoleColorGreen
 		}
+		return ConsoleColorGreen
 	case ColorYellow:
 		if bold {
 			return ConsoleBoldYellow
-		} else {
-			return ConsoleColorYellow
 		}
+		return ConsoleColorYellow
 	case ColorBlue:
 		if bold {
 			return ConsoleBoldBlue
-		} else {
-			return ConsoleColorBlue
 		}
+		return ConsoleColorBlue
 	case ColorMagenta:
 		if bold {
 			return ConsoleBoldMagenta
-		} else {
-			return ConsoleColorMagenta
 		}
+		return ConsoleColorMagenta
 	case ColorCyan:
 		if bold {
 			return ConsoleBoldCyan
-		} else {
-			return ConsoleColorCyan
 		}
+		return ConsoleColorCyan
 	case ColorWhite:
 		if bold {
 			return ConsoleBoldWhite
-		} else {
-			return ConsoleColorWhite
 		}
+		return ConsoleColorWhite
 	}
 	return ConsoleColorBlack
 }

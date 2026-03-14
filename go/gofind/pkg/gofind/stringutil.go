@@ -1,46 +1,50 @@
 package gofind
 
 import (
-	"bytes"
 	"fmt"
+	"regexp"
 	"strings"
 )
 
 func StringListToString(list []string) string {
-	var buffer bytes.Buffer
-	buffer.WriteString("[")
+	var b strings.Builder
+	b.WriteString("[")
 	var elems []string
 	for _, l := range list {
 		elems = append(elems, fmt.Sprintf("\"%s\"", l))
 	}
-	buffer.WriteString(strings.Join(elems, ", "))
-	buffer.WriteString("]")
-	return buffer.String()
+	b.WriteString(strings.Join(elems, ", "))
+	b.WriteString("]")
+	return b.String()
 }
 
 func FileTypeListToString(list []FileType) string {
-	var buffer bytes.Buffer
-	buffer.WriteString("[")
+	var b strings.Builder
+	b.WriteString("[")
 	var elems []string
 	for _, ft := range list {
 		elems = append(elems, fmt.Sprintf("%s", GetNameForFileType(ft)))
 	}
-	buffer.WriteString(strings.Join(elems, ", "))
-	buffer.WriteString("]")
-	return buffer.String()
+	b.WriteString(strings.Join(elems, ", "))
+	b.WriteString("]")
+	return b.String()
+}
+
+func RegexpListToString(list []*regexp.Regexp) string {
+	var b strings.Builder
+	b.WriteString("[")
+	for i, r := range list {
+		if i > 0 {
+			b.WriteString(", ")
+		}
+		b.WriteString(fmt.Sprintf("\"%s\"", r.String()))
+	}
+	b.WriteString("]")
+	return b.String()
 }
 
 func PatternsToString(fp *Patterns) string {
-	var buffer bytes.Buffer
-	buffer.WriteString("[")
-	for i, r := range fp.patterns {
-		if i > 0 {
-			buffer.WriteString(", ")
-		}
-		buffer.WriteString(fmt.Sprintf("\"%s\"", r.String()))
-	}
-	buffer.WriteString("]")
-	return buffer.String()
+	return RegexpListToString(fp.patterns)
 }
 
 func EscapeQuotes(s string) string {

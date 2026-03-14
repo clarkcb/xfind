@@ -3,9 +3,12 @@ package gofind
 import (
 	"fmt"
 	"os"
+	"reflect"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
+	"unsafe"
 )
 
 type SortBy int
@@ -586,78 +589,125 @@ func addPattern(p string, sp *Patterns) {
 	sp.AddPatternString(p)
 }
 
+func writePair(b *strings.Builder, k, v string) {
+
+	if b.Len() > 0 {
+		b.WriteString(", ")
+	}
+
+	b.WriteString(k)
+	b.WriteByte('=')
+	b.WriteString(v)
+}
+
+func valueInterface(v reflect.Value) any {
+
+	if v.CanInterface() {
+		return v.Interface()
+	}
+
+	if v.CanAddr() {
+		return reflect.NewAt(v.Type(), unsafe.Pointer(v.UnsafeAddr())).Elem().Interface()
+	}
+
+	return "<unreadable>"
+}
+
+func walk(v reflect.Value, path string, seen map[uintptr]bool, b *strings.Builder) {
+	if !v.IsValid() {
+		return
+	}
+
+	for v.Kind() == reflect.Pointer || v.Kind() == reflect.Interface {
+		if v.IsNil() {
+			writePair(b, path, "nil")
+			return
+		}
+
+		ptr := v.Pointer()
+		if ptr != 0 {
+			if seen[ptr] {
+				writePair(b, path, "<cycle>")
+				return
+			}
+			seen[ptr] = true
+		}
+
+		v = v.Elem()
+	}
+
+	switch v.Kind() {
+	case reflect.Struct:
+		if strings.HasSuffix(path, "LastMod") {
+			val := valueInterface(v).(time.Time)
+			writePair(b, path, LastModToString(val))
+			return
+		}
+
+		t := v.Type()
+
+		for i := 0; i < v.NumField(); i++ {
+			field := t.Field(i)
+
+			name := field.Name
+			if path != "" {
+				name = path + "." + name
+			}
+
+			walk(v.Field(i), name, seen, b)
+		}
+
+	case reflect.Slice, reflect.Array:
+		if strings.HasSuffix(path, "FileTypes") {
+			val := valueInterface(v).([]FileType)
+			writePair(b, path, FileTypeListToString(val))
+		} else if strings.HasSuffix(path, "Patterns.patterns") {
+			val := valueInterface(v).([]*regexp.Regexp)
+			name := path[:len(path)-len(".patterns")]
+			writePair(b, name, RegexpListToString(val))
+		} else {
+			val := valueInterface(v).([]string)
+			writePair(b, path, StringListToString(val))
+		}
+
+	case reflect.Int:
+		if strings.HasSuffix(path, "Color") {
+			val := valueInterface(v).(Color)
+			writePair(b, path, NameForColor(val))
+		} else if path == "sortBy" {
+			val := valueInterface(v).(SortBy)
+			writePair(b, path, NameForSortBy(val))
+		} else {
+			val := valueInterface(v).(int)
+			writePair(b, path, fmt.Sprintf("%d", val))
+		}
+
+	default:
+		val := valueInterface(v)
+		writePair(b, path, fmt.Sprint(val))
+	}
+}
+
+func settingsToString(settings *FindSettings) string {
+	rv := reflect.ValueOf(settings)
+
+	if rv.Kind() != reflect.Pointer {
+		ptr := reflect.New(rv.Type())
+		ptr.Elem().Set(rv)
+		rv = ptr
+	}
+
+	rv = rv.Elem()
+
+	var b strings.Builder
+	seen := map[uintptr]bool{}
+
+	walk(rv, "", seen, &b)
+
+	return b.String()
+}
+
 func (f *FindSettings) String() string {
-	const template = "FindSettings(" +
-		"ArchivesOnly=%t" +
-		", Colorize=%t" +
-		", Debug=%t" +
-		", DefaultFiles=%t" +
-		", FollowSymlinks=%t" +
-		", InArchiveExtensions=%s" +
-		", InArchiveFilePatterns=%s" +
-		", InDirPatterns=%s" +
-		", InExtensions=%s" +
-		", InFilePatterns=%s" +
-		", InFileTypes=%s" +
-		", IncludeArchives=%t" +
-		", IncludeHidden=%t" +
-		", MaxDepth=%d" +
-		", MaxLastMod=%s" +
-		", MaxSize=%d" +
-		", MinDepth=%d" +
-		", MinLastMod=%s" +
-		", MinSize=%d" +
-		", OutArchiveExtensions=%s" +
-		", OutArchiveFilePatterns=%s" +
-		", OutDirPatterns=%s" +
-		", OutExtensions=%s" +
-		", OutFilePatterns=%s" +
-		", OutFileTypes=%s" +
-		", Paths=%s" +
-		", PrintDirs=%t" +
-		", PrintFiles=%t" +
-		", PrintUsage=%t" +
-		", PrintVersion=%t" +
-		", Recursive=%t" +
-		", SortBy=%s" +
-		", SortCaseInsensitive=%t" +
-		", SortDescending=%t" +
-		", Verbose=%t)"
-	return fmt.Sprintf(template,
-		f.ArchivesOnly(),
-		f.Colorize(),
-		f.Debug(),
-		f.DefaultFiles(),
-		f.FollowSymlinks(),
-		StringListToString(f.InArchiveExtensions()),
-		PatternsToString(f.InArchiveFilePatterns()),
-		PatternsToString(f.InDirPatterns()),
-		StringListToString(f.InExtensions()),
-		PatternsToString(f.InFilePatterns()),
-		FileTypeListToString(f.InFileTypes()),
-		f.IncludeArchives(),
-		f.IncludeHidden(),
-		f.MaxDepth(),
-		LastModToString(f.MaxLastMod()),
-		f.MaxSize(),
-		f.MinDepth(),
-		LastModToString(f.MinLastMod()),
-		f.MinSize(),
-		StringListToString(f.OutArchiveExtensions()),
-		PatternsToString(f.OutArchiveFilePatterns()),
-		PatternsToString(f.OutDirPatterns()),
-		StringListToString(f.OutExtensions()),
-		PatternsToString(f.OutFilePatterns()),
-		FileTypeListToString(f.OutFileTypes()),
-		StringListToString(f.Paths()),
-		f.PrintDirs(),
-		f.PrintFiles(),
-		f.PrintUsage(),
-		f.PrintVersion(),
-		f.Recursive(),
-		NameForSortBy(f.SortBy()),
-		f.SortCaseInsensitive(),
-		f.SortDescending(),
-		f.Verbose(),
-	)
+	fieldString := settingsToString(f)
+	return fmt.Sprintf("FindSettings(%v)", fieldString)
 }
