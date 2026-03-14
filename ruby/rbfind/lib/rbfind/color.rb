@@ -22,14 +22,17 @@ module RbFind
     NAMES = Array[:black, :red, :green, :yellow, :blue, :magenta, :cyan, :white].freeze
 
     module_function
-
     def from_name(name)
       from_sym(name.downcase.to_sym)
     end
 
     def from_sym(sym)
       idx = NAMES.index(sym)
-      idx.nil? ? 0 : NAMES[idx]
+      idx.nil? ? 0 : idx
+    end
+
+    def to_name(color)
+      color < NAMES.size ? NAMES[color].to_s : NAMES[0].to_s
     end
 
     def to_console_color(color)

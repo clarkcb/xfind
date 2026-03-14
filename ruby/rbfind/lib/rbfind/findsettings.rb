@@ -171,42 +171,7 @@ module RbFind
 
     def to_s
       'FindSettings(' +
-        "archives_only=#{@archives_only}" +
-        ", colorize=#{@colorize}" +
-        ", debug=#{@debug}" +
-        ", default_files=#{@default_files}" +
-        ", follow_symlinks=#{@follow_symlinks}" +
-        ', ' + set_to_s('in_archive_extensions', @in_archive_extensions) +
-        ', ' + array_to_s('in_archive_file_patterns', @in_archive_file_patterns.map { |p| p.source }) +
-        ', ' + array_to_s('in_dir_patterns', @in_dir_patterns.map { |p| p.source }) +
-        ', ' + set_to_s('in_extensions', @in_extensions) +
-        ', ' + array_to_s('in_file_patterns', @in_file_patterns.map { |p| p.source }) +
-        ', ' + file_types_to_s('in_file_types', @in_file_types) +
-        ", include_archives=#{@include_archives}" +
-        ", include_hidden=#{@include_hidden}" +
-        ", max_depth=#{@max_depth}" +
-        ", max_last_mod=#{last_mod_to_s(@max_last_mod)}" +
-        ", max_size=#{@max_size}" +
-        ", min_depth=#{@min_depth}" +
-        ", min_last_mod=#{last_mod_to_s(@min_last_mod)}" +
-        ", min_size=#{@min_size}" +
-        ', ' + set_to_s('out_archive_extensions', @out_archive_extensions) +
-        ', ' + array_to_s('out_archive_file_patterns', @out_archive_file_patterns.map { |p| p.source }) +
-        ', ' + array_to_s('out_dir_patterns', @out_dir_patterns.map { |p| p.source }) +
-        ', ' + set_to_s('out_extensions', @out_extensions) +
-        ', ' + array_to_s('out_file_patterns', @out_file_patterns.map { |p| p.source }) +
-        ', ' + file_types_to_s('out_file_types', @out_file_types) +
-        ', ' + paths_to_s('paths', @paths) +
-        ", print_dirs=#{@print_dirs}" +
-        ", print_files=#{@print_files}" +
-        ", print_usage=#{@print_usage}" +
-        ", print_version=#{@print_version}" +
-        ", recursive=#{@recursive}" +
-        # ", settings_only=#{@settings_only}" +
-        ", sort_by=" + SortBy::to_name(@sort_by) +
-        ", sort_case_insensitive=#{@sort_case_insensitive}" +
-        ", sort_descending=#{@sort_descending}" +
-        ", verbose=#{@verbose}" +
+        properties_to_s +
         ')'
     end
 
@@ -254,6 +219,36 @@ module RbFind
         count += 1
       end
       s + ']'
+    end
+
+    def properties_to_s
+      prop_strings = Array.new
+      self.instance_variables.each do |var|
+        var_name = var.to_s.gsub('@','')
+        var_value = self.instance_variable_get(var)
+        if var_value.is_a?(Set)
+          if var_name.end_with?('_file_types')
+            prop_string = file_types_to_s(var_name, var_value)
+          elsif var_name.end_with?('_patterns')
+            var_value = var_value.map { |p| p.source }
+            prop_string = array_to_s(var_name, var_value)
+          else
+            prop_string = set_to_s(var_name, var_value)
+          end
+        elsif var_name.end_with?('_color')
+          prop_string = "#{var_name}=#{Color::to_name(var_value)}"
+        elsif var_name.end_with?('_last_mod')
+          prop_string = "#{var_name}=#{last_mod_to_s(var_value)}"
+        elsif var_name.include?('paths')
+          prop_string = paths_to_s(var_name, var_value)
+        elsif var_name == 'sort_by'
+          prop_string = "#{var_name}=#{SortBy::to_name(var_value)}"
+        else
+          prop_string = "#{var_name}=#{var_value}"
+        end
+        prop_strings.push(prop_string)
+      end
+      prop_strings.join(', ')
     end
   end
 end

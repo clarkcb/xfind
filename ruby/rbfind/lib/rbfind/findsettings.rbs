@@ -78,5 +78,7 @@ module RbFind
 
     def paths_to_s: (String name, Set[Pathname] path_set) -> String
 
+    def properties_to_s: () -> String
+
   end
 end
