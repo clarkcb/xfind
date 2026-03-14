@@ -2,6 +2,9 @@ package groovyfind
 
 import groovy.transform.CompileStatic
 
+import java.lang.reflect.Field
+import java.lang.reflect.ParameterizedType
+import java.lang.reflect.Type
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.time.LocalDate
@@ -297,42 +300,44 @@ class FindSettings {
     }
 
     String toString() {
-        'FindSettings(' +
-                'archivesOnly=' + this.archivesOnly +
-                ', colorize=' + this.colorize +
-                ', debug=' + this.debug +
-                ', defaultFiles=' + this.defaultFiles +
-                ', followSymlinks=' + this.followSymlinks +
-                ', inArchiveExtensions=' + stringSetToString(this.inArchiveExtensions) +
-                ', inArchiveFilePatterns=' + patternSetToString(this.inArchiveFilePatterns) +
-                ', inDirPatterns=' + patternSetToString(this.inDirPatterns) +
-                ', inExtensions=' + stringSetToString(this.inExtensions) +
-                ', inFilePatterns=' + patternSetToString(this.inFilePatterns) +
-                ', inFileTypes=' + fileTypeSetToString(this.inFileTypes) +
-                ', includeArchives=' + this.includeArchives +
-                ', includeHidden=' + this.includeHidden +
-                ', maxDepth=' + this.maxDepth +
-                ', maxLastMod=' + localDateTimeToString(this.maxLastMod) +
-                ', maxSize=' + this.maxSize +
-                ', minDepth=' + this.minDepth +
-                ', minLastMod=' + localDateTimeToString(this.minLastMod) +
-                ', minSize=' + this.minSize +
-                ', outArchiveExtensions=' + stringSetToString(this.outArchiveExtensions) +
-                ', outArchiveFilePatterns=' + patternSetToString(this.outArchiveFilePatterns) +
-                ', outDirPatterns=' + patternSetToString(this.outDirPatterns) +
-                ', outExtensions=' + stringSetToString(this.outExtensions) +
-                ', outFilePatterns=' + patternSetToString(this.outFilePatterns) +
-                ', outFileTypes=' + fileTypeSetToString(this.outFileTypes) +
-                ', paths=' + pathSetToString(this.paths) +
-                ', printDirs=' + this.printDirs +
-                ', printFiles=' + this.printFiles +
-                ', printUsage=' + this.printUsage +
-                ', printVersion=' + this.printVersion +
-                ', recursive=' + this.recursive +
-                ', sortBy=' + this.sortBy.toName() +
-                ', sortCaseInsensitive=' + this.sortCaseInsensitive +
-                ', sortDescending=' + this.sortDescending +
-                ', verbose=' + this.verbose +
-                ')'
+        var sb = new StringBuilder("FindSettings(")
+        List<Field> fields = Arrays.stream(getClass().getDeclaredFields())
+                .filter(f -> !f.getName().contains("_")).toList()
+        try {
+            for (int i=0; i < fields.size(); ++i) {
+                Field field = fields.get(i)
+                if (field.name == '$staticClassInfo' || field.name == 'metaClass') continue
+                if (i > 0) sb.append(", ")
+                field.setAccessible(true)
+                sb.append(field.getName()).append("=")
+                String typeName = field.getType().getName()
+                if (typeName == "java.util.Set") {
+                    Type[] actualTypeArguments = ((ParameterizedType)field.getGenericType()).getActualTypeArguments()
+                    if (actualTypeArguments.length > 0) {
+                        if (actualTypeArguments[0].getTypeName() == "java.lang.String") {
+                            sb.append(stringSetToString((java.util.Set<String>)field.get(this)))
+                        } else if (actualTypeArguments[0].getTypeName() == "java.util.regex.Pattern") {
+                            sb.append(patternSetToString((java.util.Set<Pattern>)field.get(this)))
+                        } else if (actualTypeArguments[0].getTypeName() == "javafind.FileType") {
+                            sb.append(fileTypeSetToString((java.util.Set<FileType>)field.get(this)))
+                        } else if (actualTypeArguments[0].getTypeName() == "java.nio.file.Path") {
+                            sb.append(pathSetToString((java.util.Set<Path>)field.get(this)))
+                        }
+                    }
+                } else if (typeName == "javafind.Color") {
+                    sb.append(((Color)field.get(this)).getName())
+                } else if (typeName == "java.time.LocalDateTime") {
+                    sb.append(localDateTimeToString((LocalDateTime)field.get(this)))
+                } else if (typeName == "javafind.SortBy") {
+                    sb.append(((SortBy)field.get(this)).toName())
+                } else {
+                    sb.append(field.get(this))
+                }
+            }
+        } catch (Exception e) {
+            System.out.println(e.getMessage())
+        }
+        sb.append(")")
+        return sb.toString()
     }
 }
