@@ -4,9 +4,11 @@ import scalafind.Color.Color
 import scalafind.FileType.FileType
 import scalafind.SortBy.SortBy
 
+import java.lang.reflect.{Field, ParameterizedType, Type}
 import java.nio.file.Path
 import java.time.format.{DateTimeFormatter, DateTimeParseException}
 import java.time.{LocalDate, LocalDateTime}
+import scala.annotation.tailrec
 import scala.util.matching.Regex
 
 object SortBy extends Enumeration {
@@ -141,42 +143,57 @@ case class FindSettings(archivesOnly: Boolean = DefaultFindSettings.archivesOnly
   }
 
   override def toString: String = {
-    "FindSettings(" +
-      "archivesOnly=" + archivesOnly +
-      ", colorize=" + colorize +
-      ", debug=" + debug +
-      ", defaultFiles=" + defaultFiles +
-      ", followSymlinks=" + followSymlinks +
-      ", inArchiveExtensions=" + setToString(inArchiveExtensions) +
-      ", inArchiveFilePatterns=" + regexSetToString(inArchiveFilePatterns) +
-      ", inDirPatterns=" + regexSetToString(inDirPatterns) +
-      ", inExtensions=" + setToString(inExtensions) +
-      ", inFilePatterns=" + regexSetToString(inFilePatterns) +
-      ", inFileTypes=" + inFileTypes.map(ft => ft.toString).mkString("[", ", ", "]") +
-      ", includeArchives=" + includeArchives +
-      ", includeHidden=" + includeHidden +
-      ", maxDepth=" + maxDepth +
-      ", maxLastMod=" + (if (maxLastMod.isEmpty) "0" else maxLastMod) +
-      ", maxSize=" + maxSize +
-      ", minDepth=" + minDepth +
-      ", minLastMod=" + (if (minLastMod.isEmpty) "0" else minLastMod) +
-      ", minSize=" + minSize +
-      ", outArchiveExtensions=" + setToString(outArchiveExtensions) +
-      ", outArchiveFilePatterns=" + regexSetToString(outArchiveFilePatterns) +
-      ", outDirPatterns=" + regexSetToString(outDirPatterns) +
-      ", outExtensions=" + setToString(outExtensions) +
-      ", outFilePatterns=" + regexSetToString(outFilePatterns) +
-      ", outFileTypes=" + outFileTypes.map(ft => ft.toString).mkString("[", ", ", "]") +
-      ", paths=" + pathSetToString(paths) +
-      ", printDirs=" + printDirs +
-      ", printFiles=" + printFiles +
-      ", printUsage=" + printUsage +
-      ", printVersion=" + printVersion +
-      ", recursive=" + recursive +
-      ", sortBy=" + sortBy.toString +
-      ", sortCaseInsensitive=" + sortCaseInsensitive +
-      ", sortDescending=" + sortDescending +
-      ", verbose=" + verbose +
-      ")"
+    val sb: StringBuilder = new StringBuilder("FindSettings(")
+    val fields: List[Field] = getClass.getDeclaredFields.filter((f: Field) => !f.getName.contains("_")).toList
+    val totalFields = fields.length
+
+    @tailrec
+    def recAddFields(fields: List[Field]): Unit = fields match {
+      case Nil => ()
+      case f :: fs =>
+        f.setAccessible(true)
+        if (fields.length < totalFields) sb.append(", ")
+        sb.append(f.getName).append("=")
+        val typeName: String = f.getType.getName
+        f.getType.getName match {
+          case "javafind.Color" =>
+            sb.append(f.get(this).asInstanceOf[Color].toString)
+          case "javafind.SortBy" =>
+            sb.append(f.get(this).asInstanceOf[SortBy].toString)
+          case "scala.collection.immutable.Set" =>
+            val actualTypeArguments: Array[Type] = f.getGenericType.asInstanceOf[ParameterizedType].getActualTypeArguments
+            if (actualTypeArguments.length > 0) {
+              actualTypeArguments(0).getTypeName match {
+                case "java.lang.String" =>
+                  sb.append(setToString(f.get(this).asInstanceOf[Set[String]]))
+                case "scala.util.matching.Regex" =>
+                  sb.append(regexSetToString(f.get(this).asInstanceOf[Set[Regex]]))
+                case "javafind.FileType" =>
+                  val fts = f.get(this).asInstanceOf[Set[FileType]]
+                  sb.append(fts.map(ft => ft.toString).mkString("[", ", ", "]"))
+                case "java.nio.file.Path" =>
+                  sb.append(pathSetToString(f.get(this).asInstanceOf[Set[Path]]))
+                case _ =>
+              }
+            }
+          case "scala.Option" =>
+            val actualTypeArguments: Array[Type] = f.getGenericType.asInstanceOf[ParameterizedType].getActualTypeArguments
+            if (actualTypeArguments.length > 0) {
+              actualTypeArguments(0).getTypeName match {
+                case "java.time.LocalDateTime" =>
+                  val dt = f.get(this).asInstanceOf[Option[LocalDateTime]]
+                  sb.append(if (dt.isEmpty) "0" else dt.get)
+                case _ =>
+              }
+            }
+          case _ =>
+            sb.append(f.get(this))
+        }
+        recAddFields(fs)
+    }
+
+    recAddFields(fields)
+    sb.append(")")
+    sb.toString
   }
 }
