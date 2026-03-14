@@ -3,6 +3,7 @@
 open System
 open System.Collections.Generic
 open System.IO
+open System.Text.RegularExpressions
 open System.Text.Json
 
 type FileType = 
@@ -143,4 +144,20 @@ type FileTypes() =
     member this.IsXmlFile (f : FileInfo) : bool =
         Seq.exists (fun x -> x = f.Name) this.FileTypeNameDictionary[xml] ||
         Seq.exists (fun x -> x = f.Extension.ToLowerInvariant()) this.FileTypeExtDictionary[xml]
+
+module FileTypesUtil =
+    let FileTypesListToString (lst : FileType list) : string = 
+        let rec recListToString (acc : string) (lst : FileType list) =
+            match lst with
+            | []     -> acc.Trim()
+            | [a]    -> (recListToString (acc + " " + (FileTypes.ToName a)) [])
+            | h :: t -> (recListToString (acc + " " + (FileTypes.ToName h) + ",") t) in
+        sprintf "[%s]" (recListToString "" lst)
+
+    let FileTypesListFromString (fts : string) : FileType list =
+        let nonWord = Regex(@"\W+")
+        nonWord.Split(fts)
+        |> Array.toList
+        |> List.filter (fun (x : string) -> String.IsNullOrEmpty(x) = false)
+        |> List.map (fun (x : string) -> FileTypes.FromName x)
     ;;

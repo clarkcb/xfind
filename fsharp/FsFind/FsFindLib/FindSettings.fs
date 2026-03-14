@@ -1,7 +1,45 @@
 ﻿namespace FsFindLib
 
 open System
+open System.Reflection
 open System.Text.RegularExpressions
+open FsFindLib
+
+
+module SettingsUtil = 
+    let DateTimeOptionToString (dt : DateTime option) : string =
+        match dt with
+        | Some(d) -> $"\"%s{d.ToString()}\""
+        | None    -> "0"
+
+    let propertiesToString (o : obj) : string =
+        let propertyToString (property : PropertyInfo) =
+            match property.Name with
+            | "ToString" -> ""
+            | _ ->
+                match property.PropertyType.Name with
+                | "Color" -> property.Name + "=" + property.GetValue(o).ToString()
+                | "SortBy" -> property.Name + "=" + SortUtil.NameFromSortBy(property.GetValue(o) :?> SortBy)
+                | "FSharpList`1" ->
+                    match property.PropertyType.GenericTypeArguments[0].Name with
+                    | "String" -> property.Name + "=" + Common.ListToString(property.GetValue(o) :?> List<string>)
+                    | "Regex" -> property.Name + "=" + Common.ListToString(property.GetValue(o) :?> List<Regex>)
+                    | "FileType" -> property.Name + "=" + FileTypesUtil.FileTypesListToString(property.GetValue(o) :?> List<FileType>)
+                    | _ -> property.Name + "=[]"
+                | "FSharpOption`1" ->
+                    match property.PropertyType.GenericTypeArguments[0].Name with
+                    | "DateTime" -> property.Name + "=" + DateTimeOptionToString(property.GetValue(o) :?> Option<DateTime>)
+                    | _ -> property.Name + "="
+                | _ -> property.Name + "=" + property.GetValue(o).ToString()
+        let t = o.GetType()
+        
+        let properties =
+            t.GetProperties()
+            |> Seq.filter (fun p -> p.Name <> "ToString")
+            |> List.ofSeq
+        let propertyStrings = [for p in properties do propertyToString p]
+        String.concat ", " propertyStrings
+
 
 type FindSettings() =
     let mutable _archivesOnly : bool = false
@@ -67,67 +105,14 @@ type FindSettings() =
     member this.AddPattern (pattern : string) (patternList : Regex list) : Regex list =
         List.append patternList [Regex(pattern, RegexOptions.Compiled)]
 
-    member this.DateTimeOptionListToString (dt : DateTime option) : string =
-        match dt with
-        | Some(d) -> $"\"%s{d.ToString()}\""
-        | None    -> "0"
-
-    member this.FileTypesListToString (lst : FileType list) : string = 
-        let rec recListToString (acc : string) (lst : FileType list) =
-            match lst with
-            | []     -> acc.Trim()
-            | [a]    -> (recListToString (acc + " " + (FileTypes.ToName a)) [])
-            | h :: t -> (recListToString (acc + " " + (FileTypes.ToName h) + ",") t) in
-        sprintf "[%s]" (recListToString "" lst)
-
-    member this.FileTypesListFromString (fts : string) : FileType list =
-        let nonWord = Regex(@"\W+")
-        nonWord.Split(fts)
-        |> Array.toList
-        |> List.filter (fun (x : string) -> String.IsNullOrEmpty(x) = false)
-        |> List.map (fun (x : string) -> FileTypes.FromName x)
-
     member this.AddFileTypes (fts : string) (ftList : FileType list) : FileType list =
-        List.append ftList (this.FileTypesListFromString fts)
+        List.append ftList (FileTypesUtil.FileTypesListFromString fts)
 
     member this.ToString =
+        let propString = SettingsUtil.propertiesToString this
         String.concat "" [
-            "FindSettings(";
-            $"ArchivesOnly=%b{this.ArchivesOnly}";
-            $", Colorize: %b{this.Colorize}";
-            $", Debug=%b{this.Debug}";
-            $", DefaultFiles=%b{this.DefaultFiles}";
-            $", FollowSymlinks=%b{this.FollowSymlinks}";
-            $", InArchiveExtensions=%s{Common.ListToString(this.InArchiveExtensions)}";
-            $", InArchiveFilePatterns=%s{Common.ListToString(this.InArchiveFilePatterns)}";
-            $", InDirPatterns=%s{Common.ListToString(this.InDirPatterns)}";
-            $", InExtensions=%s{Common.ListToString(this.InExtensions)}";
-            $", InFilePatterns=%s{Common.ListToString(this.InFilePatterns)}";
-            $", InFileTypes=%s{this.FileTypesListToString this.InFileTypes}";
-            $", IncludeArchives=%b{this.IncludeArchives}";
-            $", IncludeHidden=%b{this.IncludeHidden}";
-            $", MaxDepth=%i{this.MaxDepth}";
-            $", MaxLastMod=%s{this.DateTimeOptionListToString this.MaxLastMod}";
-            $", MaxSize=%i{this.MaxSize}";
-            $", MinDepth=%i{this.MinDepth}";
-            $", MinLastMod=%s{this.DateTimeOptionListToString this.MinLastMod}";
-            $", MinSize=%i{this.MinSize}";
-            $", OutArchiveExtensions=%s{Common.ListToString(this.OutArchiveExtensions)}";
-            $", OutArchiveFilePatterns=%s{Common.ListToString(this.OutArchiveFilePatterns)}";
-            $", OutDirPatterns=%s{Common.ListToString(this.OutDirPatterns)}";
-            $", OutExtensions=%s{Common.ListToString(this.OutExtensions)}";
-            $", OutFilePatterns=%s{Common.ListToString(this.OutFilePatterns)}";
-            $", OutFileTypes=%s{this.FileTypesListToString this.OutFileTypes}";
-            $", Paths=%s{Common.ListToString(this.Paths)}";
-            $", PrintDirs=%b{this.PrintDirs}";
-            $", PrintFiles=%b{this.PrintFiles}";
-            $", PrintUsage=%b{this.PrintUsage}";
-            $", PrintVersion=%b{this.PrintVersion}";
-            $", Recursive=%b{this.Recursive}";
-            $", SortBy=%s{SortUtil.NameFromSortBy(this.SortBy)}";
-            $", SortCaseInsensitive=%b{this.SortCaseInsensitive}";
-            $", SortDescending=%b{this.SortDescending}";
-            $", Verbose=%b{this.Verbose}";
+            "FindSettings("
+            propString;
             ")"
         ]
 ;;
