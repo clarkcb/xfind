@@ -168,42 +168,28 @@ export class FindSettings {
     }
 
     public toString(): string {
-        return 'FindSettings('
-            + 'archivesOnly=' + this.archivesOnly
-            + ', colorize=' + this.colorize
-            + ', debug=' + this.debug
-            + ', defaultFiles=' + this.defaultFiles
-            + ', followSymlinks=' + this.followSymlinks
-            + ', ' + StringUtil.stringListToString('inArchiveExtensions', this.inArchiveExtensions)
-            + ', ' + StringUtil.patternListToString('inArchiveFilePatterns', this.inArchiveFilePatterns)
-            + ', ' + StringUtil.patternListToString('inDirPatterns', this.inDirPatterns)
-            + ', ' + StringUtil.stringListToString('inExtensions', this.inExtensions)
-            + ', ' + StringUtil.patternListToString('inFilePatterns', this.inFilePatterns)
-            + ', ' + FileTypes.fileTypesToString('inFileTypes', this.inFileTypes)
-            + ', includeArchives=' + this.includeArchives
-            + ', includeHidden=' + this.includeHidden
-            + ', maxDepth=' + this.maxDepth
-            + ', ' + StringUtil.timestampToString('maxLastMod', this.maxLastMod)
-            + ', maxSize=' + this.maxSize
-            + ', minDepth=' + this.minDepth
-            + ', ' + StringUtil.timestampToString('minLastMod', this.minLastMod)
-            + ', minSize=' + this.minSize
-            + ', ' + StringUtil.stringListToString('outArchiveExtensions', this.outArchiveExtensions)
-            + ', ' + StringUtil.patternListToString('outArchiveFilePatterns', this.outArchiveFilePatterns)
-            + ', ' + StringUtil.patternListToString('outDirPatterns', this.outDirPatterns)
-            + ', ' + StringUtil.stringListToString('outExtensions', this.outExtensions)
-            + ', ' + StringUtil.patternListToString('outFilePatterns', this.outFilePatterns)
-            + ', ' + FileTypes.fileTypesToString('outFileTypes', this.outFileTypes)
-            + ', ' + StringUtil.stringListToString('paths', this.paths)
-            + ', printDirs=' + this.printDirs
-            + ', printFiles=' + this.printFiles
-            + ', printUsage=' + this.printUsage
-            + ', printVersion=' + this.printVersion
-            + ', recursive=' + this.recursive
-            + ', sortBy=' + this.sortBy
-            + ', sortCaseInsensitive=' + this.sortCaseInsensitive
-            + ', sortDescending=' + this.sortDescending
-            + ', verbose=' + this.verbose
-            + ')';
+        let propStrings = [];
+        for (let p of Reflect.ownKeys(this)) {
+            let name = p.toString();
+            let value: any = Reflect.get(this, p);
+            if (name.startsWith('_')) {
+                name = name.substring(1);
+            }
+            if (value instanceof Array) {
+                if (name.endsWith('Patterns')) {
+                    propStrings.push(StringUtil.patternListToString(name, value));
+                } else if (name.endsWith('FileTypes')) {
+                    propStrings.push(FileTypes.fileTypesToString(name, value));
+                } else {
+                    propStrings.push(StringUtil.stringListToString(name, value));
+                }
+            } else if (name.endsWith('LastMod')) {
+                propStrings.push(StringUtil.timestampToString(name, value));
+            } else {
+                propStrings.push(`${name}=${value}`);
+            }
+        }
+        let propString = propStrings.join(', ');
+        return `FindSettings(${propString})`;
     }
 }
