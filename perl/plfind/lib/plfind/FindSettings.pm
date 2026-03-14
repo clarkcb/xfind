@@ -168,45 +168,30 @@ sub needs_stat {
 }
 
 sub to_string {
-    my $self = shift @_;
-    my $s = "FindSettings(" .
-        'archives_only=' . plfind::common::bool_to_string($self->{archives_only}) .
-        ', colorize=' . plfind::common::bool_to_string($self->{colorize}) .
-        ', debug=' . plfind::common::bool_to_string($self->{debug}) .
-        ', default_files=' . plfind::common::bool_to_string($self->{default_files}) .
-        ', follow_symlinks=' . plfind::common::bool_to_string($self->{follow_symlinks}) .
-        ', in_archive_extensions=' . plfind::common::strings_aref_to_string($self->{in_archive_extensions}) .
-        ', in_archive_file_patterns=' . plfind::common::strings_aref_to_string($self->{in_archive_file_patterns}) .
-        ', in_dir_patterns=' . plfind::common::strings_aref_to_string($self->{in_dir_patterns}) .
-        ', in_extensions=' . plfind::common::strings_aref_to_string($self->{in_extensions}) .
-        ', in_file_patterns=' . plfind::common::strings_aref_to_string($self->{in_file_patterns}) .
-        ', in_file_types=' . plfind::common::file_types_aref_to_string($self->{in_file_types}) .
-        ', include_archives=' . plfind::common::bool_to_string($self->{include_archives}) .
-        ', include_hidden=' . plfind::common::bool_to_string($self->{include_hidden}) .
-        ', max_depth=' . $self->{max_depth} .
-        ', max_last_mod=' . plfind::common::datetime_to_string($self->{max_last_mod}) .
-        ', max_size=' . $self->{max_size} .
-        ', min_depth=' . $self->{min_depth} .
-        ', min_last_mod=' . plfind::common::datetime_to_string($self->{min_last_mod}) .
-        ', min_size=' . $self->{min_size} .
-        ', out_archive_extensions=' . plfind::common::strings_aref_to_string($self->{out_archive_extensions}) .
-        ', out_archive_file_patterns=' . plfind::common::strings_aref_to_string($self->{out_archive_file_patterns}) .
-        ', out_dir_patterns=' . plfind::common::strings_aref_to_string($self->{out_dir_patterns}) .
-        ', out_extensions=' . plfind::common::strings_aref_to_string($self->{out_extensions}) .
-        ', out_file_patterns=' . plfind::common::strings_aref_to_string($self->{out_file_patterns}) .
-        ', out_file_types=' . plfind::common::file_types_aref_to_string($self->{out_file_types}) .
-        ', paths=' . plfind::common::strings_aref_to_string($self->{paths}) .
-        ', print_dirs=' . plfind::common::bool_to_string($self->{print_dirs}) .
-        ', print_files=' . plfind::common::bool_to_string($self->{print_files}) .
-        ', print_usage=' . plfind::common::bool_to_string($self->{print_usage}) .
-        ', print_version=' . plfind::common::bool_to_string($self->{print_version}) .
-        ', recursive=' . plfind::common::bool_to_string($self->{recursive}) .
-        ', sort_by=' . $self->{sort_by} .
-        ', sort_case_insensitive=' . plfind::common::bool_to_string($self->{sort_case_insensitive}) .
-        ', sort_descending=' . plfind::common::bool_to_string($self->{sort_descending}) .
-        ', verbose=' . plfind::common::bool_to_string($self->{verbose}) .
-        ')';
-    return $s;
+    my $self = shift;
+    my @keys = keys(%$self);
+    my @sorted_keys = sort @keys;
+    my $props = [];
+    foreach my $k (@sorted_keys) {
+        if (ref($self->{$k}) eq 'ARRAY') {
+            if ($k =~ /_file_types$/) {
+                push(@$props, $k . '=' . plfind::common::file_types_aref_to_string($self->{$k}));
+            } else {
+                push(@$props, $k . '=' . plfind::common::strings_aref_to_string($self->{$k}));
+            }
+        } elsif ($k =~ /_color$/) {
+            push(@$props, $k . '=' . $self->{$k});
+        } elsif ($k =~ /_(depth|size)$/) {
+            push(@$props, $k . '=' . $self->{$k});
+        } elsif ($k =~ /_last_mod$/) {
+            push(@$props, $k . '=' . plfind::common::datetime_to_string($self->{$k}));
+        } elsif ($k =~ /^sort_by$/) {
+            push(@$props, $k . '=' . $self->{$k});
+        } else {
+            push(@$props, $k . '=' . plfind::common::bool_to_string($self->{$k}));
+        }
+    }
+    return 'FindSettingsZZ(' . join(', ', @$props) . ')';
 }
 
 1;
