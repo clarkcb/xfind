@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -234,42 +235,62 @@ public class FindSettings
 
 	public override string ToString()
 	{
-		return "FindSettings(" +
-		       "ArchivesOnly=" + ArchivesOnly +
-		       ", Colorize: " + Colorize +
-		       ", Debug=" + Debug +
-		       ", DefaultFiles=" + DefaultFiles +
-		       ", FollowSymlinks=" + FollowSymlinks +
-		       ", InArchiveExtensions=" + EnumerableToString(InArchiveExtensions) +
-		       ", InArchiveFilePatterns=" + EnumerableToString(InArchiveFilePatterns) +
-		       ", InDirPatterns=" + EnumerableToString(InDirPatterns) +
-		       ", InExtensions=" + EnumerableToString(InExtensions) +
-		       ", InFilePatterns=" + EnumerableToString(InFilePatterns) +
-		       ", InFileTypes=" + EnumerableToString(InFileTypes, false) +
-		       ", IncludeArchives=" + IncludeArchives +
-		       ", IncludeHidden=" + IncludeHidden +
-		       ", MaxDepth=" + MaxDepth +
-		       ", MaxLastMod=" + DateTimeToString(MaxLastMod) +
-		       ", MaxSize=" + MaxSize +
-		       ", MinDepth=" + MinDepth +
-		       ", MinLastMod=" + DateTimeToString(MinLastMod) +
-		       ", MinSize=" + MinSize +
-		       ", OutArchiveExtensions=" + EnumerableToString(OutArchiveExtensions) +
-		       ", OutArchiveFilePatterns=" + EnumerableToString(OutArchiveFilePatterns) +
-		       ", OutDirPatterns=" + EnumerableToString(OutDirPatterns) +
-		       ", OutExtensions=" + EnumerableToString(OutExtensions) +
-		       ", OutFilePatterns=" + EnumerableToString(OutFilePatterns) +
-		       ", OutFileTypes=" + EnumerableToString(OutFileTypes, false) +
-		       ", Paths=" + EnumerableToString(Paths) +
-		       ", PrintDirs=" + PrintDirs +
-		       ", PrintFiles=" + PrintFiles +
-		       ", PrintUsage=" + PrintUsage +
-		       ", PrintVersion=" + PrintVersion +
-		       ", Recursive=" + Recursive +
-		       ", SortBy=" + SortByUtil.GetNameFromSortBy(SortBy) +
-		       ", SortCaseInsensitive=" + SortCaseInsensitive +
-		       ", SortDescending=" + SortDescending +
-		       ", Verbose=" + Verbose +
-		       ")";
+		var sb = new StringBuilder("FindSettings(");
+		var flags = BindingFlags.Public | BindingFlags.Instance;
+        var classType = typeof(FindSettings);
+		PropertyInfo[] properties = classType.GetProperties(flags);
+		var propCount = 0;
+		foreach (var p in properties)
+		{
+			if (propCount > 0)
+			{
+				sb.Append(", ");
+			}
+			sb.Append(p.Name).Append("=");
+			if (p.PropertyType.FullName.StartsWith("System.Collections.Generic.ISet"))
+			{
+				if (p.PropertyType.IsGenericType && p.PropertyType.GenericTypeArguments.Length == 1)
+				{
+					if (p.PropertyType.GenericTypeArguments[0] == typeof(string))
+					{
+						sb.Append(EnumerableToString(p.GetValue(this, null)  as ISet<string>));
+					}
+					else if (p.PropertyType.GenericTypeArguments[0] == typeof(FileType))
+					{
+						sb.Append(EnumerableToString(p.GetValue(this, null)  as ISet<FileType>, false));
+					}
+					else if (p.PropertyType.GenericTypeArguments[0] == typeof(Regex))
+					{
+						sb.Append(EnumerableToString(p.GetValue(this, null)  as ISet<Regex>));
+					}
+					else if (p.PropertyType.GenericTypeArguments[0] == typeof(FilePath))
+					{
+						sb.Append(EnumerableToString(p.GetValue(this, null)  as ISet<FilePath>));
+					}
+				}
+			}
+			else if (p.PropertyType.FullName.StartsWith("System.Nullable"))
+			{
+				if (p.PropertyType.IsGenericType && p.PropertyType.GenericTypeArguments.Length == 1)
+				{
+					if (p.PropertyType.GenericTypeArguments[0] == typeof(DateTime))
+					{
+						sb.Append(DateTimeToString(p.GetValue(this, null) as DateTime?));
+					}
+				}
+			}
+			else if (p.PropertyType.FullName.Equals("CsFindLib.SortBy"))
+			{
+				sb.Append(SortByUtil.GetNameFromSortBy((SortBy)p.GetValue(this)));
+			}
+			else
+			{
+				sb.Append(p.GetValue(this)?.ToString() ?? "null");
+			}
+			propCount++;
+		}
+
+		sb.Append(')');
+		return sb.ToString();
 	}
 }
