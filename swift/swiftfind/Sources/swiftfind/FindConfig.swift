@@ -13,7 +13,7 @@ public struct FindConfig {
     public let sharedPath: String
     public let fileTypesPath: String
     public let findOptionsPath: String
-    public let defaultSettingsPath: String
+    public let defaultFindSettingsPath: String
 
     public init() {
         if let xfindEnvPath = ProcessInfo.processInfo.environment["XFIND_PATH"] {
@@ -24,6 +24,6 @@ public struct FindConfig {
         sharedPath = "\(xfindPath)/shared"
         fileTypesPath = "\(sharedPath)/filetypes.json"
         findOptionsPath = "\(sharedPath)/findoptions.json"
-        defaultSettingsPath = "\(NSHomeDirectory())/.config/xfind/settings.json"
+        defaultFindSettingsPath = "\(NSHomeDirectory())/.config/xfind/settings.json"
     }
 }

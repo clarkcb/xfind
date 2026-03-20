@@ -332,9 +332,9 @@ func (fo *FindOptions) UpdateSettingsFromFile(settings *FindSettings, filePath s
 func (fo *FindOptions) updateSettingsFromDefaultFiles(settings *FindSettings) error {
 	config := NewFindConfig()
 	var err error
-	_, statErr := os.Stat(config.DEFAULTSETTINGSPATH)
+	_, statErr := os.Stat(config.DEFAULTFINDSETTINGSPATH)
 	if statErr == nil {
-		err = fo.UpdateSettingsFromFile(settings, config.DEFAULTSETTINGSPATH)
+		err = fo.UpdateSettingsFromFile(settings, config.DEFAULTFINDSETTINGSPATH)
 	}
 	return err
 }

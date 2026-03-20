@@ -1,7 +1,7 @@
 module HsFind.Config
   ( getXfindPath
   , getDataPath
-  , getDefaultSettingsPath
+  , getDefaultFindSettingsPath
   , getHome
   ) where
 
@@ -34,8 +34,8 @@ getDataPath = do
   return $ foldl concatPath xfindPath elems
   where concatPath path p = path </> p  
 
-getDefaultSettingsPath :: IO FilePath
-getDefaultSettingsPath = do
+getDefaultFindSettingsPath :: IO FilePath
+getDefaultFindSettingsPath = do
   home <- getHome
   let elems = [".config", "xfind", "settings.json"]
   return $ foldl concatPath home elems

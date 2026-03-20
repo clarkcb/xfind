@@ -71,7 +71,7 @@ void get_find_options_path(char *dest)
     dest[xfind_len + find_options_rel_path_len + 1] = '\0';
 }
 
-void get_default_settings_path(char *dest)
+void get_default_find_settings_path(char *dest)
 {
     if (dest == NULL) {
         return;
@@ -82,7 +82,7 @@ void get_default_settings_path(char *dest)
     const size_t home_len = strnlen(home_path, MAX_PATH_LENGTH);
     strcat(dest, home_path);
     strcat(dest, PATH_SEPARATOR_S);
-    const size_t default_settings_rel_path_len = strnlen(DEFAULT_SETTINGS_REL_PATH, MAX_PATH_LENGTH);
-    strcat(dest, DEFAULT_SETTINGS_REL_PATH);
-    dest[home_len + default_settings_rel_path_len + 1] = '\0';
+    const size_t default_find_settings_rel_path_len = strnlen(DEFAULT_FIND_SETTINGS_REL_PATH, MAX_PATH_LENGTH);
+    strcat(dest, DEFAULT_FIND_SETTINGS_REL_PATH);
+    dest[home_len + default_find_settings_rel_path_len + 1] = '\0';
 }

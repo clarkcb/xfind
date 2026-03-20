@@ -23,6 +23,7 @@
     ^Boolean archives-only
     ^Boolean colorize
     ^Boolean debug
+    ^Boolean default-files
     ^clojure.lang.Keyword dir-color
     ^clojure.lang.Keyword ext-color
     ^clojure.lang.Keyword file-color

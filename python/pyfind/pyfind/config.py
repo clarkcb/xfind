@@ -20,4 +20,4 @@ if not XFIND_PATH:
 SHARED_PATH = os.path.join(XFIND_PATH, 'shared')
 FILETYPES_PATH = os.path.join(data_path, 'filetypes.json')
 FINDOPTIONS_PATH = os.path.join(data_path, 'findoptions.json')
-DEFAULT_SETTINGS_PATH = os.path.join(HOME, '.config', 'xfind', 'settings.json')
+DEFAULT_FIND_SETTINGS_PATH = os.path.join(HOME, '.config', 'xfind', 'settings.json')

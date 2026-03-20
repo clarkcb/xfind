@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:dartfind/src/arg_tokenizer.dart';
 import 'package:dartfind/src/common.dart';
 import 'package:dartfind/src/config.dart'
-    show findOptionsPath, defaultSettingsPath;
+    show findOptionsPath, defaultFindSettingsPath;
 import 'package:dartfind/src/file_types.dart';
 import 'package:dartfind/src/find_exception.dart';
 import 'package:dartfind/src/find_settings.dart';
@@ -215,9 +215,9 @@ class FindOptions {
   }
 
   Future<void> updateSettingsFromDefaultFiles(FindSettings settings) async {
-    if (FileSystemEntity.typeSync(defaultSettingsPath) ==
+    if (FileSystemEntity.typeSync(defaultFindSettingsPath) ==
         FileSystemEntityType.file) {
-      await updateSettingsFromFile(settings, defaultSettingsPath);
+      await updateSettingsFromFile(settings, defaultFindSettingsPath);
     }
   }
 

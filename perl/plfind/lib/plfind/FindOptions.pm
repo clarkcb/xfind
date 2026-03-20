@@ -260,7 +260,7 @@ sub update_settings_from_arg_tokens {
             if (plfind::common::is_bool($arg_value)) {
                 &{$bool_action_hash->{$arg_token->{name}}}($arg_value, $settings);
                 if ($arg_token->{name} eq 'help' || $arg_token->{name} eq 'version') {
-                    return;
+                    return \@errs;
                 }
                 if ($arg_token->{name} eq 'defaultfiles') {
                     my $e = $self->update_settings_from_default_files($settings);
@@ -285,7 +285,7 @@ sub update_settings_from_arg_tokens {
                 &{$str_action_hash->{$arg_token->{name}}}($arg_value, $settings);
             }
         } elsif ($arg_token->{type} eq plfind::ArgTokenType->INT) {
-            if ($arg_value =~ /^\d+$/) {
+            if ($arg_value =~ /^[\+-]?\d+$/) {
                 &{$int_action_hash->{$arg_token->{name}}}($arg_value, $settings);
             } else {
                 push(@errs, 'Invalid value for option: ' . $arg_token->{name});
@@ -336,8 +336,8 @@ sub settings_from_file {
 sub update_settings_from_default_files {
     my ($self, $settings) = @_;
     my @errs;
-    if (-e $DEFAULT_SETTINGS_PATH) {
-        my $e = $self->update_settings_from_file($settings, $DEFAULT_SETTINGS_PATH);
+    if (-e $DEFAULT_FIND_SETTINGS_PATH) {
+        my $e = $self->update_settings_from_file($settings, $DEFAULT_FIND_SETTINGS_PATH);
         @errs = @$e;
     }
     return \@errs;

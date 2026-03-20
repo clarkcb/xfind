@@ -10,6 +10,7 @@
 
 namespace cppfind {
     std::string xfindpath();
+    std::string default_find_settings_path();
 }
 
 #endif // CPPFIND_CONFIG_H

@@ -206,8 +206,8 @@ class FindOptions {
 
     updateSettingsFromDefaultFiles(settings) {
         let err;
-        if (fs.existsSync(config.DEFAULT_SETTINGS_PATH)) {
-            err = this.updateSettingsFromFile(settings, config.DEFAULT_SETTINGS_PATH);
+        if (fs.existsSync(config.DEFAULT_FIND_SETTINGS_PATH)) {
+            err = this.updateSettingsFromFile(settings, config.DEFAULT_FIND_SETTINGS_PATH);
         }
         return err;
     }

@@ -21,7 +21,7 @@
         [clojure.set :only (union)]
         [clojure.string :as str :only (lower-case)]
         [cljfind.common :only (as-keyword as-string log-msg)]
-        [cljfind.config :only (DEFAULTSETTINGSPATH)]
+        [cljfind.config :only (DEFAULTFINDSETTINGSPATH)]
         [cljfind.argtokenizer]
         [cljfind.fileutil :only (exists-path? expand-path path-str to-path)]
         [cljfind.findsettings :only
@@ -216,8 +216,8 @@
   (update-settings-from-file DEFAULT-FIND-SETTINGS f (get-arg-tokenizer-for-options FIND-OPTIONS)))
 
 (defn update-settings-from-default-files [arg-tokenizer ^FindSettings settings]
-  (if (exists-path? (to-path DEFAULTSETTINGSPATH))
-    (update-settings-from-file arg-tokenizer settings DEFAULTSETTINGSPATH)
+  (if (exists-path? (to-path DEFAULTFINDSETTINGSPATH))
+    (update-settings-from-file arg-tokenizer settings DEFAULTFINDSETTINGSPATH)
     [DEFAULT-FIND-SETTINGS []]))
 
 (defn update-settings-from-args [arg-tokenizer ^FindSettings settings args]

@@ -247,8 +247,8 @@ defmodule ExFind.FindOptions do
   end
 
   def update_settings_from_default_files(settings, arg_tokenizer, arg_action_maps) do
-    if File.exists?(ExFind.Config.default_settings_path) do
-      update_settings_from_file(settings, ExFind.Config.default_settings_path, arg_tokenizer, arg_action_maps)
+    if File.exists?(ExFind.Config.default_find_settings_path) do
+      update_settings_from_file(settings, ExFind.Config.default_find_settings_path, arg_tokenizer, arg_action_maps)
     else
       {:ok, settings}
     end

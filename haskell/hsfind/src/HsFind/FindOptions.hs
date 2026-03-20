@@ -19,7 +19,7 @@ import GHC.Generics
 
 import HsFind.Paths_hsfind (getDataFileName)
 import HsFind.ArgTokenizer
-import HsFind.Config
+import HsFind.Config (getDefaultFindSettingsPath)
 import HsFind.FileTypes (getFileTypeForName)
 import HsFind.FileUtil (getFileString, pathExists)
 import HsFind.FindSettings
@@ -270,10 +270,10 @@ settingsFromFile = updateSettingsFromFile defaultFindSettings
 
 updateSettingsFromDefaultFiles :: FindSettings -> FindOptions -> IO (Either String FindSettings)
 updateSettingsFromDefaultFiles settings findOptions = do
-  defaultSettingsPath <- getDefaultSettingsPath
-  defaultSettingsPathExists <- pathExists defaultSettingsPath
-  if defaultSettingsPathExists
-  then updateSettingsFromFile settings findOptions defaultSettingsPath
+  defaultFindSettingsPath <- getDefaultFindSettingsPath
+  defaultFindSettingsPathExists <- pathExists defaultFindSettingsPath
+  if defaultFindSettingsPathExists
+  then updateSettingsFromFile settings findOptions defaultFindSettingsPath
   else return $ Right settings
 
 updateSettingsFromArgs :: FindSettings -> FindOptions -> [String] -> IO (Either String FindSettings)

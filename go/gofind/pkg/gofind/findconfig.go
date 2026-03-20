@@ -6,12 +6,12 @@ import (
 )
 
 type FindConfig struct {
-	XFINDPATH           string
-	SHAREDPATH          string
-	FILETYPESPATH       string
-	FINDOPTIONSPATH     string
-	DEFAULTSETTINGSPATH string
-	VERSION             string
+	XFINDPATH               string
+	SHAREDPATH              string
+	FILETYPESPATH           string
+	FINDOPTIONSPATH         string
+	DEFAULTFINDSETTINGSPATH string
+	VERSION                 string
 }
 
 func NewFindConfig() *FindConfig {
@@ -21,14 +21,14 @@ func NewFindConfig() *FindConfig {
 		xFindPath = filepath.Join(home, "src/xfind")
 	}
 	sharedPath := filepath.Join(xFindPath, "shared")
-	defaultSettingsPath := filepath.Join(home, ".config/xfind/settings.json")
+	defaultFindSettingsPath := filepath.Join(home, ".config/xfind/settings.json")
 
 	return &FindConfig{
 		xFindPath,
 		sharedPath,
 		filepath.Join(sharedPath, "filetypes.json"),
 		filepath.Join(sharedPath, "findoptions.json"),
-		defaultSettingsPath,
+		defaultFindSettingsPath,
 		"0.1.0",
 	}
 }

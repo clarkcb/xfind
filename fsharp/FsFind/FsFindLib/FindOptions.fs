@@ -175,9 +175,9 @@ module FindOptions =
 
     let UpdateSettingsFromDefaultFiles (settings : FindSettings) : Result<FindSettings, string> =
         let homePath = FileUtil.GetHomePath()
-        let defaultSettingsPath = Path.Join(homePath, ".config", "xfind", "settings.json")
-        if Path.Exists(defaultSettingsPath) then
-            UpdateSettingsFromFile settings defaultSettingsPath
+        let defaultFindSettingsPath = Path.Join(homePath, ".config", "xfind", "settings.json")
+        if Path.Exists(defaultFindSettingsPath) then
+            UpdateSettingsFromFile settings defaultFindSettingsPath
         else
             Ok settings
 

@@ -16,6 +16,7 @@ import {FindOption} from './findoption';
 import {FindSettings} from './findsettings';
 import {SortUtil} from "./sortutil";
 import fs from "fs";
+import {DEFAULT_FIND_SETTINGS_PATH} from "./config";
 
 type BoolAction = (b: boolean, settings: FindSettings) => void;
 type NumAction = (n: number, settings: FindSettings) => void;
@@ -227,8 +228,8 @@ export class FindOptions {
 
     public updateSettingsFromDefaultFiles(settings: FindSettings): Error | undefined {
         let err: Error | undefined;
-        if (fs.existsSync(config.DEFAULT_SETTINGS_PATH)) {
-            err = this.updateSettingsFromFile(settings, config.DEFAULT_SETTINGS_PATH);
+        if (fs.existsSync(config.DEFAULT_FIND_SETTINGS_PATH)) {
+            err = this.updateSettingsFromFile(settings, config.DEFAULT_FIND_SETTINGS_PATH);
         }
         return err;
     }

@@ -282,8 +282,8 @@ public class FindOptions {
     }
 
     private func updateSettingsFromDefaultFiles(_ settings: FindSettings) throws {
-        if FileUtil.exists(config.defaultSettingsPath) {
-            try updateSettingsFromFile(settings, filePath: config.defaultSettingsPath)
+        if FileUtil.exists(config.defaultFindSettingsPath) {
+            try updateSettingsFromFile(settings, filePath: config.defaultFindSettingsPath)
         }
     }
 

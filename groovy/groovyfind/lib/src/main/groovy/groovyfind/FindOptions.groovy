@@ -258,9 +258,9 @@ class FindOptions {
     }
 
     final void updateSettingsFromDefaultFiles(FindSettings settings) throws FindException {
-        var defaultSettingsPath = Paths.get(System.getProperty("user.home"), ".config", "xfind", "settings.json")
-        if (Files.exists(defaultSettingsPath)) {
-            updateSettingsFromFilePath(settings, defaultSettingsPath.toString())
+        var defaultFindSettingsPath = Paths.get(System.getProperty("user.home"), ".config", "xfind", "settings.json")
+        if (Files.exists(defaultFindSettingsPath)) {
+            updateSettingsFromFilePath(settings, defaultFindSettingsPath.toString())
         }
     }
 

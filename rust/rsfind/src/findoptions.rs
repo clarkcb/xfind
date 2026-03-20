@@ -239,8 +239,8 @@ impl FindOptions {
         &self,
         settings: &mut FindSettings,
     ) -> Result<(), FindError> {
-        if Path::new(&self.config.default_settings_path).exists() {
-            self.update_settings_from_file(settings, &self.config.default_settings_path)
+        if Path::new(&self.config.default_find_settings_path).exists() {
+            self.update_settings_from_file(settings, &self.config.default_find_settings_path)
         } else {
             Ok(())
         }
@@ -262,7 +262,7 @@ impl FindOptions {
         args: Iter<String>,
     ) -> Result<FindSettings, FindError> {
         let mut settings = FindSettings::default();
-        settings.set_print_files(true);
+        settings.set_print_files(true); // default to true when running from cli
 
         if args.clone().any(|a| a == "--defaultfiles" ||  a == "--nodefaultfiles") {
             match self.update_settings_from_args(&mut settings, args) {

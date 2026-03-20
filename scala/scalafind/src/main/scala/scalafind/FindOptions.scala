@@ -246,9 +246,9 @@ object FindOptions {
   }
 
   private def updateSettingsFromDefaultFiles(settings: FindSettings): FindSettings = {
-    val defaultSettingsPath = Paths.get(System.getProperty("user.home"), ".config", "xfind", "settings.json")
-    if (Files.exists(defaultSettingsPath)) {
-      updateSettingsFromFile(settings, defaultSettingsPath.toString)
+    val defaultFindSettingsPath = Paths.get(System.getProperty("user.home"), ".config", "xfind", "settings.json")
+    if (Files.exists(defaultFindSettingsPath)) {
+      updateSettingsFromFile(settings, defaultFindSettingsPath.toString)
     } else {
       settings
     }

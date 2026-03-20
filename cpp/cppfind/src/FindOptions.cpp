@@ -147,8 +147,7 @@ namespace cppfind {
     }
 
     void FindOptions::update_settings_from_default_files(FindSettings& settings) {
-        const std::string home = std::getenv("HOME");
-        if (const auto default_settings_path = std::filesystem::path(home) / DEFAULT_SETTINGS_REL_PATH;
+        if (const auto default_settings_path = default_find_settings_path();
             std::filesystem::exists(default_settings_path)) {
             update_settings_from_file(settings, default_settings_path);
         }

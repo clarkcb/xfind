@@ -91,7 +91,7 @@ module RbFind
         casesensitive: ->(b, settings) { settings.sort_case_insensitive = !b },
         colorize: ->(b, settings) { settings.colorize = b },
         debug: ->(b, settings) { settings.debug = b },
-        defaultfiles: ->(b, settings) { update_settings_from_default_files(settings) },
+        defaultfiles: ->(b, settings) { settings.default_files = b },
         excludearchives: ->(b, settings) { settings.include_archives = !b },
         excludehidden: ->(b, settings) { settings.include_hidden = !b },
         followsymlinks: ->(b, settings) { settings.follow_symlinks = b },
@@ -211,9 +211,9 @@ module RbFind
     end
 
     def update_settings_from_default_files(settings)
-      default_settings_path = Pathname.new(Dir.home).join('.config', 'xfind', 'settings.json')
-      if default_settings_path.exist?
-        update_settings_from_file(settings, default_settings_path.to_s)
+      default_find_settings_path = Pathname.new(Dir.home).join('.config', 'xfind', 'settings.json')
+      if default_find_settings_path.exist?
+        update_settings_from_file(settings, default_find_settings_path.to_s)
       end
     end
   end

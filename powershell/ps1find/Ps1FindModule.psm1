@@ -19,7 +19,7 @@ $xfindPath = $env:XFIND_PATH
 $sharedPath = Join-Path -Path $xfindPath -ChildPath 'shared'
 $fileTypesPath = Join-Path -Path $sharedPath -ChildPath 'filetypes.json'
 $findOptionsPath = Join-Path -Path $sharedPath -ChildPath 'findoptions.json'
-$defaultSettingsPath = Join-Path $HOME '.config' 'xfind' 'settings.json'
+$defaultFindSettingsPath = Join-Path $HOME '.config' 'xfind' 'settings.json'
 #endregion
 
 
@@ -1050,8 +1050,8 @@ class FindOptions {
     }
 
     [void]UpdateSettingsFromDefaultFiles([FindSettings]$settings) {
-        if (Test-Path $script:defaultSettingsPath) {
-            $this.UpdateSettingsFromFilePath($settings, $script:defaultSettingsPath)
+        if (Test-Path $script:defaultFindSettingsPath) {
+            $this.UpdateSettingsFromFilePath($settings, $script:defaultFindSettingsPath)
         }
     }
 

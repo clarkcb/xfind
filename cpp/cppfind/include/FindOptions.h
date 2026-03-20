@@ -90,7 +90,7 @@ namespace cppfind {
         std::vector<std::unique_ptr<Option>> m_options;
         ArgTokenizer m_arg_tokenizer;
         std::vector<std::unique_ptr<Option>> load_options();
-        void update_settings_from_arg_token(FindSettings& settings, const ArgToken& arg_tokens);
+        void update_settings_from_arg_token(FindSettings& settings, const ArgToken& arg_token);
         void update_settings_from_arg_tokens(FindSettings& settings, const std::vector<ArgToken>& arg_tokens);
         void update_settings_from_default_files(FindSettings& settings);
     };

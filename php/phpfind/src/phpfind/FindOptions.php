@@ -225,8 +225,8 @@ class FindOptions
      */
     private function update_settings_from_default_files(FindSettings $settings): void
     {
-        if (file_exists(Config::DEFAULT_SETTINGS_PATH)) {
-            $this->update_settings_from_file($settings, Config::DEFAULT_SETTINGS_PATH);
+        if (file_exists(Config::DEFAULT_FIND_SETTINGS_PATH)) {
+            $this->update_settings_from_file($settings, Config::DEFAULT_FIND_SETTINGS_PATH);
         }
     }
 

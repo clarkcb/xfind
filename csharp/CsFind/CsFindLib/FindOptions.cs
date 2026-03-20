@@ -298,10 +298,10 @@ public class FindOptions
 	private void UpdateSettingsFromDefaultFiles(FindSettings settings)
 	{
 		var homePath = FileUtil.GetHomePath();
-		var defaultSettingsPath = Path.Join(homePath, ".config", "xfind", "settings.json");
-		if (Path.Exists(defaultSettingsPath))
+		var defaultFindSettingsPath = Path.Join(homePath, ".config", "xfind", "settings.json");
+		if (Path.Exists(defaultFindSettingsPath))
 		{
-			UpdateSettingsFromFile(settings, defaultSettingsPath);
+			UpdateSettingsFromFile(settings, defaultFindSettingsPath);
 		}
 	}
 

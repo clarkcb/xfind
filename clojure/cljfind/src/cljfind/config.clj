@@ -19,5 +19,5 @@
 (def ^:const ^String FINDOPTIONSPATH
   (clojure.string/join java.io.File/separator [SHAREDPATH "findoptions.json"]))
 
-(def ^:const ^String DEFAULTSETTINGSPATH
+(def ^:const ^String DEFAULTFINDSETTINGSPATH
   (clojure.string/join java.io.File/separator [(System/getenv "HOME") ".config" "xfind" "settings.json"]))

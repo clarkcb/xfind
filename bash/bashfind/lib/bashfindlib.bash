@@ -24,7 +24,7 @@ BASHFIND_PATH="$XFIND_PATH/bash/bashfind"
 SHARED_PATH="$XFIND_PATH/shared"
 FILE_TYPES_PATH="$XFIND_PATH/shared/filetypes.json"
 FIND_OPTIONS_PATH="$XFIND_PATH/shared/findoptions.json"
-DEFAULT_SETTINGS_PATH="$HOME/.config/xfind/settings.json"
+DEFAULT_FIND_SETTINGS_PATH="$HOME/.config/xfind/settings.json"
 
 # this will be contain the contents of FIND_OPTIONS_PATH if needed
 FIND_OPTIONS_JSON=
@@ -1247,9 +1247,9 @@ arg_wants_val () {
 
 update_settings_from_default_files () {
     # load default settings file if it exists
-    if [ -f "$DEFAULT_SETTINGS_PATH" ]
+    if [ -f "$DEFAULT_FIND_SETTINGS_PATH" ]
     then
-        update_settings_from_file "$DEFAULT_SETTINGS_PATH"
+        update_settings_from_file "$DEFAULT_FIND_SETTINGS_PATH"
     fi
 }
 

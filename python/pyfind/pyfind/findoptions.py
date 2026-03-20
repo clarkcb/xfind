@@ -18,7 +18,7 @@ from io import StringIO
 from typing import Any
 
 from .argtokenizer import ArgToken, ArgTokenType, ArgTokenizer
-from .config import DEFAULT_SETTINGS_PATH
+from .config import DEFAULT_FIND_SETTINGS_PATH
 from .findexception import FindException
 from .findoption import FindOption
 from .findsettings import FindSettings
@@ -291,8 +291,8 @@ class FindOptions:
 
     def __update_settings_from_default_files(self, settings: FindSettings):
         """Update settings from default file(s)"""
-        if os.path.exists(DEFAULT_SETTINGS_PATH):
-            self.update_settings_from_file(settings, DEFAULT_SETTINGS_PATH)
+        if os.path.exists(DEFAULT_FIND_SETTINGS_PATH):
+            self.update_settings_from_file(settings, DEFAULT_FIND_SETTINGS_PATH)
 
     def update_settings_from_args(self, settings: FindSettings, args: list[str]):
         """Update settings from a given list of args"""

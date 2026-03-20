@@ -35,7 +35,7 @@ public class FindOptions {
         void set(Boolean b, FindSettings settings);
     }
 
-    private final int boolActionMapSize = 22;
+    private final int boolActionMapSize = 24;
     private final Map<String, BooleanSetter> boolActionMap = new HashMap<>(boolActionMapSize) {
         {
             put("archivesonly", (b, settings) -> settings.setArchivesOnly(b));
@@ -234,9 +234,9 @@ public class FindOptions {
     }
 
     private void updateSettingsFromDefaultFiles(FindSettings settings) throws FindException {
-        var defaultSettingsPath = Paths.get(System.getProperty("user.home"), ".config", "xfind", "settings.json");
-        if (Files.exists(defaultSettingsPath)) {
-            updateSettingsFromFilePath(settings, defaultSettingsPath.toString());
+        var defaultFindSettingsPath = Paths.get(System.getProperty("user.home"), ".config", "xfind", "settings.json");
+        if (Files.exists(defaultFindSettingsPath)) {
+            updateSettingsFromFilePath(settings, defaultFindSettingsPath.toString());
         }
     }
 
