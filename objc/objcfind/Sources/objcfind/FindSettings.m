@@ -58,30 +58,42 @@
 - (NSString *) description {
 
     unsigned int count;
-    // Get the list of all properties for the class
-    objc_property_t *properties = class_copyPropertyList([self class], &count);
-
+    // Get the list of all properties for the class (and all superclasses)
     NSMutableDictionary *propDict = [[NSMutableDictionary alloc] initWithCapacity:count];
 
-    for (unsigned int i = 0; i < count; i++) {
-        objc_property_t property = properties[i];
-        // Get the property name (label)
-        const char *propertyName = property_getName(property);
-        NSString *name = [NSString stringWithUTF8String:propertyName];
-
-        // Get the property value using Key-Value Coding (KVC)
-        id value = [self valueForKey:name];
-
-        if (value == nil) {
-            value = @"0";
-        }
-        propDict[name] = value;
-    }
+    Class cls = [self class];
     
-    // Free the list of properties
-    free(properties);
+    while (cls != nil) {
+        objc_property_t *properties = class_copyPropertyList(cls, &count);
 
-    NSMutableString *d = [[NSMutableString alloc] initWithString:@"ZZFindSettings("];
+        for (unsigned int i = 0; i < count; i++) {
+            objc_property_t property = properties[i];
+            // Get the property name (label)
+            const char *propertyName = property_getName(property);
+            NSString *name = [NSString stringWithUTF8String:propertyName];
+
+            // Get the property value using Key-Value Coding (KVC)
+            id value = [self valueForKey:name];
+
+            if (value == nil) {
+                value = @"0";
+            }
+            propDict[name] = value;
+        }
+        
+        // Free the list of properties
+        free(properties);
+        
+        cls = [cls superclass];
+        if (cls == [NSObject class]) {
+            break;
+        }
+    }
+
+    const char *className = class_getName([self class]);
+
+    NSMutableString *d = [[NSMutableString alloc] initWithUTF8String:className];
+    [d appendString:@"("];
 
     NSArray<NSString*> *keys = [[propDict allKeys] sortedArrayUsingSelector:@selector(compare:)];
     int idx = 0;

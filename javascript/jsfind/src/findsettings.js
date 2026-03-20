@@ -165,8 +165,11 @@ class FindSettings {
 
     toString() {
         let propStrings = [];
-        for (let p of Reflect.ownKeys(this)) {
+        let propKeys = Reflect.ownKeys(this);
+        propKeys.sort();
+        for (let p of propKeys) {
             let name = p;
+            // console.log(`name: ${name}`);
             let value = Reflect.get(this, p);
             if (name.startsWith('_')) {
                 name = name.substring(1);
@@ -186,7 +189,7 @@ class FindSettings {
             }
         }
         let propString = propStrings.join(', ');
-        return `FindSettings(${propString})`;
+        return `${this.constructor.name}(${propString})`;
     }
 }
 

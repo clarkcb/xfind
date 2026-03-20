@@ -518,7 +518,8 @@ class FindSettings {
     }
 
     [string]PropertiesToString() {
-        $properties = [FindSettings].GetProperties([Reflection.BindingFlags]::Public -bor [Reflection.BindingFlags]::Instance)
+        $flags = [Reflection.BindingFlags]::Public -bor [Reflection.BindingFlags]::Instance
+        $properties = $this.getType().GetProperties($flags) | Sort-Object -Property Name
         $propStrings = @()
         foreach ($prop in $properties)
         {
@@ -538,7 +539,7 @@ class FindSettings {
     }
 
     [string]ToString() {
-        return "FindSettings(" + $this.PropertiesToString() + ")"
+        return $this.GetType().Name + "(" + $this.PropertiesToString() + ")"
     }
 }
 #endregion

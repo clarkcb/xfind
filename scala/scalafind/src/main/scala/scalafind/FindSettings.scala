@@ -9,6 +9,7 @@ import java.nio.file.Path
 import java.time.format.{DateTimeFormatter, DateTimeParseException}
 import java.time.{LocalDate, LocalDateTime}
 import scala.annotation.tailrec
+import scala.collection.mutable
 import scala.util.matching.Regex
 
 object SortBy extends Enumeration {
@@ -60,6 +61,38 @@ object DefaultFindSettings {
   var verbose = false
 }
 
+object FindSettings {
+  def addExtensions(exts: String, extensions: Set[String]): Set[String] = {
+    extensions ++ exts.split(",").filterNot(_.isEmpty)
+  }
+
+  def getLastModFromString(lastModString: String): Option[LocalDateTime] = {
+    try {
+      Some(LocalDateTime.parse(lastModString))
+    } catch {
+      case _: DateTimeParseException => try {
+        val maxLastModDate = LocalDate.parse(lastModString, DateTimeFormatter.ISO_LOCAL_DATE)
+        Some(maxLastModDate.atTime(0, 0, 0))
+      } catch {
+        case _: Exception => None
+      }
+      case _: Exception => None
+    }
+  }
+
+  def setToString(set: Set[String]): String = {
+    if (set.isEmpty) "[]" else set.mkString("[\"", "\", \"", "\"]")
+  }
+
+  def pathSetToString(set: Set[Path]): String = {
+    if (set.isEmpty) "[]" else set.map(p => p.toString).mkString("[\"", "\", \"", "\"]")
+  }
+
+  def regexSetToString(set: Set[Regex]): String = {
+    if (set.isEmpty) "[]" else set.map(p => p.pattern.pattern()).mkString("[\"", "\", \"", "\"]")
+  }
+}
+
 case class FindSettings(archivesOnly: Boolean = DefaultFindSettings.archivesOnly,
                         colorize: Boolean = DefaultFindSettings.colorize,
                         debug: Boolean = DefaultFindSettings.debug,
@@ -103,21 +136,11 @@ case class FindSettings(archivesOnly: Boolean = DefaultFindSettings.archivesOnly
   verbose = debug || verbose
 
   def addExtensions(exts: String, extensions: Set[String]): Set[String] = {
-    extensions ++ exts.split(",").filterNot(_.isEmpty)
+    FindSettings.addExtensions(exts, extensions)
   }
 
   def getLastModFromString(lastModString: String): Option[LocalDateTime] = {
-    try {
-      Some(LocalDateTime.parse(lastModString))
-    } catch {
-      case _: DateTimeParseException => try {
-        val maxLastModDate = LocalDate.parse(lastModString, DateTimeFormatter.ISO_LOCAL_DATE)
-        Some(maxLastModDate.atTime(0, 0, 0))
-      } catch {
-        case _: Exception => None
-      }
-      case _: Exception => None
-    }
+    FindSettings.getLastModFromString(lastModString)
   }
 
   def needLastMod: Boolean = {
@@ -130,21 +153,27 @@ case class FindSettings(archivesOnly: Boolean = DefaultFindSettings.archivesOnly
       || maxSize > 0 || minSize > 0
   }
 
-  private def setToString(set: Set[String]): String = {
-    if (set.isEmpty) "[]" else set.mkString("[\"", "\", \"", "\"]")
-  }
-
-  private def pathSetToString(set: Set[Path]): String = {
-    if (set.isEmpty) "[]" else set.map(p => p.toString).mkString("[\"", "\", \"", "\"]")
-  }
-
-  private def regexSetToString(set: Set[Regex]): String = {
-    if (set.isEmpty) "[]" else set.map(p => p.pattern.pattern()).mkString("[\"", "\", \"", "\"]")
+  private def getAllFields: List[Field] = {
+    val fields = mutable.ArrayBuffer.empty[Field]
+    // Iterate up the class hierarchy
+    var c: Class[_] = this.getClass
+    while (c != null) {
+      // Get all declared fields for the current class
+      val declaredFields: List[Field] = c.getDeclaredFields
+        .filter((f: Field) => !f.getName.contains("_")).toList
+      for (field <- declaredFields) {
+        // Optional: set fields accessible to read/write private ones
+        field.setAccessible(true)
+        fields += field
+      }
+      c = c.getSuperclass
+    }
+    fields.sortWith((f1, f2) => f1.getName < f2.getName).toList
   }
 
   override def toString: String = {
-    val sb: StringBuilder = new StringBuilder("FindSettings(")
-    val fields: List[Field] = getClass.getDeclaredFields.filter((f: Field) => !f.getName.contains("_")).toList
+    val sb: StringBuilder = new StringBuilder(this.getClass.getSimpleName)
+    val fields: List[Field] = getAllFields
     val totalFields = fields.length
 
     @tailrec
@@ -165,14 +194,14 @@ case class FindSettings(archivesOnly: Boolean = DefaultFindSettings.archivesOnly
             if (actualTypeArguments.length > 0) {
               actualTypeArguments(0).getTypeName match {
                 case "java.lang.String" =>
-                  sb.append(setToString(f.get(this).asInstanceOf[Set[String]]))
+                  sb.append(FindSettings.setToString(f.get(this).asInstanceOf[Set[String]]))
                 case "scala.util.matching.Regex" =>
-                  sb.append(regexSetToString(f.get(this).asInstanceOf[Set[Regex]]))
+                  sb.append(FindSettings.regexSetToString(f.get(this).asInstanceOf[Set[Regex]]))
                 case "javafind.FileType" =>
                   val fts = f.get(this).asInstanceOf[Set[FileType]]
                   sb.append(fts.map(ft => ft.toString).mkString("[", ", ", "]"))
                 case "java.nio.file.Path" =>
-                  sb.append(pathSetToString(f.get(this).asInstanceOf[Set[Path]]))
+                  sb.append(FindSettings.pathSetToString(f.get(this).asInstanceOf[Set[Path]]))
                 case _ =>
               }
             }
@@ -192,6 +221,7 @@ case class FindSettings(archivesOnly: Boolean = DefaultFindSettings.archivesOnly
         recAddFields(fs)
     }
 
+    sb.append("(")
     recAddFields(fields)
     sb.append(")")
     sb.toString

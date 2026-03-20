@@ -52,7 +52,7 @@ export class FindSettings {
     sortDescending = false;
     verbose = false;
 
-    private static addExtensions(exts: string|string[], arr: string[]): void {
+    static addExtensions(exts: string|string[], arr: string[]): void {
         if (typeof(exts) === 'string') {
             exts.split(/,/).filter(x => x !== '').forEach(x => arr.push(x));
         } else if (exts.constructor === Array) {
@@ -60,7 +60,7 @@ export class FindSettings {
         }
     }
 
-    private static addFileTypes(fileTypes: string|string[], arr: FileType[]): void {
+    static addFileTypes(fileTypes: string|string[], arr: FileType[]): void {
         if (typeof(fileTypes) === 'string') {
             fileTypes.split(/,/).filter(ft => ft !== '').
             forEach(ft => arr.push(FileTypes.fromName(ft)));
@@ -69,7 +69,7 @@ export class FindSettings {
         }
     }
 
-    private static addPatterns(patterns: string|string[], arr: RegExp[]): void {
+    static addPatterns(patterns: string|string[], arr: RegExp[]): void {
         if (typeof(patterns) === 'string') {
             arr.push(new RegExp(patterns));
         } else if (patterns.constructor === Array) {
@@ -169,7 +169,9 @@ export class FindSettings {
 
     public toString(): string {
         let propStrings = [];
-        for (let p of Reflect.ownKeys(this)) {
+        let propKeys = Reflect.ownKeys(this);
+        propKeys.sort();
+        for (let p of propKeys) {
             let name = p.toString();
             let value: any = Reflect.get(this, p);
             if (name.startsWith('_')) {
@@ -190,6 +192,6 @@ export class FindSettings {
             }
         }
         let propString = propStrings.join(', ');
-        return `FindSettings(${propString})`;
+        return `${this.constructor.name}(${propString})`;
     }
 }

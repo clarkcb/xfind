@@ -170,9 +170,7 @@ module RbFind
     end
 
     def to_s
-      'FindSettings(' +
-        properties_to_s +
-        ')'
+      self.class.name + '(' + properties_to_s + ')'
     end
 
     private
@@ -248,6 +246,7 @@ module RbFind
         end
         prop_strings.push(prop_string)
       end
+      prop_strings.sort!
       prop_strings.join(', ')
     end
   end

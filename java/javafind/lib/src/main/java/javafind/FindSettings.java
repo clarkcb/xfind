@@ -535,10 +535,26 @@ public class FindSettings {
         return dt.map(localDateTime -> String.format("\"%s\"", localDateTime)).orElse("0");
     }
 
+    protected List<Field> getAllFields() {
+        List<Field> fields = new ArrayList<>();
+        // Iterate up the class hierarchy
+        for (Class<?> c = getClass(); c != null; c = c.getSuperclass()) {
+            // Get all declared fields for the current class
+            List<Field> declaredFields = Arrays.stream(c.getDeclaredFields())
+                    .filter(f -> !f.getName().contains("_")).toList();
+            for (Field field : declaredFields) {
+                // Optional: set fields accessible to read/write private ones
+                 field.setAccessible(true);
+                fields.add(field);
+            }
+        }
+        return fields.stream().sorted(Comparator.comparing(Field::getName)).toList();
+    }
+
     public String toString() {
-        var sb = new StringBuilder("FindSettings(");
-        List<Field> fields = Arrays.stream(getClass().getDeclaredFields())
-                .filter(f -> !f.getName().contains("_")).toList();
+        var sb = new StringBuilder(getClass().getSimpleName());
+        sb.append("(");
+        List<Field> fields = getAllFields();
         try {
             for (int i=0; i < fields.size(); ++i) {
                 if (i > 0) sb.append(", ");

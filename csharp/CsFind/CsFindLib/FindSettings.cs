@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -235,10 +236,11 @@ public class FindSettings
 
 	public override string ToString()
 	{
-		var sb = new StringBuilder("FindSettings(");
+		var sb = new StringBuilder(GetType().Name);
+		sb.Append('(');
 		var flags = BindingFlags.Public | BindingFlags.Instance;
-        var classType = typeof(FindSettings);
-		PropertyInfo[] properties = classType.GetProperties(flags);
+        var classType = GetType();
+		var properties = classType.GetProperties(flags).OrderBy(p => p.Name).ToArray();
 		var propCount = 0;
 		foreach (var p in properties)
 		{

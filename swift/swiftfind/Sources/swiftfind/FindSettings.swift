@@ -266,14 +266,20 @@ open class FindSettings: CustomStringConvertible {
     open var description: String {
         var propStrings = Array<String>()
         var propDict: [String: Any] = [:]
-        let mirror = Mirror(reflecting: self)
-        for child in mirror.children {
-            var name = child.label ?? "bla"
-            if name.starts(with: "_") {
-                name = name.trimmingCharacters(in: ["_"])
+
+        var currentMirror: Mirror? = Mirror(reflecting: self)
+        
+        while let mirror = currentMirror {
+            for child in mirror.children {
+                var name = child.label ?? "bla"
+                if name.starts(with: "_") {
+                    name = name.trimmingCharacters(in: ["_"])
+                }
+                propDict[name] = child.value
             }
-            propDict[name] = child.value
+            currentMirror = mirror.superclassMirror
         }
+        
         let names = propDict.keys.sorted()
         for name in names {
             let value = propDict[name]!
@@ -289,6 +295,7 @@ open class FindSettings: CustomStringConvertible {
                 propStrings.append("\(name)=\(value)")
             }
         }
-        return "FindSettings(\(propStrings.joined(separator: ", ")))"
+        let className = String(describing: type(of: self))
+        return "\(className)(\(propStrings.joined(separator: ", ")))"
     }
 }

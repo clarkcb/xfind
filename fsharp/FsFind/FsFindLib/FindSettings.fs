@@ -36,6 +36,7 @@ module SettingsUtil =
         let properties =
             t.GetProperties()
             |> Seq.filter (fun p -> p.Name <> "ToString")
+            |> Seq.sortBy _.Name
             |> List.ofSeq
         let propertyStrings = [for p in properties do propertyToString p]
         String.concat ", " propertyStrings
@@ -111,7 +112,8 @@ type FindSettings() =
     member this.ToString =
         let propString = SettingsUtil.propertiesToString this
         String.concat "" [
-            "FindSettings("
+            this.GetType().Name;
+            "(";
             propString;
             ")"
         ]
