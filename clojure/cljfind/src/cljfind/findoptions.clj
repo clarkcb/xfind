@@ -186,25 +186,28 @@
           (update-settings-from-tokens arg-tokenizer settings [] [(str "Unknown token type: " name arg-type)]))))))
 
 (defn settings-from-tokens [tokens]
-  (update-settings-from-tokens (get-arg-tokenizer-for-options FIND-OPTIONS) DEFAULT-FIND-SETTINGS tokens))
+  (let [arg-tokenizer (get-arg-tokenizer-for-options FIND-OPTIONS)]
+    (update-settings-from-tokens arg-tokenizer DEFAULT-FIND-SETTINGS tokens)))
 
-(defn update-settings-from-arg-map [^FindSettings settings arg-map arg-tokenizer]
+(defn update-settings-from-arg-map [arg-tokenizer ^FindSettings settings arg-map]
   (let [[tokens errs] (tokenize-arg-map arg-tokenizer arg-map)]
     (if (not (empty? errs))
       [settings errs]
       (update-settings-from-tokens arg-tokenizer settings tokens))))
 
 (defn settings-from-arg-map [arg-map]
-  (update-settings-from-arg-map DEFAULT-FIND-SETTINGS arg-map (get-arg-tokenizer-for-options FIND-OPTIONS)))
+  (let [arg-tokenizer (get-arg-tokenizer-for-options FIND-OPTIONS)]
+    (update-settings-from-arg-map arg-tokenizer DEFAULT-FIND-SETTINGS arg-map)))
 
-(defn update-settings-from-json [^FindSettings settings ^String json arg-tokenizer]
+(defn update-settings-from-json [arg-tokenizer ^FindSettings settings ^String json]
   (let [[tokens errs] (tokenize-json arg-tokenizer json)]
     (if (not (empty? errs))
       [settings errs]
       (update-settings-from-tokens arg-tokenizer settings tokens))))
 
 (defn settings-from-json [^String json]
-  (update-settings-from-json DEFAULT-FIND-SETTINGS json (get-arg-tokenizer-for-options FIND-OPTIONS)))
+  (let [arg-tokenizer (get-arg-tokenizer-for-options FIND-OPTIONS)]
+    (update-settings-from-json arg-tokenizer DEFAULT-FIND-SETTINGS json)))
 
 (defn update-settings-from-file [arg-tokenizer ^FindSettings settings f]
   (let [[tokens errs] (tokenize-file arg-tokenizer f)]
@@ -213,7 +216,8 @@
       (update-settings-from-tokens arg-tokenizer settings tokens))))
 
 (defn settings-from-file [f]
-  (update-settings-from-file DEFAULT-FIND-SETTINGS f (get-arg-tokenizer-for-options FIND-OPTIONS)))
+  (let [arg-tokenizer (get-arg-tokenizer-for-options FIND-OPTIONS)]
+    (update-settings-from-file arg-tokenizer DEFAULT-FIND-SETTINGS f)))
 
 (defn update-settings-from-default-files [arg-tokenizer ^FindSettings settings]
   (if (exists-path? (to-path DEFAULTFINDSETTINGSPATH))
