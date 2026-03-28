@@ -613,7 +613,7 @@ func valueInterface(v reflect.Value) any {
 	return "<unreadable>"
 }
 
-func walk(v reflect.Value, path string, seen map[uintptr]bool, b *strings.Builder) {
+func Walk(v reflect.Value, path string, seen map[uintptr]bool, b *strings.Builder) {
 	if !v.IsValid() {
 		return
 	}
@@ -654,7 +654,7 @@ func walk(v reflect.Value, path string, seen map[uintptr]bool, b *strings.Builde
 				name = path + "." + name
 			}
 
-			walk(v.Field(i), name, seen, b)
+			Walk(v.Field(i), name, seen, b)
 		}
 
 	case reflect.Slice, reflect.Array:
@@ -674,7 +674,7 @@ func walk(v reflect.Value, path string, seen map[uintptr]bool, b *strings.Builde
 		if strings.HasSuffix(path, "Color") {
 			val := valueInterface(v).(Color)
 			writePair(b, path, NameForColor(val))
-		} else if path == "sortBy" {
+		} else if strings.HasSuffix(path, "sortBy") {
 			val := valueInterface(v).(SortBy)
 			writePair(b, path, NameForSortBy(val))
 		} else {
@@ -702,7 +702,7 @@ func settingsToString(settings *FindSettings) string {
 	var b strings.Builder
 	seen := map[uintptr]bool{}
 
-	walk(rv, "", seen, &b)
+	Walk(rv, "", seen, &b)
 
 	return b.String()
 }

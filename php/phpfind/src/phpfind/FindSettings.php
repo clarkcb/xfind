@@ -198,35 +198,40 @@ class FindSettings
         };
     }
 
-    private function __getPropertiesString(): string
+    private function __getPropertiesString($reflector): string
     {
-        $reflector = new ReflectionClass($this);
         $properties = $reflector->getProperties(ReflectionProperty::IS_PUBLIC);
-        $property_strings = [];
 
+        $property_map = [];
         foreach ($properties as $property) {
             if ($property->hasType()) {
                 $name = $property->getName();
-                $type = $property->getType();
-                $type_name = $type->getName();
-                $value = $property->getValue($this);
-                if ($type_name == 'array') {
-                    if (str_ends_with($name, 'file_types')) {
-                        $value = StringUtil::file_type_array_to_string($value);
-                    } else {
-                        $value = StringUtil::string_array_to_string($value);
-                    }
-                } elseif ($type_name == 'bool') {
-                    $value = StringUtil::bool_to_string($value);
-                } elseif ($type_name == 'DateTime') {
-                    $value = StringUtil::datetime_to_string($value);
-                } elseif ($type_name == 'phpfind\\Color') {
-                    $value = $value->value;
-                } elseif ($type_name == 'phpfind\\SortBy') {
-                    $value = $value->value;
-                }
-                $property_strings[] = $name . '=' . $value;
+                $property_map[$name] = $property;
             }
+        }
+        ksort($property_map);
+
+        $property_strings = [];
+        foreach ($property_map as $name => $property) {
+            $type = $property->getType();
+            $type_name = $type->getName();
+            $value = $property->getValue($this);
+            if ($type_name == 'array') {
+                if (str_ends_with($name, 'file_types')) {
+                    $value = StringUtil::file_type_array_to_string($value);
+                } else {
+                    $value = StringUtil::string_array_to_string($value);
+                }
+            } elseif ($type_name == 'bool') {
+                $value = StringUtil::bool_to_string($value);
+            } elseif ($type_name == 'DateTime') {
+                $value = StringUtil::datetime_to_string($value);
+            } elseif ($type_name == 'phpfind\\Color') {
+                $value = $value->value;
+            } elseif ($type_name == 'phpfind\\SortBy') {
+                $value = $value->value;
+            }
+            $property_strings[] = $name . '=' . $value;
         }
         return join(', ', $property_strings);
     }
@@ -236,8 +241,9 @@ class FindSettings
      */
     public function __toString(): string
     {
-        return 'FindSettings(' .
-            $this->__getPropertiesString() .
+        $reflector = new ReflectionClass($this);
+        return $reflector->getShortName() . '(' .
+            $this->__getPropertiesString($reflector) .
             ')';
     }
 }

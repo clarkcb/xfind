@@ -191,7 +191,8 @@ sub to_string {
             push(@$props, $k . '=' . plfind::common::bool_to_string($self->{$k}));
         }
     }
-    return 'FindSettingsZZ(' . join(', ', @$props) . ')';
+    my $class_name = ref($self);
+    return $class_name . '(' . join(', ', @$props) . ')';
 }
 
 1;

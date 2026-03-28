@@ -18,7 +18,7 @@ public static class SortByUtil
 		return Enum.TryParse<SortBy>(sortByName, out var sortBy) ? sortBy : SortBy.FilePath;
 	}
 
-	public static string GetNameFromSortBy(SortBy sortBy)
+	public static string GetNameFromSortBy(SortBy? sortBy)
 	{
 		return sortBy switch
 		{

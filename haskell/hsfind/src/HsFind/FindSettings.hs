@@ -5,6 +5,7 @@ module HsFind.FindSettings
   , defaultFindSettings
   , findSettingsToString
   , getSortByForName
+  , lastModToString
   , needFileSizes
   , needLastMods
   , newExtensions
@@ -25,9 +26,10 @@ import qualified Data.Vector as V (toList)
 import GHC.Generics (Generic)
 
 import HsFind.ConsoleColor (Color(..))
-import HsFind.FileTypes (FileType, getFileTypeForName, getFileTypeName)
+import HsFind.FileTypes (FileType, getFileTypeForName, fileTypesToString)
 import HsFind.FileUtil (normalizeExtension)
 import HsFind.SortBy (SortBy(..), getSortByForName, sortByToString)
+import HsFind.StringUtil (stringListToString)
 
 data FindSettings = FindSettings {
                                    archivesOnly :: Bool
@@ -118,6 +120,10 @@ newExtensions x | ',' `elem` x = map normalizeExtension $ removeBlank (splitOn "
   where removeBlank :: [String] -> [String]
         removeBlank = filter (/="")
 
+lastModToString :: Maybe UTCTime -> String
+lastModToString Nothing = "0"
+lastModToString (Just t) = show t
+
 findSettingsToString :: FindSettings -> String
 findSettingsToString settings = 
   "FindSettings(" ++
@@ -126,11 +132,11 @@ findSettingsToString settings =
   ", debug=" ++ show (debug settings) ++
   ", defaultFiles=" ++ show (defaultFiles settings) ++
   ", followSymlinks=" ++ show (followSymlinks settings) ++
-  ", inArchiveExtensions=" ++ listToString (inArchiveExtensions settings) ++
-  ", inArchiveFilePatterns=" ++ listToString (inArchiveFilePatterns settings) ++
-  ", inDirPatterns=" ++ listToString (inDirPatterns settings) ++
-  ", inExtensions=" ++ listToString (inExtensions settings) ++
-  ", inFilePatterns=" ++ listToString (inFilePatterns settings) ++
+  ", inArchiveExtensions=" ++ stringListToString (inArchiveExtensions settings) ++
+  ", inArchiveFilePatterns=" ++ stringListToString (inArchiveFilePatterns settings) ++
+  ", inDirPatterns=" ++ stringListToString (inDirPatterns settings) ++
+  ", inExtensions=" ++ stringListToString (inExtensions settings) ++
+  ", inFilePatterns=" ++ stringListToString (inFilePatterns settings) ++
   ", inFileTypes=" ++ fileTypesToString (inFileTypes settings) ++
   ", includeArchives=" ++ show (includeArchives settings) ++
   ", includeHidden=" ++ show (includeHidden settings) ++
@@ -140,13 +146,13 @@ findSettingsToString settings =
   ", minDepth=" ++ show (minDepth settings) ++
   ", minLastMod=" ++ lastModToString (minLastMod settings) ++
   ", minSize=" ++ show (minSize settings) ++
-  ", outArchiveExtensions=" ++ listToString (outArchiveExtensions settings) ++
-  ", outArchiveFilePatterns=" ++ listToString (outArchiveFilePatterns settings) ++
-  ", outDirPatterns=" ++ listToString (outDirPatterns settings) ++
-  ", outExtensions=" ++ listToString (outExtensions settings) ++
-  ", outFilePatterns=" ++ listToString (outFilePatterns settings) ++
+  ", outArchiveExtensions=" ++ stringListToString (outArchiveExtensions settings) ++
+  ", outArchiveFilePatterns=" ++ stringListToString (outArchiveFilePatterns settings) ++
+  ", outDirPatterns=" ++ stringListToString (outDirPatterns settings) ++
+  ", outExtensions=" ++ stringListToString (outExtensions settings) ++
+  ", outFilePatterns=" ++ stringListToString (outFilePatterns settings) ++
   ", outFileTypes=" ++ fileTypesToString (outFileTypes settings) ++
-  ", paths=" ++ listToString (paths settings) ++
+  ", paths=" ++ stringListToString (paths settings) ++
   ", printDirs=" ++ show (printDirs settings) ++
   ", printFiles=" ++ show (printFiles settings) ++
   ", printUsage=" ++ show (printUsage settings) ++
@@ -157,13 +163,6 @@ findSettingsToString settings =
   ", sortDescending=" ++ show (sortDescending settings) ++
   ", verbose=" ++ show (verbose settings) ++
   ")"
-  where listToString lst | null lst = "[]"
-                         | otherwise = "[\"" ++ intercalate "\", \"" lst ++ "\"]"
-        fileTypesToString fts = "[" ++ intercalate ", " (fileTypeNames fts) ++ "]"
-        fileTypeNames = Prelude.map getFileTypeName
-        lastModToString :: Maybe UTCTime -> String
-        lastModToString Nothing = "0"
-        lastModToString (Just t) = show t
 
 needFileSizes :: FindSettings -> Bool
 needFileSizes settings = minSize settings > 0 || maxSize settings > 0 || sortResultsBy settings == SortByFileSize

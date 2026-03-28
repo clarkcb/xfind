@@ -215,20 +215,23 @@ public class FindSettings
 		return dt == null ? "0" : $"\"{dt}\"";
 	}
 
-	private static string EnumerableToString<T>(IEnumerable<T> enumerable, bool quote = true)
+	private static string EnumerableToString<T>(IEnumerable<T>? enumerable, bool quote = true)
 	{
 		var sb = new StringBuilder("[");
-		var elemCount = 0;
-		foreach (var x in enumerable)
+		if (enumerable != null)
 		{
-			if (elemCount > 0)
-				sb.Append(", ");
-			if (quote)
-				sb.Append('"');
-			sb.Append(x);
-			if (quote)
-				sb.Append('"');
-			elemCount++;
+			var elemCount = 0;
+			foreach (var x in enumerable)
+			{
+				if (elemCount > 0)
+					sb.Append(", ");
+				if (quote)
+					sb.Append('"');
+				sb.Append(x);
+				if (quote)
+					sb.Append('"');
+				elemCount++;
+			}
 		}
 		sb.Append(']');
 		return sb.ToString();
@@ -244,6 +247,7 @@ public class FindSettings
 		var propCount = 0;
 		foreach (var p in properties)
 		{
+			if (p.PropertyType.FullName == null) continue;
 			if (propCount > 0)
 			{
 				sb.Append(", ");
@@ -283,7 +287,7 @@ public class FindSettings
 			}
 			else if (p.PropertyType.FullName.Equals("CsFindLib.SortBy"))
 			{
-				sb.Append(SortByUtil.GetNameFromSortBy((SortBy)p.GetValue(this)));
+				sb.Append(SortByUtil.GetNameFromSortBy(p.GetValue(this) as SortBy?));
 			}
 			else
 			{

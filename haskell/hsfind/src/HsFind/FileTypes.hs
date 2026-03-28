@@ -10,10 +10,12 @@ module HsFind.FileTypes
   , getFileTypeName
   , getJsonFileTypes
   , fileTypeFromJsonFileTypes
+  , fileTypesToString
   ) where
 
 import qualified Data.ByteString.Lazy.Char8 as BC
 import Data.Char (toLower)
+import Data.List (intercalate)
 import Data.Text(pack, unpack, replace)
 
 import GHC.Generics
@@ -167,3 +169,6 @@ matchingTypeForExtensionJson jsonFileTypes x =
            tname | tname `elem` ["code", "text", "xml"] -> Text
            _ -> Unknown
   where fileTypeName = fileType . head
+
+fileTypesToString :: [FileType] -> String
+fileTypesToString fts = "[" ++ intercalate ", " (map getFileTypeName fts) ++ "]"

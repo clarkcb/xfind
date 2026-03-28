@@ -2,11 +2,13 @@ module HsFind.StringUtil
   ( compareStrings
   , padString
   , sliceString
+  , stringListToString
   , trimLeadingWhitespace
   , trimTrailingWhitespace
   ) where
 
 import Data.Char (isSpace, toLower)
+import Data.List (intercalate)
 
 compareStrings :: Bool -> String -> String -> Ordering
 compareStrings caseInsensitive s1 s2 =
@@ -23,6 +25,10 @@ padString s len | length s < len = s ++ replicate (len - length s) ' '
 -- Extracts a substring from 'startIdx' (inclusive) to 'endIdx' (exclusive) indices.
 sliceString :: Int -> Int -> String -> String
 sliceString startIdx endIdx s = take (endIdx - startIdx) (drop startIdx s)
+
+stringListToString :: [String] -> String
+stringListToString lst | null lst = "[]"
+                       | otherwise = "[\"" ++ intercalate "\", \"" lst ++ "\"]"
 
 trimLeadingWhitespace :: String -> String
 trimLeadingWhitespace = dropWhile isSpace
