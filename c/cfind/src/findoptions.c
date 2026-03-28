@@ -587,7 +587,7 @@ error_t settings_from_default_files(FindOptions *options, FindSettings *settings
 
     const size_t maxlen = MAX_HOMEPATH_LENGTH + 28;
     char *default_settings_path = malloc(maxlen * sizeof(char));
-    get_default_settings_path(default_settings_path);
+    get_default_find_settings_path(default_settings_path);
 
     assert(default_settings_path != NULL);
 
