@@ -3,6 +3,8 @@ package javafind;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Paths;
+import java.time.Instant;
+import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -25,84 +27,84 @@ public class FinderTest {
     }
 
     /*************************************************************
-     * isMatchingDir tests
+     * isMatchingDirPath tests
      *************************************************************/
     @Test
-    public final void testIsMatchingDir_SingleDot_True() {
+    public final void testIsMatchingDirPath_SingleDot_True() {
         var settings = getSettings();
         var finder = new Finder(settings);
-        assertTrue(finder.isMatchingDir(Paths.get(".")));
+        assertTrue(finder.isMatchingDirPath(Paths.get(".")));
     }
 
     @Test
-    public final void testIsMatchingDir_DoubleDot_True() {
+    public final void testIsMatchingDirPath_DoubleDot_True() {
         var settings = getSettings();
         var finder = new Finder(settings);
-        assertTrue(finder.isMatchingDir(Paths.get("..")));
+        assertTrue(finder.isMatchingDirPath(Paths.get("..")));
     }
 
     @Test
-    public final void testIsMatchingDir_IsHidden_False() {
+    public final void testIsMatchingDirPath_IsHidden_False() {
         var settings = getSettings();
         var finder = new Finder(settings);
-        assertFalse(finder.isMatchingDir(Paths.get(".git")));
+        assertFalse(finder.isMatchingDirPath(Paths.get(".git")));
     }
 
     @Test
-    public final void testIsMatchingDir_IsHiddenIncludeHidden_True() {
+    public final void testIsMatchingDirPath_IsHiddenIncludeHidden_True() {
         var settings = getSettings();
         settings.setIncludeHidden(true);
         var finder = new Finder(settings);
-        assertTrue(finder.isMatchingDir(Paths.get(".git")));
+        assertTrue(finder.isMatchingDirPath(Paths.get(".git")));
     }
 
     @Test
-    public final void testIsMatchingDir_NoPatterns_True() {
+    public final void testIsMatchingDirPath_NoPatterns_True() {
         var settings = getSettings();
         var finder = new Finder(settings);
-        assertTrue(finder.isMatchingDir(Paths.get("/Users")));
+        assertTrue(finder.isMatchingDirPath(Paths.get("/Users")));
     }
 
     @Test
-    public final void testIsMatchingDir_MatchesInPattern_True() {
+    public final void testIsMatchingDirPath_MatchesInPattern_True() {
         var settings = getSettings();
         settings.addInDirPattern("Find");
         var finder = new Finder(settings);
-        assertTrue(finder.isMatchingDir(Paths.get("CsFind")));
+        assertTrue(finder.isMatchingDirPath(Paths.get("CsFind")));
     }
 
     @Test
-    public final void testIsMatchingDir_MatchesOutPattern_False() {
+    public final void testIsMatchingDirPath_MatchesOutPattern_False() {
         var settings = getSettings();
         settings.addOutDirPattern("Find");
         var finder = new Finder(settings);
-        assertFalse(finder.isMatchingDir(Paths.get("CsFind")));
+        assertFalse(finder.isMatchingDirPath(Paths.get("CsFind")));
     }
 
     @Test
-    public final void testIsMatchingDir_DoesNotMatchInPattern_False() {
+    public final void testIsMatchingDirPath_DoesNotMatchInPattern_False() {
         var settings = getSettings();
         settings.addInDirPattern("FindFiles");
         var finder = new Finder(settings);
-        assertFalse(finder.isMatchingDir(Paths.get("CsFind")));
+        assertFalse(finder.isMatchingDirPath(Paths.get("CsFind")));
     }
 
     @Test
-    public final void testIsMatchingDir_DoesNotMatchOutPattern_True() {
+    public final void testIsMatchingDirPath_DoesNotMatchOutPattern_True() {
         var settings = getSettings();
         settings.addOutDirPattern("FindFiles");
         var finder = new Finder(settings);
         var dir = Paths.get("CsFind");
-        assertTrue(finder.isMatchingDir(dir));
+        assertTrue(finder.isMatchingDirPath(dir));
     }
 
     @Test
-    public final void testIsMatchingDir_DoesNotMatchOutPattern2_True() {
+    public final void testIsMatchingDirPath_DoesNotMatchOutPattern2_True() {
         var settings = getSettings();
         settings.addOutDirPattern("FindFiles");
         var finder = new Finder(settings);
         var dir = Paths.get("/Users/cary/src/xfind/java/javafind/ssrc/main/java/javafind");
-        assertTrue(finder.isMatchingDir(dir));
+        assertTrue(finder.isMatchingDirPath(dir));
     }
 
     /*************************************************************
@@ -425,5 +427,40 @@ public class FinderTest {
         } catch (FindException e) {
             fail();
         }
+    }
+
+    /*************************************************************
+     * isMatchingLastMod tests
+     *************************************************************/
+    @Test
+    public final void testIsMatchingLastMod_MinOnly_BeforeMin_False() {
+        var settings = getSettings();
+        settings.setMinLastMod(LocalDateTime.parse("2024-01-01T00:00:00"));
+        var finder = new Finder(settings);
+        assertFalse(finder.isMatchingLastMod(Instant.parse("2023-12-31T23:59:59Z")));
+    }
+
+    @Test
+    public final void testIsMatchingLastMod_MinOnly_AtOrAfterMin_True() {
+        var settings = getSettings();
+        settings.setMinLastMod(LocalDateTime.parse("2024-01-01T00:00:00"));
+        var finder = new Finder(settings);
+        assertTrue(finder.isMatchingLastMod(Instant.parse("2024-01-01T00:00:00Z")));
+    }
+
+    @Test
+    public final void testIsMatchingLastMod_MaxOnly_AfterMax_False() {
+        var settings = getSettings();
+        settings.setMaxLastMod(LocalDateTime.parse("2024-01-01T00:00:00"));
+        var finder = new Finder(settings);
+        assertFalse(finder.isMatchingLastMod(Instant.parse("2024-01-01T00:00:01Z")));
+    }
+
+    @Test
+    public final void testIsMatchingLastMod_MaxOnly_AtOrBeforeMax_True() {
+        var settings = getSettings();
+        settings.setMaxLastMod(LocalDateTime.parse("2024-01-01T00:00:00"));
+        var finder = new Finder(settings);
+        assertTrue(finder.isMatchingLastMod(Instant.parse("2024-01-01T00:00:00Z")));
     }
 }

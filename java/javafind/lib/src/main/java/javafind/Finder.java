@@ -49,6 +49,13 @@ public class Finder {
                 if (!Files.isReadable(path)) {
                     throw new FindException(STARTPATH_NOT_READABLE.getMessage());
                 }
+                if (Files.isDirectory(path)
+                        && (!filterDirPathByHidden(path) || !filterDirPathByOutPatterns(path))) {
+                    throw new FindException(STARTPATH_DOES_NOT_MATCH_FIND_SETTINGS.getMessage());
+                }
+                if (Files.isRegularFile(path) && filterToFileResult(path).isEmpty()) {
+                    throw new FindException(STARTPATH_DOES_NOT_MATCH_FIND_SETTINGS.getMessage());
+                }
             } else {
                 throw new FindException(STARTPATH_NOT_FOUND.getMessage());
             }
@@ -76,7 +83,7 @@ public class Finder {
         return null != s && patternSet.stream().anyMatch(p -> p.matcher(s).find());
     }
 
-    boolean filterDirByHidden(final Path path) {
+    boolean filterDirPathByHidden(final Path path) {
         // null or empty path is a match
         if (null == path || path.toString().isEmpty()) {
             return true;
@@ -87,7 +94,7 @@ public class Finder {
         return true;
     }
 
-    boolean filterDirByInPatterns(final Path path) {
+    boolean filterDirPathByInPatterns(final Path path) {
         // null or empty path is a match
         if (null == path || path.toString().isEmpty()) {
             return true;
@@ -98,7 +105,7 @@ public class Finder {
                 anyMatchesAnyPattern(pathElems, settings.getInDirPatterns()));
     }
 
-    boolean filterDirByOutPatterns(final Path path) {
+    boolean filterDirPathByOutPatterns(final Path path) {
         // null or empty path is a match
         if (null == path || path.toString().isEmpty()) {
             return true;
@@ -109,24 +116,55 @@ public class Finder {
                 !anyMatchesAnyPattern(pathElems, settings.getOutDirPatterns()));
     }
 
-    boolean isMatchingDir(final Path path) {
+    boolean isMatchingDirPath(final Path path) {
         // null or empty path is a match
         if (null == path || path.toString().isEmpty()) {
             return true;
         }
-        return filterDirByHidden(path)
+        return filterDirPathByHidden(path)
                 &&
-                filterDirByInPatterns(path)
+                filterDirPathByInPatterns(path)
                 &&
-                filterDirByOutPatterns(path);
+                filterDirPathByOutPatterns(path);
+    }
+
+    boolean filterFileNameByHidden(final String fileName) {
+        if (!settings.getIncludeHidden()) {
+            return !FileUtil.isHiddenName(fileName);
+        }
+        return true;
+    }
+
+    boolean filterExtensionByInExtensions(final String ext) {
+        // null or empty path is a match
+        if (null == ext || ext.isEmpty()) {
+            return true;
+        }
+        return (settings.getInExtensions().isEmpty()
+                || settings.getInExtensions().contains(ext));
+    }
+
+    boolean filterExtensionByOutExtensions(final String ext) {
+        // null or empty path is a match
+        if (null == ext || ext.isEmpty()) {
+            return true;
+        }
+        return (settings.getOutExtensions().isEmpty()
+                || !settings.getOutExtensions().contains(ext));
     }
 
     boolean isMatchingExtension(final String ext) {
-        return ((settings.getInExtensions().isEmpty()
-                || settings.getInExtensions().contains(ext))
+        return filterExtensionByInExtensions(ext)
                 &&
-                (settings.getOutExtensions().isEmpty()
-                        || !settings.getOutExtensions().contains(ext)));
+                filterExtensionByOutExtensions(ext);
+    }
+
+    boolean hasMatchingExtension(final String fileName) {
+        if (!settings.getInExtensions().isEmpty() || !settings.getOutExtensions().isEmpty()) {
+            var ext = FileUtil.getExtension(fileName);
+            return isMatchingExtension(ext);
+        }
+        return true;
     }
 
     boolean hasMatchingExtension(final FileResult fr) {
@@ -138,12 +176,20 @@ public class Finder {
         return true;
     }
 
+    boolean filterFileNameByInFilePatterns(final String fileName) {
+        return settings.getInFilePatterns().isEmpty()
+                || matchesAnyPattern(fileName, settings.getInFilePatterns());
+    }
+
+    boolean filterFileNameByOutFilePatterns(final String fileName) {
+        return settings.getOutFilePatterns().isEmpty()
+                || !matchesAnyPattern(fileName, settings.getOutFilePatterns());
+    }
+
     boolean isMatchingFileName(final String fileName) {
-        return ((settings.getInFilePatterns().isEmpty()
-                || matchesAnyPattern(fileName, settings.getInFilePatterns()))
+        return filterFileNameByInFilePatterns(fileName)
                 &&
-                (settings.getOutFilePatterns().isEmpty()
-                        || !matchesAnyPattern(fileName, settings.getOutFilePatterns())));
+                filterFileNameByOutFilePatterns(fileName);
     }
 
     boolean isMatchingFileType(final FileType fileType) {
@@ -161,11 +207,18 @@ public class Finder {
     }
 
     boolean isMatchingLastMod(final Instant lastMod) {
-        return ((settings.getMaxLastMod().isEmpty()
-                || lastMod.compareTo(settings.getMaxLastMod().get().toInstant(ZoneOffset.UTC)) <= 0
-                &&
-                (settings.getMinLastMod().isEmpty()
-                        || lastMod.compareTo(settings.getMinLastMod().get().toInstant(ZoneOffset.UTC)) >= 0)));
+        if (settings.getMaxLastMod().isEmpty() && settings.getMinLastMod().isEmpty()) {
+            return true;
+        }
+        if (lastMod == null) {
+            return false;
+        }
+        if (settings.getMaxLastMod().isPresent()
+                && lastMod.compareTo(settings.getMaxLastMod().get().toInstant(ZoneOffset.UTC)) > 0) {
+            return false;
+        }
+        return settings.getMinLastMod().isEmpty()
+                || lastMod.compareTo(settings.getMinLastMod().get().toInstant(ZoneOffset.UTC)) >= 0;
     }
 
     boolean hasMatchingLastMod(final FileResult fr) {
@@ -203,16 +256,33 @@ public class Finder {
     }
 
     Optional<FileResult> filterToFileResult(final Path path) {
-        if (!isMatchingDir(path.getParent())) {
+        if (!isMatchingDirPath(path.getParent())) {
             return Optional.empty();
         }
 
-        if (!settings.getIncludeHidden() && FileUtil.isHiddenName(path.getFileName().toString())) {
+        var fileName = path.getFileName().toString();
+        if (!filterFileNameByHidden(fileName)) {
             return Optional.empty();
         }
 
         FileType fileType = fileTypes.getFileType(path);
-        if (fileType == FileType.ARCHIVE && !settings.getIncludeArchives() && !settings.getArchivesOnly()) {
+        if (fileType == FileType.ARCHIVE) {
+            if (!settings.getIncludeArchives() && !settings.getArchivesOnly()) {
+                return Optional.empty();
+            }
+            if (!isMatchingArchiveFile(path)) {
+                return Optional.empty();
+            }
+            return Optional.of(new FileResult(path, fileType, 0L, null));
+        }
+
+        if (settings.getArchivesOnly()) {
+            return Optional.empty();
+        }
+
+        if (!hasMatchingExtension(fileName)
+                || !isMatchingFileName(fileName)
+                || !isMatchingFileType(fileType)) {
             return Optional.empty();
         }
 
@@ -221,8 +291,12 @@ public class Finder {
         if (settings.needLastMod() || settings.needSize()) {
             try {
                 BasicFileAttributes stat = Files.readAttributes(path, BasicFileAttributes.class);
-                if (settings.needSize()) fileSize = stat.size();
-                if (settings.needLastMod()) lastMod = stat.lastModifiedTime();
+                if (settings.needSize()) {
+                    fileSize = stat.size();
+                }
+                if (settings.needLastMod()) {
+                    lastMod = stat.lastModifiedTime();
+                }
             } catch (IOException e) {
                 Logger.logError(e.getMessage());
                 return Optional.empty();
@@ -230,13 +304,7 @@ public class Finder {
         }
 
         FileResult fileResult = new FileResult(path, fileType, fileSize, lastMod);
-        if (fileResult.fileType() == FileType.ARCHIVE) {
-            if (isMatchingArchiveFile(path)) {
-                return Optional.of(fileResult);
-            }
-            return Optional.empty();
-        }
-        if (!settings.getArchivesOnly() && isMatchingFileResult(fileResult)) {
+        if (isMatchingFileSize(fileResult.fileSize()) && hasMatchingLastMod(fileResult)) {
             return Optional.of(fileResult);
         }
         return Optional.empty();
@@ -256,7 +324,7 @@ public class Finder {
                 if (Files.isSymbolicLink(path) && !settings.getFollowSymlinks()) {
                     continue;
                 }
-                if (Files.isDirectory(path) && recurse && filterDirByHidden(path) && filterDirByOutPatterns(path)) {
+                if (Files.isDirectory(path) && recurse && filterDirPathByHidden(path) && filterDirPathByOutPatterns(path)) {
                     pathDirs.add(path);
                 } else if (Files.isRegularFile(path) && (minDepth < 0 || currentDepth >= minDepth)) {
                     filterToFileResult(path).ifPresent(pathResults::add);
@@ -280,7 +348,7 @@ public class Finder {
             if (settings.getMaxDepth() == 0) {
                 return Collections.emptyList();
             }
-            if (filterDirByHidden(filePath) && filterDirByOutPatterns(filePath)) {
+            if (filterDirPathByHidden(filePath) && filterDirPathByOutPatterns(filePath)) {
                 int maxDepth = settings.getMaxDepth();
                 if (!settings.getRecursive()) {
                     maxDepth = 1;
