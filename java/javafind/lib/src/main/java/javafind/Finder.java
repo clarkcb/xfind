@@ -128,6 +128,59 @@ public class Finder {
                 filterDirPathByOutPatterns(path);
     }
 
+    boolean filterExtensionByInArchiveExtensions(final String ext) {
+        // null or empty path is a match
+        if (null == ext || ext.isEmpty()) {
+            return true;
+        }
+        return (settings.getInArchiveExtensions().isEmpty()
+                || settings.getInArchiveExtensions().contains(ext));
+    }
+
+    boolean filterExtensionByOutArchiveExtensions(final String ext) {
+        // null or empty path is a match
+        if (null == ext || ext.isEmpty()) {
+            return true;
+        }
+        return (settings.getOutArchiveExtensions().isEmpty()
+                || !settings.getOutArchiveExtensions().contains(ext));
+    }
+
+    boolean isMatchingArchiveExtension(final String ext) {
+        return filterExtensionByInArchiveExtensions(ext)
+                &&
+                filterExtensionByOutArchiveExtensions(ext);
+    }
+
+    boolean hasMatchingArchiveExtension(final String fileName) {
+        if (!settings.getInArchiveExtensions().isEmpty() || !settings.getOutArchiveExtensions().isEmpty()) {
+            var ext = FileUtil.getExtension(fileName);
+            return isMatchingArchiveExtension(ext);
+        }
+        return true;
+    }
+
+    boolean filterFileNameByInArchiveFilePatterns(final String fileName) {
+        return settings.getInArchiveFilePatterns().isEmpty()
+                || matchesAnyPattern(fileName, settings.getInArchiveFilePatterns());
+    }
+
+    boolean filterFileNameByOutArchiveFilePatterns(final String fileName) {
+        return settings.getOutArchiveFilePatterns().isEmpty()
+                || !matchesAnyPattern(fileName, settings.getOutArchiveFilePatterns());
+    }
+
+    boolean isMatchingArchiveFileName(final String fileName) {
+        return filterFileNameByInArchiveFilePatterns(fileName)
+                &&
+                filterFileNameByOutArchiveFilePatterns(fileName);
+    }
+
+    boolean isMatchingArchiveFilePath(final Path path) {
+        var fileName = path.getFileName().toString();
+        return hasMatchingArchiveExtension(fileName) && isMatchingArchiveFileName(fileName);
+    }
+
     boolean filterFileNameByHidden(final String fileName) {
         if (!settings.getIncludeHidden()) {
             return !FileUtil.isHiddenName(fileName);
@@ -161,15 +214,6 @@ public class Finder {
 
     boolean hasMatchingExtension(final String fileName) {
         if (!settings.getInExtensions().isEmpty() || !settings.getOutExtensions().isEmpty()) {
-            var ext = FileUtil.getExtension(fileName);
-            return isMatchingExtension(ext);
-        }
-        return true;
-    }
-
-    boolean hasMatchingExtension(final FileResult fr) {
-        if (!settings.getInExtensions().isEmpty() || !settings.getOutExtensions().isEmpty()) {
-            var fileName = fr.path().getFileName().toString();
             var ext = FileUtil.getExtension(fileName);
             return isMatchingExtension(ext);
         }
@@ -226,63 +270,38 @@ public class Finder {
         return isMatchingLastMod(lastMod);
     }
 
+    boolean isEligibleDiscoveredFile(final Path path) {
+        return isMatchingDirPath(path.getParent()) && filterFileNameByHidden(path.getFileName().toString());
+    }
+
+    boolean isMatchingFilePath(final Path path) {
+        var fileName = path.getFileName().toString();
+        return hasMatchingExtension(fileName) && isMatchingFileName(fileName);
+    }
+
     boolean isMatchingFileResult(final FileResult fr) {
-        return hasMatchingExtension(fr)
-                && isMatchingFileName(fr.path().getFileName().toString())
+        return isMatchingFilePath(fr.path())
                 && isMatchingFileType(fr.fileType())
                 && isMatchingFileSize(fr.fileSize())
                 && hasMatchingLastMod(fr);
     }
 
-    boolean isMatchingArchiveFile(final Path path) {
-        var fileName = path.getFileName().toString();
-        if (!settings.getInArchiveExtensions().isEmpty() || !settings.getOutArchiveExtensions().isEmpty()) {
-            var ext = FileUtil.getExtension(fileName);
-            if ((!settings.getInArchiveExtensions().isEmpty() && !settings.getInArchiveExtensions().contains(ext))
-                    ||
-                    (!settings.getOutArchiveExtensions().isEmpty()
-                            &&
-                            settings.getOutArchiveExtensions().contains(ext))) {
-                return false;
-            }
+    Optional<FileResult> filterArchiveToFileResult(final Path path, final FileType fileType) {
+        if (!settings.getIncludeArchives() && !settings.getArchivesOnly()) {
+            return Optional.empty();
         }
-        return (settings.getInArchiveFilePatterns().isEmpty()
-                ||
-                matchesAnyPattern(fileName, settings.getInArchiveFilePatterns()))
-               &&
-               (settings.getOutArchiveFilePatterns().isEmpty()
-                ||
-                !matchesAnyPattern(fileName, settings.getOutArchiveFilePatterns()));
+        if (!isMatchingArchiveFilePath(path)) {
+            return Optional.empty();
+        }
+        return Optional.of(new FileResult(path, fileType, 0L, null));
     }
 
-    Optional<FileResult> filterToFileResult(final Path path) {
-        if (!isMatchingDirPath(path.getParent())) {
-            return Optional.empty();
-        }
-
-        var fileName = path.getFileName().toString();
-        if (!filterFileNameByHidden(fileName)) {
-            return Optional.empty();
-        }
-
-        FileType fileType = fileTypes.getFileType(path);
-        if (fileType == FileType.ARCHIVE) {
-            if (!settings.getIncludeArchives() && !settings.getArchivesOnly()) {
-                return Optional.empty();
-            }
-            if (!isMatchingArchiveFile(path)) {
-                return Optional.empty();
-            }
-            return Optional.of(new FileResult(path, fileType, 0L, null));
-        }
-
+    Optional<FileResult> filterRegularFileToFileResult(final Path path, final FileType fileType) {
         if (settings.getArchivesOnly()) {
             return Optional.empty();
         }
 
-        if (!hasMatchingExtension(fileName)
-                || !isMatchingFileName(fileName)
-                || !isMatchingFileType(fileType)) {
+        if (!isMatchingFilePath(path) || !isMatchingFileType(fileType)) {
             return Optional.empty();
         }
 
@@ -308,6 +327,18 @@ public class Finder {
             return Optional.of(fileResult);
         }
         return Optional.empty();
+    }
+
+    Optional<FileResult> filterToFileResult(final Path path) {
+        if (!isEligibleDiscoveredFile(path)) {
+            return Optional.empty();
+        }
+
+        FileType fileType = fileTypes.getFileType(path);
+        if (fileType == FileType.ARCHIVE) {
+            return filterArchiveToFileResult(path, fileType);
+        }
+        return filterRegularFileToFileResult(path, fileType);
     }
 
     private List<FileResult> recFindPath(final Path filePath, int minDepth, int maxDepth, int currentDepth) {

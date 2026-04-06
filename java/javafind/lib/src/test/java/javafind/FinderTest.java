@@ -201,87 +201,87 @@ public class FinderTest {
     }
 
     /*************************************************************
-     * isMatchingArchiveFile tests
+     * isMatchingArchiveFilePath tests
      *************************************************************/
     @Test
-    public final void testIsMatchingArchiveFile_NoExtensionsNoPatterns_True() {
+    public final void testIsMatchingArchiveFilePath_NoExtensionsNoPatterns_True() {
         var settings = getSettings();
         var finder = new Finder(settings);
         var path = Paths.get("archive.zip");
-        assertTrue(finder.isMatchingArchiveFile(path));
+        assertTrue(finder.isMatchingArchiveFilePath(path));
     }
 
     @Test
-    public final void testIsMatchingArchiveFile_MatchesInExtension_True() {
+    public final void testIsMatchingArchiveFilePath_MatchesInExtension_True() {
         var settings = getSettings();
         settings.addInArchiveExtension("zip");
         var finder = new Finder(settings);
         var path = Paths.get("archive.zip");
-        assertTrue(finder.isMatchingArchiveFile(path));
+        assertTrue(finder.isMatchingArchiveFilePath(path));
     }
 
     @Test
-    public final void testIsMatchingArchiveFile_DoesNotMatchInExtension_False() {
+    public final void testIsMatchingArchiveFilePath_DoesNotMatchInExtension_False() {
         var settings = getSettings();
         settings.addInArchiveExtension("gz");
         var finder = new Finder(settings);
         var path = Paths.get("archive.zip");
-        assertFalse(finder.isMatchingArchiveFile(path));
+        assertFalse(finder.isMatchingArchiveFilePath(path));
     }
 
 
     @Test
-    public final void testIsMatchingArchiveFile_MatchesOutExtension_False() {
+    public final void testIsMatchingArchiveFilePath_MatchesOutExtension_False() {
         var settings = getSettings();
         settings.addOutArchiveExtension("zip");
         var finder = new Finder(settings);
         var path = Paths.get("archive.zip");
-        assertFalse(finder.isMatchingArchiveFile(path));
+        assertFalse(finder.isMatchingArchiveFilePath(path));
     }
 
     @Test
-    public final void testIsMatchingArchiveFile_DoesNotMatchOutExtension_True() {
+    public final void testIsMatchingArchiveFilePath_DoesNotMatchOutExtension_True() {
         var settings = getSettings();
         settings.addOutArchiveExtension("gz");
         var finder = new Finder(settings);
         var path = Paths.get("archive.zip");
-        assertTrue(finder.isMatchingArchiveFile(path));
+        assertTrue(finder.isMatchingArchiveFilePath(path));
     }
 
     @Test
-    public final void testIsMatchingArchiveFile_MatchesInPattern_True() {
+    public final void testIsMatchingArchiveFilePath_MatchesInPattern_True() {
         var settings = getSettings();
         settings.addInArchiveFilePattern("arch");
         var finder = new Finder(settings);
         var path = Paths.get("archive.zip");
-        assertTrue(finder.isMatchingArchiveFile(path));
+        assertTrue(finder.isMatchingArchiveFilePath(path));
     }
 
     @Test
-    public final void testIsMatchingArchiveFile_DoesNotMatchInPattern_False() {
+    public final void testIsMatchingArchiveFilePath_DoesNotMatchInPattern_False() {
         var settings = getSettings();
         settings.addInArchiveFilePattern("archives");
         var finder = new Finder(settings);
         var path = Paths.get("archive.zip");
-        assertFalse(finder.isMatchingArchiveFile(path));
+        assertFalse(finder.isMatchingArchiveFilePath(path));
     }
 
     @Test
-    public final void testIsMatchingArchiveFile_MatchesOutPattern_False() {
+    public final void testIsMatchingArchiveFilePath_MatchesOutPattern_False() {
         var settings = getSettings();
         settings.addOutArchiveFilePattern("arch");
         var finder = new Finder(settings);
         var path = Paths.get("archive.zip");
-        assertFalse(finder.isMatchingArchiveFile(path));
+        assertFalse(finder.isMatchingArchiveFilePath(path));
     }
 
     @Test
-    public final void testIsMatchingArchiveFile_DoesNotMatchOutPattern_True() {
+    public final void testIsMatchingArchiveFilePath_DoesNotMatchOutPattern_True() {
         var settings = getSettings();
         settings.addOutArchiveFilePattern("archives");
         var finder = new Finder(settings);
         var path = Paths.get("archive.zip");
-        assertTrue(finder.isMatchingArchiveFile(path));
+        assertTrue(finder.isMatchingArchiveFilePath(path));
     }
 
     /*************************************************************
@@ -322,7 +322,7 @@ public class FinderTest {
     }
 
     @Test
-    public final void testFilterToFileResult_IsMatchingArchiveFile_NotNull() {
+    public final void testFilterToFileResult_IsMatchingArchiveFilePath_NotNull() {
         var settings = getSettings();
         settings.setIncludeArchives(true);
         settings.addInArchiveExtension("zip");
@@ -332,7 +332,7 @@ public class FinderTest {
     }
 
     @Test
-    public final void testFilterToFileResult_NotIsMatchingArchiveFile_Null() {
+    public final void testFilterToFileResult_NotIsMatchingArchiveFilePath_Null() {
         var settings = getSettings();
         settings.setIncludeArchives(true);
         settings.addOutArchiveExtension("zip");
