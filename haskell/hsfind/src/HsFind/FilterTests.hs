@@ -3,7 +3,7 @@ module HsFind.FilterTests
     , getFilterTests
     ) where
 
-import Data.Maybe (fromJust, isNothing)
+import Data.Maybe (fromJust, isJust, isNothing)
 
 import System.FilePath (takeFileName)
 import Text.Regex.PCRE ( (=~) )
@@ -43,160 +43,168 @@ data FilterTests = FilterTests
   , archiveFileResultTests :: [FileResult -> Bool]
   }
 
+getFilterFilePathByHidden :: Bool -> (FilePath -> Bool)
+getFilterFilePathByHidden includeHidden' = doFilter
+  where doFilter | includeHidden' = const True
+                 | otherwise = not . isHiddenFilePath
+
+getFilterFilePathByInExtensions :: [String] -> (FilePath -> Bool)
+getFilterFilePathByInExtensions inExtensions' = doFilter
+  where doFilter | null inExtensions' = const True
+                 | otherwise = \fp -> any (hasExtension fp) inExtensions'
+
+getFilterFilePathByOutExtensions :: [String] -> (FilePath -> Bool)
+getFilterFilePathByOutExtensions outExtensions' = doFilter
+  where doFilter | null outExtensions' = const True
+                 | otherwise = \fp -> not (any (hasExtension fp) outExtensions')
+
+getFilterFilePathByInPatterns :: [String] -> (FilePath -> Bool)
+getFilterFilePathByInPatterns inPatterns = doFilter
+  where doFilter | null inPatterns = const True
+                 | otherwise = \fp -> any (\p -> takeFileName fp =~ p :: Bool) inPatterns
+
+getFilterFilePathByOutPatterns :: [String] -> (FilePath -> Bool)
+getFilterFilePathByOutPatterns outPatterns = doFilter
+  where doFilter | null outPatterns = const True
+                 | otherwise = \fp -> all (\p -> not $ takeFileName fp =~ p :: Bool) outPatterns
+
+getFilterFileTypeByInFileTypes :: [FileType] -> (FileType -> Bool)
+getFilterFileTypeByInFileTypes inFileTypes' = doFilter
+  where doFilter | null inFileTypes' = const True
+                 | otherwise = (`elem` inFileTypes')
+
+getFilterFileTypeByOutFileTypes :: [FileType] -> (FileType -> Bool)
+getFilterFileTypeByOutFileTypes outFileTypes' = doFilter
+  where doFilter | null outFileTypes' = const True
+                 | otherwise = (`notElem` outFileTypes')
+
+getFilterFileSizeByMaxSize :: Integer -> (Integer -> Bool)
+getFilterFileSizeByMaxSize maxSize' = doFilter
+  where doFilter | maxSize' == 0 = const True
+                 | otherwise = (<= maxSize')
+
+getFilterFileSizeByMinSize :: Integer -> (Integer -> Bool)
+getFilterFileSizeByMinSize minSize' = doFilter
+  where doFilter | minSize' == 0 = const True
+                 | otherwise = (>= minSize')
+
+getFilterLastModByMaxLastMod :: Maybe UTCTime -> (Maybe UTCTime -> Bool)
+getFilterLastModByMaxLastMod maybeMaxLastMod = doFilter
+  where doFilter | isNothing maybeMaxLastMod = const True
+                 | otherwise = \mlm -> isJust mlm && (fromJust mlm <= fromJust maybeMaxLastMod)
+
+getFilterLastModByMinLastMod :: Maybe UTCTime -> (Maybe UTCTime -> Bool)
+getFilterLastModByMinLastMod maybeMinLastMod = doFilter
+  where doFilter | isNothing maybeMinLastMod = const True
+                 | otherwise = \mlm -> isJust mlm && (fromJust mlm >= fromJust maybeMinLastMod)
+
 getPathByHiddenTests :: FindSettings -> [FilePath -> Bool]
-getPathByHiddenTests settings =
-  hiddenPathTests
-  where hiddenPathTests | includeHidden settings = []
-                        | otherwise = [not . isHiddenFilePath]
+getPathByHiddenTests settings = [getFilterFilePathByHidden (includeHidden settings)]
 
 getDirPathByInPatternsTests :: FindSettings -> [FilePath -> Bool]
-getDirPathByInPatternsTests settings = inPatternTests
-  where inPatternTests  | null inPatterns = []
-                        | otherwise = [\fp -> any (\p -> fp =~ p :: Bool) inPatterns]
-        inPatterns = inDirPatterns settings
+getDirPathByInPatternsTests settings = [getFilterFilePathByInPatterns (inDirPatterns settings)]
 
 getDirPathByOutPatternsTests :: FindSettings -> [FilePath -> Bool]
-getDirPathByOutPatternsTests settings = outPatternTests
-  where outPatternTests | null outPatterns = []
-                        | otherwise = [\fp -> all (\p -> not $ fp =~ p :: Bool) outPatterns]
-        outPatterns = outDirPatterns settings
+getDirPathByOutPatternsTests settings = [getFilterFilePathByOutPatterns (outDirPatterns settings)]
 
 getArchiveFilePathByInExtensionsTests :: FindSettings -> [FilePath -> Bool]
-getArchiveFilePathByInExtensionsTests settings = inExtTests
-  where inExtTests      | null inExts = []
-                        | otherwise = [\fp -> any (hasExtension fp) inExts]
-        inExts = inArchiveExtensions settings
+getArchiveFilePathByInExtensionsTests settings = [getFilterFilePathByInExtensions (inArchiveExtensions settings)]
 
 getArchiveFilePathByOutExtensionsTests :: FindSettings -> [FilePath -> Bool]
-getArchiveFilePathByOutExtensionsTests settings = outExtTests
-  where outExtTests     | null outExts = []
-                        | otherwise = [\fp -> not $ any (hasExtension fp) outExts]
-        outExts = outArchiveExtensions settings
+getArchiveFilePathByOutExtensionsTests settings = [getFilterFilePathByOutExtensions (outArchiveExtensions settings)]
 
 getArchiveFilePathByInPatternsTests :: FindSettings -> [FilePath -> Bool]
-getArchiveFilePathByInPatternsTests settings = inPatternTests
-  where inPatternTests  | null inPatterns = []
-                        | otherwise = [\fp -> any (\p -> takeFileName fp =~ p :: Bool) inPatterns]
-        inPatterns = inArchiveFilePatterns settings
+getArchiveFilePathByInPatternsTests settings = [getFilterFilePathByInPatterns (inArchiveFilePatterns settings)]
 
 getArchiveFilePathByOutPatternsTests :: FindSettings -> [FilePath -> Bool]
-getArchiveFilePathByOutPatternsTests settings = outPatternTests
-  where outPatternTests | null outPatterns = []
-                        | otherwise = [\fp -> all (\p -> not $ takeFileName fp =~ p :: Bool) outPatterns]
-        outPatterns = outArchiveFilePatterns settings
+getArchiveFilePathByOutPatternsTests settings = [getFilterFilePathByOutPatterns (outArchiveFilePatterns settings)]
 
 getFilePathByInExtensionsTests :: FindSettings -> [FilePath -> Bool]
-getFilePathByInExtensionsTests settings = inExtTests
-  where inExtTests      | null inExts = []
-                        | otherwise = [\fp -> any (hasExtension fp) inExts]
-        inExts = inExtensions settings
+getFilePathByInExtensionsTests settings = [getFilterFilePathByInExtensions (inExtensions settings)]
 
 getFilePathByOutExtensionsTests :: FindSettings -> [FilePath -> Bool]
-getFilePathByOutExtensionsTests settings = outExtTests
-  where outExtTests     | null outExts = []
-                        | otherwise = [\fp -> not $ any (hasExtension fp) outExts]
-        outExts = outExtensions settings
+getFilePathByOutExtensionsTests settings = [getFilterFilePathByOutExtensions (outExtensions settings)]
 
 getFilePathByInPatternsTests :: FindSettings -> [FilePath -> Bool]
-getFilePathByInPatternsTests settings = inPatternTests
-  where inPatternTests  | null inPatterns = []
-                        | otherwise = [\fp -> any (\p -> takeFileName fp =~ p :: Bool) inPatterns]
-        inPatterns = inFilePatterns settings
+getFilePathByInPatternsTests settings = [getFilterFilePathByInPatterns (inFilePatterns settings)]
 
 getFilePathByOutPatternsTests :: FindSettings -> [FilePath -> Bool]
-getFilePathByOutPatternsTests settings = outPatternTests
-  where outPatternTests | null outPatterns = []
-                        | otherwise = [\fp -> all (\p -> not $ takeFileName fp =~ p :: Bool) outPatterns]
-        outPatterns = outFilePatterns settings
+getFilePathByOutPatternsTests settings = [getFilterFilePathByOutPatterns (outFilePatterns settings)]
 
 getFileTypeByInFileTypesTests :: FindSettings -> [FileType -> Bool]
-getFileTypeByInFileTypesTests settings = inFileTypeTests
-  where inFileTypeTests  | null inTypes = []
-                         | otherwise = [(`elem` inTypes)]
-        inTypes = inFileTypes settings
+getFileTypeByInFileTypesTests settings = [getFilterFileTypeByInFileTypes (inFileTypes settings)]
 
 getFileTypeByOutFileTypesTests :: FindSettings -> [FileType -> Bool]
-getFileTypeByOutFileTypesTests settings = outFileTypeTests
-  where outFileTypeTests | null outTypes = []
-                         | otherwise = [(`notElem` outTypes)]
-        outTypes = outFileTypes settings
+getFileTypeByOutFileTypesTests settings = [getFilterFileTypeByOutFileTypes (outFileTypes settings)]
 
 getFileSizeByMaxSizeTests :: FindSettings -> [Integer -> Bool]
-getFileSizeByMaxSizeTests settings = maxSizeTests
-  where maxSizeTests | maxSize settings == 0 = []
-                     | otherwise = [\i -> i <= maxSize settings]
+getFileSizeByMaxSizeTests settings = [getFilterFileSizeByMaxSize (maxSize settings)]
 
 getFileSizeByMinSizeTests :: FindSettings -> [Integer -> Bool]
-getFileSizeByMinSizeTests settings = minSizeTests
-  where minSizeTests | minSize settings == 0 = []
-                     | otherwise = [\i -> i >= minSize settings]
+getFileSizeByMinSizeTests settings = [getFilterFileSizeByMinSize (minSize settings)]
 
 getLastModByMaxLastModTests :: FindSettings -> [Maybe UTCTime -> Bool]
-getLastModByMaxLastModTests settings = maxLastModTests
-  where maxLastModTests | isNothing (maxLastMod settings) = []
-                        | otherwise = [\lastMod -> fromJust lastMod <= fromJust (maxLastMod settings)]
+getLastModByMaxLastModTests settings = [getFilterLastModByMaxLastMod (maxLastMod settings)]
 
 getLastModByMinLastModTests :: FindSettings -> [Maybe UTCTime -> Bool]
-getLastModByMinLastModTests settings = minLastModTests
-  where minLastModTests | isNothing (minLastMod settings) = []
-                        | otherwise = [\lastMod -> fromJust lastMod >= fromJust (minLastMod settings)]
+getLastModByMinLastModTests settings = [getFilterLastModByMinLastMod (minLastMod settings)]
 
 getFilterTests :: FindSettings -> FilterTests
 getFilterTests settings = FilterTests
-  { pathByHiddenTests = pathByHiddenTests
-  , dirPathByInPatternsTests = dirPathByInPatternsTests
-  , dirPathByOutPatternsTests = dirPathByOutPatternsTests
-  , dirPathTests = dirPathTests
-  , filePathByInExtensionsTests = filePathByInExtensionsTests
-  , filePathByOutExtensionsTests = filePathByOutExtensionsTests
-  , filePathByInPatternsTests = filePathByInPatternsTests
-  , filePathByOutPatternsTests = filePathByOutPatternsTests
-  , filePathTests = filePathTests
-  , fileTypeByInFileTypesTests = fileTypeByInFileTypesTests
-  , fileTypeByOutFileTypesTests = fileTypeByOutFileTypesTests
-  , fileTypeTests = fileTypeTests
-  , fileSizeByMaxSizeTests = fileSizeByMaxSizeTests
-  , fileSizeByMinSizeTests = fileSizeByMinSizeTests
-  , fileSizeTests = fileSizeTests
-  , lastModByMaxLastModTests = lastModByMaxLastModTests
-  , lastModByMinLastModTests = lastModByMinLastModTests
-  , lastModTests = lastModTests
-  , fileResultTests = fileResultTests
-  , archiveFilePathByInExtensionsTests = archiveFilePathByInExtensionsTests
-  , archiveFilePathByOutExtensionsTests = archiveFilePathByOutExtensionsTests
-  , archiveFilePathByInPatternsTests = archiveFilePathByInPatternsTests
-  , archiveFilePathByOutPatternsTests = archiveFilePathByOutPatternsTests
-  , archiveFilePathTests = archiveFilePathTests
-  , archiveFileResultTests = archiveFileResultTests
+  { pathByHiddenTests = pathByHiddenTests'
+  , dirPathByInPatternsTests = dirPathByInPatternsTests'
+  , dirPathByOutPatternsTests = dirPathByOutPatternsTests'
+  , dirPathTests = dirPathTests'
+  , filePathByInExtensionsTests = filePathByInExtensionsTests'
+  , filePathByOutExtensionsTests = filePathByOutExtensionsTests'
+  , filePathByInPatternsTests = filePathByInPatternsTests'
+  , filePathByOutPatternsTests = filePathByOutPatternsTests'
+  , filePathTests = filePathTests'
+  , fileTypeByInFileTypesTests = fileTypeByInFileTypesTests'
+  , fileTypeByOutFileTypesTests = fileTypeByOutFileTypesTests'
+  , fileTypeTests = fileTypeTests'
+  , fileSizeByMaxSizeTests = fileSizeByMaxSizeTests'
+  , fileSizeByMinSizeTests = fileSizeByMinSizeTests'
+  , fileSizeTests = fileSizeTests'
+  , lastModByMaxLastModTests = lastModByMaxLastModTests'
+  , lastModByMinLastModTests = lastModByMinLastModTests'
+  , lastModTests = lastModTests'
+  , fileResultTests = fileResultTests'
+  , archiveFilePathByInExtensionsTests = archiveFilePathByInExtensionsTests'
+  , archiveFilePathByOutExtensionsTests = archiveFilePathByOutExtensionsTests'
+  , archiveFilePathByInPatternsTests = archiveFilePathByInPatternsTests'
+  , archiveFilePathByOutPatternsTests = archiveFilePathByOutPatternsTests'
+  , archiveFilePathTests = archiveFilePathTests'
+  , archiveFileResultTests = archiveFileResultTests'
   }
   where
-    pathByHiddenTests = getPathByHiddenTests settings
-    dirPathByInPatternsTests = getDirPathByInPatternsTests settings
-    dirPathByOutPatternsTests = getDirPathByOutPatternsTests settings
-    dirPathTests = pathByHiddenTests ++ dirPathByInPatternsTests ++ dirPathByOutPatternsTests
-    filePathByInExtensionsTests = getFilePathByInExtensionsTests settings
-    filePathByOutExtensionsTests = getFilePathByOutExtensionsTests settings
-    filePathByInPatternsTests = getFilePathByInPatternsTests settings
-    filePathByOutPatternsTests = getFilePathByOutPatternsTests settings
-    filePathTests = pathByHiddenTests ++ filePathByInExtensionsTests ++ filePathByOutExtensionsTests ++ filePathByInPatternsTests ++ filePathByOutPatternsTests
-    fileTypeByInFileTypesTests = getFileTypeByInFileTypesTests settings
-    fileTypeByOutFileTypesTests = getFileTypeByOutFileTypesTests settings
-    fileTypeTests = fileTypeByInFileTypesTests ++ fileTypeByOutFileTypesTests
-    fileSizeByMaxSizeTests = getFileSizeByMaxSizeTests settings
-    fileSizeByMinSizeTests = getFileSizeByMinSizeTests settings
-    fileSizeTests = fileSizeByMaxSizeTests ++ fileSizeByMinSizeTests
-    lastModByMaxLastModTests = getLastModByMaxLastModTests settings
-    lastModByMinLastModTests = getLastModByMinLastModTests settings
-    lastModTests = lastModByMaxLastModTests ++ lastModByMinLastModTests
-    fileResultDirTests = map (. (getParentPath . fileResultPath)) dirPathTests
-    fileResultPathTests = map (. fileResultPath) filePathTests
-    fileResultTypeTests = map (. fileResultType) fileTypeTests
-    fileResultSizeTests = map (. fileResultSize) fileSizeTests
-    fileResultLastModTests = map (. fileLastMod) lastModTests
-    fileResultTests = fileResultDirTests ++ fileResultPathTests ++ fileResultTypeTests ++ fileResultSizeTests ++ fileResultLastModTests
-    archiveFilePathByInExtensionsTests = getArchiveFilePathByInExtensionsTests settings
-    archiveFilePathByOutExtensionsTests = getArchiveFilePathByOutExtensionsTests settings
-    archiveFilePathByInPatternsTests = getArchiveFilePathByInPatternsTests settings
-    archiveFilePathByOutPatternsTests = getArchiveFilePathByOutPatternsTests settings
-    archiveFilePathTests = pathByHiddenTests ++ archiveFilePathByInExtensionsTests ++ archiveFilePathByOutExtensionsTests ++ archiveFilePathByInPatternsTests ++ archiveFilePathByOutPatternsTests
-    archiveFileResultTests = map (. fileResultPath) archiveFilePathTests
+    pathByHiddenTests' = getPathByHiddenTests settings
+    dirPathByInPatternsTests' = getDirPathByInPatternsTests settings
+    dirPathByOutPatternsTests' = getDirPathByOutPatternsTests settings
+    dirPathTests' = pathByHiddenTests' ++ dirPathByInPatternsTests' ++ dirPathByOutPatternsTests'
+    filePathByInExtensionsTests' = getFilePathByInExtensionsTests settings
+    filePathByOutExtensionsTests' = getFilePathByOutExtensionsTests settings
+    filePathByInPatternsTests' = getFilePathByInPatternsTests settings
+    filePathByOutPatternsTests' = getFilePathByOutPatternsTests settings
+    filePathTests' = pathByHiddenTests' ++ filePathByInExtensionsTests' ++ filePathByOutExtensionsTests' ++ filePathByInPatternsTests' ++ filePathByOutPatternsTests'
+    fileTypeByInFileTypesTests' = getFileTypeByInFileTypesTests settings
+    fileTypeByOutFileTypesTests' = getFileTypeByOutFileTypesTests settings
+    fileTypeTests' = fileTypeByInFileTypesTests' ++ fileTypeByOutFileTypesTests'
+    fileSizeByMaxSizeTests' = getFileSizeByMaxSizeTests settings
+    fileSizeByMinSizeTests' = getFileSizeByMinSizeTests settings
+    fileSizeTests' = fileSizeByMaxSizeTests' ++ fileSizeByMinSizeTests'
+    lastModByMaxLastModTests' = getLastModByMaxLastModTests settings
+    lastModByMinLastModTests' = getLastModByMinLastModTests settings
+    lastModTests' = lastModByMaxLastModTests' ++ lastModByMinLastModTests'
+    fileResultDirTests' = map (. (getParentPath . fileResultPath)) dirPathTests'
+    fileResultPathTests' = map (. fileResultPath) filePathTests'
+    fileResultTypeTests' = map (. fileResultType) fileTypeTests'
+    fileResultSizeTests' = map (. fileResultSize) fileSizeTests'
+    fileResultLastModTests' = map (. fileLastMod) lastModTests'
+    fileResultTests' = fileResultDirTests' ++ fileResultPathTests' ++ fileResultTypeTests' ++ fileResultSizeTests' ++ fileResultLastModTests'
+    archiveFilePathByInExtensionsTests' = getArchiveFilePathByInExtensionsTests settings
+    archiveFilePathByOutExtensionsTests' = getArchiveFilePathByOutExtensionsTests settings
+    archiveFilePathByInPatternsTests' = getArchiveFilePathByInPatternsTests settings
+    archiveFilePathByOutPatternsTests' = getArchiveFilePathByOutPatternsTests settings
+    archiveFilePathTests' = pathByHiddenTests' ++ archiveFilePathByInExtensionsTests' ++ archiveFilePathByOutExtensionsTests' ++ archiveFilePathByInPatternsTests' ++ archiveFilePathByOutPatternsTests'
+    archiveFileResultTests' = map (. fileResultPath) archiveFilePathTests'
