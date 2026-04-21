@@ -18,8 +18,8 @@ module RbFind
 
     def initialize(settings)
       @settings = settings
-      validate_settings
       @file_types = FileTypes.new
+      validate_settings
     end
 
     def filter_dir_by_hidden?(dir_path)
@@ -230,6 +230,16 @@ module RbFind
           p = p.expand_path unless p.exist?
           raise FindError, STARTPATH_NOT_FOUND unless p.exist?
           raise FindError, STARTPATH_NOT_READABLE unless p.readable?
+          if p.symlink?
+            raise FindError, STARTPATH_NOT_MATCH_SETTINGS unless @settings.follow_symlinks
+          elsif p.directory?
+            raise FindError, STARTPATH_NOT_MATCH_SETTINGS unless filter_dir_by_hidden?(p) && filter_dir_by_out_patterns?(p)
+          elsif p.file?
+            raise FindError, STARTPATH_NOT_MATCH_SETTINGS if filter_to_file_result(p) == nil
+          else
+            # TODO: start path is unknown/invalid type
+            raise FindError, STARTPATH_NOT_MATCH_SETTINGS
+          end
         else
           raise FindError, STARTPATH_NOT_PATHNAME
         end
