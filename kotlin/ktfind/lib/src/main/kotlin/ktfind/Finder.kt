@@ -16,14 +16,10 @@ import kotlin.io.path.name
  */
 class Finder(val settings: FindSettings) {
     private val fileTypes: FileTypes
-    private val extTests: MutableSet<(String) -> Boolean> = mutableSetOf()
-    private val fileNameTests: MutableSet<(String) -> Boolean> = mutableSetOf()
-    private val fileTypeTests: MutableSet<(FileType) -> Boolean> = mutableSetOf()
 
     init {
-        validateSettings(settings)
         fileTypes = FileTypes()
-        setTests()
+        validateSettings(settings)
     }
 
     private fun validateSettings(settings: FindSettings) {
@@ -39,6 +35,22 @@ class Finder(val settings: FindSettings) {
                 if (!Files.isReadable(p)) {
                     throw FindException(FindError.STARTPATH_NOT_READABLE.message)
                 }
+                if (Files.isSymbolicLink(p)) {
+                    if (!settings.followSymlinks) {
+                        throw FindException(FindError.STARTPATH_DOES_NOT_MATCH_FIND_SETTINGS.message)
+                    }
+                } else if (Files.isDirectory(p)) {
+                    if (!filterDirPathByHidden(p) || !filterDirPathByOutPatterns(p)) {
+                        throw FindException(FindError.STARTPATH_DOES_NOT_MATCH_FIND_SETTINGS.message)
+                    }
+                } else if (Files.isRegularFile(p)) {
+                    if (filterToFileResult(p) == null) {
+                        throw FindException(FindError.STARTPATH_DOES_NOT_MATCH_FIND_SETTINGS.message)
+                    }
+                } else {
+                    // TODO: start path is unknown/invalid type
+                    throw FindException(FindError.STARTPATH_DOES_NOT_MATCH_FIND_SETTINGS.message)
+                }
             } else {
                 throw FindException(FindError.STARTPATH_NOT_FOUND.message)
             }
@@ -46,30 +58,12 @@ class Finder(val settings: FindSettings) {
         if (settings.maxDepth > -1 && settings.maxDepth < settings.minDepth) {
             throw FindException(FindError.INVALID_RANGE_FOR_MINDEPTH_AND_MAXDEPTH.message)
         }
-        if (settings.maxLastMod != null && settings.minLastMod != null && settings.maxLastMod < settings.minLastMod) {
+        if (settings.maxLastMod != null && settings.minLastMod != null
+            && settings.maxLastMod < settings.minLastMod) {
             throw FindException(FindError.INVALID_RANGE_FOR_MINLASTMOD_AND_MAXLASTMOD.message)
         }
         if (settings.maxSize > 0 && settings.maxSize < settings.minSize) {
             throw FindException(FindError.INVALID_RANGE_FOR_MINSIZE_AND_MAXSIZE.message)
-        }
-    }
-
-    private fun setTests() {
-        if (settings.inExtensions.isNotEmpty()) {
-            extTests.add { ext: String -> settings.inExtensions.contains(ext) }
-        } else if (settings.outExtensions.isNotEmpty()) {
-            extTests.add { ext: String -> !settings.outExtensions.contains(ext) }
-        }
-        if (settings.inFilePatterns.isNotEmpty()) {
-            fileNameTests.add { fileName: String -> matchesAnyPattern(fileName, settings.inFilePatterns) }
-        }
-        if (settings.outFilePatterns.isNotEmpty()) {
-            fileNameTests.add { fileName: String -> !matchesAnyPattern(fileName, settings.outFilePatterns) }
-        }
-        if (settings.inFileTypes.isNotEmpty()) {
-            fileTypeTests.add { fileType: FileType -> settings.inFileTypes.contains(fileType) }
-        } else if (settings.outFileTypes.isNotEmpty()) {
-            fileTypeTests.add { fileType: FileType -> !settings.outFileTypes.contains(fileType) }
         }
     }
 
@@ -84,7 +78,7 @@ class Finder(val settings: FindSettings) {
         return patternSet.any { p -> p.containsMatchIn(s) }
     }
 
-    fun filterDirByHidden(path: Path?): Boolean {
+    fun filterDirPathByHidden(path: Path?): Boolean {
         // null or empty path is a match
         if (path == null || path.toString().isEmpty()) {
             return true
@@ -95,7 +89,7 @@ class Finder(val settings: FindSettings) {
         return true
     }
 
-    fun filterDirByInPatterns(path: Path?): Boolean {
+    fun filterDirPathByInPatterns(path: Path?): Boolean {
         // null or empty path is a match
         if (path == null || path.toString().isEmpty()) {
             return true
@@ -105,7 +99,7 @@ class Finder(val settings: FindSettings) {
                 || anyMatchesAnyPattern(pathElems, settings.inDirPatterns))
     }
 
-    fun filterDirByOutPatterns(path: Path?): Boolean {
+    fun filterDirPathByOutPatterns(path: Path?): Boolean {
         // null or empty path is a match
         if (path == null || path.toString().isEmpty()) {
             return true
@@ -115,12 +109,14 @@ class Finder(val settings: FindSettings) {
                 || !anyMatchesAnyPattern(pathElems, settings.outDirPatterns))
     }
 
-    fun isMatchingDir(path: Path?): Boolean {
+    fun isMatchingDirPath(path: Path?): Boolean {
         // null or empty path is a match
         if (path == null || path.toString().isEmpty()) {
             return true
         }
-        return filterDirByHidden(path) && filterDirByInPatterns(path) && filterDirByOutPatterns(path)
+        return filterDirPathByHidden(path)
+                && filterDirPathByInPatterns(path)
+                && filterDirPathByOutPatterns(path)
     }
 
     fun isMatchingArchiveExtension(ext: String): Boolean {
@@ -241,7 +237,7 @@ class Finder(val settings: FindSettings) {
             Files.newDirectoryStream(filePath).use { stream ->
                 stream.forEach {
                     if (!Files.isSymbolicLink(it) || settings.followSymlinks) {
-                        if (Files.isDirectory(it) && recurse && filterDirByHidden(it) && filterDirByOutPatterns(it)) {
+                        if (Files.isDirectory(it) && recurse && filterDirPathByHidden(it) && filterDirPathByOutPatterns(it)) {
                             pathDirs.add(it)
                         } else if (Files.isRegularFile(it) && (minDepth < 0 || currentDepth >= minDepth)) {
                             val fr = filterToFileResult(it)
@@ -269,7 +265,7 @@ class Finder(val settings: FindSettings) {
             if (settings.maxDepth == 0) {
                 return emptyList()
             }
-            if (filterDirByHidden(fp) && filterDirByOutPatterns(fp)) {
+            if (filterDirPathByHidden(fp) && filterDirPathByOutPatterns(fp)) {
                 val maxDepth = if (settings.recursive) settings.maxDepth else 1
                 return recFindPath(fp, settings.minDepth, maxDepth, 1)
             } else {
