@@ -24,14 +24,14 @@ from .findsettings import FindSettings, PatternSet
 class Finder:
     """Finder is a class to find files based on find settings."""
 
-    __slots__ = ['settings', 'file_types', '__matching_dir_cache']
+    __slots__ = ['settings', 'file_types', '_matching_dir_cache']
 
     def __init__(self, settings: FindSettings):
         """Create a new Finder instance."""
         self.settings = settings
-        self.__validate_settings()
         self.file_types = FileTypes()
-        self.__matching_dir_cache = set([])
+        self._matching_dir_cache = set([])
+        self.__validate_settings()
 
     def __validate_settings(self):
         """Validate the required settings in the FindSettings instance."""
@@ -41,6 +41,19 @@ class Finder:
                 p = p.expanduser()
             assert p.exists(), START_PATH_NOT_FOUND
             assert os.access(p, os.R_OK), START_PATH_NOT_READABLE
+            if p.is_symlink():
+                assert self.settings.follow_symlinks, \
+                    START_PATH_DOES_NOT_MATCH_FIND_SETTINGS
+            elif p.is_dir():
+                assert (self.filter_dir_path_by_hidden(p) and
+                        self.filter_dir_path_by_out_patterns(p)), \
+                    START_PATH_DOES_NOT_MATCH_FIND_SETTINGS
+            elif p.is_file():
+                assert self.filter_to_file_result(p) is not None, \
+                    START_PATH_DOES_NOT_MATCH_FIND_SETTINGS
+            else:
+                # TODO: start path is unknown/invalid type
+                raise FindException(START_PATH_DOES_NOT_MATCH_FIND_SETTINGS)
         if self.settings.max_depth > -1 and self.settings.min_depth > -1:
             assert self.settings.max_depth >= self.settings.min_depth, \
                 INVALID_RANGE_MINDEPTH_MAXDEPTH
@@ -53,7 +66,7 @@ class Finder:
 
     def filter_dir_path_by_hidden(self, d: Path) -> bool:
         """Check whether the given directory matches hidden settings."""
-        if d in self.__matching_dir_cache:
+        if d in self._matching_dir_cache:
             return True
         if not self.settings.include_hidden:
             return not FileUtil.is_hidden_path(d)
@@ -61,7 +74,7 @@ class Finder:
 
     def filter_dir_path_by_in_patterns(self, d: Path) -> bool:
         """Check whether the given directory matches the "in" patterns."""
-        if d in self.__matching_dir_cache:
+        if d in self._matching_dir_cache:
             return True
         if self.settings.in_dir_patterns and \
                 not any([matches_any_pattern(p, self.settings.in_dir_patterns) for p in d.parts]):
@@ -70,7 +83,7 @@ class Finder:
 
     def filter_dir_path_by_out_patterns(self, d: Path) -> bool:
         """Check whether the given directory does not match the "out" patterns."""
-        if d in self.__matching_dir_cache:
+        if d in self._matching_dir_cache:
             return True
         if self.settings.out_dir_patterns and \
                 any([matches_any_pattern(p, self.settings.out_dir_patterns) for p in d.parts]):
@@ -85,7 +98,7 @@ class Finder:
             return False
         if not self.filter_dir_path_by_out_patterns(d):
             return False
-        self.__matching_dir_cache.add(d)
+        self._matching_dir_cache.add(d)
         return True
 
     def is_matching_archive_ext(self, ext: str) -> bool:
@@ -235,7 +248,7 @@ class Finder:
                 return self._rec_get_file_results_for_path(file_path, self.settings.min_depth,
                                                            max_depth, 1)
             else:
-                raise FindException('Startpath does not match find settings')
+                raise FindException(START_PATH_DOES_NOT_MATCH_FIND_SETTINGS)
         else:
             # if min_depth > zero, we can skip since the file is at depth zero
             if self.settings.min_depth > 0:
@@ -244,7 +257,7 @@ class Finder:
             if fr:
                 return [fr]
             else:
-                raise FindException('Startpath does not match find settings')
+                raise FindException(START_PATH_DOES_NOT_MATCH_FIND_SETTINGS)
 
     def find_files(self) -> list[FileResult]:
         """Get the list of all files matching find settings."""
