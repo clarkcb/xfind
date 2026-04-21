@@ -214,6 +214,10 @@ defmodule ExFind.Finder do
     end
   end
 
+  defp partial_filter_dir?(finder, dir) do
+    filter_dir_by_hidden?(finder, dir) and filter_dir_by_out_patterns?(finder, dir)
+  end
+
   def find_path(finder, path) do
     # IO.puts("find_path(#{path})")
     p = if File.exists?(path) do
@@ -225,7 +229,7 @@ defmodule ExFind.Finder do
       if finder.settings.max_depth == 0 do
         []
       else
-        if filter_dir_by_hidden?(finder, p) and filter_dir_by_out_patterns?(finder, p) do
+        if partial_filter_dir?(finder, p) do
           max_depth = if finder.settings.recursive, do: finder.settings.max_depth, else: 1
           rec_find_path(finder, p, finder.settings.min_depth, max_depth, 1)
         else
@@ -259,7 +263,7 @@ defmodule ExFind.Finder do
   end
 
   def find(finder) do
-    case validate_settings(finder.settings) do
+    case validate_settings(finder) do
       {:error, message} -> {:error, message}
       {:ok, _} -> find_files_async(finder)
     end
@@ -279,22 +283,29 @@ defmodule ExFind.Finder do
   #   end
   # end
 
-  def validate_settings(settings) do
+  def validate_settings(finder) do
+    expanded_paths = Enum.map(finder.settings.paths, fn p -> FileUtil.expand_path(p) end)
     cond do
-      Enum.empty?(settings.paths) ->
+      Enum.empty?(expanded_paths) ->
         {:error, "Startpath not defined"}
-      Enum.any?(settings.paths, fn p -> !File.exists?(p) && !File.exists?(FileUtil.expand_path(p)) end) ->
+      Enum.any?(expanded_paths, fn p -> !File.exists?(p) end) ->
         {:error, "Startpath not found"}
-      # Enum.any?(settings.paths, fn p -> !readable?(p) end) ->
+      # Enum.any?(expanded_paths, fn p -> !readable?(p) end) ->
       #   {:error, "Startpath not readable"}
-      settings.min_depth > -1 and settings.max_depth > -1
-      and settings.min_depth > settings.max_depth ->
+      not finder.settings.follow_symlinks && Enum.any?(expanded_paths, fn p -> FileUtil.symlink?(p) end) ->
+        {:error, "Startpath does not match find settings"}
+      Enum.any?(expanded_paths, fn p -> File.dir?(p) && !partial_filter_dir?(finder, p) end) ->
+        {:error, "Startpath does not match find settings"}
+      Enum.any?(expanded_paths, fn p -> !File.dir?(p) && filter_to_file_results(finder, p) == [] end) ->
+        {:error, "Startpath does not match find settings"}
+      finder.settings.min_depth > -1 and finder.settings.max_depth > -1
+      and finder.settings.min_depth > finder.settings.max_depth ->
         {:error, "Invalid range for mindepth and maxdepth"}
-      settings.min_size > 0 and settings.max_size > 0
-      and settings.min_size > settings.max_size ->
+      finder.settings.min_size > 0 and finder.settings.max_size > 0
+      and finder.settings.min_size > finder.settings.max_size ->
         {:error, "Invalid range for minsize and maxsize"}
-      settings.min_last_mod != nil and settings.max_last_mod != nil
-      and DateTime.after?(settings.min_last_mod, settings.max_last_mod) ->
+      finder.settings.min_last_mod != nil and finder.settings.max_last_mod != nil
+      and DateTime.after?(finder.settings.min_last_mod, finder.settings.max_last_mod) ->
         {:error, "Invalid range for minlastmod and maxlastmod"}
       true -> {:ok, "Settings are valid"}
     end
