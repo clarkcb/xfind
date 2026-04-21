@@ -2,7 +2,6 @@ package gofind
 
 import (
 	"fmt"
-	"os"
 	"reflect"
 	"regexp"
 	"strconv"
@@ -159,37 +158,6 @@ const (
 	InvalidRangeForMinLastModAndMaxLastMod = "Invalid range for minlastmod and maxlastmod"
 	InvalidRangeForMinSizeAndMaxSize       = "Invalid range for minsize and maxsize"
 )
-
-func (f *FindSettings) Validate() error {
-	if len(f.Paths()) < 1 {
-		return fmt.Errorf(StartPathNotDefined)
-	}
-
-	for _, p := range f.Paths() {
-		_, err := os.Stat(ExpandPath(p))
-		if err != nil {
-			if os.IsNotExist(err) {
-				return fmt.Errorf(StartPathNotFound)
-			}
-			if os.IsPermission(err) {
-				return fmt.Errorf(StartPathNotReadable)
-			}
-			return err
-		}
-	}
-
-	if f.maxDepth > -1 && f.maxDepth < f.minDepth {
-		return fmt.Errorf(InvalidRangeForMinDepthAndMaxDepth)
-	}
-	if !f.maxLastMod.IsZero() && f.minLastMod.After(f.maxLastMod) {
-		return fmt.Errorf(InvalidRangeForMinLastModAndMaxLastMod)
-	}
-	if f.maxSize > 0 && f.maxSize < f.minSize {
-		return fmt.Errorf(InvalidRangeForMinSizeAndMaxSize)
-	}
-
-	return nil
-}
 
 func (f *FindSettings) ArchivesOnly() bool {
 	return f.archivesOnly

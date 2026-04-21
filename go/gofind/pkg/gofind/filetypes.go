@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -77,7 +78,8 @@ func FileTypesFromJson() *FileTypes {
 	return &fileTypes
 }
 
-func (ft *FileTypes) GetFileType(file string) FileType {
+func (ft *FileTypes) GetFileType(filePath string) FileType {
+	file := filepath.Base(filePath)
 	// more specific first
 	if ft.IsCodeFile(file) {
 		return FileTypeCode

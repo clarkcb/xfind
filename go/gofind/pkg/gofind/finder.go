@@ -5,7 +5,6 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
-	"strings"
 	"time"
 )
 
@@ -32,6 +31,58 @@ func NewFinder(settings *FindSettings) *Finder {
 		make(chan bool, 1),     // findDoneChan
 		make(chan error, 1),    // errChan
 	}
+}
+
+func (f *Finder) validateSettings() error {
+	if len(f.Settings.Paths()) < 1 {
+		return fmt.Errorf(StartPathNotDefined)
+	}
+
+	for _, p := range f.Settings.Paths() {
+		fi, err := os.Lstat(ExpandPath(p))
+		if err != nil {
+			if os.IsNotExist(err) {
+				return fmt.Errorf(StartPathNotFound)
+			}
+			if os.IsPermission(err) {
+				return fmt.Errorf(StartPathNotReadable)
+			}
+			return err
+		}
+
+		if fi.Mode()&os.ModeSymlink == os.ModeSymlink {
+			if !f.Settings.FollowSymlinks() {
+				return fmt.Errorf(StartPathNotMatchFindSettings)
+			}
+		} else if fi.IsDir() {
+			// This means that this method should be in Finder
+			if !f.filterDirByHidden(p) || !f.filterDirByOutPatterns(p) {
+				return fmt.Errorf(StartPathNotMatchFindSettings)
+			}
+
+		} else if fi.Mode().Type().IsRegular() {
+			fileResult := f.filterToFileResult(p, fi)
+			if fileResult == nil {
+				return fmt.Errorf(StartPathNotMatchFindSettings)
+			}
+
+		} else {
+			// TODO: handle symlinks, etc.?
+			return fmt.Errorf(StartPathNotMatchFindSettings)
+		}
+	}
+
+	if f.Settings.maxDepth > -1 && f.Settings.maxDepth < f.Settings.minDepth {
+		return fmt.Errorf(InvalidRangeForMinDepthAndMaxDepth)
+	}
+	if !f.Settings.maxLastMod.IsZero() && f.Settings.minLastMod.After(f.Settings.maxLastMod) {
+		return fmt.Errorf(InvalidRangeForMinLastModAndMaxLastMod)
+	}
+	if f.Settings.maxSize > 0 && f.Settings.maxSize < f.Settings.minSize {
+		return fmt.Errorf(InvalidRangeForMinSizeAndMaxSize)
+	}
+
+	return nil
 }
 
 func (f *Finder) filterDirByHidden(d string) bool {
@@ -114,7 +165,11 @@ func (f *Finder) isMatchingFileResult(fr *FileResult) bool {
 		f.isMatchingLastMod(fr.LastMod)
 }
 
-func (f *Finder) filterToFileResult(filePath string, fi os.FileInfo) *FileResult {
+func (f *Finder) filterArchiveFileToFileResult(filePath string, fi os.FileInfo) *FileResult {
+	if !f.Settings.includeArchives && !f.Settings.archivesOnly {
+		return nil
+	}
+
 	dir, fileName := filepath.Split(filePath)
 	if dir == "" {
 		dir = Dot
@@ -127,10 +182,39 @@ func (f *Finder) filterToFileResult(filePath string, fi os.FileInfo) *FileResult
 	if !f.Settings.IncludeHidden() && IsHiddenName(fileName) {
 		return nil
 	}
-	fileType := f.fileTypes.GetFileType(fileName)
-	if fileType == FileTypeArchive && !f.Settings.includeArchives && !f.Settings.archivesOnly {
+
+	var fileSize int64 = 0
+	lastMod := time.Time{}
+	if fi != nil {
+		fileSize = fi.Size()
+		lastMod = fi.ModTime()
+	}
+	fr := NewFileResult(dir, fileName, FileTypeArchive, fileSize, lastMod)
+
+	if f.isMatchingArchiveFileResult(fr) {
+		return fr
+	}
+	return nil
+}
+
+func (f *Finder) filterRegFileToFileResult(filePath string, fileType FileType, fi os.FileInfo) *FileResult {
+	if f.Settings.archivesOnly {
 		return nil
 	}
+
+	dir, fileName := filepath.Split(filePath)
+	if dir == "" {
+		dir = Dot
+	} else {
+		dir = normalizePath(dir)
+	}
+	if !f.isMatchingDir(dir) {
+		return nil
+	}
+	if !f.Settings.IncludeHidden() && IsHiddenName(fileName) {
+		return nil
+	}
+
 	var fileSize int64 = 0
 	lastMod := time.Time{}
 	if fi != nil {
@@ -138,16 +222,20 @@ func (f *Finder) filterToFileResult(filePath string, fi os.FileInfo) *FileResult
 		lastMod = fi.ModTime()
 	}
 	fr := NewFileResult(dir, fileName, fileType, fileSize, lastMod)
-	if fr.FileType == FileTypeArchive {
-		if f.isMatchingArchiveFileResult(fr) {
-			return fr
-		}
-		return nil
-	}
-	if !f.Settings.ArchivesOnly() && f.isMatchingFileResult(fr) {
+
+	if f.isMatchingFileResult(fr) {
 		return fr
 	}
 	return nil
+}
+
+func (f *Finder) filterToFileResult(filePath string, fi os.FileInfo) *FileResult {
+	fileType := f.fileTypes.GetFileType(filePath)
+	if fileType == FileTypeArchive {
+		return f.filterArchiveFileToFileResult(filePath, fi)
+	}
+
+	return f.filterRegFileToFileResult(filePath, fileType, fi)
 }
 
 func (f *Finder) checkAddFileResult(filePath string, fi os.FileInfo) {
@@ -210,26 +298,13 @@ func (f *Finder) recSetFileResultsForPath(path string, minDepth int, maxDepth in
 		if fileInfo.Mode()&os.ModeSymlink == os.ModeSymlink {
 			if f.Settings.followSymlinks {
 				symlinkFilePath := filepath.Join(path, entry.Name())
-				maxTries := 5
-				tries := 0
-				// since a symlink dest can also be a symlink, we loop until no longer true
-				for fileInfo.Mode()&os.ModeSymlink == os.ModeSymlink {
-					dst, err := os.Readlink(symlinkFilePath)
-					if err != nil {
-						return err
-					}
-					symlinkFilePath := dst
-					if !strings.Contains(symlinkFilePath, string(os.PathSeparator)) {
-						symlinkFilePath = filepath.Join(path, dst)
-					}
-					fileInfo, err = os.Lstat(symlinkFilePath)
-					if err != nil {
-						return err
-					}
-					tries++
-					if tries == maxTries {
-						break
-					}
+				resolvedPath, err := filepath.EvalSymlinks(symlinkFilePath)
+				if err != nil {
+					return err
+				}
+				fileInfo, err = os.Stat(resolvedPath)
+				if err != nil {
+					return err
 				}
 			} else {
 				continue
@@ -277,7 +352,7 @@ func (f *Finder) setFileResultsForPath(path string) error {
 		if f.Settings.minDepth > 0 {
 			return nil
 		}
-		f.checkAddFileResult(filepath.Join(path, fi.Name()), fi)
+		f.checkAddFileResult(path, fi)
 	} else {
 		// TODO: handle symlinks, etc.?
 	}
@@ -303,7 +378,7 @@ func (f *Finder) setFileResults() error {
 }
 
 func (f *Finder) Find() (*FileResults, error) {
-	if err := f.Settings.Validate(); err != nil {
+	if err := f.validateSettings(); err != nil {
 		return nil, err
 	}
 
