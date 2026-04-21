@@ -194,12 +194,18 @@ doFind finder = do
   case existingPathsEither of
     Left errMsg -> return $ Left errMsg
     Right existingPaths -> do
-      let settings' = ss { paths = existingPaths }
-      let finder' = finder { settings = settings' }
-      fileResultsEither <- getFileResults finder'
-      case fileResultsEither of
-        Left errMsg -> return $ Left errMsg
-        Right fileResults -> return $ Right $ sortFileResults settings' fileResults
+      filteredExistingPathsBySymlinks <- if followSymlinks ss
+                                         then return existingPaths
+                                         else filterOutSymlinks existingPaths
+      if length filteredExistingPathsBySymlinks == length existingPaths then do
+        let settings' = ss { paths = existingPaths }
+        let finder' = finder { settings = settings' }
+        fileResultsEither <- getFileResults finder'
+        case fileResultsEither of
+          Left errMsg -> return $ Left errMsg
+          Right fileResults -> return $ Right $ sortFileResults settings' fileResults
+      else do
+        return $ Left "Startpath does not match find settings"
   where ss = settings finder
 
 getMatchingDirs :: [FileResult] -> [FilePath]
