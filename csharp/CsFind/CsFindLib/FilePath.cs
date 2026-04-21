@@ -75,7 +75,7 @@ public class FilePath
 
     public bool IsFile => File is FileInfo;
 
-    public bool IsSymlink => File.Exists && File.Attributes.HasFlag(FileAttributes.ReparsePoint);
+    public bool IsSymlink => File.LinkTarget != null;
 
     public IEnumerable<FilePath> EnumerateDirectories()
     {

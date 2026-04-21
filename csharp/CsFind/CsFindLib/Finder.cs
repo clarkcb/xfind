@@ -22,18 +22,49 @@ public class Finder
 	public Finder(FindSettings settings)
 	{
 		Settings = settings;
-		ValidateSettings();
 		_fileTypes = new FileTypes();
 		_enumerationOptions = GetEnumerationOptionsForSettings();
+		ValidateSettings();
 	}
 
 	private void ValidateSettings()
 	{
 		if (Settings.Paths.Count == 0)
 			throw new FindException(StartpathNotDefined);
-		if (Settings.Paths.Any(p => !p.Exists))
+
+		foreach (var p in Settings.Paths)
 		{
-			throw new FindException(StartpathNotFound);
+			if (!p.Exists)
+			{
+				throw new FindException(StartpathNotFound);
+			}
+
+			if (p.IsSymlink)
+			{
+				if (!Settings.FollowSymlinks)
+				{
+					throw new FindException(StartpathNotMatchFindSettings);
+				}
+			}
+			else if (p.IsDirectory)
+			{
+				if (!FilterDirectoryByHidden(p) || MatchesAnyPattern(p.Path, Settings.OutDirPatterns))
+				{
+					throw new FindException(StartpathNotMatchFindSettings);
+				}
+			}
+			else if (p.IsFile)
+			{
+				if (FilterToFileResult(p) == null)
+				{
+					throw new FindException(StartpathNotMatchFindSettings);
+				}
+			}
+			else
+			{
+				// TODO: start path is unknown/invalid type
+				throw new FindException(StartpathNotMatchFindSettings);
+			}
 		}
 		if (Settings is { MaxDepth: > -1, MinDepth: > -1 } && Settings.MaxDepth < Settings.MinDepth)
 		{
