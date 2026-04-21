@@ -1326,8 +1326,8 @@ class Finder {
 
     Finder([FindSettings]$settings) {
         $this.Settings = $settings
-        $this.ValidateSettings()
         $this.FileTypes = [FileTypes]::new()
+        $this.ValidateSettings()
         $this.FilterDirByHiddenTests = $this.GetFilterDirByHiddenTests()
         $this.FilterDirByInPatternsTests = $this.GetFilterDirByInPatternsTests()
         $this.FilterDirByOutPatternsTests = $this.GetFilterDirByOutPatternsTests()
@@ -1346,6 +1346,25 @@ class Finder {
             }
             if (-not (Test-Path $p)) {
                 throw "Startpath not found"
+            }
+            if ((Get-Item $p).LinkType -eq "SymbolicLink") {
+                if (-not $this.Settings.FollowSymlinks) {
+                    throw "Startpath does not match find settings"
+                }
+            }
+            if (Test-Path -Path $p -PathType Container) {
+                # TODO: filter by hidden
+                if ($this.MatchesAnyPattern($p, $this.Settings.OutDirPatterns)) {
+                    throw "Startpath does not match find settings"
+                }
+            } elseif (Test-Path -Path $p -PathType Leaf) {
+                if ($null -eq $this.FilterToFileResult($p)) {
+                    throw "Startpath does not match find settings"
+                }
+            } else {
+                # TODO: handle start path as symlink
+                # TODO: start path is unknown/invalid type
+                throw "Startpath does not match find settings"
             }
         }
         if ($this.Settings.MaxDepth -gt -1 -and $this.Settings.MinDepth -gt -1 -and $this.Settings.MaxDepth -lt $this.Settings.MinDepth) {
@@ -1583,7 +1602,7 @@ class Finder {
             $pathDirs = Get-ChildItem -Force -Recurse:$false -Path $dirPath -Directory | Where-Object { $this.FilterDirByHidden($_) -and $this.FilterDirByOutPatterns($_) }
             if (-not $this.Settings.FollowSymlinks) {
                 # filter out symlinks
-                $pathDirs = $pathDirs | Where-Object { -not $_.Attributes.HasFlag([System.IO.FileAttributes]::ReparsePoint) }
+                $pathDirs = $pathDirs | Where-Object { $_.LinkType -ne "SymbolicLink" }
             }
         }
         if ($minDepth -lt 0 -or $currentDepth -ge $minDepth) {
@@ -1591,7 +1610,7 @@ class Finder {
             $pathFiles = Get-ChildItem -Force -Recurse:$false -Path $dirPath -File
             if (-not $this.Settings.FollowSymlinks) {
                 # filter out symlinks
-                $pathFiles = $pathFiles | Where-Object { -not $_.Attributes.HasFlag([System.IO.FileAttributes]::ReparsePoint) }
+                $pathFiles = $pathFiles | Where-Object { $_.LinkType -ne "SymbolicLink" }
             }
         }
 
