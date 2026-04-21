@@ -49,6 +49,21 @@ export class Finder {
                     p = FileUtil.expandPath(p);
                     fs.accessSync(p, fs.constants.F_OK | fs.constants.R_OK);
                 }
+                let stats = fs.lstatSync(p);
+                if (stats.isSymbolicLink()) {
+                    assert.ok(this._settings.followSymlinks, startPathDoesNotMatchFindSettings);
+                }
+                stats = fs.statSync(p);
+                if (stats.isDirectory()) {
+                    assert.ok(this.filterDirByHidden(p) && this.filterDirByOutPatterns(p),
+                        startPathDoesNotMatchFindSettings);
+                } else if (stats.isFile()) {
+                    assert.ok(this.filterToFileResult(p, stats) !== null,
+                        startPathDoesNotMatchFindSettings);
+                } else {
+                    // TODO: start path is unknown/invalid type
+                    throw new FindError(startPathDoesNotMatchFindSettings);
+                }
             }
             if (this._settings.maxDepth > -1 && this._settings.minDepth > -1) {
                 assert.ok(this._settings.maxDepth >= this._settings.minDepth,
