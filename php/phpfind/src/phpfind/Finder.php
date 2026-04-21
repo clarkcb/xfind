@@ -49,6 +49,24 @@ class Finder
                 if (!is_readable($p)) {
                     throw new FindException(self::STARTPATH_NOT_READABLE);
                 }
+                if (is_link($p)) {
+                    if (!$this->settings->follow_symlinks) {
+                        throw new FindException(self::STARTPATH_DOES_NOT_MATCH_FIND_SETTINGS);
+                    }
+                } elseif (is_dir($p)) {
+                    if (!$this->filter_dir_by_hidden($p) || !$this->filter_dir_by_out_patterns($p)) {
+                        throw new FindException(self::STARTPATH_DOES_NOT_MATCH_FIND_SETTINGS);
+                    }
+                } elseif (is_file($p)) {
+                    $dir_and_file = FileUtil::split_to_path_and_file_name($p);
+                    if ($this->filter_to_file_result($dir_and_file[0], $dir_and_file[1]) == null) {
+                        throw new FindException(self::STARTPATH_DOES_NOT_MATCH_FIND_SETTINGS);
+                    }
+                } else {
+                    # TODO: handle start path as symlink
+                    # TODO: start path is unknown/invalid type
+                    throw new FindException(self::STARTPATH_DOES_NOT_MATCH_FIND_SETTINGS);
+                }
             } else {
                 throw new FindException(self::STARTPATH_NOT_FOUND);
             }
