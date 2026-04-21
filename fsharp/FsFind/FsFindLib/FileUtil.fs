@@ -46,6 +46,9 @@ module FileUtil =
         File.Exists(filePath) ||
         File.Exists(ExpandPath(filePath))
 
+    let IsSymlink (filePath : string) : bool =
+        FileInfo(filePath).LinkTarget <> null
+
     let Exists (filePath : string) : bool =
         IsDirectory filePath ||
         IsFile filePath

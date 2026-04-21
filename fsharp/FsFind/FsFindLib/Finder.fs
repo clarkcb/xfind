@@ -14,6 +14,17 @@ type Finder (settings : FindSettings) =
             (if List.isEmpty settings.Paths then (Some "Startpath not defined") else None);
             (if (List.exists (fun p -> not (FileUtil.Exists(p))) settings.Paths)
              then (Some "Startpath not found") else None);
+            (if (this.AnyMatchesAnyPattern (settings.Paths |> Seq.filter FileUtil.IsDirectory) settings.OutDirPatterns)
+             then (Some "Startpath does not match find settings") else None);
+            (if not (List.isEmpty (settings.Paths
+                              |> List.filter FileUtil.IsFile
+                              |> List.map (fun p -> FileInfo(p))
+                              |> List.filter (fun p -> this.FilterToFileResult(p).IsNone)))
+             then (Some "Startpath does not match find settings") else None)
+            // TODO: handle start path as symlink
+            (if not settings.FollowSymlinks && not (List.isEmpty (settings.Paths
+                              |> List.filter FileUtil.IsSymlink))
+             then (Some "Startpath does not match find settings") else None);
             (if settings.MaxDepth > -1 && settings.MinDepth > -1 && settings.MaxDepth < settings.MinDepth
              then (Some "Invalid range for mindepth and maxdepth") else None);
             (if settings.MaxLastMod.IsSome && settings.MinLastMod.IsSome && settings.MaxLastMod.Value < settings.MinLastMod.Value
