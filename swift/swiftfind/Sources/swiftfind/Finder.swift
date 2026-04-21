@@ -40,11 +40,43 @@ public class Finder {
     private func validateSettings() throws {
         if settings.paths.isEmpty {
             throw FindError(msg: STARTPATH_NOT_DEFINED)
-        } else if !settings.paths.allSatisfy({ FileUtil.exists($0) || FileUtil.exists(FileUtil.expandPath($0)) }) {
-            throw FindError(msg: STARTPATH_NOT_FOUND)
-        } else if !settings.paths.allSatisfy({ FileUtil.isReadableFile($0) || FileUtil.isReadableFile(FileUtil.expandPath($0)) }) {
-            throw FindError(msg: STARTPATH_NOT_READABLE)
-        } else if settings.maxDepth > -1, settings.maxDepth < settings.minDepth {
+        }
+        for path in settings.paths {
+            var p = path
+            if (!FileUtil.exists(p)) {
+                p = FileUtil.expandPath(p)
+            }
+            if (!FileUtil.exists(p)) {
+                throw FindError(msg: STARTPATH_NOT_FOUND)
+            }
+            if (!FileUtil.isReadableFile(p)) {
+                throw FindError(msg: STARTPATH_NOT_READABLE)
+            }
+
+            var resolvedPath: String? = p
+            if FileUtil.isSymlink(p) {
+                if settings.followSymlinks {
+                    resolvedPath = FileUtil.getSymlinkTarget(p)
+                } else {
+                    throw FindError(msg: STARTPATH_NOT_MATCH_FIND_SETTINGS)
+                }
+            }
+            if FileUtil.isDirectory(resolvedPath!) {
+                // still check p and not resolvedPath because p is the name entered
+                if !filterDirByHidden(p) || !filterDirByOutPatterns(p) {
+                    throw FindError(msg: STARTPATH_NOT_MATCH_FIND_SETTINGS)
+                }
+            } else if FileUtil.isReadableFile(resolvedPath!) {
+                // still check p and not resolvedPath because p is the name entered
+                if filterToFileResult(p) == nil {
+                    throw FindError(msg: STARTPATH_NOT_MATCH_FIND_SETTINGS)
+                }
+            } else {
+                // TODO: start path is unknown/invalid type
+                throw FindError(msg: STARTPATH_NOT_MATCH_FIND_SETTINGS)
+            }
+        }
+        if settings.maxDepth > -1, settings.maxDepth < settings.minDepth {
             throw FindError(msg: INVALID_RANGE_MINDEPTH_MAXDEPTH)
         } else if settings.maxLastMod != nil, settings.minLastMod != nil, settings.maxLastMod! < settings.minLastMod! {
             throw FindError(msg: INVALID_RANGE_MINLASTMOD_MAXLASTMOD)
