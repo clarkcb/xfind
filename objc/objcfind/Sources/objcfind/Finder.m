@@ -27,16 +27,51 @@
     if (settings == nil) {
         setError(error, @"Settings not defined");
         return false;
-    } else if ([settings.paths count] == 0) {
+    } else if (settings.paths == nil || [settings.paths count] == 0) {
         setError(error, [NSString stringWithUTF8String:STARTPATH_NOT_DEFINED]);
         return false;
-    } else if (![FileUtil allExist:settings.paths]) {
-        setError(error, [NSString stringWithUTF8String:STARTPATH_NOT_FOUND]);
-        return false;
-    } else if (![FileUtil allReadable:settings.paths]) {
-        setError(error, [NSString stringWithUTF8String:STARTPATH_NOT_READABLE]);
-        return false;
-    } else if (settings.maxDepth > -1 && settings.maxDepth < settings.minDepth) {
+    }
+    for (NSString *path in settings.paths) {
+        NSString *p = path;
+        if (![FileUtil exists:p]) {
+            p = [FileUtil expandPath:p];
+        }
+        if (![FileUtil exists:p]) {
+            setError(error, [NSString stringWithUTF8String:STARTPATH_NOT_FOUND]);
+            return false;
+        }
+        if (![FileUtil isReadableFile:p]) {
+            setError(error, [NSString stringWithUTF8String:STARTPATH_NOT_READABLE]);
+            return false;
+        }
+        NSString* resolvedPath = p;
+        if ([FileUtil isSymlink:p]) {
+            if (settings.followSymlinks) {
+                resolvedPath = [FileUtil getSymlinkTarget:path];
+            } else {
+                setError(error, [NSString stringWithUTF8String:STARTPATH_NOT_MATCH_FIND_SETTINGS]);
+                return false;
+            }
+        }
+        if ([FileUtil isDirectory:resolvedPath]) {
+            // still check p and not resolvedPath because p is the name entered
+            if (![self filterDirByHidden:p] || ![self filterDirByOutPatterns:p]) {
+                setError(error, [NSString stringWithUTF8String:STARTPATH_NOT_MATCH_FIND_SETTINGS]);
+                return false;
+            }
+        } else if ([FileUtil isReadableFile:resolvedPath]) {
+            // still check p and not resolvedPath because p is the name entered
+            FileResult *fr = [self filterToFileResult:p error:error];
+            if (*error) {
+                return false;
+            }
+            if (fr == nil) {
+                setError(error, [NSString stringWithUTF8String:STARTPATH_NOT_MATCH_FIND_SETTINGS]);
+                return false;
+            }
+        }
+    }
+    if (settings.maxDepth > -1 && settings.maxDepth < settings.minDepth) {
         setError(error, [NSString stringWithUTF8String:INVALID_RANGE_MINDEPTH_MAXDEPTH]);
         return false;
     } else if (settings.maxLastMod != nil && settings.minLastMod != nil && [settings.maxLastMod isEqualToDate:[settings.maxLastMod earlierDate:settings.minLastMod]]) {
