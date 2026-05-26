@@ -8,6 +8,8 @@
 
 package plfind::FindSettings;
 
+use DateTime;
+use DateTime::Format::DateParse;
 use Path::Class;
 use Scalar::Util qw(blessed reftype);
 
@@ -77,6 +79,18 @@ sub set_property {
     }
 }
 
+sub set_last_mod {
+    my ($self, $name, $val) = @_;
+
+    if (ref($val) eq 'DateTime') {
+        $self->{$name} = $val;
+    } elsif ($val =~ /^\d+$/) {
+        $self->{$name} = DateTime->from_epoch($val);
+    } else {
+        $self->{$name} = DateTime::Format::DateParse->parse_datetime($val, 'UTC');
+    }
+}
+
 sub set_sort_by {
     my ($self, $name) = @_;
     $self->{sort_by} = plfind::SortBy::name_to_sort_by($name);
@@ -91,9 +105,7 @@ sub add_exts {
         my @split = split(',', $exts);
         $xs = \@split;
     }
-    foreach my $x (@$xs) {
-        push(@$extaref, $x);
-    }
+    push(@$extaref, @$xs);
 }
 
 sub add_file_types {
@@ -132,6 +144,9 @@ sub add_path {
         if (-d $expanded) {
             push(@{$self->{paths}}, dir($path));
         } elsif (-f $expanded) {
+            push(@{$self->{paths}}, file($path));
+        } else {
+            # Just add a string for now, we will validate/convert later
             push(@{$self->{paths}}, file($path));
         }
     }

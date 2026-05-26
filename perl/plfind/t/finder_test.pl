@@ -45,81 +45,81 @@ sub test_validate_settings {
 ################################################################################
 # is_matching_dir tests
 ################################################################################
-sub test_is_matching_dir_no_patterns {
+sub test_is_matching_dir_path_no_patterns {
     my $settings = get_settings();
     my ($finder, $errs) = plfind::Finder->new($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $dir = dir('plfind');
-    ok($finder->is_matching_dir($dir), "$dir is matching dir with no patterns");
+    ok($finder->is_matching_dir_path($dir), "$dir is matching dir with no patterns");
 }
 
-sub test_is_matching_dir_matches_in_pattern {
+sub test_is_matching_dir_path_matches_in_pattern {
     my $settings = get_settings();
     push(@{$settings->{in_dir_patterns}}, 'plfind');
     my ($finder, $errs) = plfind::Finder->new($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $dir = dir('plfind');
-    ok($finder->is_matching_dir($dir), "$dir matches in_dir_patterns");
+    ok($finder->is_matching_dir_path($dir), "$dir matches in_dir_patterns");
 }
 
-sub test_is_matching_dir_no_match_in_pattern {
+sub test_is_matching_dir_path_no_match_in_pattern {
     my $settings = get_settings();
     push(@{$settings->{in_dir_patterns}}, 'plfind');
     my ($finder, $errs) = plfind::Finder->new($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $dir = dir('pyfind');
-    ok(!$finder->is_matching_dir($dir), "$dir does not match in_dir_patterns");
+    ok(!$finder->is_matching_dir_path($dir), "$dir does not match in_dir_patterns");
 }
 
-sub test_is_matching_dir_matches_out_pattern {
+sub test_is_matching_dir_path_matches_out_pattern {
     my $settings = get_settings();
     push(@{$settings->{out_dir_patterns}}, 'pyfind');
     my ($finder, $errs) = plfind::Finder->new($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $dir = dir('pyfind');
-    ok(!$finder->is_matching_dir($dir), "$dir matches out_dir_patterns");
+    ok(!$finder->is_matching_dir_path($dir), "$dir matches out_dir_patterns");
 }
 
-sub test_is_matching_dir_no_match_out_pattern {
+sub test_is_matching_dir_path_no_match_out_pattern {
     my $settings = get_settings();
     push(@{$settings->{out_dir_patterns}}, 'pyfind');
     my ($finder, $errs) = plfind::Finder->new($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $dir = dir('plfind');
-    ok($finder->is_matching_dir($dir), "$dir does not match out_dir_patterns");
+    ok($finder->is_matching_dir_path($dir), "$dir does not match out_dir_patterns");
 }
 
-sub test_is_matching_dir_single_dot {
+sub test_is_matching_dir_path_single_dot {
     my $settings = get_settings();
     my ($finder, $errs) = plfind::Finder->new($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $dir = dir('.');
-    ok($finder->is_matching_dir($dir), "$dir is matching dir");
+    ok($finder->is_matching_dir_path($dir), "$dir is matching dir");
 }
 
-sub test_is_matching_dir_double_dot {
+sub test_is_matching_dir_path_double_dot {
     my $settings = get_settings();
     my ($finder, $errs) = plfind::Finder->new($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $dir = dir('..');
-    ok($finder->is_matching_dir($dir), "$dir is matching dir");
+    ok($finder->is_matching_dir_path($dir), "$dir is matching dir");
 }
 
-sub test_is_matching_dir_hidden_dir {
+sub test_is_matching_dir_path_hidden_dir {
     my $settings = get_settings();
     my ($finder, $errs) = plfind::Finder->new($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $dir = dir('.git');
-    ok(!$finder->is_matching_dir($dir), "Hidden dir $dir is not matching dir by default");
+    ok(!$finder->is_matching_dir_path($dir), "Hidden dir $dir is not matching dir by default");
 }
 
-sub test_is_matching_dir_hidden_dir_include_hidden {
+sub test_is_matching_dir_path_hidden_dir_path_include_hidden {
     my $settings = get_settings();
     $settings->{include_hidden} = 1;
     my ($finder, $errs) = plfind::Finder->new($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $dir = dir('.git');
-    ok($finder->is_matching_dir($dir),
+    ok($finder->is_matching_dir_path($dir),
         "Hidden dir $dir is matching dir with include_hidden set to true");
 }
 
@@ -481,16 +481,16 @@ sub main {
 
     test_validate_settings();                               # 1 test
 
-    # is_matching_dir tests
-    test_is_matching_dir_no_patterns();                     # 2 tests
-    test_is_matching_dir_matches_in_pattern();              # 2 tests
-    test_is_matching_dir_no_match_in_pattern();             # 2 tests
-    test_is_matching_dir_matches_out_pattern();             # 2 tests
-    test_is_matching_dir_no_match_out_pattern();            # 2 tests
-    test_is_matching_dir_single_dot();                      # 2 tests
-    test_is_matching_dir_double_dot();                      # 2 tests
-    test_is_matching_dir_hidden_dir();                      # 2 tests
-    test_is_matching_dir_hidden_dir_include_hidden();       # 2 tests
+    # is_matching_dir_path tests
+    test_is_matching_dir_path_no_patterns();                     # 2 tests
+    test_is_matching_dir_path_matches_in_pattern();              # 2 tests
+    test_is_matching_dir_path_no_match_in_pattern();             # 2 tests
+    test_is_matching_dir_path_matches_out_pattern();             # 2 tests
+    test_is_matching_dir_path_no_match_out_pattern();            # 2 tests
+    test_is_matching_dir_path_single_dot();                      # 2 tests
+    test_is_matching_dir_path_double_dot();                      # 2 tests
+    test_is_matching_dir_path_hidden_dir();                      # 2 tests
+    test_is_matching_dir_path_hidden_dir_path_include_hidden();  # 2 tests
 
     # is_matching_file tests
     test_is_matching_file_matches_by_default();             # 2 tests

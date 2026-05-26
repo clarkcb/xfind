@@ -12,7 +12,6 @@ use strict;
 use warnings;
 
 # use Data::Dumper;
-use DateTime::Format::DateParse;
 use JSON::PP qw(decode_json);
 use Path::Class;
 
@@ -153,11 +152,11 @@ my $str_action_hash = {
     },
     'maxlastmod' => sub {
         my ($s, $settings) = @_;
-        $settings->{max_last_mod} = DateTime::Format::DateParse->parse_datetime($s);
+        $settings->set_last_mod('max_last_mod', $s);
     },
     'minlastmod' => sub {
         my ($s, $settings) = @_;
-        $settings->{min_last_mod} = DateTime::Format::DateParse->parse_datetime($s);
+        $settings->set_last_mod('min_last_mod', $s);
     },
     'out-archiveext' => sub {
         my ($s, $settings) = @_;

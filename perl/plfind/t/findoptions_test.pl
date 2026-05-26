@@ -17,7 +17,7 @@ BEGIN {
     unshift @INC, $lib_path;
 }
 
-use Test::Simple tests => 42;
+use Test::Simple tests => 48;
 
 use plfind::FindOptions;
 
@@ -81,11 +81,39 @@ sub test_invalid_arg {
     ok($errs->[0] eq 'Invalid option: Q', 'Correct unknown option error message');
 }
 
+sub test_last_mod_as_datetime_string_args {
+    my $args = ['--maxlastmod', '2025-12-31', '--minlastmod', '2010-01-01'];
+    my ($settings, $errs) = $find_options->settings_from_args($args);
+    my $expected_max_last_mod = 1767139200;
+    print("expected max_last_mod: $expected_max_last_mod\n");
+    print("  actual max_last_mod: " . $settings->{max_last_mod}->epoch . "\n");
+    ok($settings->{max_last_mod}->epoch == $expected_max_last_mod, "max_last_mod matches expected");
+    my $expected_min_last_mod = 1262304000;
+    print("expected min_last_mod: $expected_min_last_mod\n");
+    print("  actual max_last_mod: " . $settings->{min_last_mod}->epoch . "\n");
+    ok($settings->{min_last_mod}->epoch == $expected_min_last_mod, "min_last_mod matches expected");
+}
+
+sub test_last_mod_as_epoch_args {
+    my $args = ['--maxlastmod', 1767139200, '--minlastmod', 1262304000];
+    my ($settings, $errs) = $find_options->settings_from_args($args);
+    my $expected_max_last_mod = 1767139200;
+    print("expected max_last_mod: $expected_max_last_mod\n");
+    print("  actual max_last_mod: " . $settings->{max_last_mod}->epoch . "\n");
+    ok($settings->{max_last_mod}->epoch == $expected_max_last_mod, "max_last_mod matches expected");
+    my $expected_min_last_mod = 1262304000;
+    print("expected min_last_mod: $expected_min_last_mod\n");
+    print("  actual max_last_mod: " . $settings->{min_last_mod}->epoch . "\n");
+    ok($settings->{min_last_mod}->epoch == $expected_min_last_mod, "min_last_mod matches expected");
+}
+
 sub test_settings_from_json {
     my $json = <<"END_JSON";
 {
   "path": "~/src/xfind/",
   "in-ext": ["js","ts"],
+  "maxlastmod": 1767139200,
+  "minlastmod": "2010-01-01",
   "out-dirpattern": "node_module",
   "out-filepattern": ["temp"],
   "debug": true,
@@ -101,6 +129,10 @@ END_JSON
     ok(scalar @{$settings->{in_extensions}} == 2, "in_extensions has two extensions");
     ok($settings->{in_extensions}->[0] eq 'js', "in_extensions contains js extension");
     ok($settings->{in_extensions}->[1] eq 'ts', "in_extensions contains ts extension");
+    my $expected_max_last_mod = 1767139200;
+    ok($settings->{max_last_mod}->epoch == $expected_max_last_mod, "max_last_mod matches expected");
+    my $expected_min_last_mod = 1262304000;
+    ok($settings->{min_last_mod}->epoch == $expected_min_last_mod, "min_last_mod matches expected");
     ok(scalar @{$settings->{out_dir_patterns}} == 1, "out_dir_patterns has one pattern");
     ok($settings->{out_dir_patterns}->[0] eq 'node_module', "out_dir_patterns[0] is node_module");
     ok(scalar @{$settings->{out_file_patterns}} == 1, "out_file_patterns has one pattern");
@@ -118,6 +150,8 @@ sub main {
     test_debug_arg();
     test_missing_arg();
     test_invalid_arg();
+    test_last_mod_as_datetime_string_args();
+    test_last_mod_as_epoch_args();
     test_settings_from_json();
 }
 

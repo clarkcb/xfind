@@ -71,14 +71,16 @@ sub is_hidden_path {
     # $path is a Path::Class instance
     my ($path) = @_;
     # split into parent and file_name since they will work for both Dir and File
-    my $parent = $path->parent;
-    my $file_name = $path->basename;
-    my @path_elems = grep {$_ ne ''} $parent->dir_list;
-    foreach my $p (@path_elems) {
-        if (is_hidden_name($p)) {
-            return 1;
+    if (defined($path->parent)) {
+        my $parent = $path->parent;
+        my @path_elems = grep {$_ ne ''} $parent->dir_list;
+        foreach my $p (@path_elems) {
+            if (is_hidden_name($p)) {
+                return 1;
+            }
         }
     }
+    my $file_name = $path->basename;
     if (is_hidden_name($file_name)) {
         return 1;
     }

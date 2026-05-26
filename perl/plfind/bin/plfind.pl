@@ -22,17 +22,22 @@ use plfind::FileResultFormatter;
 use plfind::Finder;
 use plfind::FindOptions;
 
+sub handle_err {
+    my ($err, $find_options, $colorize) = @_;
+    plfind::common::log_msg('');
+    plfind::common::log_err($err, $colorize);
+    plfind::common::log_msg('');
+    $find_options->usage();
+    plfind::common::log_msg('');
+    exit;
+}
+
 sub main {
     my $find_options = plfind::FindOptions->new();
     my ($settings, $errs) = $find_options->settings_from_args(\@ARGV);
 
     if (scalar @$errs) {
-        plfind::common::log_msg('');
-        plfind::common::log_err($errs->[0]);
-        plfind::common::log_msg('');
-        $find_options->usage();
-        plfind::common::log_msg('');
-        exit;
+        handle_err($errs->[0], $find_options, 1);
     }
 
     if ($settings->{debug}) {
@@ -47,17 +52,15 @@ sub main {
     }
 
     my ($finder, $errs2) = plfind::Finder->new($settings);
-
     if (scalar @$errs2) {
-        plfind::common::log_msg('');
-        plfind::common::log_err($errs2->[0], $settings->{colorize});
-        plfind::common::log_msg('');
-        $find_options->usage();
-        plfind::common::log_msg('');
-        exit;
+        handle_err($errs2->[0], $find_options, $settings->{colorize});
     }
 
-    my $file_results = $finder->find();
+    my ($file_results, $errs3) = $finder->find();
+    if (scalar @$errs3) {
+        handle_err($errs3->[0], $find_options, $settings->{colorize});
+    }
+
     my $formatter = plfind::FileResultFormatter->new($settings);
 
     # print matching dirs
