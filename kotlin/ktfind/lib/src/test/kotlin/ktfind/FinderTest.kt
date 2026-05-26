@@ -1,6 +1,5 @@
 package ktfind
 
-import java.io.File
 import java.nio.file.Paths
 import kotlin.test.*
 
@@ -118,67 +117,67 @@ class FinderTest {
      * isMatchingDir tests
      **************************************************************************/
     @Test
-    fun testIsMatchingDir_SingleDot_True() {
+    fun testIsMatchingDirPath_SingleDot_True() {
         val settings = getSettings()
         val finder = Finder(settings)
-        assertTrue(finder.isMatchingDir(Paths.get(".")))
+        assertTrue(finder.isMatchingDirPath(Paths.get(".")))
     }
 
     @Test
-    fun testIsMatchingDir_DoubleDot_True() {
+    fun testIsMatchingDirPath_DoubleDot_True() {
         val settings = getSettings()
         val finder = Finder(settings)
-        assertTrue(finder.isMatchingDir(Paths.get("..")))
+        assertTrue(finder.isMatchingDirPath(Paths.get("..")))
     }
 
     @Test
-    fun testIsMatchingDir_IsHidden_False() {
+    fun testIsMatchingDirPath_IsHidden_False() {
         val settings = getSettings()
         val finder = Finder(settings)
-        assertFalse(finder.isMatchingDir(Paths.get(".git")))
+        assertFalse(finder.isMatchingDirPath(Paths.get(".git")))
     }
 
     @Test
-    fun testIsMatchingDir_IsHiddenIncludeHidden_True() {
+    fun testIsMatchingDirPath_IsHiddenIncludeHidden_True() {
         val settings = getSettings().copy(includeHidden = true)
         val finder = Finder(settings)
-        assertTrue(finder.isMatchingDir(Paths.get(".git")))
+        assertTrue(finder.isMatchingDirPath(Paths.get(".git")))
     }
 
     @Test
-    fun testIsMatchingDir_NoPatterns_True() {
+    fun testIsMatchingDirPath_NoPatterns_True() {
         val settings = getSettings()
         val finder = Finder(settings)
-        assertTrue(finder.isMatchingDir(Paths.get("/Users")))
+        assertTrue(finder.isMatchingDirPath(Paths.get("/Users")))
     }
 
     @Test
-    fun testIsMatchingDir_MatchesInPattern_True() {
+    fun testIsMatchingDirPath_MatchesInPattern_True() {
         val settings = getSettings().copy(inDirPatterns = setOf(Regex("Find")))
         val finder = Finder(settings)
-        assertTrue(finder.isMatchingDir(Paths.get("CsFind")))
+        assertTrue(finder.isMatchingDirPath(Paths.get("CsFind")))
     }
 
     @Test
-    fun testIsMatchingDir_MatchesOutPattern_False() {
+    fun testIsMatchingDirPath_MatchesOutPattern_False() {
         val settings = getSettings().copy(outDirPatterns = setOf(Regex("Find")))
         val finder = Finder(settings)
-        assertFalse(finder.isMatchingDir(Paths.get("CsFind")))
+        assertFalse(finder.isMatchingDirPath(Paths.get("CsFind")))
     }
 
     @Test
-    fun testIsMatchingDir_DoesNotMatchInPattern_False() {
+    fun testIsMatchingDirPath_DoesNotMatchInPattern_False() {
         val settings = getSettings().copy(inDirPatterns = setOf(Regex("FindFiles")))
         val finder = Finder(settings)
-        assertFalse(finder.isMatchingDir(Paths.get("CsFind")))
+        assertFalse(finder.isMatchingDirPath(Paths.get("CsFind")))
     }
 
     @Test
-    fun testIsMatchingDir_DoesNotMatchOutPattern_True() {
+    fun testIsMatchingDirPath_DoesNotMatchOutPattern_True() {
         val settings = getSettings().copy(outDirPatterns = setOf(Regex("FindFiles")))
         val finder = Finder(settings)
         val dir = Paths.get("CsFind")
-        assertTrue(finder.isMatchingDir(dir))
+        assertTrue(finder.isMatchingDirPath(dir))
     }
 
     /***************************************************************************

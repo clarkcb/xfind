@@ -14,13 +14,16 @@ fun printErrorWithUsage(err: String, colorize: Boolean, findOptions: FindOptions
 fun find(settings: FindSettings) {
     val finder = Finder(settings)
     val fileResults: List<FileResult> = finder.find()
-    val formatter = FileResultFormatter(settings)
 
-    if (settings.printDirs) {
-        finder.printMatchingDirs(fileResults, formatter)
-    }
-    if (settings.printFiles) {
-        finder.printMatchingFiles(fileResults, formatter)
+    if (settings.printDirs || settings.printFiles) {
+        val formatter = FileResultFormatter(settings)
+
+        if (settings.printDirs) {
+            finder.printMatchingDirs(fileResults, formatter)
+        }
+        if (settings.printFiles) {
+            finder.printMatchingFiles(fileResults, formatter)
+        }
     }
 }
 
