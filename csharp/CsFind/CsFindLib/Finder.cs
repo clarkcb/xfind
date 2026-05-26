@@ -9,13 +9,6 @@ namespace CsFindLib;
 
 public class Finder
 {
-	private const string StartpathNotDefined = "Startpath not defined";
-	private const string StartpathNotFound = "Startpath not found";
-	private const string InvalidRangeMinDepthMaxDepth = "Invalid range for mindepth and maxdepth";
-	private const string InvalidRangeMinLastModMaxLastMod = "Invalid range for minlastmod and maxlastmod";
-	private const string InvalidRangeMinSizeMaxSize = "Invalid range for minsize and maxsize";
-	private const string StartpathNotMatchFindSettings = "Startpath does not match find settings";
-
 	private readonly FileTypes _fileTypes;
 	private readonly EnumerationOptions _enumerationOptions;
 	private FindSettings Settings { get; }
@@ -29,55 +22,55 @@ public class Finder
 
 	private void ValidateSettings()
 	{
-		if (Settings.Paths.Count == 0)
-			throw new FindException(StartpathNotDefined);
+		if (Settings.Paths == null || Settings.Paths.Count == 0)
+			throw new FindException(FindError.StartpathNotDefined);
 
 		foreach (var p in Settings.Paths)
 		{
 			if (!p.Exists)
 			{
-				throw new FindException(StartpathNotFound);
+				throw new FindException(FindError.StartpathNotFound);
 			}
 
 			if (p.IsSymlink)
 			{
 				if (!Settings.FollowSymlinks)
 				{
-					throw new FindException(StartpathNotMatchFindSettings);
+					throw new FindException(FindError.StartpathNotMatchFindSettings);
 				}
 			}
 			else if (p.IsDirectory)
 			{
-				if (!FilterDirectoryByHidden(p) || MatchesAnyPattern(p.Path, Settings.OutDirPatterns))
+				if (!IsTraversableDirPath(p))
 				{
-					throw new FindException(StartpathNotMatchFindSettings);
+					throw new FindException(FindError.StartpathNotMatchFindSettings);
 				}
 			}
 			else if (p.IsFile)
 			{
 				if (FilterToFileResult(p) == null)
 				{
-					throw new FindException(StartpathNotMatchFindSettings);
+					throw new FindException(FindError.StartpathNotMatchFindSettings);
 				}
 			}
 			else
 			{
 				// TODO: start path is unknown/invalid type
-				throw new FindException(StartpathNotMatchFindSettings);
+				throw new FindException(FindError.StartpathNotMatchFindSettings);
 			}
 		}
 		if (Settings is { MaxDepth: > -1, MinDepth: > -1 } && Settings.MaxDepth < Settings.MinDepth)
 		{
-			throw new FindException(InvalidRangeMinDepthMaxDepth);
+			throw new FindException(FindError.InvalidRangeMinDepthMaxDepth);
 		}
 		if (Settings is { MaxLastMod: not null, MinLastMod: not null }
 		    && Settings.MaxLastMod < Settings.MinLastMod)
 		{
-			throw new FindException(InvalidRangeMinLastModMaxLastMod);
+			throw new FindException(FindError.InvalidRangeMinLastModMaxLastMod);
 		}
 		if (Settings is { MaxSize: > 0, MinSize: > 0 } && Settings.MaxSize < Settings.MinSize)
 		{
-			throw new FindException(InvalidRangeMinSizeMaxSize);
+			throw new FindException(FindError.InvalidRangeMinSizeMaxSize);
 		}
 	}
 
@@ -114,94 +107,104 @@ public class Finder
 		return slist.Any(s => MatchesAnyPattern(s, patterns));
 	}
 
-	public bool FilterDirectoryByHidden(FilePath d)
+	private static bool EmptyOrMatchesAnyPattern(string s, ISet<Regex> patterns)
 	{
-		if (string.IsNullOrEmpty(d.Path))
+		return patterns.Count == 0 || MatchesAnyPattern(s, patterns);
+	}
+
+	private static bool EmptyOrNotMatchesAnyPattern(string s, ISet<Regex> patterns)
+	{
+		return patterns.Count == 0 || !MatchesAnyPattern(s, patterns);
+	}
+
+	private static bool EmptyOrAnyMatchesAnyPattern(IEnumerable<string> sList, ISet<Regex> patterns)
+	{
+		return patterns.Count == 0 || AnyMatchesAnyPattern(sList, patterns);
+	}
+
+	private static bool EmptyOrNotAnyMatchesAnyPattern(IEnumerable<string> sList, ISet<Regex> patterns)
+	{
+		return patterns.Count == 0 || !AnyMatchesAnyPattern(sList, patterns);
+	}
+
+	private bool EmptyOrMatchesAnyString(string s, ISet<string> stringSet)
+	{
+		return stringSet.Count == 0 || stringSet.Contains(s);
+	}
+
+	private bool EmptyOrNotMatchesAnyString(string s, ISet<string> stringSet)
+	{
+		return stringSet.Count == 0 || !stringSet.Contains(s);
+	}
+
+	private bool EmptyOrMatchesAnyFileType(FileType fileType, ISet<FileType> fileTypeSet)
+	{
+		return fileTypeSet.Count == 0 || fileTypeSet.Contains(fileType);
+	}
+
+	private bool EmptyOrNotMatchesAnyFileType(FileType fileType, ISet<FileType> fileTypeSet)
+	{
+		return fileTypeSet.Count == 0 || !fileTypeSet.Contains(fileType);
+	}
+
+	private bool IsMatchingPathBySymlink(FilePath path)
+	{
+		return Settings.FollowSymlinks || !path.IsSymlink;
+	}
+
+	private bool IsMatchingDirPathByHidden(FilePath dirPath)
+	{
+		return Settings.IncludeHidden || !FileUtil.IsHiddenFilePath(dirPath);
+	}
+
+	private bool IsMatchingDirPathByInPatterns(FilePath dirPath)
+	{
+		var elems = FileUtil.GetPathElems(dirPath).ToList();
+		return EmptyOrAnyMatchesAnyPattern(elems, Settings.InDirPatterns);
+	}
+
+	private bool IsMatchingDirPathByOutPatterns(FilePath dirPath)
+	{
+		var elems = FileUtil.GetPathElems(dirPath).ToList();
+		return EmptyOrNotAnyMatchesAnyPattern(elems, Settings.OutDirPatterns);
+	}
+
+	private bool IsTraversableDirPath(FilePath dirPath)
+	{
+		return IsMatchingPathBySymlink(dirPath)
+		       && IsMatchingDirPathByHidden(dirPath)
+		       && IsMatchingDirPathByOutPatterns(dirPath);
+	}
+
+	public bool IsMatchingDirPath(FilePath dirPath)
+	{
+		return IsMatchingPathBySymlink(dirPath)
+		       && IsMatchingDirPathByHidden(dirPath)
+		       && IsMatchingDirPathByInPatterns(dirPath)
+		       && IsMatchingDirPathByOutPatterns(dirPath);
+	}
+
+	private bool IsNullOrMatchingDirPath(FilePath? dirPath)
+	{
+		if (dirPath == null || string.IsNullOrEmpty(dirPath.ToString()))
 		{
 			return true;
 		}
 
-		if (!Settings.IncludeHidden)
-		{
-			return !FileUtil.IsHiddenFilePath(d);
-		}
-
-		return true;
+		return IsMatchingDirPath(dirPath);
 	}
 
-	public bool FilterDirectoryByInPatterns(FilePath d)
+	private bool IsMatchingArchiveExtension(string ext)
 	{
-		if (string.IsNullOrEmpty(d.Path))
-		{
-			return true;
-		}
-
-		var elems = FileUtil.GetPathElems(d).ToList();
-
-		return Settings.InDirPatterns.Count == 0
-		       || AnyMatchesAnyPattern(elems, Settings.InDirPatterns);
+		return EmptyOrMatchesAnyString(ext, Settings.InArchiveExtensions)
+		       && EmptyOrNotMatchesAnyString(ext, Settings.OutArchiveExtensions);
 	}
 
-	public bool FilterDirectoryByOutPatterns(FilePath d)
-	{
-		if (string.IsNullOrEmpty(d.Path))
-		{
-			return false;
-		}
-
-		var elems = FileUtil.GetPathElems(d).ToList();
-
-		return Settings.OutDirPatterns.Count == 0
-		       || !AnyMatchesAnyPattern(elems, Settings.OutDirPatterns);
-	}
-
-	public bool IsMatchingDirectory(FilePath d)
-	{
-		if (string.IsNullOrEmpty(d.Path))
-		{
-			return true;
-		}
-		
-		// Detect and filter out symlinked directories if !Settings.FollowSymlinks
-		if (!Settings.FollowSymlinks && d.IsSymlink)
-		{
-			return false;
-		}
-		
-		return FilterDirectoryByHidden(d) && FilterDirectoryByInPatterns(d) && FilterDirectoryByOutPatterns(d);
-	}
-
-	private bool IsMatchingArchiveFileExtension(string ext)
-	{
-		return (Settings.InArchiveExtensions.Count == 0 ||
-		         Settings.InArchiveExtensions.Contains(ext)) &&
-		        (Settings.OutArchiveExtensions.Count == 0 ||
-		         !Settings.OutArchiveExtensions.Contains(ext));
-	}
-
-	private bool HasMatchingArchiveFileExtension(FilePath filePath)
+	private bool IsMatchingArchiveExtensionForFilePath(FilePath filePath)
 	{
 		if (Settings.InArchiveExtensions.Count > 0 || Settings.OutArchiveExtensions.Count > 0)
 		{
-			return IsMatchingArchiveFileExtension(filePath.Extension);
-		}
-
-		return true;
-	}
-
-	private bool IsMatchingFileExtension(string ext)
-	{
-		return (Settings.InExtensions.Count == 0 ||
-		         Settings.InExtensions.Contains(ext)) &&
-		        (Settings.OutExtensions.Count == 0 ||
-		         !Settings.OutExtensions.Contains(ext));
-	}
-
-	private bool HasMatchingFileExtension(FilePath filePath)
-	{
-		if (Settings.InExtensions.Count > 0 || Settings.OutExtensions.Count > 0)
-		{
-			return IsMatchingFileExtension(filePath.Extension);
+			return IsMatchingArchiveExtension(filePath.Extension);
 		}
 
 		return true;
@@ -209,80 +212,152 @@ public class Finder
 
 	private bool IsMatchingArchiveFileName(string fileName)
 	{
-		return (Settings.InArchiveFilePatterns.Count == 0 ||
-		        Settings.InArchiveFilePatterns.Any(p => p.Match(fileName).Success)) &&
-		       (Settings.OutArchiveFilePatterns.Count == 0 ||
-		        !Settings.OutArchiveFilePatterns.Any(p => p.Match(fileName).Success));
+		return EmptyOrMatchesAnyPattern(fileName, Settings.InArchiveFilePatterns)
+		       && EmptyOrNotMatchesAnyPattern(fileName, Settings.OutArchiveFilePatterns);
 	}
 
-	private bool IsMatchingFileName(string fileName)
+	private bool IsMatchingArchiveFileNameForFilePath(FilePath filePath)
 	{
-		return (Settings.InFilePatterns.Count == 0 ||
-		        Settings.InFilePatterns.Any(p => p.Match(fileName).Success)) &&
-		       (Settings.OutFilePatterns.Count == 0 ||
-		        !Settings.OutFilePatterns.Any(p => p.Match(fileName).Success));
+		if (Settings.InArchiveFilePatterns.Count > 0 || Settings.OutArchiveFilePatterns.Count > 0)
+		{
+			return IsMatchingArchiveFileName(filePath.Name);
+		}
+
+		return true;
 	}
 
-	private bool IsMatchingFileType(FileType fileType)
+	private bool IsMatchingArchiveFilePath(FilePath filePath)
 	{
-		return (Settings.InFileTypes.Count == 0 ||
-		        Settings.InFileTypes.Contains(fileType)) &&
-		       (Settings.OutFileTypes.Count == 0 ||
-		        !Settings.OutFileTypes.Contains(fileType));
-	}
-
-	private bool IsMatchingFileSize(long fileSize)
-	{
-		return (Settings.MaxSize == 0 || fileSize <= Settings.MaxSize) &&
-		       (Settings.MinSize == 0 || fileSize >= Settings.MinSize);
-	}
-
-	private bool IsMatchingLastMod(DateTime lastMod)
-	{
-		return (Settings.MaxLastMod == null || lastMod <= Settings.MaxLastMod) &&
-		       (Settings.MinLastMod == null || lastMod >= Settings.MinLastMod);
-	}
-
-	public bool IsMatchingFileResult(FileResult fr)
-	{
-		return HasMatchingFileExtension(fr.FilePath) &&
-		       IsMatchingFileName(fr.FilePath.Name) &&
-		       IsMatchingFileType(fr.Type) &&
-		       IsMatchingFileSize(fr.FilePath.Length) &&
-		       IsMatchingLastMod(fr.FilePath.LastWriteTimeUtc);
+		return IsMatchingArchiveExtensionForFilePath(filePath)
+		       && IsMatchingArchiveFileNameForFilePath(filePath);
 	}
 
 	public bool IsMatchingArchiveFileResult(FileResult fr)
 	{
-		return HasMatchingArchiveFileExtension(fr.FilePath) &&
-		       IsMatchingArchiveFileName(fr.FilePath.Name);
+		return IsNullOrMatchingDirPath(fr.FilePath.Parent)
+		       && IsMatchingArchiveFilePath(fr.FilePath);
+	}
+
+	private bool IsMatchingFileNameByHidden(string fileName)
+	{
+		return Settings.IncludeHidden || !FileUtil.IsHiddenName(fileName);
+	}
+
+	private bool IsMatchingExtension(string ext)
+	{
+		return EmptyOrMatchesAnyString(ext, Settings.InExtensions)
+		       && EmptyOrNotMatchesAnyString(ext, Settings.OutExtensions);
+	}
+
+	private bool IsMatchingExtensionForFilePath(FilePath filePath)
+	{
+		if (Settings.InExtensions.Count > 0 || Settings.OutExtensions.Count > 0)
+		{
+			return IsMatchingExtension(filePath.Extension);
+		}
+
+		return true;
+	}
+
+	private bool IsMatchingFileName(string fileName)
+	{
+		return EmptyOrMatchesAnyPattern(fileName, Settings.InFilePatterns)
+		       && EmptyOrNotMatchesAnyPattern(fileName, Settings.OutFilePatterns);
+	}
+
+	private bool IsMatchingFileNameForFilePath(FilePath filePath)
+	{
+		if (Settings.InFilePatterns.Count > 0 || Settings.OutFilePatterns.Count > 0)
+		{
+			return IsMatchingFileName(filePath.Name);
+		}
+
+		return true;
+	}
+
+	private bool IsMatchingFileType(FileType fileType)
+	{
+		return EmptyOrMatchesAnyFileType(fileType, Settings.InFileTypes)
+		       && EmptyOrNotMatchesAnyFileType(fileType, Settings.OutFileTypes);
+	}
+
+	private bool IsMatchingFileSize(long fileSize)
+	{
+		return (Settings.MaxSize == 0 || fileSize <= Settings.MaxSize)
+		       && (Settings.MinSize == 0 || fileSize >= Settings.MinSize);
+	}
+
+	private bool IsMatchingLastMod(DateTime lastMod)
+	{
+		return (Settings.MaxLastMod == null || lastMod <= Settings.MaxLastMod)
+		       && (Settings.MinLastMod == null || lastMod >= Settings.MinLastMod);
+	}
+
+	private bool IsMatchingFilePath(FilePath filePath)
+	{
+		return IsMatchingPathBySymlink(filePath)
+		       && IsMatchingExtensionForFilePath(filePath)
+		       && IsMatchingFileNameForFilePath(filePath);
+	}
+
+	public bool IsMatchingFileResult(FileResult fr)
+	{
+		return IsNullOrMatchingDirPath(fr.FilePath.Parent)
+		       && IsMatchingFilePath(fr.FilePath)
+		       && IsMatchingFileType(fr.Type)
+		       && IsMatchingFileSize(fr.FilePath.Length)
+		       && IsMatchingLastMod(fr.FilePath.LastWriteTimeUtc);
+	}
+
+	private FileResult? FilterArchiveFilePathToFileResult(FilePath filePath, FileType fileType)
+	{
+		if (!Settings.IncludeArchives && !Settings.ArchivesOnly)
+		{
+			return null;
+		}
+
+		if (!IsMatchingArchiveFilePath(filePath))
+		{
+			return null;
+		}
+
+		return new FileResult(filePath, fileType);
+	}
+
+	private FileResult? FilterRegularFilePathToFileResult(FilePath filePath, FileType fileType)
+	{
+		if (Settings.ArchivesOnly)
+		{
+			return null;
+		}
+
+		if (!IsMatchingFilePath(filePath) || !IsMatchingFileType(fileType))
+		{
+			return null;
+		}
+
+		return new FileResult(filePath, fileType);
 	}
 
 	public FileResult? FilterToFileResult(FilePath filePath)
 	{
-		// Detect and filter out symlinked files unless Settings.FollowSymlinks
-		if (!Settings.FollowSymlinks && filePath.IsSymlink)
-			return null;
-		if (filePath.Parent != null && !IsMatchingDirectory(filePath.Parent))
-			return null;
-		if (!Settings.IncludeHidden && FileUtil.IsHiddenName(filePath.Name))
-			return null;
-		var fr = new FileResult(filePath, _fileTypes.GetFileType(filePath));
-		if (fr.Type.Equals(FileType.Archive))
+		if (!IsMatchingPathBySymlink(filePath))
 		{
-			if (Settings.IncludeArchives && IsMatchingArchiveFileResult(fr))
-			{
-				return fr;
-			}
-
 			return null;
 		}
-		if (!Settings.ArchivesOnly && IsMatchingFileResult(fr))
+
+		if (!IsNullOrMatchingDirPath(filePath.Parent) || !IsMatchingFileNameByHidden(filePath.Name))
 		{
-			return fr;
+			return null;
 		}
 
-		return null;
+		var fileType = _fileTypes.GetFileType(filePath);
+		if (fileType == FileType.Archive)
+		{
+			return FilterArchiveFilePathToFileResult(filePath, fileType);
+		}
+
+		return FilterRegularFilePathToFileResult(filePath, fileType);
 	}
 
 	private List<FileResult> RecGetFileResults(FilePath dirPath, int minDepth, int maxDepth, int currentDepth)
@@ -306,7 +381,7 @@ public class Finder
 		if (recurse)
 		{
 			var pathDirs = dirPath.EnumerateDirectories()
-				.Where(d => FilterDirectoryByHidden(d) && FilterDirectoryByOutPatterns(d));
+				.Where(IsTraversableDirPath);
 			foreach (var pathDir in pathDirs)
 			{
 				pathResults.AddRange(RecGetFileResults(pathDir, minDepth, maxDepth, currentDepth + 1));
@@ -316,34 +391,38 @@ public class Finder
 		return pathResults;
 	}
 
-	private List<FileResult> GetFileResults(FilePath filePath)
+	private List<FileResult> GetFileResults(FilePath path)
 	{
-		if (filePath.IsDirectory)
+		if (path.IsDirectory)
 		{
 			// if MaxDepth is zero, we can skip since a directory cannot be a result
 			if (Settings.MaxDepth == 0)
 			{
 				return [];
 			}
-			if (FilterDirectoryByHidden(filePath) && FilterDirectoryByOutPatterns(filePath))
+			if (IsTraversableDirPath(path))
 			{
 				var maxDepth = Settings.Recursive ? Settings.MaxDepth : 1;
-				return RecGetFileResults(filePath, Settings.MinDepth, maxDepth, 1);
+				return RecGetFileResults(path, Settings.MinDepth, maxDepth, 1);
 			}
 
-			throw new FindException(StartpathNotMatchFindSettings);
+			throw new FindException(FindError.StartpathNotMatchFindSettings);
 		}
-
-		// if MinDepth > zero, we can skip since the file is at depth zero
-		if (Settings.MinDepth > 0)
+		if (path.IsFile)
 		{
-			return [];
+			// if MinDepth > zero, we can skip since the file is at depth zero
+			if (Settings.MinDepth > 0)
+			{
+				return [];
+			}
+
+			var fileResult = FilterToFileResult(path);
+			return fileResult == null
+				? throw new FindException(FindError.StartpathNotMatchFindSettings)
+				: [fileResult];
 		}
 
-		var fileResult = FilterToFileResult(filePath);
-		return fileResult == null
-			? throw new FindException(StartpathNotMatchFindSettings)
-			: [fileResult];
+		throw new FindException(FindError.StartpathNotMatchFindSettings);
 	}
 
 	// private IEnumerable<FileResult> GetAllFileResultsTasks()

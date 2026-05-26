@@ -51,7 +51,7 @@ class FinderTests
 	{
 		var settings = GetSettings();
 		var finder = new Finder(settings);
-		Assert.That(finder.IsMatchingDirectory(new FilePath(".")));
+		Assert.That(finder.IsMatchingDirPath(new FilePath(".")));
 	}
 
 	[Test]
@@ -59,7 +59,7 @@ class FinderTests
 	{
 		var settings = GetSettings();
 		var finder = new Finder(settings);
-		Assert.That(finder.IsMatchingDirectory(new FilePath("..")));
+		Assert.That(finder.IsMatchingDirPath(new FilePath("..")));
 	}
 
 	[Test]
@@ -67,7 +67,7 @@ class FinderTests
 	{
 		var settings = GetSettings();
 		var finder = new Finder(settings);
-		Assert.That(finder.IsMatchingDirectory(new FilePath(".git")), Is.False);
+		Assert.That(finder.IsMatchingDirPath(new FilePath(".git")), Is.False);
 	}
 
 	[Test]
@@ -76,7 +76,7 @@ class FinderTests
 		var settings = GetSettings();
 		settings.IncludeHidden = true;
 		var finder = new Finder(settings);
-		Assert.That(finder.IsMatchingDirectory(new FilePath(".git")));
+		Assert.That(finder.IsMatchingDirPath(new FilePath(".git")));
 	}
 
 	[Test]
@@ -84,7 +84,7 @@ class FinderTests
 	{
 		var settings = GetSettings();
 		var finder = new Finder(settings);
-		Assert.That(finder.IsMatchingDirectory(new FilePath("/Users")));
+		Assert.That(finder.IsMatchingDirPath(new FilePath("/Users")));
 	}
 
 	[Test]
@@ -93,7 +93,7 @@ class FinderTests
 		var settings = GetSettings();
 		settings.AddInDirPattern("Find");
 		var finder = new Finder(settings);
-		Assert.That(finder.IsMatchingDirectory(new FilePath("CsFind")));
+		Assert.That(finder.IsMatchingDirPath(new FilePath("CsFind")));
 	}
 
 	[Test]
@@ -102,7 +102,7 @@ class FinderTests
 		var settings = GetSettings();
 		settings.AddOutDirPattern("Find");
 		var finder = new Finder(settings);
-		Assert.That(finder.IsMatchingDirectory(new FilePath("CsFind")), Is.False);
+		Assert.That(finder.IsMatchingDirPath(new FilePath("CsFind")), Is.False);
 	}
 
 	[Test]
@@ -111,7 +111,7 @@ class FinderTests
 		var settings = GetSettings();
 		settings.AddInDirPattern("FindFiles");
 		var finder = new Finder(settings);
-		Assert.That(finder.IsMatchingDirectory(new FilePath("CsFind")), Is.False);
+		Assert.That(finder.IsMatchingDirPath(new FilePath("CsFind")), Is.False);
 	}
 
 	[Test]
@@ -121,7 +121,7 @@ class FinderTests
 		settings.AddOutDirPattern("FindFiles");
 		var finder = new Finder(settings);
 		var dir = new FilePath(new DirectoryInfo("CsFind"));
-		Assert.That(finder.IsMatchingDirectory(dir));
+		Assert.That(finder.IsMatchingDirPath(dir));
 	}
 
 
