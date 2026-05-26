@@ -8,7 +8,7 @@ from .config import XFIND_PATH, SHARED_PATH
 from .fileresult import FileResult, FileResultFormatter, FileResultSorter
 from .filetypes import FileType, FileTypes
 from .fileutil import FileUtil
-from .finder import Finder, print_dir_results, print_file_results
+from .finder import Finder, print_matching_dirs, print_matching_files
 from .findexception import FindException
 from .findoption import FindOption
 from .findoptions import FindOptions

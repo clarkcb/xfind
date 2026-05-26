@@ -14,7 +14,7 @@ import sys
 from . import VERSION
 from .common import log, log_error
 from .fileresult import FileResultFormatter
-from .finder import Finder, print_dir_results, print_file_results
+from .finder import Finder, print_matching_dirs, print_matching_files
 from .findexception import FindException
 from .findoptions import FindOptions
 
@@ -51,10 +51,10 @@ async def main():
         formatter = FileResultFormatter(settings)
 
         if settings.print_dirs:
-            print_dir_results(file_results, formatter)
+            print_matching_dirs(file_results, formatter)
 
         if settings.print_files:
-            print_file_results(file_results, formatter)
+            print_matching_files(file_results, formatter)
 
     except AssertionError as e:
         log('')
