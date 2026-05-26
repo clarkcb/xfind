@@ -45,9 +45,9 @@ public class Finder {
             var p = path
             if (!FileUtil.exists(p)) {
                 p = FileUtil.expandPath(p)
-            }
-            if (!FileUtil.exists(p)) {
-                throw FindError(msg: STARTPATH_NOT_FOUND)
+                if (!FileUtil.exists(p)) {
+                    throw FindError(msg: STARTPATH_NOT_FOUND)
+                }
             }
             if (!FileUtil.isReadableFile(p)) {
                 throw FindError(msg: STARTPATH_NOT_READABLE)
@@ -63,7 +63,7 @@ public class Finder {
             }
             if FileUtil.isDirectory(resolvedPath!) {
                 // still check p and not resolvedPath because p is the name entered
-                if !filterDirByHidden(p) || !filterDirByOutPatterns(p) {
+                if !isTraversableDirPath(p) {
                     throw FindError(msg: STARTPATH_NOT_MATCH_FIND_SETTINGS)
                 }
             } else if FileUtil.isReadableFile(resolvedPath!) {
@@ -93,149 +93,185 @@ public class Finder {
         strs.filter { self.matchesAnyPattern($0, patterns) }.count > 0
     }
 
-    private func filterByExtensions(_ ext: String, inExtensions: Set<String>,
-                                    outExtensions: Set<String>) -> Bool {
-        (inExtensions.isEmpty || inExtensions.contains(ext))
-            && (outExtensions.isEmpty || !outExtensions.contains(ext))
+    private func emptyOrMatchesAnyPattern(_ str: String, _ patterns: [Regex]) -> Bool {
+        patterns.isEmpty || matchesAnyPattern(str, patterns)
     }
 
-    private func filterByPatterns(_ str: String, inPatterns: [Regex],
-                                  outPatterns: [Regex]) -> Bool {
-        (inPatterns.isEmpty || matchesAnyPattern(str, inPatterns))
-            && (outPatterns.isEmpty || !matchesAnyPattern(str, outPatterns))
+    private func emptyOrNotMatchesAnyPattern(_ str: String, _ patterns: [Regex]) -> Bool {
+        patterns.isEmpty || !matchesAnyPattern(str, patterns)
     }
 
-    private func filterByFileTypes(_ fileType: FileType, inFileTypes: [FileType],
-                                   outFileTypes: [FileType]) -> Bool {
-        (inFileTypes.isEmpty || inFileTypes.contains(fileType))
-            && (outFileTypes.isEmpty || !outFileTypes.contains(fileType))
+    private func emptyOrAnyMatchesAnyPattern(_ strs: [String], _ patterns: [Regex]) -> Bool {
+        patterns.isEmpty || anyMatchesAnyPattern(strs, patterns)
     }
 
-    private func filterBySize(_ fileSize: UInt64, maxSize: UInt64, minSize: UInt64) -> Bool {
-        (maxSize == 0 || fileSize <= maxSize) &&
-        (minSize == 0 || fileSize >= minSize)
+    private func emptyOrNotAnyMatchesAnyPattern(_ strs: [String], _ patterns: [Regex]) -> Bool {
+        patterns.isEmpty || !anyMatchesAnyPattern(strs, patterns)
     }
 
-    private func filterByLastMod(_ lastMod: Date?, maxLastMod: Date?, minLastMod: Date?) -> Bool {
-        (maxLastMod == nil || lastMod! <= maxLastMod!) &&
-        (minLastMod == nil || lastMod! >= minLastMod!)
+    private func emptyOrMatchesAnyString(_ str: String, _ strs: Set<String>) -> Bool {
+        strs.isEmpty || strs.contains(str)
     }
 
-    public func filterDirByHidden(_ dirPath: String) -> Bool {
+    private func emptyOrNotMatchesAnyString(_ str: String, _ strs: Set<String>) -> Bool {
+        strs.isEmpty || !strs.contains(str)
+    }
+
+    private func emptyOrMatchesAnyFileType(_ fileType: FileType, _ fileTypes: [FileType]) -> Bool {
+        fileTypes.isEmpty || fileTypes.contains(fileType)
+    }
+
+    private func emptyOrNotMatchesAnyFileType(_ fileType: FileType, _ fileTypes: [FileType]) -> Bool {
+        fileTypes.isEmpty || !fileTypes.contains(fileType)
+    }
+
+    public func isMatchingDirPathByHidden(_ dirPath: String) -> Bool {
         settings.includeHidden || !FileUtil.isHiddenPath(dirPath)
     }
 
-    public func filterDirByInPatterns(_ dirPath: String) -> Bool {
-        (settings.inDirPatterns.isEmpty || matchesAnyPattern(dirPath, settings.inDirPatterns))
+    public func isMatchingDirPathByInPatterns(_ dirPath: String) -> Bool {
+        emptyOrAnyMatchesAnyPattern(FileUtil.getPathComponents(dirPath), settings.inDirPatterns)
     }
 
-    public func filterDirByOutPatterns(_ dirPath: String) -> Bool {
-        (settings.outDirPatterns.isEmpty || !matchesAnyPattern(dirPath, settings.outDirPatterns))
+    public func isMatchingDirPathByOutPatterns(_ dirPath: String) -> Bool {
+        emptyOrNotAnyMatchesAnyPattern(FileUtil.getPathComponents(dirPath), settings.outDirPatterns)
     }
 
-    public func isMatchingDir(_ dirPath: String) -> Bool {
-        filterDirByHidden(dirPath) && filterDirByInPatterns(dirPath) && filterDirByOutPatterns(dirPath)
+    public func isTraversableDirPath(_ dirPath: String) -> Bool {
+        isMatchingDirPathByHidden(dirPath)
+        && isMatchingDirPathByOutPatterns(dirPath)
     }
 
-    public func isMatchingFile(_ fileName: String) -> Bool {
-        isMatchingFile(fileName, fileType: fileTypes.getFileType(fileName))
+    public func isMatchingDirPath(_ dirPath: String) -> Bool {
+        isMatchingDirPathByHidden(dirPath)
+        && isMatchingDirPathByInPatterns(dirPath)
+        && isMatchingDirPathByOutPatterns(dirPath)
     }
 
-    public func isMatchingFile(_ fileName: String, fileType: FileType) -> Bool {
-        if !settings.includeHidden, FileUtil.isHiddenName(fileName) {
-            return false
-        }
-        if !settings.inExtensions.isEmpty || !settings.outExtensions.isEmpty {
-            let filteredByExtensions = filterByExtensions(FileUtil.getExtension(fileName),
-                                                          inExtensions: settings.inExtensions,
-                                                          outExtensions: settings.outExtensions)
-            if !filteredByExtensions {
-                return false
-            }
-        }
-        return filterByPatterns(fileName,
-                                inPatterns: settings.inFilePatterns,
-                                outPatterns: settings.outFilePatterns)
-            && filterByFileTypes(fileType,
-                                 inFileTypes: settings.inFileTypes,
-                                 outFileTypes: settings.outFileTypes)
+    public func isNullOrMatchingDirPath(_ dirPath: String?) -> Bool {
+        dirPath == nil
+        || (isMatchingDirPathByHidden(dirPath!)
+        && isMatchingDirPathByInPatterns(dirPath!)
+        && isMatchingDirPathByOutPatterns(dirPath!))
     }
 
-    public func isMatchingFileResult(_ fileResult: FileResult) -> Bool {
-        let filePathUrl = URL(fileURLWithPath: fileResult.filePath)
-        let parent = filePathUrl.deletingLastPathComponent()
-        if !isMatchingDir(parent.absoluteString) {
-            return false
-        }
-        let fileName = filePathUrl.lastPathComponent
-        if !settings.includeHidden, FileUtil.isHiddenName(fileName) {
-            return false
-        }
-        if !settings.inExtensions.isEmpty || !settings.outExtensions.isEmpty {
-            let filteredByExtensions = filterByExtensions(FileUtil.getExtension(fileName),
-                                                          inExtensions: settings.inExtensions,
-                                                          outExtensions: settings.outExtensions)
-            if !filteredByExtensions {
-                return false
-            }
-        }
-        return (filterByPatterns(fileName,
-                                 inPatterns: settings.inFilePatterns,
-                                 outPatterns: settings.outFilePatterns)
-                && filterByFileTypes(fileResult.fileType,
-                                     inFileTypes: settings.inFileTypes,
-                                     outFileTypes: settings.outFileTypes)
-                && filterBySize(fileResult.fileSize, maxSize: settings.maxSize, minSize: settings.minSize)
-                && filterByLastMod(fileResult.lastMod, maxLastMod: settings.maxLastMod, minLastMod: settings.minLastMod))
+    public func isMatchingFileNameByHidden(_ fileName: String) -> Bool {
+        settings.includeHidden || !FileUtil.isHiddenName(fileName)
+    }
+    
+    public func isMatchingArchiveExtension(_ ext: String) -> Bool {
+        emptyOrMatchesAnyString(ext, settings.inArchiveExtensions)
+        && emptyOrNotMatchesAnyString(ext, settings.outArchiveExtensions)
     }
 
-    public func isMatchingArchiveFile(_ fileName: String) -> Bool {
-        if !settings.includeHidden, FileUtil.isHiddenName(fileName) {
-            return false
-        }
+    public func isMatchingArchiveExtensionForFilePath(_ filePath: String) -> Bool {
         if !settings.inArchiveExtensions.isEmpty || !settings.outArchiveExtensions.isEmpty {
-            let filteredByExtensions = filterByExtensions(FileUtil.getExtension(fileName),
-                                                          inExtensions: settings.inArchiveExtensions,
-                                                          outExtensions: settings.outArchiveExtensions)
-            if !filteredByExtensions {
-                return false
-            }
+            let ext = FileUtil.getExtension(filePath)
+            return isMatchingArchiveExtension(ext)
         }
-        return filterByPatterns(fileName, inPatterns: settings.inArchiveFilePatterns,
-                                outPatterns: settings.outArchiveFilePatterns)
+        return true
+    }
+
+    public func isMatchingArchiveFileName(_ fileName: String) -> Bool {
+        emptyOrMatchesAnyPattern(fileName, settings.inArchiveFilePatterns)
+        && emptyOrNotMatchesAnyPattern(fileName, settings.outArchiveFilePatterns)
+    }
+
+    public func isMatchingArchiveFileNameForFilePath(_ filePath: String) -> Bool {
+        if !settings.inArchiveFilePatterns.isEmpty || !settings.outArchiveFilePatterns.isEmpty {
+            let fileName = URL(fileURLWithPath: filePath).lastPathComponent
+            return isMatchingArchiveFileName(fileName)
+        }
+        return true
+    }
+
+    public func isMatchingArchiveFilePath(_ filePath: String) -> Bool {
+        isMatchingArchiveExtensionForFilePath(filePath)
+        && isMatchingArchiveFileNameForFilePath(filePath)
     }
 
     public func isMatchingArchiveFileResult(_ fileResult: FileResult) -> Bool {
-        let fileName = URL(fileURLWithPath: fileResult.filePath).lastPathComponent
-        if !settings.includeHidden, FileUtil.isHiddenName(fileName) {
-            return false
-        }
-        if !settings.inArchiveExtensions.isEmpty || !settings.outArchiveExtensions.isEmpty {
-            let filteredByExtensions = filterByExtensions(FileUtil.getExtension(fileName),
-                                                          inExtensions: settings.inArchiveExtensions,
-                                                          outExtensions: settings.outArchiveExtensions)
-            if !filteredByExtensions {
-                return false
-            }
-        }
-        return filterByPatterns(fileName, inPatterns: settings.inArchiveFilePatterns,
-                                outPatterns: settings.outArchiveFilePatterns)
+        isMatchingArchiveFilePath(fileResult.filePath)
     }
 
-    public func filterToFileResult(_ filePath: String) -> FileResult? {
-        let (parent, fileName) = FileUtil.splitPath(filePath)
-        return filterToFileResult(parent, fileName)
+
+    public func isMatchingExtension(_ ext: String) -> Bool {
+        emptyOrMatchesAnyString(ext, settings.inExtensions)
+        && emptyOrNotMatchesAnyString(ext, settings.outExtensions)
     }
 
-    public func filterToFileResult(_ dirPath: String, _ fileName: String) -> FileResult? {
-        if !isMatchingDir(dirPath) {
+    public func isMatchingExtensionForFilePath(_ filePath: String) -> Bool {
+        if !settings.inExtensions.isEmpty || !settings.outExtensions.isEmpty {
+            let ext = FileUtil.getExtension(filePath)
+            return isMatchingExtension(ext)
+        }
+        return true
+    }
+
+    public func isMatchingFileName(_ fileName: String) -> Bool {
+        emptyOrMatchesAnyPattern(fileName, settings.inFilePatterns)
+        && emptyOrNotMatchesAnyPattern(fileName, settings.outFilePatterns)
+    }
+
+    public func isMatchingFileNameForFilePath(_ filePath: String) -> Bool {
+        if !settings.inFilePatterns.isEmpty || !settings.outFilePatterns.isEmpty {
+            let fileName = URL(fileURLWithPath: filePath).lastPathComponent
+            return isMatchingFileName(fileName)
+        }
+        return true
+    }
+
+    public func isMatchingFilePath(_ filePath: String) -> Bool {
+        isMatchingExtensionForFilePath(filePath)
+        && isMatchingFileNameForFilePath(filePath)
+    }
+
+    public func isMatchingFileType(_ fileType: FileType) -> Bool {
+        emptyOrMatchesAnyFileType(fileType, settings.inFileTypes)
+        && emptyOrNotMatchesAnyFileType(fileType, settings.outFileTypes)
+    }
+
+    public func isMatchingFileSize(_ fileSize: UInt64) -> Bool {
+        (settings.maxSize <= 0 || fileSize <= settings.maxSize) &&
+        (settings.minSize <= 0 || fileSize >= settings.minSize)
+    }
+
+    public func isMatchingLastMod(_ lastMod: Date?) -> Bool {
+        (settings.maxLastMod == nil || lastMod! <= settings.maxLastMod!) &&
+        (settings.minLastMod == nil || lastMod! >= settings.minLastMod!)
+    }
+
+    public func isMatchingFileResult(_ fileResult: FileResult) -> Bool {
+        isMatchingFilePath(fileResult.filePath)
+        && isMatchingFileType(fileResult.fileType)
+        && isMatchingFileSize(fileResult.fileSize)
+        && isMatchingLastMod(fileResult.lastMod)
+    }
+
+    public func filterArchiveFilePathToFileResult(_ filePath: String) -> FileResult? {
+        if !settings.includeArchives && !settings.archivesOnly {
             return nil
         }
-        if !settings.includeHidden, FileUtil.isHiddenName(fileName) {
+
+        if (!isMatchingArchiveFilePath(filePath)) {
             return nil
         }
-        let filePath = FileUtil.joinPath(dirPath, childPath: fileName)
-        let fileType = fileTypes.getFileType(fileName)
+
+        let fileSize: UInt64 = 0
+        let lastMod: Date? = nil
+
+        return FileResult(filePath: filePath, fileType: FileType.archive, fileSize: fileSize, lastMod: lastMod)
+    }
+
+    public func filterRegularFilePathToFileResult(_ filePath: String, _ fileType: FileType) -> FileResult? {
+        if settings.archivesOnly {
+            return nil
+        }
+
+        if !isMatchingFilePath(filePath) || !isMatchingFileType(fileType) {
+            return nil
+        }
+
         var fileSize: UInt64 = 0
         var lastMod: Date? = nil
         if self.settings.needSize() || self.settings.needLastMod() {
@@ -248,17 +284,25 @@ public class Finder {
                 print("Error: \(error)")
             }
         }
-        let fr = FileResult(filePath: filePath, fileType: fileType, fileSize: fileSize, lastMod: lastMod)
-        if fileType == FileType.archive {
-            if settings.includeArchives && isMatchingArchiveFileResult(fr) {
-                return fr
-            }
+
+        if !isMatchingFileSize(fileSize) || !isMatchingLastMod(lastMod) {
             return nil
         }
-        if !settings.archivesOnly && isMatchingFileResult(fr) {
-            return fr
+
+        return FileResult(filePath: filePath, fileType: fileType, fileSize: fileSize, lastMod: lastMod)
+    }
+
+    public func filterToFileResult(_ filePath: String) -> FileResult? {
+        let (parent, fileName) = FileUtil.splitPath(filePath)
+        if !isNullOrMatchingDirPath(parent) || !isMatchingFileNameByHidden(fileName) {
+            return nil
         }
-        return nil
+
+        let fileType = fileTypes.getFileType(fileName)
+        if fileType == FileType.archive {
+            return filterArchiveFilePathToFileResult(filePath)
+        }
+        return filterRegularFilePathToFileResult(filePath, fileType)
     }
 
     // gets all FileResults recursively
@@ -271,20 +315,20 @@ public class Finder {
             return fileResults
         }
 
-        let pathElems = try! FileManager.default.contentsOfDirectory(atPath: dirPath)
-        var pathDirs = [String]()
+        let dirElems = try! FileManager.default.contentsOfDirectory(atPath: dirPath)
+        var subDirs = [String]()
 
-        for pathElem in pathElems {
-            let path = FileUtil.joinPath(dirPath, childPath: pathElem)
+        for dirElem in dirElems {
+            let subPath = FileUtil.joinPath(dirPath, childPath: dirElem)
             var linkIsDir: Bool = false
             var linkIsFile: Bool = false
-            if FileUtil.isSymlink(path) {
+            if FileUtil.isSymlink(subPath) {
                 if settings.followSymlinks {
-                    // TODO: determine if dir or file
-                    if let resolvedPath = FileUtil.getSymlinkTarget(path) {
+                    // Determine if dir or file
+                    if let resolvedPath = FileUtil.getSymlinkTarget(subPath) {
                         if FileUtil.isDirectory(resolvedPath) {
                             linkIsDir = true
-                        } else if FileUtil.isReadableFile(path) {
+                        } else if FileUtil.isReadableFile(subPath) {
                             linkIsFile = true
                         }
                     }
@@ -292,54 +336,76 @@ public class Finder {
                     continue
                 }
             }
-            if FileUtil.isDirectory(path) || linkIsDir {
-                if recurse && filterDirByHidden(pathElem) && filterDirByOutPatterns(pathElem) {
-                    pathDirs.append(path)
+            if FileUtil.isDirectory(subPath) || linkIsDir {
+                if recurse && isTraversableDirPath(dirElem) {
+                    subDirs.append(subPath)
                 }
-            } else if (FileUtil.isReadableFile(path) || linkIsFile) && (minDepth < 0 || currentDepth >= minDepth) {
-                let fileResult = filterToFileResult(dirPath, pathElem)
+            } else if (FileUtil.isReadableFile(subPath) || linkIsFile) && (minDepth < 0 || currentDepth >= minDepth) {
+                let fileResult = filterToFileResult(subPath)
                 if fileResult != nil {
                     fileResults.append(fileResult!)
                 }
             }
         }
 
-        for pathDir in pathDirs {
-            let pathResults = recGetFileResults(pathDir, minDepth: minDepth, maxDepth: maxDepth, currentDepth: (currentDepth + 1))
-            fileResults.append(contentsOf: pathResults)
+        for subDir in subDirs {
+            let dirResults = recGetFileResults(subDir, minDepth: minDepth, maxDepth: maxDepth, currentDepth: (currentDepth + 1))
+            fileResults.append(contentsOf: dirResults)
         }
 
         return fileResults
     }
 
     // gets all FileResults recursively
-    private func getFileResults(_ filePath: String) throws -> [FileResult] {
-        var fp = filePath
-        if !FileUtil.exists(filePath) {
-            fp = FileUtil.expandPath(filePath)
+    private func getFileResults(_ path: String) throws -> [FileResult] {
+        var p = path
+        if !FileUtil.exists(path) {
+            p = FileUtil.expandPath(path)
+            if !FileUtil.exists(p) {
+                throw FindError(msg: STARTPATH_NOT_FOUND)
+            }
         }
         var fileResults = [FileResult]()
-        if FileUtil.isDirectory(fp) {
+        var linkIsDir: Bool = false
+        var linkIsFile: Bool = false
+        if FileUtil.isSymlink(p) {
+            if settings.followSymlinks {
+                // Determine if dir or file
+                if let resolvedPath = FileUtil.getSymlinkTarget(p) {
+                    if FileUtil.isDirectory(resolvedPath) {
+                        linkIsDir = true
+                    } else if FileUtil.isReadableFile(p) {
+                        linkIsFile = true
+                    }
+                }
+            } else {
+                throw FindError(msg: STARTPATH_NOT_MATCH_FIND_SETTINGS)
+            }
+        }
+        if FileUtil.isDirectory(p) || linkIsDir {
+            // if maxDepth is zero, we can skip since a directory cannot be a result
             if settings.maxDepth == 0 {
                 return fileResults
             }
-            if self.filterDirByHidden(fp) && self.filterDirByOutPatterns(fp) {
+            if self.isTraversableDirPath(p) {
                 let maxDepth = settings.recursive ? settings.maxDepth : 1
-                let pathResults = recGetFileResults(fp, minDepth: settings.minDepth, maxDepth: maxDepth, currentDepth: 1)
+                let pathResults = recGetFileResults(p, minDepth: settings.minDepth, maxDepth: maxDepth, currentDepth: 1)
                 fileResults.append(contentsOf: pathResults)
             } else {
                 throw FindError(msg: STARTPATH_NOT_MATCH_FIND_SETTINGS)
             }
-        } else {
+        } else if FileUtil.isReadableFile(p) || linkIsFile {
             // if minDepth > zero, we can skip since the file is at depth zero
             if settings.minDepth > 0 {
                 return fileResults
             }
-            if let fileResult = filterToFileResult(fp) {
+            if let fileResult = filterToFileResult(p) {
                 fileResults.append(fileResult)
             } else {
                 throw FindError(msg: STARTPATH_NOT_MATCH_FIND_SETTINGS)
             }
+        } else {
+            throw FindError(msg: STARTPATH_NOT_MATCH_FIND_SETTINGS)
         }
         return fileResults
     }
@@ -350,8 +416,11 @@ public class Finder {
             let pathResults: [FileResult] = try getFileResults(p)
             fileResults.append(contentsOf: pathResults)
         }
-        let fileResultSorter = FileResultSorter(settings: settings)
-        return fileResultSorter.sort(fileResults)
+        if fileResults.count > 1 {
+            let fileResultSorter = FileResultSorter(settings: settings)
+            return fileResultSorter.sort(fileResults)
+        }
+        return fileResults
     }
 
     func getMatchingDirs(_ fileResults: [FileResult]) -> [String] {

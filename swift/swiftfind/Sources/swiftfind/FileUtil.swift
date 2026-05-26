@@ -154,8 +154,12 @@ public enum FileUtil {
         name.count > 1 && name.hasPrefix(dot) && !isDotDir(name)
     }
 
+    public static func getPathComponents(_ filePath: String) -> [String] {
+        filePath.components(separatedBy: separator)
+    }
+
     public static func isHiddenPath(_ filePath: String) -> Bool {
-        filePath.components(separatedBy: separator).map { String($0) }.contains { isHiddenName($0) }
+        getPathComponents(filePath).map { String($0) }.contains { isHiddenName($0) }
     }
 
     public static func splitPath(_ filePath: String) -> (String, String) {
