@@ -8,7 +8,7 @@
 
 import * as assert from 'assert';
 import * as fs from 'fs';
-import {stat} from 'fs/promises';
+import {stat, lstat} from 'fs/promises';
 import * as path from 'path';
 
 import {FileResult} from './fileresult';
@@ -55,8 +55,7 @@ export class Finder {
                 }
                 stats = fs.statSync(p);
                 if (stats.isDirectory()) {
-                    assert.ok(this.filterDirByHidden(p) && this.filterDirByOutPatterns(p),
-                        startPathDoesNotMatchFindSettings);
+                    assert.ok(this.isTraversableDirPath(p), startPathDoesNotMatchFindSettings);
                 } else if (stats.isFile()) {
                     assert.ok(this.filterToFileResult(p, stats) !== null,
                         startPathDoesNotMatchFindSettings);
@@ -89,81 +88,141 @@ export class Finder {
         }
     }
 
-    private static matchesAnyString(s: string, elements: string[]): boolean {
-        return elements.indexOf(s) > -1;
-    }
-
     private static matchesAnyPattern(s: string, patterns: RegExp[]): boolean {
         return patterns.some((p: RegExp) => s.search(p) > -1);
+    }
+
+    private static matchesAnyString(s: string, elements: string[]): boolean {
+        return elements.indexOf(s) > -1;
     }
 
     private static matchesAnyFileType(ft: FileType, fileTypes: FileType[]): boolean {
         return fileTypes.indexOf(ft) > -1;
     }
 
-    public filterDirByHidden(dir: string): boolean {
-        if (!this._settings.includeHidden) {
-            return !FileUtil.isHiddenPath(dir);
-        }
-        return true;
+    private static emptyOrMatchesAnyPattern(s: string, patterns: RegExp[]): boolean {
+        return patterns.length === 0 || this.matchesAnyPattern(s, patterns);
     }
 
-    public filterDirByInPatterns(dir: string): boolean {
-        return this._settings.inDirPatterns.length === 0
-            || Finder.matchesAnyPattern(dir, this._settings.inDirPatterns);
+    private static emptyOrNotMatchesAnyPattern(s: string, patterns: RegExp[]): boolean {
+        return patterns.length === 0 || !this.matchesAnyPattern(s, patterns);
     }
 
-    public filterDirByOutPatterns(dir: string): boolean {
-        return this._settings.outDirPatterns.length === 0
-            || !Finder.matchesAnyPattern(dir, this._settings.outDirPatterns);
+    private static emptyOrMatchesAnyString(s: string, elements: string[]): boolean {
+        return elements.length === 0 || this.matchesAnyString(s, elements);
     }
 
-    public isMatchingDir(dir: string): boolean {
-        return this.filterDirByHidden(dir)
-            && this.filterDirByInPatterns(dir)
-            && this.filterDirByOutPatterns(dir);
+    private static emptyOrNotMatchesAnyString(s: string, elements: string[]): boolean {
+        return elements.length === 0 || !this.matchesAnyString(s, elements);
     }
 
-    public isMatchingExtension(ext: string, inExtensions: string[], outExtensions: string[]): boolean {
-        return ((inExtensions.length === 0 || Finder.matchesAnyString(ext, inExtensions))
-            && (outExtensions.length === 0 || !Finder.matchesAnyString(ext, outExtensions)));
+    private static emptyOrMatchesAnyFileType(ft: FileType, fileTypes: FileType[]): boolean {
+        return fileTypes.length === 0 || this.matchesAnyFileType(ft, fileTypes);
     }
 
-    public hasMatchingArchiveExtension(fr: FileResult): boolean {
+    private static emptyOrNotMatchesAnyFileType(ft: FileType, fileTypes: FileType[]): boolean {
+        return fileTypes.length === 0 || !this.matchesAnyFileType(ft, fileTypes);
+    }
+
+    public isMatchingDirPathByHidden(dirPath: string): boolean {
+        return this._settings.includeHidden || !FileUtil.isHiddenPath(dirPath);
+    }
+
+    public isMatchingDirPathByInPatterns(dirPath: string): boolean {
+        return Finder.emptyOrMatchesAnyPattern(dirPath, this._settings.inDirPatterns);
+    }
+
+    public isMatchingDirPathByOutPatterns(dirPath: string): boolean {
+        return Finder.emptyOrNotMatchesAnyPattern(dirPath, this._settings.outDirPatterns);
+    }
+
+    public isTraversableDirPath(dirPath: string): boolean {
+        return this.isMatchingDirPathByHidden(dirPath)
+            && this.isMatchingDirPathByOutPatterns(dirPath);
+    }
+
+    public isMatchingDirPath(dirPath: string): boolean {
+        return this.isMatchingDirPathByHidden(dirPath)
+            && this.isMatchingDirPathByInPatterns(dirPath)
+            && this.isMatchingDirPathByOutPatterns(dirPath);
+    }
+
+    public isNullOrMatchingDirPath(dirPath: string): boolean {
+        if (!dirPath) return true;
+        return this.isMatchingDirPath(dirPath);
+    }
+
+    public isMatchingFileNameByHidden(fileName: string): boolean {
+        return this._settings.includeHidden || !FileUtil.isHiddenName(fileName);
+    }
+
+    public isMatchingArchiveExtension(ext: string): boolean {
+        return (Finder.emptyOrMatchesAnyString(ext, this._settings.inArchiveExtensions)
+            && Finder.emptyOrNotMatchesAnyString(ext, this._settings.outArchiveExtensions));
+    }
+
+    public isMatchingArchiveExtensionForFilePath(filePath: string): boolean {
         if (this._settings.inArchiveExtensions.length || this._settings.outArchiveExtensions.length) {
-            const ext: string = FileUtil.getExtension(fr.fileName);
-            return this.isMatchingExtension(ext, this._settings.inArchiveExtensions, this._settings.outArchiveExtensions);
-        }
-        return true;
-    }
-
-    public hasMatchingExtension(fr: FileResult): boolean {
-        if (this._settings.inExtensions.length || this._settings.outExtensions.length) {
-            const ext: string = FileUtil.getExtension(fr.fileName);
-            return this.isMatchingExtension(ext, this._settings.inExtensions, this._settings.outExtensions);
+            const ext: string = FileUtil.getExtension(filePath);
+            return this.isMatchingArchiveExtension(ext);
         }
         return true;
     }
 
     public isMatchingArchiveFileName(fileName: string): boolean {
-        return ((this._settings.inArchiveFilePatterns.length === 0 ||
-                Finder.matchesAnyPattern(fileName, this._settings.inArchiveFilePatterns))
-            && (this._settings.outArchiveFilePatterns.length === 0 ||
-                !Finder.matchesAnyPattern(fileName, this._settings.outArchiveFilePatterns)));
+        return (Finder.emptyOrMatchesAnyPattern(fileName, this._settings.inArchiveFilePatterns)
+            && Finder.emptyOrNotMatchesAnyPattern(fileName, this._settings.outArchiveFilePatterns));
+    }
+
+    public isMatchingArchiveFileNameForFilePath(filePath: string): boolean {
+        if (this._settings.inArchiveFilePatterns.length || this._settings.outArchiveFilePatterns.length) {
+            return this.isMatchingArchiveFileName(path.basename(filePath));
+        }
+        return true;
+    }
+
+    public isMatchingArchiveFilePath(filePath: string): boolean {
+        return this.isMatchingArchiveExtensionForFilePath(filePath)
+            && this.isMatchingArchiveFileNameForFilePath(filePath);
+    }
+
+    public isMatchingArchiveFileResult(fr: FileResult): boolean {
+        return this.isMatchingArchiveFilePath(fr.filePath);
+    }
+
+    public isMatchingExtension(ext: string): boolean {
+        return (Finder.emptyOrMatchesAnyString(ext, this._settings.inExtensions)
+            && Finder.emptyOrNotMatchesAnyString(ext, this._settings.outExtensions));
+    }
+
+    public isMatchingExtensionForFilePath(filePath: string): boolean {
+        if (this._settings.inExtensions.length || this._settings.outExtensions.length) {
+            const ext: string = FileUtil.getExtension(filePath);
+            return this.isMatchingExtension(ext);
+        }
+        return true;
     }
 
     public isMatchingFileName(fileName: string): boolean {
-        return ((this._settings.inFilePatterns.length === 0 ||
-                Finder.matchesAnyPattern(fileName, this._settings.inFilePatterns))
-            && (this._settings.outFilePatterns.length === 0 ||
-                !Finder.matchesAnyPattern(fileName, this._settings.outFilePatterns)));
+        return (Finder.emptyOrMatchesAnyPattern(fileName, this._settings.inFilePatterns)
+            && Finder.emptyOrNotMatchesAnyPattern(fileName, this._settings.outFilePatterns));
+    }
+
+    public isMatchingFileNameForFilePath(filePath: string): boolean {
+        if (this._settings.inFilePatterns.length || this._settings.outFilePatterns.length) {
+            return this.isMatchingFileName(path.basename(filePath));
+        }
+        return true;
+    }
+
+    public isMatchingFilePath(filePath: string): boolean {
+        return (this.isMatchingExtensionForFilePath(filePath)
+            && this.isMatchingFileNameForFilePath(filePath));
     }
 
     public isMatchingFileType(fileType: FileType): boolean {
-        return ((this._settings.inFileTypes.length === 0 ||
-                Finder.matchesAnyFileType(fileType, this._settings.inFileTypes))
-            && (this._settings.outFileTypes.length === 0 ||
-                !Finder.matchesAnyFileType(fileType, this._settings.outFileTypes)));
+        return (Finder.emptyOrMatchesAnyFileType(fileType, this._settings.inFileTypes)
+            && Finder.emptyOrNotMatchesAnyFileType(fileType, this._settings.outFileTypes));
     }
 
     public isMatchingFileSize(fileSize: number): boolean {
@@ -176,32 +235,26 @@ export class Finder {
             (this._settings.minLastMod === 0 || lastMod >= this._settings.minLastMod));
     }
 
-    public isMatchingArchiveFileResult(fr: FileResult): boolean {
-        return this.hasMatchingArchiveExtension(fr)
-            && this.isMatchingArchiveFileName(fr.fileName);
-    }
-
     public isMatchingFileResult(fr: FileResult): boolean {
-        return this.hasMatchingExtension(fr)
-            && this.isMatchingFileName(fr.fileName)
+        return this.isMatchingFilePath(fr.filePath)
             && this.isMatchingFileType(fr.fileType)
             && this.isMatchingFileSize(fr.fileSize)
             && this.isMatchingLastMod(fr.lastMod);
     }
 
-    public filterToFileResult(filePath: string, stat: fs.Stats | null = null): FileResult | null {
-        const dirname = path.dirname(filePath) || '.';
-        if (!this.isMatchingDir(dirname)) {
+    public filterArchiveFilePathToFileResult(filePath: string): FileResult | null {
+        if (!this._settings.includeArchives && !this._settings.archivesOnly) {
             return null;
         }
-        const fileName = path.basename(filePath);
-        if (!this._settings.includeHidden && FileUtil.isHiddenName(fileName)) {
-            return null;
+        const fr = new FileResult(filePath, FileType.Archive, 0, 0);
+        if (this.isMatchingArchiveFileResult(fr)) {
+            return fr;
         }
-        const fileType = FileTypes.getFileType(fileName);
-        if (fileType === FileType.Archive
-            && !this._settings.includeArchives
-            && !this._settings.archivesOnly) {
+        return null;
+    }
+
+    public filterRegularFilePathToFileResult(filePath: string, fileType: FileType, stat: fs.Stats | null = null): FileResult | null {
+        if (this._settings.archivesOnly) {
             return null;
         }
         let fileSize = 0;
@@ -211,17 +264,24 @@ export class Finder {
             if (this._settings.needSize()) fileSize = stat.size;
             if (this._settings.needLastMod()) lastMod = stat.mtime.getTime();
         }
-        const fr = new FileResult(dirname, fileName, fileType, fileSize, lastMod);
-        if (fr.fileType === FileType.Archive) {
-            if (this.isMatchingArchiveFileResult(fr)) {
-                return fr;
-            }
-            return null;
-        }
-        if (!this._settings.archivesOnly && this.isMatchingFileResult(fr)) {
+        const fr = new FileResult(filePath, fileType, fileSize, lastMod);
+        if (this.isMatchingFileResult(fr)) {
             return fr;
         }
         return null;
+    }
+
+    public filterToFileResult(filePath: string, stat: fs.Stats | null = null): FileResult | null {
+        if (!this.isNullOrMatchingDirPath(path.dirname(filePath))
+            || !this.isMatchingFileNameByHidden(path.basename(filePath))) {
+            return null;
+        }
+
+        const fileType = FileTypes.getFileType(path.basename(filePath));
+        if (fileType === FileType.Archive) {
+            return this.filterArchiveFilePathToFileResult(filePath);
+        }
+        return this.filterRegularFilePathToFileResult(filePath, fileType, stat);
     }
 
     private async recGetFileResults(currentDir: string, minDepth: number, maxDepth: number, currentDepth: number): Promise<FileResult[]> {
@@ -237,15 +297,16 @@ export class Finder {
             .map(f =>  path.join(currentDir, f.toString()));
         for (const filePath of filePaths) {
             let stats = fs.lstatSync(filePath);
-            if (!stats.isSymbolicLink() || this._settings.followSymlinks) {
-                stats = fs.statSync(filePath);
-                if (stats.isDirectory() && recurse && this.filterDirByHidden(filePath) && this.filterDirByOutPatterns(filePath)) {
-                    findDirs.push(filePath);
-                } else if (stats.isFile() && (minDepth < 0 || currentDepth >= minDepth)) {
-                    const fr = this.filterToFileResult(filePath);
-                    if (fr !== null) {
-                        fileResults.push(fr);
-                    }
+            if (stats.isSymbolicLink() && !this._settings.followSymlinks) {
+                continue;
+            }
+            stats = fs.statSync(filePath);
+            if (stats.isDirectory() && recurse && this.isTraversableDirPath(filePath)) {
+                findDirs.push(filePath);
+            } else if (stats.isFile() && (minDepth < 0 || currentDepth >= minDepth)) {
+                const fr = this.filterToFileResult(filePath, stats);
+                if (fr !== null) {
+                    fileResults.push(fr);
                 }
             }
         }
@@ -262,13 +323,17 @@ export class Finder {
         } catch {
             filePath = FileUtil.expandPath(filePath);
         }
-        const stats = await stat(filePath);
+        let stats = await lstat(filePath);
+        if (stats.isSymbolicLink() && !this._settings.followSymlinks) {
+            throw new FindError(startPathDoesNotMatchFindSettings);
+        }
+        stats = await stat(filePath);
         if (stats.isDirectory()) {
             // if max_depth is zero, we can skip since a directory cannot be a result
             if (this._settings.maxDepth === 0) {
                 return [];
             }
-            if (this.filterDirByHidden(filePath) && this.filterDirByOutPatterns(filePath)) {
+            if (this.isTraversableDirPath(filePath)) {
                 let maxDepth = this._settings.maxDepth;
                 if (!this._settings.recursive) {
                     maxDepth = 1;
@@ -277,7 +342,7 @@ export class Finder {
             } else {
                 throw new FindError(startPathDoesNotMatchFindSettings);
             }
-        } else {
+        } else if (stats.isFile()) {
             // if min_depth > zero, we can skip since the file is at depth zero
             if (this._settings.minDepth > 0) {
                 return [];
@@ -288,6 +353,8 @@ export class Finder {
             } else {
                 throw new FindError(startPathDoesNotMatchFindSettings);
             }
+        } else {
+            throw new FindError(startPathDoesNotMatchFindSettings);
         }
     }
 
@@ -295,7 +362,8 @@ export class Finder {
         // get the file results
         let fileResults: FileResult[] = [];
 
-        const pathFileResultsArrays = await Promise.all(this._settings.paths.map(d => this.getFileResults(d)));
+        const pathFileResultsArrays =
+            await Promise.all(this._settings.paths.map(p => this.getFileResults(p)));
         pathFileResultsArrays.forEach(pathFileResults => {
             fileResults = fileResults.concat(pathFileResults);
         });
@@ -306,7 +374,7 @@ export class Finder {
     }
 
     getMatchingDirs(fileResults: FileResult[]): string[] {
-        const dirs: string[] = fileResults.map(f => f.path);
+        const dirs: string[] = fileResults.map(fr => path.dirname(fr.filePath));
         return common.setFromArray(dirs);
     }
 

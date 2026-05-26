@@ -8,28 +8,19 @@
 
 import {FileType} from './filetype';
 
-import * as path from 'path';
-
 export class FileResult {
     containerSeparator = '!';
     containers: string[] = [];
-    path: string;
-    fileName: string;
+    filePath: string;
     fileType: FileType;
     fileSize: number = 0;
     lastMod: number = 0;
 
-    constructor(path: string, fileName: string, fileType: FileType, fileSize: number, lastMod: number) {
-        this.path = path;
-        this.fileName = fileName;
+    constructor(filePath: string, fileType: FileType, fileSize: number, lastMod: number) {
+        this.filePath = filePath;
         this.fileType = fileType;
         this.fileSize = fileSize;
         this.lastMod = lastMod;
-    }
-
-    public relativePath(): string {
-        if (this.path === '.' || this.path === './') return './' + this.fileName;
-        return path.join(this.path, this.fileName);
     }
 
     public toString(): string {
@@ -37,7 +28,7 @@ export class FileResult {
         if (this.containers.length > 0) {
             s = this.containers.join(this.containerSeparator) + this.containerSeparator;
         }
-        s += path.join(this.path, this.fileName);
+        s += this.filePath;
         return s;
     }
 }
