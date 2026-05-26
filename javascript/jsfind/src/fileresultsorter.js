@@ -4,6 +4,7 @@
  * FileResultSorter class provides sorting of search results
  */
 const {SortBy} = require('./sortby');
+const path = require('path');
 
 
 class FileResultSorter {
@@ -15,12 +16,12 @@ class FileResultSorter {
 
   cmpFileResultsByPath(fr1, fr2) {
     const [path1, path2] = this.settings.sortCaseInsensitive ?
-      [fr1.path.toLowerCase(), fr2.path.toLowerCase()] :
-      [fr1.path, fr2.path];
+      [path.dirname(fr1.filePath).toLowerCase(), path.dirname(fr2.filePath).toLowerCase()] :
+      [path.dirname(fr1.filePath), path.dirname(fr2.filePath)];
     if (path1 === path2) {
       const [fileName1, fileName2] = this.settings.sortCaseInsensitive ?
-        [fr1.fileName.toLowerCase(), fr2.fileName.toLowerCase()] :
-        [fr1.fileName, fr2.fileName];
+        [path.basename(fr1.filePath).toLowerCase(), path.basename(fr2.filePath).toLowerCase()] :
+        [path.basename(fr1.filePath), path.basename(fr2.filePath)];
       if (fileName1 === fileName2) return 0;
       return fileName1 < fileName2 ? -1 : 1;
     }
@@ -29,12 +30,12 @@ class FileResultSorter {
 
   cmpFileResultsByName(fr1, fr2) {
     const [fileName1, fileName2] = this.settings.sortCaseInsensitive ?
-      [fr1.fileName.toLowerCase(), fr2.fileName.toLowerCase()] :
-      [fr1.fileName, fr2.fileName];
+      [path.basename(fr1.filePath).toLowerCase(), path.basename(fr2.filePath).toLowerCase()] :
+      [path.basename(fr1.filePath), path.basename(fr2.filePath)];
     if (fileName1 === fileName2) {
       const [path1, path2] = this.settings.sortCaseInsensitive ?
-        [fr1.path.toLowerCase(), fr2.path.toLowerCase()] :
-        [fr1.path, fr2.path];
+        [path.dirname(fr1.filePath).toLowerCase(), path.dirname(fr2.filePath).toLowerCase()] :
+        [path.dirname(fr1.filePath), path.dirname(fr2.filePath)];
       if (path1 === path2) return 0;
       return path1 < path2 ? -1 : 1;
     }

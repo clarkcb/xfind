@@ -5,28 +5,19 @@
  */
 const {FileType} = require('./filetype');
 
-const path = require('path');
-
 class FileResult {
     containerSeparator = '!';
     containers = [];
-    path = '';
-    fileName = '';
+    filePath = '';
     fileType = FileType.UNKNOWN;
     fileSize = 0;
     lastMod = 0;
 
-    constructor(path, fileName, fileType, fileSize, lastMod) {
-        this.path = path;
-        this.fileName = fileName;
+    constructor(filePath, fileType, fileSize, lastMod) {
+        this.filePath = filePath;
         this.fileType = fileType;
         this.fileSize = fileSize;
         this.lastMod = lastMod;
-    }
-
-    relativePath() {
-        if (this.path === '.' || this.path === './') return './' + this.fileName;
-        return path.join(this.path, this.fileName);
     }
 
     toString() {
@@ -34,7 +25,7 @@ class FileResult {
         if (this.containers.length > 0) {
             s = this.containers.join(this.containerSeparator) + this.containerSeparator;
         }
-        s += this.relativePath();
+        s += this.filePath;
 
         return s;
     }

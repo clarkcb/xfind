@@ -84,8 +84,8 @@ class FileResultFormatter {
   }
 
   formatFileResult(result) {
-    let parent = this.formatDirPath(result.path);
-    let fileName = this.formatFileName(result.fileName);
+    const parent = this.formatDirPath(path.dirname(result.filePath));
+    const fileName = this.formatFileName(path.basename(result.filePath));
     return path.join(parent, fileName);
   }
 }
