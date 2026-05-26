@@ -21,8 +21,8 @@ object FindMain {
       val fileResults = finder.find()
       val formatter = new FileResultFormatter(settings)
 
-      if (settings.printDirs) { finder.printMatchingDirs(fileResults, formatter) }
-      if (settings.printFiles) { finder.printMatchingFiles(fileResults, formatter) }
+      if (settings.printDirs) { Finder.printMatchingDirs(fileResults, formatter) }
+      if (settings.printFiles) { Finder.printMatchingFiles(fileResults, formatter) }
 
     } catch {
       case e: FindException =>

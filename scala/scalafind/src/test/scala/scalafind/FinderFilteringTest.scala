@@ -17,62 +17,62 @@ class FinderFilteringTest extends AnyFunSuite with BeforeAndAfterEach with Befor
   test("testIsMatchingDir_SingleDot_True") {
     val settings = getFindSettings
     val finder = new Finder(settings)
-    assert(finder.isMatchingDir(Paths.get(FileUtil.CURRENT_PATH)))
+    assert(finder.isMatchingDirPath(Paths.get(FileUtil.CURRENT_PATH)))
   }
 
   test("test testIsMatchingDir_SingleDot_True") {
     val settings = getFindSettings
     val finder = new Finder(settings)
-    assert(finder.isMatchingDir(Paths.get(FileUtil.CURRENT_PATH)))
+    assert(finder.isMatchingDirPath(Paths.get(FileUtil.CURRENT_PATH)))
   }
 
   test("testIsMatchingDir_DoubleDot_True") {
     val settings = getFindSettings
     val finder = new Finder(settings)
-    assert(finder.isMatchingDir(Paths.get("..")))
+    assert(finder.isMatchingDirPath(Paths.get("..")))
   }
 
   test("testIsMatchingDir_IsHidden_False") {
     val settings = getFindSettings
     val finder = new Finder(settings)
-    assert(!finder.isMatchingDir(Paths.get(".git")))
+    assert(!finder.isMatchingDirPath(Paths.get(".git")))
   }
 
   test("testIsMatchingDir_IsHiddenIncludeHidden_True") {
     val settings = getFindSettings.copy(includeHidden = true)
     val finder = new Finder(settings)
-    assert(finder.isMatchingDir(Paths.get(".git")))
+    assert(finder.isMatchingDirPath(Paths.get(".git")))
   }
 
   test("testIsMatchingDir_NoPatterns_True") {
     val settings = getFindSettings
     val finder = new Finder(settings)
-    assert(finder.isMatchingDir(Paths.get("/Users")))
+    assert(finder.isMatchingDirPath(Paths.get("/Users")))
   }
 
   test("testIsMatchingDir_MatchesInPattern_True") {
     val settings = getFindSettings.copy(inDirPatterns = Set("Find".r))
     val finder = new Finder(settings)
-    assert(finder.isMatchingDir(Paths.get("CsFind")))
+    assert(finder.isMatchingDirPath(Paths.get("CsFind")))
   }
 
   test("testIsMatchingDir_MatchesOutPattern_False") {
     val settings = getFindSettings.copy(outDirPatterns = Set("Find".r))
     val finder = new Finder(settings)
-    assert(!finder.isMatchingDir(Paths.get("CsFind")))
+    assert(!finder.isMatchingDirPath(Paths.get("CsFind")))
   }
 
   test("testIsMatchingDir_DoesNotMatchInPattern_False") {
     val settings = getFindSettings.copy(inDirPatterns = Set("FindFiles".r))
     val finder = new Finder(settings)
-    assert(!finder.isMatchingDir(Paths.get("CsFind")))
+    assert(!finder.isMatchingDirPath(Paths.get("CsFind")))
   }
 
   test("testIsMatchingDir_DoesNotMatchOutPattern_True") {
     val settings = getFindSettings.copy(outDirPatterns = Set("FindFiles".r))
     val finder = new Finder(settings)
     val dir = Paths.get("CsFind")
-    assert(finder.isMatchingDir(dir))
+    assert(finder.isMatchingDirPath(dir))
   }
 
   /** ***********************************************************
