@@ -308,7 +308,7 @@ type FinderTests () =
         let settings = this.GetSettings()
         let finder = Finder(settings)
         let file = FileInfo(Path.Join(this.GetFsFindPath(), ".gitignore"))
-        let fr = finder.FilterToFileResult file
+        let fr = finder.FilterFileInfoToFileResult file
         Assert.That(fr.IsNone)
         ()
 
@@ -318,7 +318,7 @@ type FinderTests () =
         settings.IncludeHidden <- true
         let finder = Finder(settings)
         let file = FileInfo(Path.Join(this.GetFsFindPath(), ".gitignore"))
-        let fr = finder.FilterToFileResult file
+        let fr = finder.FilterFileInfoToFileResult file
         Assert.That(fr.IsSome)
         ()
 
@@ -327,7 +327,7 @@ type FinderTests () =
         let settings = this.GetSettings()
         let finder = Finder(settings)
         let file = FileInfo("archive.zip")
-        let fr = finder.FilterToFileResult file
+        let fr = finder.FilterFileInfoToFileResult file
         Assert.That(fr.IsNone)
         ()
 
@@ -337,7 +337,7 @@ type FinderTests () =
         settings.IncludeArchives <- true
         let finder = Finder(settings)
         let file = FileInfo("archive.zip")
-        let fr = finder.FilterToFileResult file
+        let fr = finder.FilterFileInfoToFileResult file
         Assert.That(fr.IsSome)
         ()
 
@@ -348,7 +348,7 @@ type FinderTests () =
         settings.InArchiveExtensions <- settings.AddExtensions "zip" settings.InArchiveExtensions 
         let finder = Finder(settings)
         let file = FileInfo("archive.zip")
-        let fr = finder.FilterToFileResult file
+        let fr = finder.FilterFileInfoToFileResult file
         Assert.That(fr.IsSome)
         ()
 
@@ -359,7 +359,7 @@ type FinderTests () =
         settings.OutArchiveExtensions <- settings.AddExtensions "zip" settings.OutArchiveExtensions 
         let finder = Finder(settings)
         let file = FileInfo("archive.zip")
-        let fr = finder.FilterToFileResult file
+        let fr = finder.FilterFileInfoToFileResult file
         Assert.That(fr.IsNone)
         ()
 
@@ -369,7 +369,7 @@ type FinderTests () =
         settings.ArchivesOnly <- true
         let finder = Finder(settings)
         let file = FileInfo("archive.zip")
-        let fr = finder.FilterToFileResult file
+        let fr = finder.FilterFileInfoToFileResult file
         Assert.That(fr.IsSome)
         ()
 
@@ -378,7 +378,7 @@ type FinderTests () =
         let settings = this.GetSettings()
         let finder = Finder(settings)
         let file = FileInfo(Path.Join(this.GetFsFindPath(), "FsFindLib", "FileUtil.fs"))
-        let fr = finder.FilterToFileResult file
+        let fr = finder.FilterFileInfoToFileResult file
         Assert.That(fr.IsSome)
         ()
 
@@ -388,7 +388,7 @@ type FinderTests () =
         settings.InExtensions <- settings.AddExtensions "fs" settings.InExtensions 
         let finder = Finder(settings)
         let file = FileInfo(Path.Join(this.GetFsFindPath(), "FsFindLib", "FileUtil.fs"))
-        let fr = finder.FilterToFileResult file
+        let fr = finder.FilterFileInfoToFileResult file
         Assert.That(fr.IsSome)
         ()
 
@@ -398,7 +398,7 @@ type FinderTests () =
         settings.OutExtensions <- settings.AddExtensions "fs" settings.OutExtensions 
         let finder = Finder(settings)
         let file = FileInfo(Path.Join(this.GetFsFindPath(), "FsFindLib", "FileUtil.fs"))
-        let fr = finder.FilterToFileResult file
+        let fr = finder.FilterFileInfoToFileResult file
         Assert.That(fr.IsNone)
         ()
 
@@ -408,7 +408,7 @@ type FinderTests () =
         settings.ArchivesOnly <- true
         let finder = Finder(settings)
         let file = FileInfo(Path.Join(this.GetFsFindPath(), "FsFindLib", "FileUtil.fs"))
-        let fr = finder.FilterToFileResult file
+        let fr = finder.FilterFileInfoToFileResult file
         Assert.That(fr.IsNone)
         ()
 
