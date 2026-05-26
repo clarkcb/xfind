@@ -49,13 +49,16 @@ public class JavaFind {
                 var finder = new Finder(settings);
                 finder.validateSettings();
                 var fileResults = finder.find();
-                var formatter = new FileResultFormatter(settings);
 
-                if (settings.getPrintDirs()) {
-                    Finder.printMatchingDirs(fileResults, formatter);
-                }
-                if (settings.getPrintFiles()) {
-                    Finder.printMatchingFiles(fileResults, formatter);
+                if  (settings.getPrintDirs() || settings.getPrintFiles()) {
+                    var formatter = new FileResultFormatter(settings);
+
+                    if (settings.getPrintDirs()) {
+                        Finder.printMatchingDirs(fileResults, formatter);
+                    }
+                    if (settings.getPrintFiles()) {
+                        Finder.printMatchingFiles(fileResults, formatter);
+                    }
                 }
 
             } catch (FindException e) {

@@ -55,8 +55,8 @@ public final class FileUtil {
         return path;
     }
 
-    public static String getExtension(final Path path) {
-        return getExtension(path.getFileName().toString());
+    public static String getExtension(final Path filePath) {
+        return getExtension(filePath.getFileName().toString());
     }
 
     public static String getExtension(final String fileName) {

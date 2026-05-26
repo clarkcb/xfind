@@ -38,26 +38,37 @@ public class Finder {
 
     public final void validateSettings() throws FindException {
         var paths = settings.getPaths();
-        if (null == paths || paths.isEmpty() || paths.stream().anyMatch(p -> p == null || p.toString().isEmpty())) {
+        if (null == paths || paths.isEmpty()) {
             throw new FindException(STARTPATH_NOT_DEFINED.getMessage());
         }
         for (var path : paths) {
+            if (path == null || path.toString().isEmpty()) {
+                throw new FindException(STARTPATH_NOT_DEFINED.getMessage());
+            }
             if (!Files.exists(path)) {
                 path = FileUtil.expandPath(path);
-            }
-            if (Files.exists(path)) {
-                if (!Files.isReadable(path)) {
-                    throw new FindException(STARTPATH_NOT_READABLE.getMessage());
+                if (!Files.exists(path)) {
+                    throw new FindException(STARTPATH_NOT_FOUND.getMessage());
                 }
-                if (Files.isDirectory(path)
-                        && (!filterDirPathByHidden(path) || !filterDirPathByOutPatterns(path))) {
+            }
+            if (!Files.isReadable(path)) {
+                throw new FindException(STARTPATH_NOT_READABLE.getMessage());
+            }
+            if (Files.isSymbolicLink(path)) {
+                if (!settings.getFollowSymlinks()) {
                     throw new FindException(STARTPATH_DOES_NOT_MATCH_FIND_SETTINGS.getMessage());
                 }
-                if (Files.isRegularFile(path) && filterToFileResult(path).isEmpty()) {
+            } else if (Files.isDirectory(path)) {
+                if (!isTraversableDirPath(path)) {
+                    throw new FindException(STARTPATH_DOES_NOT_MATCH_FIND_SETTINGS.getMessage());
+                }
+            } else if (Files.isRegularFile(path)) {
+                if (filterToFileResult(path).isEmpty()) {
                     throw new FindException(STARTPATH_DOES_NOT_MATCH_FIND_SETTINGS.getMessage());
                 }
             } else {
-                throw new FindException(STARTPATH_NOT_FOUND.getMessage());
+                // TODO: start path is unknown/invalid type
+                throw new FindException(STARTPATH_DOES_NOT_MATCH_FIND_SETTINGS.getMessage());
             }
         }
         if (settings.getMaxDepth() > -1 && settings.getMaxDepth() < settings.getMinDepth()) {
@@ -73,181 +84,161 @@ public class Finder {
         }
     }
 
-    private boolean anyMatchesAnyPattern(final List<String> sList,
-                                         final Set<Pattern> patternSet) {
-        return sList.stream().anyMatch(s -> matchesAnyPattern(s, patternSet));
-    }
-
-    private static boolean matchesAnyPattern(final String s,
-                                             final Set<Pattern> patternSet) {
+    private static boolean matchesAnyPattern(final String s, final Set<Pattern> patternSet) {
         return null != s && patternSet.stream().anyMatch(p -> p.matcher(s).find());
     }
 
-    boolean filterDirPathByHidden(final Path path) {
-        // null or empty path is a match
-        if (null == path || path.toString().isEmpty()) {
-            return true;
-        }
-        if (!settings.getIncludeHidden()) {
-            return !FileUtil.isHiddenPath(path);
-        }
-        return true;
+    private boolean anyMatchesAnyPattern(final List<String> sList, final Set<Pattern> patternSet) {
+        return sList.stream().anyMatch(s -> matchesAnyPattern(s, patternSet));
     }
 
-    boolean filterDirPathByInPatterns(final Path path) {
-        // null or empty path is a match
-        if (null == path || path.toString().isEmpty()) {
-            return true;
-        }
-        List<String> pathElems = FileUtil.splitPath(path);
-        return (settings.getInDirPatterns().isEmpty()
-                ||
-                anyMatchesAnyPattern(pathElems, settings.getInDirPatterns()));
+    private boolean emptyOrMatchesAnyPattern(final String s, final Set<Pattern> patternSet) {
+        return patternSet.isEmpty() || matchesAnyPattern(s, patternSet);
     }
 
-    boolean filterDirPathByOutPatterns(final Path path) {
-        // null or empty path is a match
-        if (null == path || path.toString().isEmpty()) {
-            return true;
-        }
-        List<String> pathElems = FileUtil.splitPath(path);
-        return (settings.getOutDirPatterns().isEmpty()
-                ||
-                !anyMatchesAnyPattern(pathElems, settings.getOutDirPatterns()));
+    private boolean emptyOrNotMatchesAnyPattern(final String s, final Set<Pattern> patternSet) {
+        return patternSet.isEmpty() || !matchesAnyPattern(s, patternSet);
     }
 
-    boolean isMatchingDirPath(final Path path) {
-        // null or empty path is a match
-        if (null == path || path.toString().isEmpty()) {
-            return true;
-        }
-        return filterDirPathByHidden(path)
-                &&
-                filterDirPathByInPatterns(path)
-                &&
-                filterDirPathByOutPatterns(path);
+    private boolean emptyOrAnyMatchesAnyPattern(final List<String> sList, final Set<Pattern> patternSet) {
+        return patternSet.isEmpty() || anyMatchesAnyPattern(sList, patternSet);
     }
 
-    boolean filterExtensionByInArchiveExtensions(final String ext) {
-        // null or empty path is a match
-        if (null == ext || ext.isEmpty()) {
-            return true;
-        }
-        return (settings.getInArchiveExtensions().isEmpty()
-                || settings.getInArchiveExtensions().contains(ext));
+    private boolean emptyOrNotAnyMatchesAnyPattern(final List<String> sList, final Set<Pattern> patternSet) {
+        return patternSet.isEmpty() || !anyMatchesAnyPattern(sList, patternSet);
     }
 
-    boolean filterExtensionByOutArchiveExtensions(final String ext) {
-        // null or empty path is a match
-        if (null == ext || ext.isEmpty()) {
+    private boolean emptyOrMatchesAnyString(final String s, final Set<String> stringSet) {
+        return stringSet.isEmpty() || stringSet.contains(s);
+    }
+
+    private boolean emptyOrNotMatchesAnyString(final String s, final Set<String> stringSet) {
+        return stringSet.isEmpty() || !stringSet.contains(s);
+    }
+
+    private boolean emptyOrMatchesAnyFileType(final FileType fileType, final Set<FileType> fileTypeSet) {
+        return fileTypeSet.isEmpty() || fileTypeSet.contains(fileType);
+    }
+
+    private boolean emptyOrNotMatchesAnyFileType(final FileType fileType, final Set<FileType> fileTypeSet) {
+        return fileTypeSet.isEmpty() || !fileTypeSet.contains(fileType);
+    }
+
+    boolean isMatchingPathBySymlink(final Path path) {
+        return settings.getFollowSymlinks() || !Files.isSymbolicLink(path);
+    }
+
+    boolean isMatchingDirPathByHidden(final Path dirPath) {
+        return settings.getIncludeHidden() || !FileUtil.isHiddenPath(dirPath);
+    }
+
+    boolean isMatchingDirPathByInPatterns(final Path dirPath) {
+        return emptyOrAnyMatchesAnyPattern(FileUtil.splitPath(dirPath), settings.getInDirPatterns());
+    }
+
+    boolean isMatchingDirPathByOutPatterns(final Path dirPath) {
+        return emptyOrNotAnyMatchesAnyPattern(FileUtil.splitPath(dirPath), settings.getOutDirPatterns());
+    }
+
+    boolean isTraversableDirPath(final Path dirPath) {
+        return isMatchingPathBySymlink(dirPath)
+                && isMatchingDirPathByHidden(dirPath)
+                && isMatchingDirPathByOutPatterns(dirPath);
+    }
+
+    boolean isMatchingDirPath(final Path dirPath) {
+        return isMatchingPathBySymlink(dirPath)
+                && isMatchingDirPathByHidden(dirPath)
+                && isMatchingDirPathByInPatterns(dirPath)
+                && isMatchingDirPathByOutPatterns(dirPath);
+    }
+
+    boolean isNullOrMatchingDirPath(final Path dirPath) {
+        // null or empty dirPath is a match
+        if (null == dirPath || dirPath.toString().isEmpty()) {
             return true;
         }
-        return (settings.getOutArchiveExtensions().isEmpty()
-                || !settings.getOutArchiveExtensions().contains(ext));
+        return isMatchingDirPath(dirPath);
+    }
+
+    boolean isMatchingFileNameByHidden(final String fileName) {
+        return settings.getIncludeHidden() || !FileUtil.isHiddenName(fileName);
     }
 
     boolean isMatchingArchiveExtension(final String ext) {
-        return filterExtensionByInArchiveExtensions(ext)
-                &&
-                filterExtensionByOutArchiveExtensions(ext);
+        return emptyOrMatchesAnyString(ext, settings.getInArchiveExtensions())
+                && emptyOrNotMatchesAnyString(ext, settings.getOutArchiveExtensions());
     }
 
-    boolean hasMatchingArchiveExtension(final String fileName) {
+    boolean isMatchingArchiveExtensionForFilePath(final Path filePath) {
         if (!settings.getInArchiveExtensions().isEmpty() || !settings.getOutArchiveExtensions().isEmpty()) {
-            var ext = FileUtil.getExtension(fileName);
-            return isMatchingArchiveExtension(ext);
+            return isMatchingArchiveExtension(FileUtil.getExtension(filePath.getFileName().toString()));
         }
         return true;
-    }
-
-    boolean filterFileNameByInArchiveFilePatterns(final String fileName) {
-        return settings.getInArchiveFilePatterns().isEmpty()
-                || matchesAnyPattern(fileName, settings.getInArchiveFilePatterns());
-    }
-
-    boolean filterFileNameByOutArchiveFilePatterns(final String fileName) {
-        return settings.getOutArchiveFilePatterns().isEmpty()
-                || !matchesAnyPattern(fileName, settings.getOutArchiveFilePatterns());
     }
 
     boolean isMatchingArchiveFileName(final String fileName) {
-        return filterFileNameByInArchiveFilePatterns(fileName)
-                &&
-                filterFileNameByOutArchiveFilePatterns(fileName);
+        return emptyOrMatchesAnyPattern(fileName, settings.getInArchiveFilePatterns())
+                && emptyOrNotMatchesAnyPattern(fileName, settings.getOutArchiveFilePatterns());
     }
 
-    boolean isMatchingArchiveFilePath(final Path path) {
-        var fileName = path.getFileName().toString();
-        return hasMatchingArchiveExtension(fileName) && isMatchingArchiveFileName(fileName);
-    }
-
-    boolean filterFileNameByHidden(final String fileName) {
-        if (!settings.getIncludeHidden()) {
-            return !FileUtil.isHiddenName(fileName);
+    boolean isMatchingArchiveFileNameForFilePath(final Path filePath) {
+        if (!settings.getInArchiveFilePatterns().isEmpty() || !settings.getOutArchiveFilePatterns().isEmpty()) {
+            var fileName = filePath.getFileName().toString();
+            return isMatchingArchiveFileName(fileName);
         }
         return true;
     }
 
-    boolean filterExtensionByInExtensions(final String ext) {
-        // null or empty path is a match
-        if (null == ext || ext.isEmpty()) {
-            return true;
-        }
-        return (settings.getInExtensions().isEmpty()
-                || settings.getInExtensions().contains(ext));
+    boolean isMatchingArchiveFilePath(final Path filePath) {
+        return isMatchingArchiveExtensionForFilePath(filePath)
+                && isMatchingArchiveFileNameForFilePath(filePath);
     }
 
-    boolean filterExtensionByOutExtensions(final String ext) {
-        // null or empty path is a match
-        if (null == ext || ext.isEmpty()) {
-            return true;
-        }
-        return (settings.getOutExtensions().isEmpty()
-                || !settings.getOutExtensions().contains(ext));
+    // TODO: add tests
+    boolean isMatchingArchiveFileResult(final FileResult fr) {
+        return isMatchingArchiveFilePath(fr.path());
     }
 
     boolean isMatchingExtension(final String ext) {
-        return filterExtensionByInExtensions(ext)
-                &&
-                filterExtensionByOutExtensions(ext);
+        return emptyOrMatchesAnyString(ext, settings.getInExtensions())
+                && emptyOrNotMatchesAnyString(ext, settings.getOutExtensions());
     }
 
-    boolean hasMatchingExtension(final String fileName) {
+    boolean isMatchingExtensionForFilePath(final Path filePath) {
         if (!settings.getInExtensions().isEmpty() || !settings.getOutExtensions().isEmpty()) {
-            var ext = FileUtil.getExtension(fileName);
-            return isMatchingExtension(ext);
+            return isMatchingExtension(FileUtil.getExtension(filePath));
         }
         return true;
     }
 
-    boolean filterFileNameByInFilePatterns(final String fileName) {
-        return settings.getInFilePatterns().isEmpty()
-                || matchesAnyPattern(fileName, settings.getInFilePatterns());
-    }
-
-    boolean filterFileNameByOutFilePatterns(final String fileName) {
-        return settings.getOutFilePatterns().isEmpty()
-                || !matchesAnyPattern(fileName, settings.getOutFilePatterns());
-    }
-
     boolean isMatchingFileName(final String fileName) {
-        return filterFileNameByInFilePatterns(fileName)
-                &&
-                filterFileNameByOutFilePatterns(fileName);
+        return emptyOrMatchesAnyPattern(fileName, settings.getInFilePatterns())
+                && emptyOrNotMatchesAnyPattern(fileName, settings.getOutFilePatterns());
+    }
+
+    boolean isMatchingFileNameForFilePath(final Path filePath) {
+        if (!settings.getInFilePatterns().isEmpty() || !settings.getOutFilePatterns().isEmpty()) {
+            return isMatchingFileName(filePath.getFileName().toString());
+        }
+        return true;
+    }
+
+    boolean isMatchingFilePath(final Path filePath) {
+        return isNullOrMatchingDirPath(filePath.getParent())
+                && isMatchingFileNameByHidden(filePath.getFileName().toString())
+                && isMatchingExtensionForFilePath(filePath)
+                && isMatchingFileNameForFilePath(filePath);
     }
 
     boolean isMatchingFileType(final FileType fileType) {
-        return ((settings.getInFileTypes().isEmpty()
-                || settings.getInFileTypes().contains(fileType))
-                &&
-                (settings.getOutFileTypes().isEmpty()
-                        || !settings.getOutFileTypes().contains(fileType)));
+        return emptyOrMatchesAnyFileType(fileType, settings.getInFileTypes())
+                && emptyOrNotMatchesAnyFileType(fileType, settings.getOutFileTypes());
     }
 
     boolean isMatchingFileSize(final long fileSize) {
         return ((settings.getMaxSize() <= 0 || fileSize <= settings.getMaxSize())
-                &&
-                (settings.getMinSize() <= 0 || fileSize >= settings.getMinSize()));
+                && (settings.getMinSize() <= 0 || fileSize >= settings.getMinSize()));
     }
 
     boolean isMatchingLastMod(final Instant lastMod) {
@@ -265,43 +256,34 @@ public class Finder {
                 || lastMod.compareTo(settings.getMinLastMod().get().toInstant(ZoneOffset.UTC)) >= 0;
     }
 
-    boolean hasMatchingLastMod(final FileResult fr) {
-        var lastMod = fr.lastMod() == null ? null : fr.lastMod().toInstant();
-        return isMatchingLastMod(lastMod);
-    }
-
-    boolean isEligibleDiscoveredFile(final Path path) {
-        return isMatchingDirPath(path.getParent()) && filterFileNameByHidden(path.getFileName().toString());
-    }
-
-    boolean isMatchingFilePath(final Path path) {
-        var fileName = path.getFileName().toString();
-        return hasMatchingExtension(fileName) && isMatchingFileName(fileName);
+    boolean isMatchingLastMod(final FileTime lastMod) {
+        var lastModInstant = lastMod == null ? null : lastMod.toInstant();
+        return isMatchingLastMod(lastModInstant);
     }
 
     boolean isMatchingFileResult(final FileResult fr) {
         return isMatchingFilePath(fr.path())
                 && isMatchingFileType(fr.fileType())
                 && isMatchingFileSize(fr.fileSize())
-                && hasMatchingLastMod(fr);
+                && isMatchingLastMod(fr.lastMod());
     }
 
-    Optional<FileResult> filterArchiveToFileResult(final Path path, final FileType fileType) {
+    Optional<FileResult> filterArchiveFilePathToFileResult(final Path filePath, final FileType fileType) {
         if (!settings.getIncludeArchives() && !settings.getArchivesOnly()) {
             return Optional.empty();
         }
-        if (!isMatchingArchiveFilePath(path)) {
+        if (!isMatchingArchiveFilePath(filePath)) {
             return Optional.empty();
         }
-        return Optional.of(new FileResult(path, fileType, 0L, null));
+        return Optional.of(new FileResult(filePath, fileType, 0L, null));
     }
 
-    Optional<FileResult> filterRegularFileToFileResult(final Path path, final FileType fileType) {
+    Optional<FileResult> filterRegularFilePathToFileResult(final Path filePath, final FileType fileType) {
         if (settings.getArchivesOnly()) {
             return Optional.empty();
         }
 
-        if (!isMatchingFilePath(path) || !isMatchingFileType(fileType)) {
+        if (!isMatchingFilePath(filePath) || !isMatchingFileType(fileType)) {
             return Optional.empty();
         }
 
@@ -309,7 +291,7 @@ public class Finder {
         FileTime lastMod = null;
         if (settings.needLastMod() || settings.needSize()) {
             try {
-                BasicFileAttributes stat = Files.readAttributes(path, BasicFileAttributes.class);
+                BasicFileAttributes stat = Files.readAttributes(filePath, BasicFileAttributes.class);
                 if (settings.needSize()) {
                     fileSize = stat.size();
                 }
@@ -322,26 +304,28 @@ public class Finder {
             }
         }
 
-        FileResult fileResult = new FileResult(path, fileType, fileSize, lastMod);
-        if (isMatchingFileSize(fileResult.fileSize()) && hasMatchingLastMod(fileResult)) {
-            return Optional.of(fileResult);
-        }
-        return Optional.empty();
-    }
-
-    Optional<FileResult> filterToFileResult(final Path path) {
-        if (!isEligibleDiscoveredFile(path)) {
+        if (!isMatchingFileSize(fileSize) || !isMatchingLastMod(lastMod)) {
             return Optional.empty();
         }
 
-        FileType fileType = fileTypes.getFileType(path);
-        if (fileType == FileType.ARCHIVE) {
-            return filterArchiveToFileResult(path, fileType);
-        }
-        return filterRegularFileToFileResult(path, fileType);
+        return Optional.of(new FileResult(filePath, fileType, fileSize, lastMod));
     }
 
-    private List<FileResult> recFindPath(final Path filePath, int minDepth, int maxDepth, int currentDepth) {
+    Optional<FileResult> filterToFileResult(final Path filePath) {
+        if (!isNullOrMatchingDirPath(filePath.getParent())
+                || !isMatchingFileNameByHidden(filePath.getFileName().toString())) {
+            return Optional.empty();
+        }
+
+        FileType fileType = fileTypes.getFileType(filePath);
+        if (fileType == FileType.ARCHIVE) {
+            return filterArchiveFilePathToFileResult(filePath, fileType);
+        }
+
+        return filterRegularFilePathToFileResult(filePath, fileType);
+    }
+
+    private List<FileResult> recFindPath(final Path path, int minDepth, int maxDepth, int currentDepth) {
         var pathResults = new ArrayList<FileResult>();
         var recurse = true;
         if (currentDepth == maxDepth) {
@@ -350,55 +334,65 @@ public class Finder {
             return pathResults;
         }
         List<Path> pathDirs = new ArrayList<>();
-        try (DirectoryStream<Path> pathContents = Files.newDirectoryStream(filePath)) {
-            for (var path : pathContents) {
-                if (Files.isSymbolicLink(path) && !settings.getFollowSymlinks()) {
+        try (DirectoryStream<Path> subPathStream = Files.newDirectoryStream(path)) {
+            for (var subPath : subPathStream) {
+                if (!isMatchingPathBySymlink(subPath)) {
                     continue;
                 }
-                if (Files.isDirectory(path) && recurse && filterDirPathByHidden(path) && filterDirPathByOutPatterns(path)) {
-                    pathDirs.add(path);
-                } else if (Files.isRegularFile(path) && (minDepth < 0 || currentDepth >= minDepth)) {
-                    filterToFileResult(path).ifPresent(pathResults::add);
+                if (Files.isDirectory(subPath) && recurse && isTraversableDirPath(subPath)) {
+                    pathDirs.add(subPath);
+                } else if (Files.isRegularFile(subPath) && (minDepth < 0 || currentDepth >= minDepth)) {
+                    filterToFileResult(subPath).ifPresent(pathResults::add);
                 }
-            }
-            for (var pathDir : pathDirs) {
-                pathResults.addAll(recFindPath(pathDir, minDepth, maxDepth, currentDepth + 1));
             }
         } catch (IOException e) {
             Logger.logError(e.getMessage());
         }
+
+        for (var pathDir : pathDirs) {
+            pathResults.addAll(recFindPath(pathDir, minDepth, maxDepth, currentDepth + 1));
+        }
+
         return pathResults;
     }
 
-    private List<FileResult> findPath(Path filePath) throws FindException {
-        if (!Files.exists(filePath)) {
-            filePath = FileUtil.expandPath(filePath);
+    private List<FileResult> findPath(Path path) throws FindException {
+        if (!Files.exists(path)) {
+            path = FileUtil.expandPath(path);
+            if (!Files.exists(path)) {
+                throw new FindException(STARTPATH_NOT_FOUND.getMessage());
+            }
         }
-        if (Files.isDirectory(filePath)) {
+        if (Files.isSymbolicLink(path) && !settings.getFollowSymlinks()) {
+            throw new FindException(STARTPATH_DOES_NOT_MATCH_FIND_SETTINGS.getMessage());
+        }
+        if (Files.isDirectory(path)) {
             // if max_depth is zero, we can skip since a directory cannot be a result
             if (settings.getMaxDepth() == 0) {
                 return Collections.emptyList();
             }
-            if (filterDirPathByHidden(filePath) && filterDirPathByOutPatterns(filePath)) {
+            if (isTraversableDirPath(path)) {
                 int maxDepth = settings.getMaxDepth();
                 if (!settings.getRecursive()) {
                     maxDepth = 1;
                 }
-                return recFindPath(filePath, settings.getMinDepth(), maxDepth, 1);
+                return recFindPath(path, settings.getMinDepth(), maxDepth, 1);
             } else {
                 throw new FindException(STARTPATH_DOES_NOT_MATCH_FIND_SETTINGS.getMessage());
             }
-        } else {
+        } else if (Files.isRegularFile(path)) {
             // if min_depth > zero, we can skip since the file is at depth zero
             if (settings.getMinDepth() > 0) {
                 return Collections.emptyList();
             }
-            var optFileResult = filterToFileResult(filePath);
+            var optFileResult = filterToFileResult(path);
             if (optFileResult.isPresent()) {
                 return List.of(optFileResult.get());
             } else {
                 throw new FindException(STARTPATH_DOES_NOT_MATCH_FIND_SETTINGS.getMessage());
             }
+        } else {
+            throw new FindException(STARTPATH_DOES_NOT_MATCH_FIND_SETTINGS.getMessage());
         }
     }
 
@@ -413,10 +407,9 @@ public class Finder {
                 }))
                 .toList();
 
-        var allOfFuture = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
 
         try {
-            allOfFuture.join(); // Wait for all futures to complete
             return futures.stream()
                     .map(CompletableFuture::join)
                     .flatMap(List::stream)
@@ -435,16 +428,16 @@ public class Finder {
             fileResults = findAsync();
         }
         if (fileResults.size() > 1) {
-            if (!(fileResults instanceof ArrayList<FileResult>)) {
-                fileResults = new ArrayList<>(fileResults);
-            }
             var fileResultSorter = new FileResultSorter(settings);
-            fileResultSorter.sort(fileResults);
+            fileResultSorter.sort(new ArrayList<>(fileResults));
         }
         return fileResults;
     }
 
     public static List<Path> getMatchingDirs(final List<FileResult> results) {
+        if (null == results || results.isEmpty()) {
+            return Collections.emptyList();
+        }
         return results.stream()
                 .map(fr -> fr.path().getParent()).distinct()
                 .sorted().collect(Collectors.toList());
@@ -463,7 +456,7 @@ public class Finder {
     }
 
     public static void printMatchingFiles(final List<FileResult> results, final FileResultFormatter formatter) {
-        if (!results.isEmpty()) {
+        if (null != results && !results.isEmpty()) {
             log(String.format("\nMatching files (%d):", results.size()));
             for (var f : results) {
                 log(formatter.formatFileResult(f));
