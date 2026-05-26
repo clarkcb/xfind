@@ -103,8 +103,8 @@ class FileResultFormatter
 
     public function format_file_result(FileResult $result): string
     {
-        $formatted_dir = $this->format_dir($result->path);
-        $formatted_file_name = $this->format_file_name($result->file_name);
+        $formatted_dir = $this->format_dir(dirname($result->file_path));
+        $formatted_file_name = $this->format_file_name(basename($result->file_path));
         return FileUtil::join_paths($formatted_dir, $formatted_file_name);
     }
 }

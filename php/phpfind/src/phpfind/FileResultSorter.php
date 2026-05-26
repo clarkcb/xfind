@@ -21,12 +21,12 @@ class FileResultSorter
     public function cmp_file_result_path(FileResult $fr1, FileResult $fr2): int
     {
         [$path1, $path2] = $this->settings->sort_case_insensitive ?
-            array(strtolower($fr1->path), strtolower($fr2->path)) :
-            array($fr1->path, $fr2->path);
+            array(strtolower($fr1->path()), strtolower($fr2->path())) :
+            array($fr1->path(), $fr2->path());
         if ($path1 == $path2) {
             [$file_name1, $file_name2] = $this->settings->sort_case_insensitive ?
-                array(strtolower($fr1->file_name), strtolower($fr2->file_name)) :
-                array($fr1->file_name, $fr2->file_name);
+                array(strtolower($fr1->file_name()), strtolower($fr2->file_name())) :
+                array($fr1->file_name(), $fr2->file_name());
             if ($file_name1 == $file_name2) return 0;
             return ($file_name1 < $file_name2) ? -1 : 1;
         }
@@ -41,12 +41,12 @@ class FileResultSorter
     public function cmp_file_result_file_name(FileResult $fr1, FileResult $fr2): int
     {
         [$file_name1, $file_name2] = $this->settings->sort_case_insensitive ?
-            array(strtolower($fr1->file_name), strtolower($fr2->file_name)) :
-            array($fr1->file_name, $fr2->file_name);
+            array(strtolower($fr1->file_name()), strtolower($fr2->file_name())) :
+            array($fr1->file_name(), $fr2->file_name());
         if ($file_name1 == $file_name2) {
             [$path1, $path2] = $this->settings->sort_case_insensitive ?
-                array(strtolower($fr1->path), strtolower($fr2->path)) :
-                array($fr1->path, $fr2->path);
+                array(strtolower($fr1->path()), strtolower($fr2->path())) :
+                array($fr1->path(), $fr2->path());
             if ($path1 == $path2) return 0;
             return ($path1 < $path2) ? -1 : 1;
         }

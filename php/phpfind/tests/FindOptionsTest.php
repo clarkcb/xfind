@@ -60,35 +60,51 @@ class FindOptionsTest extends TestCase
 
     public function test_settings_from_args_no_args(): void
     {
-        $settings = $this->find_options->settings_from_args([]);
-        $this->assertTrue(self::settings_equals_defaults($settings, true));
+        try {
+            $settings = $this->find_options->settings_from_args([]);
+            $this->assertTrue(self::settings_equals_defaults($settings, true));
+        } catch (Exception $e) {
+            $this->fail($e->getMessage());
+        }
     }
 
     public function test_settings_from_args_valid_args(): void
     {
         $args = ['-x', 'php,py', '.'];
-        $settings = $this->find_options->settings_from_args($args);
-        $this->assertCount(2, $settings->in_extensions);
-        $this->assertTrue(in_array('php', $settings->in_extensions));
-        $this->assertTrue(in_array('py', $settings->in_extensions));
-        $this->assertCount(1, $settings->paths);
-        $this->assertEquals('.', $settings->paths[0]);
+        try {
+            $settings = $this->find_options->settings_from_args($args);
+            $this->assertCount(2, $settings->in_extensions);
+            $this->assertTrue(in_array('php', $settings->in_extensions));
+            $this->assertTrue(in_array('py', $settings->in_extensions));
+            $this->assertCount(1, $settings->paths);
+            $this->assertEquals('.', $settings->paths[0]);
+        } catch (Exception $e) {
+            $this->fail($e->getMessage());
+        }
     }
 
     public function test_archives_only_arg(): void
     {
         $args = ['--archivesonly'];
-        $settings = $this->find_options->settings_from_args($args);
-        $this->assertTrue($settings->archives_only);
-        $this->assertTrue($settings->include_archives);
+        try {
+            $settings = $this->find_options->settings_from_args($args);
+            $this->assertTrue($settings->archives_only);
+            $this->assertTrue($settings->include_archives);
+        } catch (Exception $e) {
+            $this->fail($e->getMessage());
+        }
     }
 
     public function test_debug_arg(): void
     {
         $args = ['--debug'];
-        $settings = $this->find_options->settings_from_args($args);
-        $this->assertTrue($settings->debug);
-        $this->assertTrue($settings->verbose);
+        try {
+            $settings = $this->find_options->settings_from_args($args);
+            $this->assertTrue($settings->debug);
+            $this->assertTrue($settings->verbose);
+        } catch (Exception $e) {
+            $this->fail($e->getMessage());
+        }
     }
 
     public function test_missing_arg(): void
@@ -119,28 +135,36 @@ class FindOptionsTest extends TestCase
   "includehidden": true
 }
 END_JSON;
-        $this->find_options->update_settings_from_json($settings, $json);
-        $this->assertCount(1, $settings->paths);
-        $this->assertEquals('~/src/xfind/', $settings->paths[0]);
-        $this->assertCount(2, $settings->in_extensions);
-        $this->assertTrue(in_array('js', $settings->in_extensions));
-        $this->assertTrue(in_array('ts', $settings->in_extensions));
-        $this->assertCount(1, $settings->out_dir_patterns);
-        $this->assertEquals('node_module', $settings->out_dir_patterns[0]);
-        $this->assertCount(1, $settings->out_file_patterns);
-        $this->assertEquals('temp', $settings->out_file_patterns[0]);
-        $this->assertTrue($settings->debug);
-        $this->assertTrue($settings->follow_symlinks);
-        $this->assertTrue($settings->verbose);
-        $this->assertTrue($settings->include_hidden);
+        try {
+            $this->find_options->update_settings_from_json($settings, $json);
+            $this->assertCount(1, $settings->paths);
+            $this->assertEquals('~/src/xfind/', $settings->paths[0]);
+            $this->assertCount(2, $settings->in_extensions);
+            $this->assertTrue(in_array('js', $settings->in_extensions));
+            $this->assertTrue(in_array('ts', $settings->in_extensions));
+            $this->assertCount(1, $settings->out_dir_patterns);
+            $this->assertEquals('node_module', $settings->out_dir_patterns[0]);
+            $this->assertCount(1, $settings->out_file_patterns);
+            $this->assertEquals('temp', $settings->out_file_patterns[0]);
+            $this->assertTrue($settings->debug);
+            $this->assertTrue($settings->follow_symlinks);
+            $this->assertTrue($settings->verbose);
+            $this->assertTrue($settings->include_hidden);
+        } catch (Exception $e) {
+            $this->fail($e->getMessage());
+        }
     }
 
     public function test_settings_from_empty_json(): void
     {
         $settings = new FindSettings();
         $json = '';
-        $this->find_options->update_settings_from_json($settings, $json);
-        $this->assertTrue(self::settings_equals_defaults($settings));
+        try {
+            $this->find_options->update_settings_from_json($settings, $json);
+            $this->assertTrue(self::settings_equals_defaults($settings));
+        } catch (Exception $e) {
+            $this->fail($e->getMessage());
+        }
     }
 
     public function test_settings_from_invalid_json(): void
