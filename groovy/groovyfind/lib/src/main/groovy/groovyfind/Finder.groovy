@@ -9,9 +9,11 @@ import java.nio.file.attribute.BasicFileAttributes
 import java.nio.file.attribute.FileTime
 import java.time.Instant
 import java.time.ZoneOffset
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.CompletionException
 import java.util.regex.Pattern
 
-import static groovyfind.FindError.*;
+import static groovyfind.FindError.*
 
 @CompileStatic
 class Finder {
@@ -27,189 +29,294 @@ class Finder {
     final void validateSettings() throws FindException {
         Set<Path> paths = settings.paths
         if (null == paths || paths.empty || paths.any { p -> p == null || p.empty }) {
-            throw new FindException(STARTPATH_NOT_DEFINED.getMessage())
+            throw new FindException(STARTPATH_NOT_DEFINED.message)
         }
         paths.each { path ->
+            if (path == null || path.toString().isEmpty()) {
+                throw new FindException(STARTPATH_NOT_DEFINED.message)
+            }
             Path p = path
             if (!Files.exists(p)) {
                 p = FileUtil.expandPath(p)
+                if (!Files.exists(p)) {
+                    throw new FindException(STARTPATH_NOT_FOUND.message)
+                }
             }
-            if (Files.exists(p)) {
-                if (!Files.isReadable(p)) {
-                    throw new FindException(STARTPATH_NOT_READABLE.getMessage())
+            if (!Files.isReadable(p)) {
+                throw new FindException(STARTPATH_NOT_READABLE.message)
+            }
+            if (Files.isSymbolicLink(path)) {
+                if (!settings.followSymlinks) {
+                    throw new FindException(STARTPATH_DOES_NOT_MATCH_FIND_SETTINGS.message)
+                }
+            } else if (Files.isDirectory(path)) {
+                if (!isTraversableDirPath(path)) {
+                    throw new FindException(STARTPATH_DOES_NOT_MATCH_FIND_SETTINGS.message)
+                }
+            } else if (Files.isRegularFile(path)) {
+                if (filterToFileResult(path).isEmpty()) {
+                    throw new FindException(STARTPATH_DOES_NOT_MATCH_FIND_SETTINGS.message)
                 }
             } else {
-                throw new FindException(STARTPATH_NOT_FOUND.getMessage())
+                // TODO: start path is unknown/invalid type
+                throw new FindException(STARTPATH_DOES_NOT_MATCH_FIND_SETTINGS.message)
             }
         }
         if (settings.maxDepth > -1 && settings.maxDepth < settings.minDepth) {
-            throw new FindException(INVALID_RANGE_FOR_MINDEPTH_AND_MAXDEPTH.getMessage())
+            throw new FindException(INVALID_RANGE_FOR_MINDEPTH_AND_MAXDEPTH.message)
         }
         if (settings.maxLastMod != null && settings.minLastMod != null
                 && settings.maxLastMod.toInstant(ZoneOffset.UTC) < settings.minLastMod.toInstant(ZoneOffset.UTC)) {
-            throw new FindException(INVALID_RANGE_FOR_MINLASTMOD_AND_MAXLASTMOD.getMessage())
+            throw new FindException(INVALID_RANGE_FOR_MINLASTMOD_AND_MAXLASTMOD.message)
         }
         if (settings.maxSize > 0 && settings.minSize > 0 && settings.maxSize < settings.minSize) {
-            throw new FindException(INVALID_RANGE_FOR_MINSIZE_AND_MAXSIZE.getMessage())
+            throw new FindException(INVALID_RANGE_FOR_MINSIZE_AND_MAXSIZE.message)
         }
     }
 
-    private static boolean anyMatchesAnyPattern(final List<String> sList,
-                                                final Set<Pattern> patternSet) {
+    private static boolean matchesAnyPattern(final String s, final Set<Pattern> patternSet) {
+        patternSet.stream().anyMatch(p -> p.matcher(s).find())
+    }
+
+    private static boolean anyMatchesAnyPattern(final List<String> sList, final Set<Pattern> patternSet) {
         sList.any { s -> matchesAnyPattern(s, patternSet) }
     }
 
-    private static boolean matchesAnyPattern(final String s,
-                                             final Set<Pattern> patternSet) {
-        null != s && patternSet.stream().anyMatch(p -> p.matcher(s).find())
+    private static boolean emptyOrMatchesAnyPattern(final String s, final Set<Pattern> patternSet) {
+        patternSet.empty || matchesAnyPattern(s, patternSet)
     }
 
-    boolean filterDirByHidden(final Path path) {
-        if (!settings.includeHidden) {
-            return !FileUtil.isHiddenPath(path)
+    private static boolean emptyOrNotMatchesAnyPattern(final String s, final Set<Pattern> patternSet) {
+        patternSet.empty || !matchesAnyPattern(s, patternSet)
+    }
+
+    private static boolean emptyOrAnyMatchesAnyPattern(final List<String> sList, final Set<Pattern> patternSet) {
+        patternSet.empty || anyMatchesAnyPattern(sList, patternSet)
+    }
+
+    private static boolean emptyOrNotAnyMatchesAnyPattern(final List<String> sList, final Set<Pattern> patternSet) {
+        patternSet.empty || !anyMatchesAnyPattern(sList, patternSet)
+    }
+
+    private static boolean emptyOrMatchesAnyString(final String s, final Set<String> stringSet) {
+        stringSet.empty || stringSet.contains(s)
+    }
+
+    private static boolean emptyOrNotMatchesAnyString(final String s, final Set<String> stringSet) {
+        stringSet.empty || !stringSet.contains(s)
+    }
+
+    private static boolean emptyOrMatchesAnyFileType(final FileType fileType, final Set<FileType> fileTypeSet) {
+        fileTypeSet.empty || fileTypeSet.contains(fileType)
+    }
+
+    private static boolean emptyOrNotMatchesAnyFileType(final FileType fileType, final Set<FileType> fileTypeSet) {
+        fileTypeSet.empty || !fileTypeSet.contains(fileType)
+    }
+
+    boolean isMatchingPathBySymlink(final Path path) {
+        settings.followSymlinks || !Files.isSymbolicLink(path)
+    }
+
+    boolean isMatchingDirPathByHidden(final Path dirPath) {
+        settings.includeHidden || !FileUtil.isHiddenPath(dirPath)
+    }
+
+    boolean isMatchingDirPathByInPatterns(final Path dirPath) {
+        List<String> pathElems = FileUtil.splitPath(dirPath)
+        emptyOrAnyMatchesAnyPattern(pathElems, settings.inDirPatterns)
+    }
+
+    boolean isMatchingDirPathByOutPatterns(final Path dirPath) {
+        List<String> pathElems = FileUtil.splitPath(dirPath)
+        emptyOrNotAnyMatchesAnyPattern(pathElems, settings.outDirPatterns)
+    }
+
+    boolean isTraversableDirPath(final Path dirPath) {
+        isMatchingDirPathByHidden(dirPath)
+                && isMatchingDirPathByOutPatterns(dirPath)
+    }
+
+    boolean isMatchingDirPath(final Path dirPath) {
+        isMatchingDirPathByHidden(dirPath)
+                && isMatchingDirPathByInPatterns(dirPath)
+                && isMatchingDirPathByOutPatterns(dirPath)
+    }
+
+    boolean isNullOrMatchingDirPath(final Path dirPath) {
+        // null or empty dirPath is a match
+        if (null == dirPath || dirPath.toString().isEmpty()) {
+            return true
+        }
+        isMatchingDirPath(dirPath)
+    }
+
+    boolean isMatchingFileNameByHidden(final String fileName) {
+        settings.includeHidden || !FileUtil.isHiddenName(fileName)
+    }
+
+    boolean isMatchingArchiveExtension(final String ext) {
+        emptyOrMatchesAnyString(ext, settings.inArchiveExtensions)
+                && emptyOrNotMatchesAnyString(ext, settings.outArchiveExtensions)
+    }
+
+    boolean isMatchingArchiveExtensionForFilePath(final Path filePath) {
+        if (!settings.inArchiveExtensions.empty || !settings.outArchiveExtensions.empty) {
+            return isMatchingArchiveExtension(FileUtil.getExtension(filePath.fileName.toString()))
         }
         true
     }
 
-    boolean filterDirByInPatterns(final Path path) {
-        List<String> pathElems = FileUtil.splitPath(path)
-        (settings.inDirPatterns.empty
-                ||
-                anyMatchesAnyPattern(pathElems, settings.inDirPatterns))
+    boolean isMatchingArchiveFileName(final String fileName) {
+        return emptyOrMatchesAnyPattern(fileName, settings.inArchiveFilePatterns)
+                && emptyOrNotMatchesAnyPattern(fileName, settings.outArchiveFilePatterns)
     }
 
-    boolean filterDirByOutPatterns(final Path path) {
-        List<String> pathElems = FileUtil.splitPath(path)
-        (settings.outDirPatterns.empty
-                ||
-                !anyMatchesAnyPattern(pathElems, settings.outDirPatterns))
-    }
-
-    boolean isMatchingDir(final Path path) {
-        // null or empty path is a match
-        if (null == path || path.toString().isEmpty()) {
-            return true
+    boolean isMatchingArchiveFileNameForFilePath(final Path filePath) {
+        if (!settings.inArchiveFilePatterns.empty || !settings.outArchiveFilePatterns.empty) {
+            var fileName = filePath.getFileName().toString()
+            return isMatchingArchiveFileName(fileName)
         }
-        filterDirByHidden(path) && filterDirByInPatterns(path) && filterDirByOutPatterns(path)
+        true
+    }
+
+    boolean isMatchingArchiveFilePath(final Path filePath) {
+        isNullOrMatchingDirPath(filePath.parent)
+                && isMatchingFileNameByHidden(filePath.fileName.toString())
+                && isMatchingArchiveExtensionForFilePath(filePath)
+                && isMatchingArchiveFileNameForFilePath(filePath)
+    }
+
+    // TODO: add tests
+    boolean isMatchingArchiveFileResult(final FileResult fr) {
+        return isMatchingArchiveFilePath(fr.path)
     }
 
     boolean isMatchingExtension(final String ext) {
-        ((settings.inExtensions.empty
-                || ext in settings.inExtensions)
-                &&
-                (settings.outExtensions.isEmpty()
-                        || !settings.outExtensions.contains(ext)))
+        emptyOrMatchesAnyString(ext, settings.inExtensions)
+                && emptyOrNotMatchesAnyString(ext, settings.outExtensions)
     }
 
-    boolean hasMatchingExtension(final FileResult fr) {
+    boolean isMatchingExtensionForFilePath(final Path filePath) {
         if (!settings.inExtensions.empty || !settings.outExtensions.empty) {
-            String fileName = fr.getPath().getFileName().toString()
-            String ext = FileUtil.getExtension(fileName)
-            return isMatchingExtension(ext)
+            return isMatchingExtension(FileUtil.getExtension(filePath))
         }
         true
     }
 
     boolean isMatchingFileName(final String fileName) {
-        ((settings.inFilePatterns.empty
-                || matchesAnyPattern(fileName, settings.inFilePatterns))
-                &&
-                (settings.outFilePatterns.empty
-                        || !matchesAnyPattern(fileName, settings.outFilePatterns)))
+        emptyOrMatchesAnyPattern(fileName, settings.inFilePatterns)
+                && emptyOrNotMatchesAnyPattern(fileName, settings.outFilePatterns)
+    }
+
+    boolean isMatchingFileNameForFilePath(final Path filePath) {
+        if (!settings.inFilePatterns.empty || !settings.outFilePatterns.empty) {
+            return isMatchingFileName(filePath.fileName.toString())
+        }
+        true
+    }
+
+    boolean isMatchingFilePath(final Path filePath) {
+        isNullOrMatchingDirPath(filePath.parent)
+                && isMatchingFileNameByHidden(filePath.fileName.toString())
+                && isMatchingExtensionForFilePath(filePath)
+                && isMatchingFileNameForFilePath(filePath)
     }
 
     boolean isMatchingFileType(final FileType fileType) {
-        ((settings.inFileTypes.empty
-                || fileType in settings.inFileTypes)
-                &&
-                (settings.outFileTypes.empty
-                        || !settings.outFileTypes.contains(fileType)))
+        emptyOrMatchesAnyFileType(fileType, settings.inFileTypes)
+                && emptyOrNotMatchesAnyFileType(fileType, settings.outFileTypes)
     }
 
     boolean isMatchingFileSize(final long fileSize) {
         ((settings.maxSize <= 0 || fileSize <= settings.maxSize)
-                &&
-                (settings.minSize <= 0 || fileSize >= settings.minSize))
+                && (settings.minSize <= 0 || fileSize >= settings.minSize))
     }
 
     boolean isMatchingLastMod(final Instant lastMod) {
-        ((settings.maxLastMod == null
-                || lastMod <= settings.maxLastMod.toInstant(ZoneOffset.UTC)
-                &&
-                (settings.minLastMod == null
-                        || lastMod >= settings.minLastMod.toInstant(ZoneOffset.UTC))))
+        if (settings.maxLastMod == null && settings.minLastMod == null) {
+            return true
+        }
+        if (lastMod == null) {
+            return false
+        }
+        if (settings.maxLastMod != null
+                && lastMod > settings.maxLastMod.toInstant(ZoneOffset.UTC)) {
+            return false
+        }
+        settings.minLastMod != null
+                || lastMod >= settings.minLastMod.toInstant(ZoneOffset.UTC)
+    }
+
+    boolean isMatchingLastMod(final FileTime lastMod) {
+        var lastModInstant = lastMod == null ? null : lastMod.toInstant()
+        isMatchingLastMod(lastModInstant)
     }
 
     boolean isMatchingFileResult(final FileResult fr) {
-        hasMatchingExtension(fr)
-                && isMatchingFileName(fr.path.fileName.toString())
+        isMatchingFilePath(fr.path)
                 && isMatchingFileType(fr.fileType)
                 && isMatchingFileSize(fr.fileSize)
-                && isMatchingLastMod(fr.lastMod == null ? null : fr.lastMod.toInstant())
+                && isMatchingLastMod(fr.lastMod)
     }
 
-    boolean isMatchingArchiveFile(final Path path) {
-        String fileName = path.fileName.toString()
-        if (!settings.inArchiveExtensions.empty || !settings.outArchiveExtensions.empty) {
-            String ext = FileUtil.getExtension(fileName)
-            if ((!settings.inArchiveExtensions.empty && !settings.inArchiveExtensions.contains(ext))
-                    ||
-                    (!settings.outArchiveExtensions.empty
-                            &&
-                            settings.outArchiveExtensions.contains(ext))) {
-                return false
-            }
+    Optional<FileResult> filterArchiveFilePathToFileResult(final Path filePath, final FileType fileType) {
+        if (!settings.includeArchives && !settings.archivesOnly) {
+            return Optional.empty()
         }
-        (settings.inArchiveFilePatterns.empty
-                ||
-                matchesAnyPattern(fileName, settings.inArchiveFilePatterns))
-                &&
-                (settings.outArchiveFilePatterns.empty
-                        ||
-                        !matchesAnyPattern(fileName, settings.outArchiveFilePatterns))
+        if (!isMatchingArchiveFilePath(filePath)) {
+            return Optional.empty()
+        }
+        Optional.of(new FileResult(filePath, fileType, 0L, null))
     }
 
-    Optional<FileResult> filterToFileResult(final Path path) {
-        if (!isMatchingDir(path.parent)) {
+    Optional<FileResult> filterRegularFilePathToFileResult(final Path filePath, final FileType fileType) {
+        if (settings.archivesOnly) {
             return Optional.empty()
         }
 
-        if (!settings.includeHidden && FileUtil.isHiddenName(path.fileName.toString())) {
-            return Optional.empty()
-        }
-
-        FileType fileType = fileTypes.getFileType(path)
-        if (fileType == FileType.ARCHIVE && !settings.includeArchives && !settings.archivesOnly) {
+        if (!isMatchingFilePath(filePath) || !isMatchingFileType(fileType)) {
             return Optional.empty()
         }
 
         long fileSize = 0L
         FileTime lastMod = null
-        if (settings.needSize() || settings.needLastMod()) {
+        if (settings.needLastMod() || settings.needSize()) {
             try {
-                BasicFileAttributes stat = Files.readAttributes(path, BasicFileAttributes.class)
-                fileSize = stat.size()
-                lastMod = stat.lastModifiedTime()
+                BasicFileAttributes stat = Files.readAttributes(filePath, BasicFileAttributes.class)
+                if (settings.needSize()) {
+                    fileSize = stat.size()
+                }
+                if (settings.needLastMod()) {
+                    lastMod = stat.lastModifiedTime()
+                }
             } catch (IOException e) {
                 Logger.logError(e.message)
                 return Optional.empty()
             }
         }
 
-        FileResult fileResult = new FileResult(path, fileType, fileSize, lastMod)
-        if (fileResult.fileType == FileType.ARCHIVE) {
-            if (isMatchingArchiveFile(path)) {
-                return Optional.of(fileResult)
-            }
+        if (!isMatchingFileSize(fileSize) | !isMatchingLastMod(lastMod)) {
             return Optional.empty()
         }
-        if (!settings.archivesOnly && isMatchingFileResult(fileResult)) {
-            return Optional.of(fileResult)
-        }
-        Optional.empty()
+
+        Optional.of(new FileResult(filePath, fileType, fileSize, lastMod))
     }
 
-    private List<FileResult> recFindPath(final Path filePath, int minDepth, int maxDepth, int currentDepth) {
+    Optional<FileResult> filterToFileResult(final Path filePath) {
+        if (!isNullOrMatchingDirPath(filePath.parent)
+                || !isMatchingFileNameByHidden(filePath.fileName.toString())) {
+            return Optional.empty()
+        }
+
+        FileType fileType = fileTypes.getFileType(filePath)
+        if (fileType == FileType.ARCHIVE) {
+            return filterArchiveFilePathToFileResult(filePath, fileType)
+        }
+        filterRegularFilePathToFileResult(filePath, fileType)
+    }
+
+    private List<FileResult> recFindPath(final Path path, int minDepth, int maxDepth, int currentDepth) {
         List<FileResult> pathResults = new ArrayList<FileResult>()
         boolean recurse = true
         if (currentDepth == maxDepth) {
@@ -218,84 +325,97 @@ class Finder {
             return pathResults
         }
         List<Path> pathDirs = new ArrayList<Path>()
-        try (DirectoryStream<Path> pathContents = Files.newDirectoryStream(filePath)) {
-            for (Path path : pathContents) {
-                if (Files.isSymbolicLink(path) && !settings.followSymlinks) {
+        try (DirectoryStream<Path> subPathStream = Files.newDirectoryStream(path)) {
+            for (Path subPath : subPathStream) {
+                if (!isMatchingPathBySymlink(subPath)) {
                     continue
                 }
-                if (Files.isDirectory(path) && recurse && filterDirByHidden(path) && filterDirByOutPatterns(path)) {
-                    pathDirs.add(path)
-                } else if (Files.isRegularFile(path) && (minDepth < 0 || currentDepth >= minDepth)) {
-                    filterToFileResult(path).ifPresent(pathResults::add)
+                if (Files.isDirectory(subPath) && recurse && isTraversableDirPath(subPath)) {
+                    pathDirs.add(subPath)
+                } else if (Files.isRegularFile(subPath) && (minDepth < 0 || currentDepth >= minDepth)) {
+                    filterToFileResult(subPath).ifPresent(pathResults::add)
                 }
-            }
-            for (Path pathDir : pathDirs) {
-                pathResults.addAll(recFindPath(pathDir, minDepth, maxDepth, currentDepth + 1))
             }
         } catch (IOException e) {
             e.printStackTrace()
         }
+        for (Path pathDir : pathDirs) {
+            pathResults.addAll(recFindPath(pathDir, minDepth, maxDepth, currentDepth + 1))
+        }
         pathResults
     }
 
-    private List<FileResult> findPath(Path filePath) throws FindException {
-        if (!Files.exists(filePath)) {
-            filePath = FileUtil.expandPath(filePath)
+    private List<FileResult> findPath(Path path) throws FindException {
+        if (!Files.exists(path)) {
+            path = FileUtil.expandPath(path)
+            if (!Files.exists(path)) {
+                throw new FindException(STARTPATH_NOT_FOUND.message)
+            }
         }
-        if (Files.isDirectory(filePath)) {
+        if (Files.isSymbolicLink(path) && !settings.followSymlinks) {
+            throw new FindException(STARTPATH_DOES_NOT_MATCH_FIND_SETTINGS.message)
+        }
+        if (Files.isDirectory(path)) {
             // if max_depth is zero, we can skip since a directory cannot be a result
             if (settings.maxDepth == 0) {
                 return Collections.emptyList()
             }
-            if (filterDirByHidden(filePath) && filterDirByOutPatterns(filePath)) {
+            if (isTraversableDirPath(path)) {
                 int maxDepth = settings.maxDepth
-                if (!settings.getRecursive()) {
+                if (!settings.recursive) {
                     maxDepth = 1
                 }
-                return recFindPath(filePath, settings.minDepth, maxDepth, 1)
+                return recFindPath(path, settings.minDepth, maxDepth, 1)
             } else {
-                throw new FindException(STARTPATH_DOES_NOT_MATCH_FIND_SETTINGS.getMessage())
+                throw new FindException(STARTPATH_DOES_NOT_MATCH_FIND_SETTINGS.message)
             }
-        } else {
+        } else if (Files.isRegularFile(path)) {
             // if min_depth > zero, we can skip since the file is at depth zero
             if (settings.minDepth > 0) {
                 return Collections.emptyList()
             }
-            Optional<FileResult> optFileResult = filterToFileResult(filePath)
+            Optional<FileResult> optFileResult = filterToFileResult(path)
             if (optFileResult.isPresent()) {
                 return List.of(optFileResult.get())
             } else {
-                throw new FindException(STARTPATH_DOES_NOT_MATCH_FIND_SETTINGS.getMessage())
+                throw new FindException(STARTPATH_DOES_NOT_MATCH_FIND_SETTINGS.message)
             }
+        } else {
+            throw new FindException(STARTPATH_DOES_NOT_MATCH_FIND_SETTINGS.message)
+        }
+    }
+
+    private List<FileResult> findAsync() throws FindException {
+        var futures = settings.paths.stream()
+                .map(path -> CompletableFuture.supplyAsync({
+                    try {
+                        return findPath(path)
+                    } catch (FindException e) {
+                        throw new CompletionException(e)
+                    }
+                }))
+                .toList()
+
+        CompletableFuture.allOf(futures as CompletableFuture[]).join()
+
+        try {
+            return futures.stream()
+                    .map(CompletableFuture::join)
+                    .flatMap(List::stream)
+                    .toList() as List<FileResult>
+        } catch (CompletionException e) {
+            throw new FindException(e.cause.message)
         }
     }
 
     final List<FileResult> find() throws FindException {
-        List<FileResult> fileResults = []
+        List<FileResult> fileResults
 
-        // The Futures way - not working, "ERROR: null"
-//        ExecutorService executorService
-//        if (settings.getPaths().size() == 1) {
-//            executorService = Executors.newSingleThreadExecutor()
-//        } else {
-//            executorService = Executors.newFixedThreadPool(settings.getPaths().size())
-//        }
-//        List<Future<List<FileResult>>> futures = new ArrayList<>()
-
-        settings.paths.each { path ->
-            fileResults.addAll(findPath(path))
-//            futures.add(executorService.submit{findPath(path)} as Future<List<FileResult>>)
+        if (settings.paths.size() == 1) {
+            fileResults = findPath(settings.paths.iterator().next())
+        } else {
+            fileResults = findAsync()
         }
-
-//        futures.each { future ->
-//            try {
-//                fileResults.addAll(future.get())
-//            } catch (Exception e) {
-//                Logger.logError(e.message)
-//            }
-//        }
-//
-//        executorService.shutdown()
 
         if (fileResults.size() > 1) {
             FileResultSorter fileResultSorter = new FileResultSorter(settings)
