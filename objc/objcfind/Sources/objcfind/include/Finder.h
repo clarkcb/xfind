@@ -27,13 +27,32 @@
 - (void) printMatchingFiles:(NSArray<FileResult*>*)fileResults formatter:(FileResultFormatter*)formatter;
 
 // private methods
+- (BOOL) isMatchingDirPathByHidden:(NSString*)dirPath;
+- (BOOL) isMatchingDirPathByInPatterns:(NSString*)dirPath;
+- (BOOL) isMatchingDirPathByOutPatterns:(NSString*)dirPath;
+- (BOOL) isTraversableDirPath:(NSString*)dirPath;
+- (BOOL) isMatchingDirPath:(NSString*)dirPath;
+- (BOOL) isNullOrMatchingDirPath:(NSString*)dirPath;
+- (BOOL) isMatchingFileNameByHidden:(NSString*)fileName;
+
+- (BOOL) isMatchingArchiveExtension:(NSString*)ext;
+- (BOOL) isMatchingArchiveExtensionForFilePath:(NSString*)filePath;
+- (BOOL) isMatchingArchiveFileName:(NSString*)fileName;
+- (BOOL) isMatchingArchiveFileNameForFilePath:(NSString*)fileName;
+- (BOOL) isMatchingArchiveFilePath:(NSString*)filePath;
+- (BOOL) isMatchingArchiveFileResult:(FileResult*)fileResult;
+
+- (BOOL) isMatchingExtension:(NSString*)ext;
+- (BOOL) isMatchingExtensionForFilePath:(NSString*)filePath;
+- (BOOL) isMatchingFileName:(NSString*)fileName;
+- (BOOL) isMatchingFileNameForFilePath:(NSString*)fileName;
+- (BOOL) isMatchingFilePath:(NSString*)filePath;
+- (BOOL) isMatchingFileResult:(FileResult*)fileResult;
+
+- (FileResult*) filterArchiveFilePathToFileResult:(NSString*)filePath error:(NSError**)error;
+- (FileResult*) filterRegularFilePathToFileResult:(NSString*)filePath fileType:(FileType)fileType error:(NSError**)error;
 - (FileResult*) filterToFileResult:(NSString*)filePath error:(NSError**)error;
-- (BOOL) isMatchingArchiveFile:(NSString*)filePath;
-- (BOOL) filterDirByHidden:(NSString*)dirPath;
-- (BOOL) filterDirByInPatterns:(NSString*)dirPath;
-- (BOOL) filterDirByOutPatterns:(NSString*)dirPath;
-- (BOOL) isMatchingDir:(NSString*)dirPath;
-- (BOOL) isMatchingFile:(NSString*)filePath;
+
 - (NSArray<NSString*>*) getMatchingDirs:(NSArray<FileResult*>*)fileResults;
 
 @end

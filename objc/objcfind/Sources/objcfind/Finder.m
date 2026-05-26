@@ -35,10 +35,10 @@
         NSString *p = path;
         if (![FileUtil exists:p]) {
             p = [FileUtil expandPath:p];
-        }
-        if (![FileUtil exists:p]) {
-            setError(error, [NSString stringWithUTF8String:STARTPATH_NOT_FOUND]);
-            return false;
+            if (![FileUtil exists:p]) {
+                setError(error, [NSString stringWithUTF8String:STARTPATH_NOT_FOUND]);
+                return false;
+            }
         }
         if (![FileUtil isReadableFile:p]) {
             setError(error, [NSString stringWithUTF8String:STARTPATH_NOT_READABLE]);
@@ -55,7 +55,7 @@
         }
         if ([FileUtil isDirectory:resolvedPath]) {
             // still check p and not resolvedPath because p is the name entered
-            if (![self filterDirByHidden:p] || ![self filterDirByOutPatterns:p]) {
+            if (![self isTraversableDirPath:p]) {
                 setError(error, [NSString stringWithUTF8String:STARTPATH_NOT_MATCH_FIND_SETTINGS]);
                 return false;
             }
@@ -102,112 +102,202 @@
     return false;
 }
 
-- (BOOL) filterByExtensions:(NSString*)ext inExtensions:(NSArray<NSString*>*)inExtensions outExtensions:(NSArray<NSString*>*)outExtensions {
-    return (([inExtensions count] == 0 || [inExtensions containsObject:ext]) &&
-            ([outExtensions count] == 0 || ![outExtensions containsObject:ext]));
+- (BOOL) emptyOrMatchesAnyPattern:(NSString*)s patterns:(NSArray<Regex*>*)patterns {
+    return [patterns count] == 0 || [self matchesAnyPattern:s patterns:patterns];
 }
 
-- (BOOL) filterByPatterns:(NSString*)s inPatterns:(NSArray<Regex*>*)inPatterns outPatterns:(NSArray<Regex*>*)outPatterns {
-    return (([inPatterns count] == 0 || [self matchesAnyPattern:s patterns:inPatterns]) &&
-            ([outPatterns count] == 0 || ![self matchesAnyPattern:s patterns:outPatterns]));
+- (BOOL) emptyOrNotMatchesAnyPattern:(NSString*)s patterns:(NSArray<Regex*>*)patterns {
+    return [patterns count] == 0 || ![self matchesAnyPattern:s patterns:patterns];
 }
 
-- (BOOL) filterByFileTypes:(FileType)fileType inFileTypes:(NSArray<NSNumber*>*)inFileTypes outFileTypes:(NSArray<NSNumber*>*)outFileTypes {
-    NSNumber *num = [NSNumber numberWithInt:fileType];
-    return (([inFileTypes count] == 0 || [inFileTypes containsObject:num]) &&
-            ([outFileTypes count] == 0 || ![outFileTypes containsObject:num]));
+- (BOOL) emptyOrAnyMatchesAnyPattern:(NSArray<NSString*>*)ss patterns:(NSArray<Regex*>*)patterns {
+    return [patterns count] == 0 || [self anyMatchesAnyPattern:ss patterns:patterns];
 }
 
-- (BOOL) filterByLastMod:(NSDate*)lastMod {
-    if ([self.settings maxLastMod] != nil || [self.settings minLastMod] != nil) {
-        return (([self.settings maxLastMod] == nil || [lastMod isLessThanOrEqualTo:[self.settings maxLastMod]]) &&
-            ([self.settings minLastMod] == nil || [lastMod isGreaterThanOrEqualTo:[self.settings minLastMod]]));
+- (BOOL) emptyOrNotAnyMatchesAnyPattern:(NSArray<NSString*>*)ss patterns:(NSArray<Regex*>*)patterns {
+    return [patterns count] == 0 || ![self anyMatchesAnyPattern:ss patterns:patterns];
+}
+
+- (BOOL) emptyOrMatchesAnyString:(NSString*)s strings:(NSArray<NSString*>*)strings {
+    return [strings count] == 0 || [strings containsObject:s];
+}
+
+- (BOOL) emptyOrNotMatchesAnyString:(NSString*)s strings:(NSArray<NSString*>*)strings {
+    return [strings count] == 0 || ![strings containsObject:s];
+}
+
+- (BOOL) emptyOrMatchesAnyFileType:(FileType)fileType fileTypes:(NSArray<NSNumber*>*)fileTypes {
+    if ([fileTypes count] > 0) {
+        NSNumber *num = [NSNumber numberWithInt:fileType];
+        return [fileTypes containsObject:num];
     }
     return true;
 }
 
-- (BOOL) filterByFileSize:(unsigned long long)fileSize {
-    if ([self.settings maxSize] > 0 || [self.settings minSize] > 0) {
-        NSNumber *numFileSize = [[NSNumber alloc] initWithUnsignedLongLong:fileSize];
-        return (([self.settings maxSize] == 0 || [numFileSize longValue] <= (long)[self.settings maxSize]) &&
-         ([self.settings minSize] == 0 || [numFileSize longValue] >= (long)[self.settings minSize]));
+- (BOOL) emptyOrNotMatchesAnyFileType:(FileType)fileType fileTypes:(NSArray<NSNumber*>*)fileTypes {
+    if ([fileTypes count] > 0) {
+        NSNumber *num = [NSNumber numberWithInt:fileType];
+        return ![fileTypes containsObject:num];
     }
     return true;
 }
 
-- (BOOL) filterDirByHidden:(NSString*)dirPath {
+- (BOOL) isMatchingDirPathByHidden:(NSString*)dirPath {
     return self.settings.includeHidden || ![FileUtil isHiddenPath:dirPath];
 }
 
-- (BOOL) filterDirByInPatterns:(NSString*)dirPath {
-    return ([self.settings.inDirPatterns count] == 0
-            || [self matchesAnyPattern:dirPath patterns:self.settings.inDirPatterns]);
+- (BOOL) isMatchingDirPathByInPatterns:(NSString*)dirPath {
+    return [self emptyOrMatchesAnyPattern:dirPath patterns:self.settings.inDirPatterns];
 }
 
-- (BOOL) filterDirByOutPatterns:(NSString*)dirPath {
-    return ([self.settings.outDirPatterns count] == 0
-            || ![self matchesAnyPattern:dirPath patterns:self.settings.outDirPatterns]);
+- (BOOL) isMatchingDirPathByOutPatterns:(NSString*)dirPath {
+    return [self emptyOrNotMatchesAnyPattern:dirPath patterns:self.settings.outDirPatterns];
 }
 
-- (BOOL) isMatchingDir:(NSString*)dirPath {
-    return [self filterDirByHidden:dirPath] && [self filterDirByInPatterns:dirPath] && [self filterDirByOutPatterns:dirPath];
+- (BOOL) isTraversableDirPath:(NSString*)dirPath {
+    return [self isMatchingDirPathByHidden:dirPath]
+        && [self isMatchingDirPathByOutPatterns:dirPath];
 }
 
-- (BOOL) isMatchingFile:(NSString*)filePath {
-    NSString *fileName = [filePath lastPathComponent];
-    return [self filterByExtensions:[FileUtil getExtension:fileName]
-                       inExtensions:self.settings.inExtensions
-                      outExtensions:self.settings.outExtensions] &&
-    [self filterByPatterns:fileName
-                inPatterns:self.settings.inFilePatterns
-               outPatterns:self.settings.outFilePatterns];
+- (BOOL) isMatchingDirPath:(NSString*)dirPath {
+    return [self isMatchingDirPathByHidden:dirPath]
+        && [self isMatchingDirPathByInPatterns:dirPath]
+        && [self isMatchingDirPathByOutPatterns:dirPath];
 }
 
-- (BOOL) isMatchingArchiveFile:(NSString*)filePath {
-    NSString *fileName = [filePath lastPathComponent];
-    BOOL filterByExtensions = true;
+- (BOOL) isNullOrMatchingDirPath:(NSString*)dirPath {
+    return dirPath == nil
+        || ([self isMatchingDirPathByHidden:dirPath]
+        && [self isMatchingDirPathByInPatterns:dirPath]
+        && [self isMatchingDirPathByOutPatterns:dirPath]);
+}
+
+- (BOOL) isMatchingFileNameByHidden:(NSString*)fileName {
+    return self.settings.includeHidden || ![FileUtil isHiddenName:fileName];
+}
+
+- (BOOL) isMatchingArchiveExtension:(NSString*)ext {
+    return [self emptyOrMatchesAnyString:ext strings:self.settings.inArchiveExtensions]
+        && [self emptyOrNotMatchesAnyString:ext strings:self.settings.outArchiveExtensions];
+}
+
+- (BOOL) isMatchingArchiveExtensionForFilePath:(NSString*)filePath {
     if ([self.settings.inArchiveExtensions count] > 0 || [self.settings.outArchiveExtensions count] > 0) {
-        filterByExtensions = [self filterByExtensions:[FileUtil getExtension:fileName]
-                                         inExtensions:self.settings.inArchiveExtensions
-                                        outExtensions:self.settings.outArchiveExtensions];
+        NSString *fileName = [filePath lastPathComponent];
+        NSString *ext = [FileUtil getExtension:fileName];
+        return [self isMatchingArchiveExtension:ext];
     }
-    return filterByExtensions &&
-    [self filterByPatterns:fileName
-                inPatterns:self.settings.inArchiveFilePatterns
-               outPatterns:self.settings.outArchiveFilePatterns];
+    return true;
+}
+
+- (BOOL) isMatchingArchiveFileName:(NSString*)fileName {
+    return [self emptyOrMatchesAnyPattern:fileName patterns:self.settings.inArchiveFilePatterns]
+        && [self emptyOrNotMatchesAnyPattern:fileName patterns:self.settings.outArchiveFilePatterns];
+}
+
+- (BOOL) isMatchingArchiveFileNameForFilePath:(NSString*)filePath {
+    if ([self.settings.inArchiveFilePatterns count] > 0 || [self.settings.outArchiveFilePatterns count] > 0) {
+        NSString *fileName = [filePath lastPathComponent];
+        return [self isMatchingArchiveFileName:fileName];
+    }
+    return true;
+}
+
+- (BOOL) isMatchingArchiveFilePath:(NSString*)filePath {
+    return [self isMatchingArchiveExtensionForFilePath:filePath]
+        && [self isMatchingArchiveFileNameForFilePath:filePath];
+}
+
+- (BOOL) isMatchingArchiveFileResult:(FileResult*)fileResult {
+    return [self isMatchingArchiveFilePath:[fileResult filePath]];
+}
+
+
+- (BOOL) isMatchingExtension:(NSString*)ext {
+    return [self emptyOrMatchesAnyString:ext strings:self.settings.inExtensions]
+        && [self emptyOrNotMatchesAnyString:ext strings:self.settings.outExtensions];
+}
+
+- (BOOL) isMatchingExtensionForFilePath:(NSString*)filePath {
+    if ([self.settings.inExtensions count] > 0 || [self.settings.outExtensions count] > 0) {
+        NSString *fileName = [filePath lastPathComponent];
+        NSString *ext = [FileUtil getExtension:fileName];
+        return [self isMatchingExtension:ext];
+    }
+    return true;
+}
+
+- (BOOL) isMatchingFileName:(NSString*)fileName {
+    return [self emptyOrMatchesAnyPattern:fileName patterns:self.settings.inFilePatterns]
+        && [self emptyOrNotMatchesAnyPattern:fileName patterns:self.settings.outFilePatterns];
+}
+
+- (BOOL) isMatchingFileNameForFilePath:(NSString*)filePath {
+    if ([self.settings.inFilePatterns count] > 0 || [self.settings.outFilePatterns count] > 0) {
+        NSString *fileName = [filePath lastPathComponent];
+        return [self isMatchingFileName:fileName];
+    }
+    return true;
+}
+
+- (BOOL) isMatchingFilePath:(NSString*)filePath {
+    return [self isMatchingExtensionForFilePath:filePath]
+        && [self isMatchingFileNameForFilePath:filePath];
+}
+
+- (BOOL) isMatchingFileType:(FileType)fileType {
+    return [self emptyOrMatchesAnyFileType:fileType fileTypes:[self.settings inFileTypes]]
+        && [self emptyOrNotMatchesAnyFileType:fileType fileTypes:[self.settings outFileTypes]];
+}
+
+- (BOOL) isMatchingFileSize:(unsigned long long)fileSize {
+    if ([self.settings maxSize] > 0 || [self.settings minSize] > 0) {
+        NSNumber *numFileSize = [[NSNumber alloc] initWithUnsignedLongLong:fileSize];
+        return ([self.settings maxSize] == 0 || [numFileSize longValue] <= (long)[self.settings maxSize])
+            && ([self.settings minSize] == 0 || [numFileSize longValue] >= (long)[self.settings minSize]);
+    }
+    return true;
+}
+
+- (BOOL) isMatchingLastMod:(NSDate*)lastMod {
+    if ([self.settings maxLastMod] != nil || [self.settings minLastMod] != nil) {
+        return lastMod != nil
+            && ([self.settings maxLastMod] == nil || [lastMod isLessThanOrEqualTo:[self.settings maxLastMod]])
+            && ([self.settings minLastMod] == nil || [lastMod isGreaterThanOrEqualTo:[self.settings minLastMod]]);
+    }
+    return true;
 }
 
 - (BOOL) isMatchingFileResult:(FileResult*)fileResult {
-    NSString *fileName = [[fileResult filePath] lastPathComponent];
-    BOOL filterByExtensions = true;
-    if ([self.settings.inExtensions count] > 0 || [self.settings.outExtensions count] > 0) {
-        filterByExtensions = [self filterByExtensions:[FileUtil getExtension:fileName]
-                                         inExtensions:self.settings.inExtensions
-                                        outExtensions:self.settings.outExtensions];
-    }
-    return filterByExtensions &&
-    [self filterByPatterns:fileName
-                inPatterns:self.settings.inFilePatterns
-               outPatterns:self.settings.outFilePatterns] &&
-    [self filterByFileTypes:[fileResult fileType]
-                inFileTypes:self.settings.inFileTypes
-               outFileTypes:self.settings.outFileTypes] &&
-    [self filterByFileSize:[fileResult fileSize]] &&
-    [self filterByLastMod:[fileResult lastMod]];
+    return [self isMatchingFilePath:[fileResult filePath]]
+        && [self isMatchingFileType:[fileResult fileType]]
+        && [self isMatchingFileSize:[fileResult fileSize]]
+        && [self isMatchingLastMod:[fileResult lastMod]];
 }
 
-- (FileResult*) filterToFileResult:(NSString*)filePath error:(NSError**)error {
-    NSString *dir = [filePath stringByDeletingLastPathComponent];
-    if (![self isMatchingDir:dir]) {
+- (FileResult*) filterArchiveFilePathToFileResult:(NSString*)filePath error:(NSError**)error {
+    if (!self.settings.includeArchives && !self.settings.archivesOnly) {
         return nil;
     }
-    if (!self.settings.includeHidden && [FileUtil isHiddenPath:filePath]) {
+    
+    if (![self isMatchingArchiveFilePath:filePath]) {
         return nil;
     }
-    FileType fileType = [self.fileTypes getFileType:[filePath lastPathComponent]];
-    if (fileType == FileTypeArchive && ![self.settings includeArchives] && ![self.settings archivesOnly]) {
+
+    unsigned long long fileSize = 0;
+    NSDate *lastMod = nil;
+    return [[FileResult alloc] initWithFilePath:filePath fileType:FileTypeArchive fileSize:fileSize lastMod:lastMod];
+}
+
+- (FileResult*) filterRegularFilePathToFileResult:(NSString*)filePath fileType:(FileType)fileType error:(NSError**)error {
+    if (self.settings.archivesOnly) {
         return nil;
     }
+
+    if (![self isMatchingFilePath:filePath] || ![self isMatchingFileType:fileType]) {
+        return nil;
+    }
+
     unsigned long long fileSize = 0;
     NSDate *lastMod = nil;
     if ([self.settings needSize] || [self.settings needLastMod]) {
@@ -218,17 +308,31 @@
         if ([self.settings needSize]) fileSize = stat.fileSize;
         if ([self.settings needLastMod]) lastMod = stat.fileModificationDate;
     }
-    FileResult *fr = [[FileResult alloc] initWithFilePath:filePath fileType:fileType fileSize:fileSize lastMod:lastMod];
-    if (fileType == FileTypeArchive) {
-        if (self.settings.includeArchives && [self isMatchingArchiveFile:filePath]) {
-            return fr;
-        }
+
+    if (![self isMatchingFileSize:fileSize] || ![self isMatchingLastMod:lastMod]) {
         return nil;
     }
-    if (!self.settings.archivesOnly && [self isMatchingFileResult:fr]) {
-        return fr;
+
+    return [[FileResult alloc] initWithFilePath:filePath fileType:fileType fileSize:fileSize lastMod:lastMod];
+}
+
+- (FileResult*) filterToFileResult:(NSString*)filePath error:(NSError**)error {
+    NSString *parent = [filePath stringByDeletingLastPathComponent];
+    if (![self isNullOrMatchingDirPath:parent]) {
+        return nil;
     }
-    return nil;
+
+    NSString *fileName = [filePath lastPathComponent];
+    if (![self isMatchingFileNameByHidden:fileName]) {
+        return nil;
+    }
+
+    FileType fileType = [self.fileTypes getFileType:fileName];
+    if (fileType == FileTypeArchive) {
+        return [self filterArchiveFilePathToFileResult:filePath error:error];
+    }
+
+    return [self filterRegularFilePathToFileResult:filePath fileType:fileType error:error];
 }
 
 - (NSArray<FileResult*>*) recGetFileResults:(NSString*)dirPath minDepth:(long)minDepth maxDepth:(long)maxDepth currentDepth:(long)currentDepth error:(NSError**)error {
@@ -240,20 +344,20 @@
         return fileResults;
     }
     
-    NSArray<NSString*>* pathElems = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:dirPath
+    NSArray<NSString*>* dirElems = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:dirPath
                                                                              error:error];
     if (*error) {
         return nil;
     }
 
-    NSMutableArray *pathDirs = [NSMutableArray array];
-    for (NSString *pathElem in pathElems) {
-        NSString* path = [FileUtil joinPath:dirPath childPath:pathElem];
+    NSMutableArray *subDirs = [NSMutableArray array];
+    for (NSString *dirElem in dirElems) {
+        NSString* subPath = [FileUtil joinPath:dirPath childPath:dirElem];
         BOOL linkIsDir = false;
         BOOL linkIsFile = false;
-        if ([FileUtil isSymlink:path]) {
+        if ([FileUtil isSymlink:subPath]) {
             if (self.settings.followSymlinks) {
-                NSString* targetPath = [FileUtil getSymlinkTarget:path];
+                NSString* targetPath = [FileUtil getSymlinkTarget:subPath];
                 if (targetPath != nil) {
                     if ([FileUtil isDirectory:targetPath]) {
                         linkIsDir = true;
@@ -265,12 +369,12 @@
                 continue;
             }
         }
-        if ([FileUtil isDirectory:path] || linkIsDir) {
-            if (recurse && [self filterDirByHidden:pathElem] && [self filterDirByOutPatterns:pathElem]) {
-                [pathDirs addObject:path];
+        if ([FileUtil isDirectory:subPath] || linkIsDir) {
+            if (recurse && [self isTraversableDirPath:dirElem]) {
+                [subDirs addObject:subPath];
             }
-        } else if (([FileUtil isReadableFile:path] || linkIsFile) && (minDepth < 0 || currentDepth >= minDepth)) {
-            FileResult *fileResult = [self filterToFileResult:path error:error];
+        } else if (([FileUtil isReadableFile:subPath] || linkIsFile) && (minDepth < 0 || currentDepth >= minDepth)) {
+            FileResult *fileResult = [self filterToFileResult:subPath error:error];
             if (*error) {
                 return nil;
             }
@@ -280,12 +384,12 @@
         }
     }
     
-    for (NSString *pathDir in pathDirs) {
-        NSArray<FileResult*> *pathResults = [self recGetFileResults:pathDir minDepth:minDepth maxDepth:maxDepth currentDepth:(currentDepth + 1) error:error];
+    for (NSString *subDir in subDirs) {
+        NSArray<FileResult*> *dirResults = [self recGetFileResults:subDir minDepth:minDepth maxDepth:maxDepth currentDepth:(currentDepth + 1) error:error];
         if (*error) {
             return nil;
         }
-        [fileResults addObjectsFromArray:pathResults];
+        [fileResults addObjectsFromArray:dirResults];
     }
 
     return [NSArray arrayWithArray:fileResults];
@@ -295,21 +399,42 @@
     NSString* fp = filePath;
     if (![FileUtil exists:filePath]) {
         fp = [FileUtil expandPath:filePath];
+        if (![FileUtil exists:fp]) {
+            setError(error, [NSString stringWithUTF8String:STARTPATH_NOT_FOUND]);
+            return nil;
+        }
     }
     NSMutableArray *fileResults = [NSMutableArray array];
-    if ([FileUtil isDirectory:fp]) {
+    BOOL linkIsDir = false;
+    BOOL linkIsFile = false;
+    if ([FileUtil isSymlink:fp]) {
+        if (self.settings.followSymlinks) {
+            NSString* targetPath = [FileUtil getSymlinkTarget:fp];
+            if (targetPath != nil) {
+                if ([FileUtil isDirectory:targetPath]) {
+                    linkIsDir = true;
+                } else if ([FileUtil isReadableFile:targetPath]) {
+                    linkIsFile = true;
+                }
+            }
+        } else {
+            setError(error, [NSString stringWithUTF8String:STARTPATH_NOT_MATCH_FIND_SETTINGS]);
+            return nil;
+        }
+    }
+    if ([FileUtil isDirectory:fp] || linkIsDir) {
         // if maxDepth is zero, we can skip since a directory cannot be a result
         if (self.settings.maxDepth == 0) {
             return fileResults;
         }
-        if ([self filterDirByHidden:fp] && [self filterDirByOutPatterns:fp]) {
+        if ([self isTraversableDirPath:fp]) {
             long maxDepth = self.settings.recursive ? self.settings.maxDepth : 1;
             return [self recGetFileResults:fp minDepth:self.settings.minDepth maxDepth:maxDepth currentDepth:1 error:error];
         } else {
             setError(error, [NSString stringWithUTF8String:STARTPATH_NOT_MATCH_FIND_SETTINGS]);
             return nil;
         }
-    } else {
+    } else if ([FileUtil isReadableFile:fp] || linkIsFile) {
         // if minDepth > zero, we can skip since the file is at depth zero
         if (self.settings.minDepth > 0) {
             return fileResults;
@@ -324,6 +449,9 @@
             setError(error, [NSString stringWithUTF8String:STARTPATH_NOT_MATCH_FIND_SETTINGS]);
             return nil;
         }
+    } else {
+        setError(error, [NSString stringWithUTF8String:STARTPATH_NOT_MATCH_FIND_SETTINGS]);
+        return nil;
     }
 
     return [NSArray arrayWithArray:fileResults];
@@ -339,8 +467,11 @@
         [fileResults addObjectsFromArray:pathResults];
     }
 
-    FileResultSorter *fileResultSorter = [[FileResultSorter alloc] initWithSettings:self.settings];
-    return [fileResultSorter sort:[NSArray arrayWithArray:fileResults]];
+    if ([fileResults count] > 1) {
+        FileResultSorter *fileResultSorter = [[FileResultSorter alloc] initWithSettings:self.settings];
+        return [fileResultSorter sort:[NSArray arrayWithArray:fileResults]];
+    }
+    return fileResults;
 }
 
 - (NSArray<NSString*>*) getMatchingDirs:(NSArray<FileResult*>*)fileResults {

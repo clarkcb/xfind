@@ -34,21 +34,21 @@
     FindSettings *settings = [[FindSettings alloc] init];
     NSError *error = nil;
     Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
-    XCTAssert([finder isMatchingDir:@"."]);
+    XCTAssert([finder isMatchingDirPath:@"."]);
 }
 
 - (void)testIsMatchingDir_DoubleDot_True {
     FindSettings *settings = [[FindSettings alloc] init];
     NSError *error = nil;
     Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
-    XCTAssert([finder isMatchingDir:@".."]);
+    XCTAssert([finder isMatchingDirPath:@".."]);
 }
 
 - (void)testIsMatchingDir_IsHidden_False {
     FindSettings *settings = [[FindSettings alloc] init];
     NSError *error = nil;
     Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
-    XCTAssert(![finder isMatchingDir:@".git"]);
+    XCTAssert(![finder isMatchingDirPath:@".git"]);
 }
 
 - (void)testIsMatchingDir_IsHiddenIncludeHidden_True {
@@ -56,14 +56,14 @@
     [settings setIncludeHidden:true];
     NSError *error = nil;
     Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
-    XCTAssert([finder isMatchingDir:@".git"]);
+    XCTAssert([finder isMatchingDirPath:@".git"]);
 }
 
 - (void)testIsMatchingDir_NoPatterns_True {
     FindSettings *settings = [[FindSettings alloc] init];
     NSError *error = nil;
     Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
-    XCTAssert([finder isMatchingDir:@"/Users"]);
+    XCTAssert([finder isMatchingDirPath:@"/Users"]);
 }
 
 - (void)testIsMatchingDir_MatchesInPattern_True {
@@ -71,7 +71,7 @@
     [settings addInDirPattern:@"Find"];
     NSError *error = nil;
     Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
-    XCTAssert([finder isMatchingDir:@"CsFind"]);
+    XCTAssert([finder isMatchingDirPath:@"CsFind"]);
 }
 
 - (void)testIsMatchingDir_MatchesOutPattern_False {
@@ -79,7 +79,7 @@
     [settings addOutDirPattern:@"Find"];
     NSError *error = nil;
     Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
-    XCTAssert(![finder isMatchingDir:@"CsFind"]);
+    XCTAssert(![finder isMatchingDirPath:@"CsFind"]);
 }
 
 - (void)testIsMatchingDir_DoesNotMatchOutPattern_True {
@@ -87,7 +87,7 @@
     [settings addOutDirPattern:@"FindFiles"];
     NSError *error = nil;
     Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
-    XCTAssert([finder isMatchingDir:@"CsFind"]);
+    XCTAssert([finder isMatchingDirPath:@"CsFind"]);
 }
 
 /*************************************************************
@@ -97,7 +97,7 @@
     FindSettings *settings = [[FindSettings alloc] init];
     NSError *error = nil;
     Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
-    XCTAssert([finder isMatchingFile:@"FileUtil.cs"]);
+    XCTAssert([finder isMatchingFilePath:@"FileUtil.cs"]);
 }
 
 - (void)testIsMatchingFile_MatchesInExtension_True {
@@ -105,7 +105,7 @@
     [settings addInExtension:@"cs"];
     NSError *error = nil;
     Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
-    XCTAssert([finder isMatchingFile:@"FileUtil.cs"]);
+    XCTAssert([finder isMatchingFilePath:@"FileUtil.cs"]);
 }
 
 - (void)testIsMatchingFile_DoesNotMatchInExtension_False {
@@ -113,7 +113,7 @@
     [settings addInExtension:@"java"];
     NSError *error = nil;
     Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
-    XCTAssert(![finder isMatchingFile:@"FileUtil.cs"]);
+    XCTAssert(![finder isMatchingFilePath:@"FileUtil.cs"]);
 }
 
 - (void)testIsMatchingFile_MatchesOutExtension_False {
@@ -121,7 +121,7 @@
     [settings addOutExtension:@"cs"];
     NSError *error = nil;
     Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
-    XCTAssert(![finder isMatchingFile:@"FileUtil.cs"]);
+    XCTAssert(![finder isMatchingFilePath:@"FileUtil.cs"]);
 }
 
 - (void)testIsMatchingFile_DoesNotMatchOutExtension_True {
@@ -129,7 +129,7 @@
     [settings addOutExtension:@"java"];
     NSError *error = nil;
     Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
-    XCTAssert([finder isMatchingFile:@"FileUtil.cs"]);
+    XCTAssert([finder isMatchingFilePath:@"FileUtil.cs"]);
 }
 
 - (void)testIsMatchingFile_MatchesInFilePattern_True {
@@ -137,7 +137,7 @@
     [settings addInFilePattern:@"Find"];
     NSError *error = nil;
     Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
-    XCTAssert([finder isMatchingFile:@"Finder.cs"]);
+    XCTAssert([finder isMatchingFilePath:@"Finder.cs"]);
 }
 
 - (void)testIsMatchingFile_DoesNotMatchInFilePattern_False {
@@ -145,7 +145,7 @@
     [settings addInFilePattern:@"Find"];
     NSError *error = nil;
     Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
-    XCTAssert(![finder isMatchingFile:@"FileUtil.cs"]);
+    XCTAssert(![finder isMatchingFilePath:@"FileUtil.cs"]);
 }
 
 - (void)testIsMatchingFile_MatchesOutFilePattern_False {
@@ -153,7 +153,7 @@
     [settings addOutFilePattern:@"Find"];
     NSError *error = nil;
     Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
-    XCTAssert(![finder isMatchingFile:@"Finder.cs"]);
+    XCTAssert(![finder isMatchingFilePath:@"Finder.cs"]);
 }
 
 - (void)testIsMatchingFile_DoesNotMatchOutFilePattern_True {
@@ -161,7 +161,7 @@
     [settings addOutFilePattern:@"Find"];
     NSError *error = nil;
     Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
-    XCTAssert([finder isMatchingFile:@"FileUtil.cs"]);
+    XCTAssert([finder isMatchingFilePath:@"FileUtil.cs"]);
 }
 
 /*************************************************************
@@ -171,7 +171,7 @@
     FindSettings *settings = [[FindSettings alloc] init];
     NSError *error = nil;
     Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
-    XCTAssert([finder isMatchingArchiveFile:@"archive.zip"]);
+    XCTAssert([finder isMatchingArchiveFilePath:@"archive.zip"]);
 }
 
 - (void)testIsMatchingArchiveFile_MatchesInExtension_True {
@@ -179,7 +179,7 @@
     [settings addInArchiveExtension:@"zip"];
     NSError *error = nil;
     Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
-    XCTAssert([finder isMatchingArchiveFile:@"archive.zip"]);
+    XCTAssert([finder isMatchingArchiveFilePath:@"archive.zip"]);
 }
 
 - (void)testIsMatchingArchiveFile_DoesNotMatchInExtension_False {
@@ -187,7 +187,7 @@
     [settings addInArchiveExtension:@"gz"];
     NSError *error = nil;
     Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
-    XCTAssert(![finder isMatchingArchiveFile:@"archive.zip"]);
+    XCTAssert(![finder isMatchingArchiveFilePath:@"archive.zip"]);
 }
 
 - (void)testIsMatchingArchiveFile_MatchesOutExtension_False {
@@ -195,7 +195,7 @@
     [settings addOutArchiveExtension:@"zip"];
     NSError *error = nil;
     Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
-    XCTAssert(![finder isMatchingArchiveFile:@"archive.zip"]);
+    XCTAssert(![finder isMatchingArchiveFilePath:@"archive.zip"]);
 }
 
 - (void)testIsMatchingArchiveFile_DoesNotMatchOutExtension_True {
@@ -203,7 +203,7 @@
     [settings addOutArchiveExtension:@"gz"];
     NSError *error = nil;
     Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
-    XCTAssert([finder isMatchingArchiveFile:@"archive.zip"]);
+    XCTAssert([finder isMatchingArchiveFilePath:@"archive.zip"]);
 }
 
 - (void)testIsMatchingArchiveFile_MatchesInArchiveFilePattern_True {
@@ -211,7 +211,7 @@
     [settings addInArchiveFilePattern:@"arch"];
     NSError *error = nil;
     Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
-    XCTAssert([finder isMatchingArchiveFile:@"archive.zip"]);
+    XCTAssert([finder isMatchingArchiveFilePath:@"archive.zip"]);
 }
 
 - (void)testIsMatchingArchiveFile_DoesNotMatchInArchiveFilePattern_False {
@@ -219,7 +219,7 @@
     [settings addInArchiveFilePattern:@"archives"];
     NSError *error = nil;
     Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
-    XCTAssert(![finder isMatchingArchiveFile:@"archive.zip"]);
+    XCTAssert(![finder isMatchingArchiveFilePath:@"archive.zip"]);
 }
 
 - (void)testIsMatchingArchiveFile_MatchesOutArchiveFilePattern_False {
@@ -227,7 +227,7 @@
     [settings addOutArchiveFilePattern:@"arch"];
     NSError *error = nil;
     Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
-    XCTAssert(![finder isMatchingArchiveFile:@"archive.zip"]);
+    XCTAssert(![finder isMatchingArchiveFilePath:@"archive.zip"]);
 }
 
 - (void)testIsMatchingArchiveFile_DoesNotMatchOutArchiveFilePattern_True {
@@ -235,7 +235,7 @@
     [settings addOutArchiveFilePattern:@"archives"];
     NSError *error = nil;
     Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
-    XCTAssert([finder isMatchingArchiveFile:@"archive.zip"]);
+    XCTAssert([finder isMatchingArchiveFilePath:@"archive.zip"]);
 }
 
 /*************************************************************
