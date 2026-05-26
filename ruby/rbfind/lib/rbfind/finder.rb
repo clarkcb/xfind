@@ -22,148 +22,152 @@ module RbFind
       validate_settings
     end
 
-    def filter_dir_by_hidden?(dir_path)
+    def matching_path_by_symlink?(path)
+      @settings.follow_symlinks || !path.symlink?
+    end
+
+    def matching_dir_path_by_hidden?(dir_path)
       if !@settings.include_hidden && FileUtil.hidden_path?(dir_path)
         return false
       end
       true
     end
 
-    def filter_dir_by_in_patterns?(dir_path)
+    def matching_dir_path_by_in_patterns?(dir_path)
       path_elems = FileUtil.path_elems(dir_path)
-      if !@settings.in_dir_patterns.empty? &&
-        !any_matches_any_pattern?(path_elems, @settings.in_dir_patterns)
-        return false
-      end
-      true
+      empty_or_any_matches_any_pattern?(path_elems, @settings.in_dir_patterns)
     end
 
-    def filter_dir_by_out_patterns?(dir_path)
+    def matching_dir_path_by_out_patterns?(dir_path)
       path_elems = FileUtil.path_elems(dir_path)
-      if !@settings.out_dir_patterns.empty? &&
-        any_matches_any_pattern?(path_elems, @settings.out_dir_patterns)
-        return false
-      end
-      true
+      empty_or_not_any_matches_any_pattern?(path_elems, @settings.out_dir_patterns)
     end
 
-    def matching_dir?(dir_path)
-      filter_dir_by_hidden?(dir_path) &&
-        filter_dir_by_in_patterns?(dir_path) &&
-        filter_dir_by_out_patterns?(dir_path)
+    def traversable_dir_path?(dir_path)
+      matching_dir_path_by_hidden?(dir_path) &&
+        matching_dir_path_by_out_patterns?(dir_path)
     end
 
-    def has_matching_archive_ext?(file_result)
+    def matching_dir_path?(dir_path)
+      matching_dir_path_by_hidden?(dir_path) &&
+        matching_dir_path_by_in_patterns?(dir_path) &&
+        matching_dir_path_by_out_patterns?(dir_path)
+    end
+
+    def nil_or_matching_dir_path?(dir_path)
+      dir_path.nil? || matching_dir_path?(dir_path)
+    end
+
+    def matching_file_name_by_hidden?(file_name)
+      @settings.include_hidden || !FileUtil.hidden_name?(file_name)
+    end
+
+    def matching_archive_ext?(ext)
+      (empty_or_matches_any_string?(ext, @settings.in_archive_extensions) &&
+        empty_or_not_matches_any_string?(ext, @settings.out_archive_extensions))
+    end
+
+    def matching_archive_ext_for_file_path?(file_path)
       if !@settings.in_archive_extensions.empty? || !@settings.out_archive_extensions.empty?
-        ext = FileUtil.get_extension(file_result.path)
-        return ((@settings.in_archive_extensions.empty? ||
-          @settings.in_archive_extensions.include?(ext)) &&
-          (@settings.out_archive_extensions.empty? ||
-            !@settings.out_archive_extensions.include?(ext)))
-      end
-      true
-    end
-
-    def has_matching_ext?(file_result)
-      if !@settings.in_extensions.empty? || !@settings.out_extensions.empty?
-        ext = FileUtil.get_extension(file_result.path)
-        return ((@settings.in_extensions.empty? ||
-          @settings.in_extensions.include?(ext)) &&
-          (@settings.out_extensions.empty? ||
-            !@settings.out_extensions.include?(ext)))
+        ext = FileUtil.get_extension(file_path)
+        return matching_archive_ext?(ext)
       end
       true
     end
 
     def matching_archive_file_name?(file_name)
-      ((@settings.in_archive_file_patterns.empty? ||
-        matches_any_pattern?(file_name, @settings.in_archive_file_patterns)) &&
-        (@settings.out_archive_file_patterns.empty? ||
-          !matches_any_pattern?(file_name, @settings.out_archive_file_patterns)))
+      (empty_or_matches_any_pattern?(file_name, @settings.in_archive_file_patterns) &&
+        empty_or_not_matches_any_pattern?(file_name, @settings.out_archive_file_patterns))
     end
 
-    def has_matching_archive_file_name?(file_result)
-      matching_archive_file_name?(file_result.file_name)
+    def matching_archive_file_name_for_file_path?(file_path)
+      if !@settings.in_archive_file_patterns.empty? || !@settings.out_archive_file_patterns.empty?
+        return matching_archive_file_name?(file_path.basename.to_s)
+      end
+      true
     end
 
-    def matching_file_name?(file_name)
-      ((@settings.in_file_patterns.empty? ||
-        matches_any_pattern?(file_name, @settings.in_file_patterns)) &&
-        (@settings.out_file_patterns.empty? ||
-          !matches_any_pattern?(file_name, @settings.out_file_patterns)))
-    end
-
-    def has_matching_file_name?(file_result)
-      matching_file_name?(file_result.file_name)
-    end
-
-    def matching_file_type?(file_type)
-      ((@settings.in_file_types.empty? ||
-        @settings.in_file_types.include?(file_type)) &&
-        (@settings.out_file_types.empty? ||
-          !@settings.out_file_types.include?(file_type)))
-    end
-
-    def has_matching_file_type?(file_result)
-      matching_file_type?(file_result.file_type)
-    end
-
-    def matching_file_size?(file_size)
-      ((@settings.min_size == 0 ||
-        file_size >= @settings.min_size) &&
-        (@settings.max_size == 0 ||
-          file_size <= @settings.max_size))
-    end
-
-    def has_matching_file_size?(file_result)
-      matching_file_size?(file_result.file_size)
-    end
-
-    def matching_last_mod?(last_mod)
-      ((@settings.min_last_mod.nil? ||
-        last_mod >= @settings.min_last_mod.to_time) &&
-        (@settings.max_last_mod.nil? ||
-          last_mod <= @settings.max_last_mod.to_time))
-    end
-
-    def has_matching_last_mod?(file_result)
-      matching_last_mod?(file_result.last_mod)
+    def matching_archive_file_path?(file_path)
+      matching_archive_ext_for_file_path?(file_path) &&
+        matching_archive_file_name_for_file_path?(file_path)
     end
 
     def matching_archive_file_result?(file_result)
-      has_matching_archive_ext?(file_result) &&
-        matching_archive_file_name?(file_result.file_name) &&
-        matching_file_size?(file_result.file_size) &&
-        matching_last_mod?(file_result.last_mod)
+      matching_archive_file_path?(file_result.path)
+    end
+
+
+    def matching_ext?(ext)
+      (empty_or_matches_any_string?(ext, @settings.in_extensions) &&
+        empty_or_not_matches_any_string?(ext, @settings.out_extensions))
+    end
+
+    def matching_ext_for_file_path?(file_path)
+      if !@settings.in_extensions.empty? || !@settings.out_extensions.empty?
+        ext = FileUtil.get_extension(file_path)
+        return (empty_or_matches_any_string?(ext, @settings.in_extensions) &&
+          empty_or_not_matches_any_string?(ext, @settings.out_extensions))
+      end
+      true
+    end
+
+    def matching_file_name?(file_name)
+      (empty_or_matches_any_pattern?(file_name, @settings.in_file_patterns) &&
+        empty_or_not_matches_any_pattern?(file_name, @settings.out_file_patterns))
+    end
+
+    def matching_file_name_for_file_path?(file_path)
+      if !@settings.in_file_patterns.empty? || !@settings.out_file_patterns.empty?
+        return matching_file_name?(file_path.basename.to_s)
+      end
+      true
+    end
+
+    def matching_file_path?(file_path)
+      matching_ext_for_file_path?(file_path) &&
+        matching_file_name_for_file_path?(file_path)
+    end
+
+    def matching_file_type?(file_type)
+      (empty_or_matches_any_file_type?(file_type, @settings.in_file_types) &&
+        empty_or_not_matches_any_file_type?(file_type, @settings.out_file_types))
+    end
+
+    def matching_file_size?(file_size)
+      matches_file_size?(file_size, @settings.max_size, @settings.min_size)
+    end
+
+    def matching_last_mod?(last_mod)
+      matches_last_mod?(last_mod, @settings.max_last_mod, @settings.min_last_mod)
     end
 
     def matching_file_result?(file_result)
-      has_matching_ext?(file_result) &&
-        matching_file_name?(file_result.file_name) &&
+      matching_file_path?(file_result.path) &&
         matching_file_type?(file_result.file_type) &&
         matching_file_size?(file_result.file_size) &&
         matching_last_mod?(file_result.last_mod)
     end
 
-    def matching_archive_file?(file_path)
-      matching_archive_file_result?(file_path_to_file_result(file_path))
+    def filter_archive_file_path_to_file_result(file_path)
+      if !@settings.include_archives && !@settings.archives_only
+        return nil
+      end
+
+      file_size = 0
+      last_mod = nil
+      file_result = FileResult.new(file_path, FileType::ARCHIVE, file_size, last_mod)
+
+      if matching_archive_file_result?(file_result)
+        return file_result
+      end
+      nil
     end
 
-    def matching_file?(file_path)
-      matching_file_result?(file_path_to_file_result(file_path))
-    end
+    def filter_reg_file_path_to_file_result(file_path, file_type)
+      if @settings.archives_only
+        return nil
+      end
 
-    def filter_to_file_result(file_path)
-      if !@settings.include_hidden && FileUtil.hidden_path?(file_path)
-        return nil
-      end
-      unless matching_dir?(file_path.parent)
-        return nil
-      end
-      file_type = @file_types.get_file_type(file_path)
-      if file_type == FileType::ARCHIVE && !@settings.include_archives && !@settings.archives_only
-        return nil
-      end
       file_size = 0
       last_mod = nil
       if @settings.need_last_mod? || @settings.need_size?
@@ -176,16 +180,27 @@ module RbFind
         end
       end
       file_result = FileResult.new(file_path, file_type, file_size, last_mod)
-      if file_result.file_type == FileType::ARCHIVE
-        if matching_archive_file_result?(file_result)
-          return file_result
-        end
-        return nil
-      end
-      if !@settings.archives_only && matching_file_result?(file_result)
+
+      if matching_file_result?(file_result)
         return file_result
       end
       nil
+    end
+
+    def filter_to_file_result(file_path)
+      unless nil_or_matching_dir_path?(file_path.parent)
+        return nil
+      end
+
+      if !@settings.include_hidden && FileUtil.hidden_name?(file_path.basename.to_s)
+        return nil
+      end
+
+      file_type = @file_types.get_file_type(file_path)
+      if file_type == FileType::ARCHIVE
+        return filter_archive_file_path_to_file_result(file_path)
+      end
+      filter_reg_file_path_to_file_result(file_path, file_type)
     end
 
     def find
@@ -233,7 +248,7 @@ module RbFind
           if p.symlink?
             raise FindError, STARTPATH_NOT_MATCH_SETTINGS unless @settings.follow_symlinks
           elsif p.directory?
-            raise FindError, STARTPATH_NOT_MATCH_SETTINGS unless filter_dir_by_hidden?(p) && filter_dir_by_out_patterns?(p)
+            raise FindError, STARTPATH_NOT_MATCH_SETTINGS unless matching_dir_path_by_hidden?(p) && matching_dir_path_by_out_patterns?(p)
           elsif p.file?
             raise FindError, STARTPATH_NOT_MATCH_SETTINGS if filter_to_file_result(p) == nil
           else
@@ -266,6 +281,48 @@ module RbFind
       false
     end
 
+    def empty_or_matches_any_pattern?(str, pattern_set)
+      pattern_set.empty? || matches_any_pattern?(str, pattern_set)
+    end
+
+    def empty_or_not_matches_any_pattern?(str, pattern_set)
+      pattern_set.empty? || !matches_any_pattern?(str, pattern_set)
+    end
+
+    def empty_or_any_matches_any_pattern?(str_list, pattern_set)
+      pattern_set.empty? || any_matches_any_pattern?(str_list, pattern_set)
+    end
+
+    def empty_or_not_any_matches_any_pattern?(str_list, pattern_set)
+      pattern_set.empty? || !any_matches_any_pattern?(str_list, pattern_set)
+    end
+
+    def empty_or_matches_any_string?(str, str_set)
+      str_set.empty? || str_set.include?(str)
+    end
+
+    def empty_or_not_matches_any_string?(str, str_set)
+      str_set.empty? || !str_set.include?(str)
+    end
+
+    def empty_or_matches_any_file_type?(file_type, file_types)
+      file_types.empty? || file_types.include?(file_type)
+    end
+
+    def empty_or_not_matches_any_file_type?(file_type, file_types)
+      file_types.empty? || !file_types.include?(file_type)
+    end
+
+    def matches_file_size?(file_size, max_file_size, min_file_size)
+      ((min_file_size <= 0 || file_size >= min_file_size) &&
+        (max_file_size <= 0 || file_size <= max_file_size))
+    end
+
+    def matches_last_mod?(last_mod, max_last_mod, min_last_mod)
+      (min_last_mod.nil? || last_mod >= min_last_mod.to_time) &&
+        (max_last_mod.nil? || last_mod <= max_last_mod.to_time)
+    end
+
     def rec_get_file_results_for_path(dir_path, min_depth, max_depth, current_depth)
       file_results = []
       recurse = true
@@ -276,8 +333,8 @@ module RbFind
       end
       dirs = []
       dir_path.each_child do |f|
-        unless f.symlink? && !@settings.follow_symlinks
-          if f.directory? && recurse && filter_dir_by_hidden?(f) && filter_dir_by_out_patterns?(f)
+        if matching_path_by_symlink?(f)
+          if f.directory? && recurse && traversable_dir_path?(f)
             dirs << f
           elsif f.file? && (min_depth < 0 || current_depth >= min_depth)
             file_result = filter_to_file_result(f)
@@ -296,13 +353,19 @@ module RbFind
     def get_file_results_for_path(file_path)
       unless file_path.exist?
         file_path = file_path.expand_path
+        unless file_path.exist?
+          raise FindError, STARTPATH_NOT_FOUND
+        end
+      end
+      if file_path.symlink? && not @settings.follow_symlinks
+        raise FindError, STARTPATH_NOT_MATCH_SETTINGS
       end
       if file_path.directory?
         # if max_depth is zero, we can skip since a directory cannot be a result
         if @settings.max_depth == 0
           return []
         end
-        if filter_dir_by_hidden?(file_path) && filter_dir_by_out_patterns?(file_path)
+        if traversable_dir_path?(file_path)
           max_depth = @settings.max_depth
           unless @settings.recursive
             max_depth = 1
@@ -311,7 +374,7 @@ module RbFind
         else
           raise FindError, STARTPATH_NOT_MATCH_SETTINGS
         end
-      else
+      elsif file_path.file?
         # if min_depth > zero, we can skip since the file is at depth zero
         if @settings.min_depth > 0
           return []
@@ -322,6 +385,8 @@ module RbFind
         else
           raise FindError, STARTPATH_NOT_MATCH_SETTINGS
         end
+      else
+        raise FindError, STARTPATH_NOT_MATCH_SETTINGS
       end
     end
 
