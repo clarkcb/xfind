@@ -9,6 +9,7 @@
 #define STARTPATH_NOT_DEFINED "Startpath not defined"
 #define STARTPATH_NOT_FOUND "Startpath not found"
 #define STARTPATH_NOT_READABLE "Startpath not readable"
+#define STARTPATH_NOT_MATCH_FIND_SETTINGS "Startpath does not match find settings"
 
 namespace cppfind {
     class FindException : public std::exception {
