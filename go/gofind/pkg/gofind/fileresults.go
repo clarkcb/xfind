@@ -3,7 +3,6 @@ package gofind
 import (
 	"bytes"
 	"fmt"
-	"os"
 	"path/filepath"
 	"slices"
 	"strings"
@@ -81,7 +80,7 @@ func (frs *FileResults) IsEmpty() bool {
 
 func (frs *FileResults) Index(fr *FileResult) int {
 	for i, _ := range frs.FileResults {
-		if fr.Path == frs.FileResults[i].Path && fr.Name == frs.FileResults[i].Name {
+		if fr.FilePath == frs.FileResults[i].FilePath {
 			return i
 		}
 	}
@@ -96,9 +95,9 @@ func (frs *FileResults) GetMatchingDirs() []string {
 	dirMap := make(map[string]bool)
 	var dirs []string
 	for _, r := range frs.FileResults {
-		if _, value := dirMap[r.Path]; !value {
-			dirMap[r.Path] = true
-			dirs = append(dirs, r.Path)
+		if _, value := dirMap[r.FilePath]; !value {
+			dirMap[r.FilePath] = true
+			dirs = append(dirs, r.FilePath)
 		}
 	}
 	return dirs
@@ -134,18 +133,16 @@ func (frs *FileResults) Sort(settings *FindSettings) {
 
 type FileResult struct {
 	Containers []string
-	Path       string
-	Name       string
+	FilePath   string
 	FileType   FileType
 	FileSize   int64
 	LastMod    time.Time
 }
 
-func NewFileResult(path string, name string, fileType FileType, fileSize int64, lastMod time.Time) *FileResult {
+func NewFileResult(filePath string, fileType FileType, fileSize int64, lastMod time.Time) *FileResult {
 	return &FileResult{
 		[]string{},
-		path,
-		name,
+		filePath,
 		fileType,
 		fileSize,
 		lastMod,
@@ -164,12 +161,7 @@ func (fr *FileResult) String() string {
 		buffer.WriteString(strings.Join(fr.Containers, containerSeparator))
 		buffer.WriteString(containerSeparator)
 	}
-	path := normalizePath(fr.Path)
-	if isDotDir(path) {
-		buffer.WriteString(fmt.Sprintf("%s%c%s", path, os.PathSeparator, fr.Name))
-	} else {
-		buffer.WriteString(filepath.Join(fr.Path, fr.Name))
-	}
+	buffer.WriteString(fr.FilePath)
 	return buffer.String()
 }
 
@@ -257,8 +249,8 @@ func (f *FileResultFormatter) formatFileNameWithColor(fileName string) string {
 }
 
 func (f *FileResultFormatter) FormatFileResult(r *FileResult) string {
-	path := f.FormatPath(r.Path)
-	fileName := f.FormatFileName(r.Name)
+	path := f.FormatPath(filepath.Dir(r.FilePath))
+	fileName := f.FormatFileName(filepath.Base(r.FilePath))
 	return filepath.Join(path, fileName)
 }
 
@@ -296,9 +288,9 @@ func compareStrings(str1, str2 string, sortCaseInsensitive bool) int {
 }
 
 func (frs *FileResultSorter) CompareByPath(fr1, fr2 *FileResult) int {
-	cmp := compareStrings(fr1.Path, fr2.Path, frs.Settings.sortCaseInsensitive)
+	cmp := compareStrings(filepath.Dir(fr1.FilePath), filepath.Dir(fr2.FilePath), frs.Settings.sortCaseInsensitive)
 	if cmp == 0 {
-		return compareStrings(fr1.Name, fr2.Name, frs.Settings.sortCaseInsensitive)
+		return compareStrings(filepath.Base(fr1.FilePath), filepath.Base(fr2.FilePath), frs.Settings.sortCaseInsensitive)
 	}
 	return cmp
 }
@@ -315,9 +307,9 @@ func (frs *FileResultSorter) getCompareByPath() func(fr1, fr2 *FileResult) int {
 }
 
 func (frs *FileResultSorter) CompareByName(fr1, fr2 *FileResult) int {
-	cmp := compareStrings(fr1.Name, fr2.Name, frs.Settings.sortCaseInsensitive)
+	cmp := compareStrings(filepath.Base(fr1.FilePath), filepath.Base(fr2.FilePath), frs.Settings.sortCaseInsensitive)
 	if cmp == 0 {
-		return compareStrings(fr1.Path, fr2.Path, frs.Settings.sortCaseInsensitive)
+		return compareStrings(filepath.Dir(fr1.FilePath), filepath.Dir(fr2.FilePath), frs.Settings.sortCaseInsensitive)
 	}
 	return cmp
 }

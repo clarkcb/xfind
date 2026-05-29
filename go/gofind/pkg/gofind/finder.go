@@ -5,6 +5,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -55,8 +56,7 @@ func (f *Finder) validateSettings() error {
 				return fmt.Errorf(StartPathNotMatchFindSettings)
 			}
 		} else if fi.IsDir() {
-			// This means that this method should be in Finder
-			if !f.filterDirByHidden(p) || !f.filterDirByOutPatterns(p) {
+			if !f.isTraversableDirPath(p) {
 				return fmt.Errorf(StartPathNotMatchFindSettings)
 			}
 
@@ -67,7 +67,6 @@ func (f *Finder) validateSettings() error {
 			}
 
 		} else {
-			// TODO: handle symlinks, etc.?
 			return fmt.Errorf(StartPathNotMatchFindSettings)
 		}
 	}
@@ -85,61 +84,143 @@ func (f *Finder) validateSettings() error {
 	return nil
 }
 
-func (f *Finder) filterDirByHidden(d string) bool {
-	return f.Settings.IncludeHidden() || !IsHiddenPath(d)
+func emptyOrMatchesAnyPattern(s string, patterns *Patterns) bool {
+	return patterns.IsEmpty() || patterns.MatchesAny(s)
 }
 
-func (f *Finder) filterDirByInPatterns(d string) bool {
-	return f.Settings.InDirPatterns().IsEmpty() || f.Settings.InDirPatterns().MatchesAny(d)
+func emptyOrNotMatchesAnyPattern(s string, patterns *Patterns) bool {
+	return patterns.IsEmpty() || !patterns.MatchesAny(s)
 }
 
-func (f *Finder) filterDirByOutPatterns(d string) bool {
-	return f.Settings.OutDirPatterns().IsEmpty() || !f.Settings.OutDirPatterns().MatchesAny(d)
+func emptyOrAnyMatchesAnyPattern(strings []string, patterns *Patterns) bool {
+	return patterns.IsEmpty() || patterns.AnyMatchesAny(strings)
 }
 
-func (f *Finder) isMatchingDir(d string) bool {
-	return f.filterDirByHidden(d) && f.filterDirByInPatterns(d) && f.filterDirByOutPatterns(d)
+func emptyOrNotAnyMatchesAnyPattern(strings []string, patterns *Patterns) bool {
+	return patterns.IsEmpty() || !patterns.AnyMatchesAny(strings)
+}
+
+func emptyOrMatchesAnyString(s string, strings []string) bool {
+	return len(strings) == 0 || Contains(strings, s)
+}
+
+func emptyOrNotMatchesAnyString(s string, strings []string) bool {
+	return len(strings) == 0 || !Contains(strings, s)
+}
+
+func emptyOrMatchesAnyFileType(fileType FileType, fileTypes []FileType) bool {
+	return len(fileTypes) == 0 || ContainsFileType(fileTypes, fileType)
+}
+
+func emptyOrNotMatchesAnyFileType(fileType FileType, fileTypes []FileType) bool {
+	return len(fileTypes) == 0 || !ContainsFileType(fileTypes, fileType)
+}
+
+func (f *Finder) isMatchingDirPathByHidden(dirPath string) bool {
+	return f.Settings.IncludeHidden() || !IsHiddenPath(dirPath)
+}
+
+func (f *Finder) isMatchingDirPathByInPatterns(dirPath string) bool {
+	return emptyOrAnyMatchesAnyPattern(GetPathElems(dirPath), f.Settings.InDirPatterns())
+}
+
+func (f *Finder) isMatchingDirPathByOutPatterns(dirPath string) bool {
+	return emptyOrNotAnyMatchesAnyPattern(GetPathElems(dirPath), f.Settings.OutDirPatterns())
+}
+
+func (f *Finder) isTraversableDirPath(dirPath string) bool {
+	return f.isMatchingDirPathByHidden(dirPath) &&
+		f.isMatchingDirPathByOutPatterns(dirPath)
+}
+
+func (f *Finder) isMatchingDirPath(dirPath string) bool {
+	return f.isMatchingDirPathByHidden(dirPath) &&
+		f.isMatchingDirPathByInPatterns(dirPath) &&
+		f.isMatchingDirPathByOutPatterns(dirPath)
+}
+
+func (f *Finder) isNullOrMatchingDirPath(dirPath string) bool {
+	return strings.TrimSpace(dirPath) == "" ||
+		(f.isMatchingDirPathByHidden(dirPath) &&
+			f.isMatchingDirPathByInPatterns(dirPath) &&
+			f.isMatchingDirPathByOutPatterns(dirPath))
+}
+
+func (f *Finder) isMatchingFileNameByHidden(fileName string) bool {
+	return f.Settings.IncludeHidden() || !IsHiddenName(fileName)
 }
 
 func (f *Finder) isMatchingArchiveExtension(ext string) bool {
-	return (len(f.Settings.InArchiveExtensions()) == 0 || Contains(f.Settings.InArchiveExtensions(), ext)) &&
-		(len(f.Settings.OutArchiveExtensions()) == 0 || !Contains(f.Settings.OutArchiveExtensions(), ext))
+	return emptyOrMatchesAnyString(ext, f.Settings.InArchiveExtensions()) &&
+		emptyOrNotMatchesAnyString(ext, f.Settings.OutArchiveExtensions())
 }
 
-func (f *Finder) hasMatchingArchiveExtension(fr *FileResult) bool {
+func (f *Finder) hasMatchingArchiveExtension(filePath string) bool {
 	if len(f.Settings.InArchiveExtensions()) > 0 || len(f.Settings.OutArchiveExtensions()) > 0 {
-		ext := GetExtension(fr.Name)
+		ext := GetExtension(filePath)
 		return f.isMatchingArchiveExtension(ext)
 	}
 	return true
 }
 
-func (f *Finder) isMatchingExtension(ext string) bool {
-	return (len(f.Settings.InExtensions()) == 0 || Contains(f.Settings.InExtensions(), ext)) &&
-		(len(f.Settings.OutExtensions()) == 0 || !Contains(f.Settings.OutExtensions(), ext))
+func (f *Finder) isMatchingArchiveFileName(fileName string) bool {
+	return f.isMatchingFileNameByHidden(fileName) &&
+		emptyOrMatchesAnyPattern(fileName, f.Settings.InArchiveFilePatterns()) &&
+		emptyOrNotMatchesAnyPattern(fileName, f.Settings.OutArchiveFilePatterns())
 }
 
-func (f *Finder) hasMatchingExtension(fr *FileResult) bool {
+func (f *Finder) hasMatchingArchiveFileName(filePath string) bool {
+	if !f.Settings.InArchiveFilePatterns().IsEmpty() || !f.Settings.OutArchiveFilePatterns().IsEmpty() {
+		return f.isMatchingArchiveFileName(filepath.Base(filePath))
+	}
+	return true
+}
+
+func (f *Finder) isMatchingArchiveFilePath(filePath string) bool {
+	return f.hasMatchingArchiveExtension(filePath) &&
+		f.hasMatchingArchiveFileName(filePath)
+}
+
+func (f *Finder) isMatchingArchiveFileResult(fr *FileResult) bool {
+	return f.hasMatchingArchiveExtension(fr.FilePath) &&
+		f.hasMatchingArchiveFileName(fr.FilePath)
+}
+
+func (f *Finder) isMatchingExtension(ext string) bool {
+	return emptyOrMatchesAnyString(ext, f.Settings.InExtensions()) &&
+		emptyOrNotMatchesAnyString(ext, f.Settings.OutExtensions())
+}
+
+func (f *Finder) hasMatchingExtension(filePath string) bool {
 	if len(f.Settings.InExtensions()) > 0 || len(f.Settings.OutExtensions()) > 0 {
-		ext := GetExtension(fr.Name)
+		ext := GetExtension(filePath)
 		return f.isMatchingExtension(ext)
 	}
 	return true
 }
 
-func (f *Finder) isMatchingArchiveFileName(fileName string) bool {
-	return (f.Settings.InArchiveFilePatterns().IsEmpty() || f.Settings.InArchiveFilePatterns().MatchesAny(fileName)) &&
-		(f.Settings.OutArchiveFilePatterns().IsEmpty() || !f.Settings.OutArchiveFilePatterns().MatchesAny(fileName))
+func (f *Finder) isMatchingFileName(fileName string) bool {
+	return f.isMatchingFileNameByHidden(fileName) &&
+		emptyOrMatchesAnyPattern(fileName, f.Settings.InFilePatterns()) &&
+		emptyOrNotMatchesAnyPattern(fileName, f.Settings.OutFilePatterns())
 }
 
-func (f *Finder) isMatchingFileName(fileName string) bool {
-	return (f.Settings.InFilePatterns().IsEmpty() || f.Settings.InFilePatterns().MatchesAny(fileName)) &&
-		(f.Settings.OutFilePatterns().IsEmpty() || !f.Settings.OutFilePatterns().MatchesAny(fileName))
+func (f *Finder) hasMatchingFileName(filePath string) bool {
+	if !f.Settings.InFilePatterns().IsEmpty() || !f.Settings.OutFilePatterns().IsEmpty() {
+		return f.isMatchingFileName(filepath.Base(filePath))
+	}
+	return true
+}
+
+func (f *Finder) isMatchingFilePath(filePath string) bool {
+	return f.isNullOrMatchingDirPath(filepath.Dir(filePath)) &&
+		f.hasMatchingExtension(filePath) &&
+		f.hasMatchingFileName(filePath)
 }
 
 func (f *Finder) isMatchingFileType(fileType FileType) bool {
-	return (len(f.Settings.InFileTypes()) == 0 || ContainsFileType(f.Settings.InFileTypes(), fileType)) &&
-		(len(f.Settings.OutFileTypes()) == 0 || !ContainsFileType(f.Settings.OutFileTypes(), fileType))
+	return emptyOrMatchesAnyFileType(fileType, f.Settings.InFileTypes()) &&
+		emptyOrNotMatchesAnyFileType(fileType, f.Settings.OutFileTypes())
 }
 
 func (f *Finder) isMatchingFileSize(fileSize int64) bool {
@@ -152,34 +233,19 @@ func (f *Finder) isMatchingLastMod(lastMod time.Time) bool {
 		(f.Settings.minLastMod.IsZero() || lastMod.Compare(f.Settings.minLastMod) >= 0)
 }
 
-func (f *Finder) isMatchingArchiveFileResult(fr *FileResult) bool {
-	return f.hasMatchingArchiveExtension(fr) &&
-		f.isMatchingArchiveFileName(fr.Name)
-}
-
 func (f *Finder) isMatchingFileResult(fr *FileResult) bool {
-	return f.hasMatchingExtension(fr) &&
-		f.isMatchingFileName(fr.Name) &&
+	return f.isMatchingFilePath(fr.FilePath) &&
 		f.isMatchingFileType(fr.FileType) &&
 		f.isMatchingFileSize(fr.FileSize) &&
 		f.isMatchingLastMod(fr.LastMod)
 }
 
-func (f *Finder) filterArchiveFileToFileResult(filePath string, fi os.FileInfo) *FileResult {
+func (f *Finder) filterArchiveFilePathToFileResult(filePath string, fi os.FileInfo) *FileResult {
 	if !f.Settings.includeArchives && !f.Settings.archivesOnly {
 		return nil
 	}
 
-	dir, fileName := filepath.Split(filePath)
-	if dir == "" {
-		dir = Dot
-	} else {
-		dir = normalizePath(dir)
-	}
-	if !f.isMatchingDir(dir) {
-		return nil
-	}
-	if !f.Settings.IncludeHidden() && IsHiddenName(fileName) {
+	if !f.isMatchingArchiveFilePath(filePath) {
 		return nil
 	}
 
@@ -189,29 +255,16 @@ func (f *Finder) filterArchiveFileToFileResult(filePath string, fi os.FileInfo) 
 		fileSize = fi.Size()
 		lastMod = fi.ModTime()
 	}
-	fr := NewFileResult(dir, fileName, FileTypeArchive, fileSize, lastMod)
 
-	if f.isMatchingArchiveFileResult(fr) {
-		return fr
-	}
-	return nil
+	return NewFileResult(filePath, FileTypeArchive, fileSize, lastMod)
 }
 
-func (f *Finder) filterRegFileToFileResult(filePath string, fileType FileType, fi os.FileInfo) *FileResult {
+func (f *Finder) filterRegFilePathToFileResult(filePath string, fileType FileType, fi os.FileInfo) *FileResult {
 	if f.Settings.archivesOnly {
 		return nil
 	}
 
-	dir, fileName := filepath.Split(filePath)
-	if dir == "" {
-		dir = Dot
-	} else {
-		dir = normalizePath(dir)
-	}
-	if !f.isMatchingDir(dir) {
-		return nil
-	}
-	if !f.Settings.IncludeHidden() && IsHiddenName(fileName) {
+	if !f.isMatchingFilePath(filePath) || !f.isMatchingFileType(fileType) {
 		return nil
 	}
 
@@ -221,21 +274,21 @@ func (f *Finder) filterRegFileToFileResult(filePath string, fileType FileType, f
 		fileSize = fi.Size()
 		lastMod = fi.ModTime()
 	}
-	fr := NewFileResult(dir, fileName, fileType, fileSize, lastMod)
 
-	if f.isMatchingFileResult(fr) {
-		return fr
-	}
-	return nil
+	return NewFileResult(filePath, fileType, fileSize, lastMod)
 }
 
 func (f *Finder) filterToFileResult(filePath string, fi os.FileInfo) *FileResult {
-	fileType := f.fileTypes.GetFileType(filePath)
-	if fileType == FileTypeArchive {
-		return f.filterArchiveFileToFileResult(filePath, fi)
+	if !f.isNullOrMatchingDirPath(filepath.Dir(filePath)) || !f.isMatchingFileNameByHidden(filepath.Base(filePath)) {
+		return nil
 	}
 
-	return f.filterRegFileToFileResult(filePath, fileType, fi)
+	fileType := f.fileTypes.GetFileType(filePath)
+	if fileType == FileTypeArchive {
+		return f.filterArchiveFilePathToFileResult(filePath, fi)
+	}
+
+	return f.filterRegFilePathToFileResult(filePath, fileType, fi)
 }
 
 func (f *Finder) checkAddFileResult(filePath string, fi os.FileInfo) {
@@ -251,7 +304,7 @@ func (f *Finder) checkAddFindWalkFile(filePath string, entry fs.DirEntry, err er
 		fmt.Printf("an error occurred accessing path %q: %v\n", filePath, err)
 		return err
 	}
-	if entry.IsDir() && (!f.filterDirByHidden(entry.Name()) || !f.filterDirByOutPatterns(entry.Name())) {
+	if entry.IsDir() && (!f.isTraversableDirPath(entry.Name())) {
 		return filepath.SkipDir
 	} else if entry.Type().IsRegular() {
 		fi, err := entry.Info()
@@ -310,7 +363,7 @@ func (f *Finder) recSetFileResultsForPath(path string, minDepth int, maxDepth in
 				continue
 			}
 		}
-		if fileInfo.IsDir() && recurse && f.filterDirByHidden(entry.Name()) && f.filterDirByOutPatterns(entry.Name()) {
+		if fileInfo.IsDir() && recurse && f.isTraversableDirPath(entry.Name()) {
 			dirs = append(dirs, filepath.Join(path, entry.Name()))
 		} else if fileInfo.Mode().IsRegular() && (minDepth < 0 || currentDepth >= minDepth) {
 			f.checkAddFileResult(filepath.Join(path, entry.Name()), fileInfo)
@@ -339,15 +392,17 @@ func (f *Finder) setFileResultsForPath(path string) error {
 		if f.Settings.MaxDepth() == 0 {
 			return nil
 		}
-		if f.filterDirByHidden(path) && f.filterDirByOutPatterns(path) {
+
+		if f.isTraversableDirPath(path) {
 			maxDepth := f.Settings.MaxDepth()
 			if !f.Settings.Recursive() {
 				maxDepth = 1
 			}
 			return f.recSetFileResultsForPath(path, f.Settings.MinDepth(), maxDepth, 1)
-		} else {
-			return fmt.Errorf(StartPathNotMatchFindSettings)
 		}
+
+		return fmt.Errorf(StartPathNotMatchFindSettings)
+
 	} else if fi.Mode().Type().IsRegular() {
 		if f.Settings.minDepth > 0 {
 			return nil

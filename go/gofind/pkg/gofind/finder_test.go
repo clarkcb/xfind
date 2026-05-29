@@ -30,7 +30,7 @@ func getBinPath() string {
 func TestIsFindDir_SingleDot_True(t *testing.T) {
 	finder := getFinder()
 	d := "."
-	if !finder.isMatchingDir(d) {
+	if !finder.isMatchingDirPath(d) {
 		t.Errorf("expected true")
 	}
 }
@@ -38,7 +38,7 @@ func TestIsFindDir_SingleDot_True(t *testing.T) {
 func TestIsFindDir_DoubleDot_True(t *testing.T) {
 	finder := getFinder()
 	d := ".."
-	if !finder.isMatchingDir(d) {
+	if !finder.isMatchingDirPath(d) {
 		t.Errorf("expected true")
 	}
 }
@@ -46,7 +46,7 @@ func TestIsFindDir_DoubleDot_True(t *testing.T) {
 func TestIsFindDir_IsHidden_False(t *testing.T) {
 	finder := getFinder()
 	d := ".git"
-	if finder.isMatchingDir(d) {
+	if finder.isMatchingDirPath(d) {
 		t.Errorf("expected false")
 	}
 }
@@ -56,7 +56,7 @@ func TestIsFindDir_IsHiddenIncludeHidden_True(t *testing.T) {
 	settings.SetIncludeHidden(true)
 	finder := NewFinder(settings)
 	d := ".git"
-	if !finder.isMatchingDir(d) {
+	if !finder.isMatchingDirPath(d) {
 		t.Errorf("expected true")
 	}
 }
@@ -64,7 +64,7 @@ func TestIsFindDir_IsHiddenIncludeHidden_True(t *testing.T) {
 func TestIsFindDir_NoPatterns_True(t *testing.T) {
 	finder := getFinder()
 	d := "/Users"
-	if !finder.isMatchingDir(d) {
+	if !finder.isMatchingDirPath(d) {
 		t.Errorf("expected true")
 	}
 }
@@ -74,7 +74,7 @@ func TestIsFindDir_MatchesInPattern_True(t *testing.T) {
 	settings.AddInDirPattern("Find")
 	finder := NewFinder(settings)
 	d := "CsFind"
-	if !finder.isMatchingDir(d) {
+	if !finder.isMatchingDirPath(d) {
 		t.Errorf("expected true")
 	}
 }
@@ -84,7 +84,7 @@ func TestIsFindDir_MatchesOutPattern_False(t *testing.T) {
 	settings.AddOutDirPattern("Find")
 	finder := NewFinder(settings)
 	d := "CsFind"
-	if finder.isMatchingDir(d) {
+	if finder.isMatchingDirPath(d) {
 		t.Errorf("expected false")
 	}
 }
@@ -94,7 +94,7 @@ func TestIsFindDir_DoesNotMatchInPattern_False(t *testing.T) {
 	settings.AddInDirPattern("FindFiles")
 	finder := NewFinder(settings)
 	d := "CsFind"
-	if finder.isMatchingDir(d) {
+	if finder.isMatchingDirPath(d) {
 		t.Errorf("expected false")
 	}
 }
@@ -104,7 +104,7 @@ func TestIsFindDir_DoesNotMatchOutPattern_True(t *testing.T) {
 	settings.AddOutDirPattern("FindFiles")
 	finder := NewFinder(settings)
 	var d = "CsFind"
-	if !finder.isMatchingDir(d) {
+	if !finder.isMatchingDirPath(d) {
 		t.Errorf("expected true")
 	}
 }

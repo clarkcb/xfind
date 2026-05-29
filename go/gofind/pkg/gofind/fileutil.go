@@ -51,6 +51,10 @@ func getPathSeparatorString() string {
 	return fmt.Sprintf("%c", os.PathSeparator)
 }
 
+func GetPathElems(path string) []string {
+	return strings.Split(path, getPathSeparatorString())
+}
+
 func isDotDir(file string) bool {
 	dotDirs := []string{Dot, DotDot}
 	return containsV(dotDirs, file)
@@ -61,7 +65,7 @@ func IsHiddenName(name string) bool {
 }
 
 func IsHiddenPath(path string) bool {
-	for _, elem := range strings.Split(path, getPathSeparatorString()) {
+	for _, elem := range GetPathElems(path) {
 		if IsHiddenName(elem) {
 			return true
 		}
