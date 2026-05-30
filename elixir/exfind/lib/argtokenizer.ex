@@ -67,7 +67,8 @@ defmodule ExFind.ArgTokenizer do
     parsed_args_with_paths = parsed_args ++ Enum.map(paths, fn p -> {:path, p} end)
 
     case invalid do
-      [{opt, nil} | _rest] -> {:error, "Invalid option: #{trim_option(opt)}"}
+      [{opt, "(-1)"} | _rest] -> parsed_args_to_tokens(parsed_args_with_paths ++ [{String.to_atom(String.slice(opt, 2..-1//1)), -1}], arg_tokenizer, [])
+      [{opt, nil} | _rest] -> {:error, "Invalid option: #{trim_option(opt)}, rest: #{_rest}"}
       [] -> parsed_args_to_tokens(parsed_args_with_paths, arg_tokenizer, [])
     end
   end
