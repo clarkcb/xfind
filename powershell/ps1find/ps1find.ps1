@@ -48,6 +48,10 @@ function Main {
     }
     catch {
         $errMsg = $_.Exception.Message
+        if ($errMsg.StartsWith('Exception calling "Invoke" with')) {
+            $errMsg = $errMsg.Substring(49)
+            $errMsg = $errMsg.Replace('"', '')
+        }
         if ($colorize) {
             LogErrorColor($errMsg)
         } else {

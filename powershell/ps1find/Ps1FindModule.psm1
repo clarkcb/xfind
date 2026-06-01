@@ -79,7 +79,7 @@ function GetConsoleColorForColor {
         Cyan      {return $ConsoleCyan}
         White     {return $ConsoleWhite}
     }
-    return [FileType]::Unknown
+    return $ConsoleWhite
 }
 #endregion
 
@@ -96,7 +96,7 @@ function LogMsg {
 }
 
 function LogError {
-    [OutputType([string])]
+#    [OutputType([string])]
     param([string]$err)
 
     # Write-Error adds a stack trace, which we don't want
@@ -105,7 +105,7 @@ function LogError {
 }
 
 function LogErrorColor {
-    [OutputType([string])]
+#    [OutputType([string])]
     param([string]$err)
 
     # Write-Error adds a stack trace, which we don't want
@@ -155,47 +155,51 @@ function IsHiddenName {
     return ($name.Length -gt 1 -and $name.StartsWith('.') -and (-not ($dotPaths.Contains($name))))
 }
 
-#function IsHiddenFile {
-#    [OutputType([bool])]
-#    param([System.IO.FileSystemInfo]$f)
-#    return ($f.Attributes.HasFlag([System.IO.FileAttributes]::Hidden)) -or
-#            (IsHiddenName $f.Name)
-#}
-
-function IsHiddenDirectory {
+function IsHiddenPath {
     [OutputType([bool])]
-    param([System.IO.DirectoryInfo]$d)
-    if (isHiddenName($d.Name)) {
-        return $true
-    }
-    $parent = $d.Parent
-    while ($null -ne $parent) {
-        if (isHiddenName($parent.Name)) {
+    param([string]$path)
+    $segments = PathElems($path)
+    foreach ($segment in $segments) {
+        if (IsHiddenName($segment)) {
             return $true
         }
-        $parent = $parent.Parent
     }
     return $false
 }
 
-function IsReadableFile {
-    [OutputType([bool])]
-    param([System.IO.FileSystemInfo]$f)
+#function IsReadableFile {
+#    [OutputType([bool])]
+#    param([System.IO.FileSystemInfo]$f)
+#
+#    $readable = $false
+#    try {
+#        [System.IO.File]::OpenRead($f).Close()
+#        $readable = $true
+#    } catch {
+#        $readable = $false
+#    }
+#    return $readable
+#}
 
-    $readable = $false
-    try {
-        [System.IO.File]::OpenRead($f).Close()
-        $readable = $true
-    } catch {
-        $readable = $false
+function GetFileExtension {
+    [OutputType([string])]
+    param([string]$filePath)
+    $fileName = [System.IO.Path]::GetFileName($filePath)
+    if (-not $fileName -or -not $fileName.Contains('.') -or $fileName.LastIndexOf('.') -lt 1) {
+        return ''
     }
-    return $readable
+    $ext = [System.IO.Path]::GetExtension($fileName)
+    if (-not $ext) {
+        return ''
+    }
+#    return $ext.Substring(1)
+    return $ext
 }
 
 function PathElems {
-    [OutputType([int])]
+    [OutputType([string[]])]
     param([string]$path)
-    ($path -split [System.IO.Path]::DirectorySeparatorChar).Count
+    return ($path -split [System.IO.Path]::DirectorySeparatorChar)
 }
 #endregion
 
@@ -269,92 +273,89 @@ class FileTypes {
         }
     }
 
-    [FileType]GetFileType([System.IO.FileInfo]$fileInfo) {
+    [FileType]GetFileTypeForFilePath([string]$filePath) {
         # most specific types first
-        if ($this.IsCodeFile($fileInfo)) {
+        if ($this.IsCodeFilePath($filePath)) {
             return [FileType]::Code
         }
-        if ($this.IsArchiveFile($fileInfo)) {
+        if ($this.IsArchiveFilePath($filePath)) {
             return [FileType]::Archive
         }
-        if ($this.IsAudioFile($fileInfo)) {
+        if ($this.IsAudioFilePath($filePath)) {
             return [FileType]::Audio
         }
-        if ($this.IsFontFile($fileInfo)) {
+        if ($this.IsFontFilePath($filePath)) {
             return [FileType]::Font
         }
-        if ($this.IsImageFile($fileInfo)) {
+        if ($this.IsImageFilePath($filePath)) {
             return [FileType]::Image
         }
-        if ($this.IsVideoFile($fileInfo)) {
+        if ($this.IsVideoFilePath($filePath)) {
             return [FileType]::Video
         }
 
         # most general types last
-        if ($this.IsXmlFile($fileInfo)) {
+        if ($this.IsXmlFilePath($filePath)) {
             return [FileType]::Xml
         }
-        if ($this.IsTextFile($fileInfo)) {
+        if ($this.IsTextFilePath($filePath)) {
             return [FileType]::Text
         }
-        if ($this.IsBinaryFile($fileInfo)) {
+        if ($this.IsBinaryFilePath($filePath)) {
             return [FileType]::Binary
         }
         return [FileType]::Unknown
     }
 
-    [bool]IsArchiveFile([System.IO.FileInfo]$fileInfo) {
-        return $fileInfo.Extension -in $this.FileTypeExtMap['archive'] -or
-        $fileInfo.Name -in $this.FileTypeNameMap['archive']
+    [bool]IsFilePathForType([string]$filePath, [string]$typeName) {
+        $fileName = [System.IO.Path]::GetFileName($filePath)
+        $ext = GetFileExtension($fileName)
+        return $ext -in $this.FileTypeExtMap[$typeName] -or
+        $fileName -in $this.FileTypeNameMap[$typeName]
     }
 
-    [bool]IsAudioFile([System.IO.FileInfo]$fileInfo) {
-        return $fileInfo.Extension -in $this.FileTypeExtMap['audio'] -or
-        $fileInfo.Name -in $this.FileTypeNameMap['audio']
+    [bool]IsArchiveFilePath([string]$filePath) {
+        return $this.IsFilePathForType($filePath, 'archive')
     }
 
-    [bool]IsBinaryFile([System.IO.FileInfo]$fileInfo) {
-        return $fileInfo.Extension -in $this.FileTypeExtMap['binary'] -or
-        $fileInfo.Name -in $this.FileTypeNameMap['binary']
+    [bool]IsAudioFilePath([string]$filePath) {
+        return $this.IsFilePathForType($filePath, 'audio')
     }
 
-    [bool]IsCodeFile([System.IO.FileInfo]$fileInfo) {
-        return $fileInfo.Extension -in $this.FileTypeExtMap['code'] -or
-        $fileInfo.Name -in $this.FileTypeNameMap['code']
+    [bool]IsBinaryFilePath([string]$filePath) {
+        return $this.IsFilePathForType($filePath, 'binary')
     }
 
-    [bool]IsFontFile([System.IO.FileInfo]$fileInfo) {
-        return $fileInfo.Extension -in $this.FileTypeExtMap['font'] -or
-        $fileInfo.Name -in $this.FileTypeNameMap['font']
+    [bool]IsCodeFilePath([string]$filePath) {
+        return $this.IsFilePathForType($filePath, 'code')
     }
 
-    [bool]IsImageFile([System.IO.FileInfo]$fileInfo) {
-        return $fileInfo.Extension -in $this.FileTypeExtMap['image'] -or
-        $fileInfo.Name -in $this.FileTypeNameMap['image']
+    [bool]IsFontFilePath([string]$filePath) {
+        return $this.IsFilePathForType($filePath, 'font')
     }
 
-    [bool]IsSearchableFile([System.IO.FileInfo]$fileInfo) {
-        return $this.GetFileType($fileInfo) -ne [FileType]::Unknown
+    [bool]IsImageFilePath([string]$filePath) {
+        return $this.IsFilePathForType($filePath, 'image')
     }
 
-    [bool]IsTextFile([System.IO.FileInfo]$fileInfo) {
-        return $fileInfo.Extension -in $this.FileTypeExtMap['text'] -or
-            $fileInfo.Name -in $this.FileTypeNameMap['text']
+    [bool]IsSearchableFilePath([string]$filePath) {
+        return $this.GetFileTypeForFilePath($filePath) -ne [FileType]::Unknown
     }
 
-    [bool]IsUnknownFile([System.IO.FileInfo]$fileInfo) {
-        return $fileInfo.Extension -in $this.FileTypeExtMap['unknown'] -or
-            $this.GetFileType($fileInfo) -eq [FileType]::Unknown
+    [bool]IsTextFilePath([string]$filePath) {
+        return $this.IsFilePathForType($filePath, 'text')
     }
 
-    [bool]IsVideoFile([System.IO.FileInfo]$fileInfo) {
-        return $fileInfo.Extension -in $this.FileTypeExtMap['video'] -or
-        $fileInfo.Name -in $this.FileTypeNameMap['video']
+    [bool]IsUnknownFilePath([string]$filePath) {
+        return $this.GetFileTypeForFilePath($filePath) -eq [FileType]::Unknown
     }
 
-    [bool]IsXmlFile([System.IO.FileInfo]$fileInfo) {
-        return $fileInfo.Extension -in $this.FileTypeExtMap['xml'] -or
-        $fileInfo.Name -in $this.FileTypeNameMap['xml']
+    [bool]IsVideoFilePath([string]$filePath) {
+        return $this.IsFilePathForType($filePath, 'video')
+    }
+
+    [bool]IsXmlFilePath([string]$filePath) {
+        return $this.IsFilePathForType($filePath, 'xml')
     }
 }
 #endregion
@@ -1111,13 +1112,25 @@ class FindOptions {
 ########################################
 class FileResult {
     [string[]]$Containers
-    [System.IO.FileInfo]$File
+    [string]$FilePath
     [FileType]$Type
+    [long]$Size
+    [DateTime]$LastMod
 
-    FileResult([System.IO.FileInfo]$File, [FileType]$Type) {
+    FileResult([string]$FilePath, [FileType]$Type) {
         $this.Containers = @()
-        $this.File = $File
+        $this.FilePath = $FilePath
         $this.Type = $Type
+        $this.Size = 0
+        $this.LastMod = [DateTime]::MinValue
+    }
+
+    FileResult([string]$FilePath, [FileType]$Type, [long]$Size, [DateTime]$LastMod) {
+        $this.Containers = @()
+        $this.FilePath = $FilePath
+        $this.Type = $Type
+        $this.Size = $Size
+        $this.LastMod = $LastMod
     }
 }
 #endregion
@@ -1129,23 +1142,23 @@ class FileResult {
 ########################################
 class FileResultFormatter {
     [FindSettings]$Settings
-    [Scriptblock]$FormatDirectoryBlock
+    [Scriptblock]$FormatDirPathBlock
     [Scriptblock]$FormatFileNameBlock
 
     FileResultFormatter([FindSettings]$settings) {
         $this.Settings = $settings
         if ($settings.Colorize -and $settings.InDirPatterns.Length -gt 0) {
-            $this.FormatDirectoryBlock = {
-                param([System.IO.DirectoryInfo]$dir)
-                return $this.FormatDirectoryWithColor($dir)
+            $this.FormatDirPathBlock = {
+                param([string]$dirPath)
+                return $this.FormatDirPathWithColor($dir)
             }
         } else {
-            $this.FormatDirectoryBlock = {
-                param([System.IO.DirectoryInfo]$dir)
-                if ($null -eq $dir) {
+            $this.FormatDirPathBlock = {
+                param([string]$dirPath)
+                if ([string]::IsNullOrEmpty($dirPath)) {
                     return "."
                 }
-                return $dir.ToString()
+                return $dirPath
             }
         }
         if ($settings.Colorize -and ($settings.InExtensions.Length -gt 0 -or $settings.InFilePatterns.Length -gt 0)) {
@@ -1175,23 +1188,23 @@ class FileResultFormatter {
         return "$prefix${consoleColor}$match${script:ConsoleReset}$suffix"
     }
 
-    [string]FormatDirectoryWithColor([System.IO.DirectoryInfo]$dir) {
-        $formattedDir = "."
-        if ($null -ne $dir) {
-            $formattedDir = $dir.ToString();
+    [string]FormatDirPathWithColor([string]$dirPath) {
+        $formattedDirPath = "."
+        if (-not [string]::IsNullOrEmpty($dirPath)) {
+            $formattedDirPath = $dirPath;
             foreach ($dirPattern in $this.Settings.InDirPatterns) {
-                $match = $dirPattern.Match($formattedDir)
+                $match = $dirPattern.Match($formattedDirPath)
                 if ($match.Success) {
-                    $formattedDir = $this.ColorizeString($formattedDir, $match.Index, $match.Index + $match.Length, $this.Settings.DirColor)
+                    $formattedDirPath = $this.ColorizeString($formattedDirPath, $match.Index, $match.Index + $match.Length, $this.Settings.DirColor)
                     break
                 }
             }
         }
-        return $formattedDir
+        return $formattedDirPath
     }
 
-    [string]FormatDirectory([System.IO.DirectoryInfo]$dir) {
-        return $this.FormatDirectoryBlock.Invoke($dir)
+    [string]FormatDirPath([string]$dirPath) {
+        return $this.FormatDirPathBlock.Invoke($dirPath)
     }
 
     [string]FormatFileNameColor([string]$fileName) {
@@ -1216,14 +1229,14 @@ class FileResultFormatter {
         return $this.FormatFileNameBlock.Invoke($fileName)
     }
 
-    [string]FormatFile([System.IO.FileInfo]$file) {
-        $parent = $this.FormatDirectory($file.Directory)
-        $fileName = $this.FormatFileName($file.Name)
-        return $parent + [System.IO.Path]::DirectorySeparatorChar + $fileName
+    [string]FormatFilePath([string]$filePath) {
+        $parent = $this.FormatDirPath([System.IO.Path]::GetDirectoryName($filePath))
+        $fileName = $this.FormatFileName([System.IO.Path]::GetFileName($filePath))
+        return [System.IO.Path]::Combine($parent, $fileName)
     }
 
     [string]FormatFileResult([FileResult]$result) {
-        return $this.FormatFile($result.File)
+        return $this.FormatFilePath($result.FilePath)
     }
 }
 #endregion
@@ -1318,21 +1331,41 @@ class FileResultSorter
 class Finder {
     [FindSettings]$Settings
     [FileTypes]$FileTypes
-    [Scriptblock[]]$FilterDirByHiddenTests
-    [Scriptblock[]]$FilterDirByInPatternsTests
-    [Scriptblock[]]$FilterDirByOutPatternsTests
-    [Scriptblock[]]$FileResultTests
-    [Scriptblock[]]$ArchiveFileResultTests
+    [Scriptblock[]]$MatchingDirPathByHiddenTests
+    [Scriptblock[]]$MatchingDirPathByInPatternsTests
+    [Scriptblock[]]$MatchingDirPathByOutPatternsTests
+    [Scriptblock[]]$MatchingFileNameByHiddenTests
+    [Scriptblock[]]$MatchingArchiveExtensionTests
+    [Scriptblock[]]$MatchingArchiveFileNameTests
+    [Scriptblock[]]$MatchingArchiveFilePathTests
+    [Scriptblock[]]$MatchingArchiveFileResultTests
+    [Scriptblock[]]$MatchingExtensionTests
+    [Scriptblock[]]$MatchingFileNameTests
+    [Scriptblock[]]$MatchingFilePathTests
+    [Scriptblock[]]$MatchingFileTypeTests
+    [Scriptblock[]]$MatchingFileSizeTests
+    [Scriptblock[]]$MatchingLastModTests
+    [Scriptblock[]]$MatchingFileResultTests
 
     Finder([FindSettings]$settings) {
         $this.Settings = $settings
         $this.FileTypes = [FileTypes]::new()
         $this.ValidateSettings()
-        $this.FilterDirByHiddenTests = $this.GetFilterDirByHiddenTests()
-        $this.FilterDirByInPatternsTests = $this.GetFilterDirByInPatternsTests()
-        $this.FilterDirByOutPatternsTests = $this.GetFilterDirByOutPatternsTests()
-        $this.FileResultTests = $this.GetMatchingFileResultTests()
-        $this.ArchiveFileResultTests = $this.GetMatchingArchiveFileResultTests()
+        $this.MatchingDirPathByHiddenTests = $this.GetIsMatchingDirPathByHiddenTests()
+        $this.MatchingDirPathByInPatternsTests = $this.GetIsMatchingDirPathByInPatternsTests()
+        $this.MatchingDirPathByOutPatternsTests = $this.GetIsMatchingDirPathByOutPatternsTests()
+        $this.MatchingFileNameByHiddenTests = $this.GetIsMatchingFileNameByHiddenTests()
+        $this.MatchingArchiveExtensionTests = $this.GetMatchingArchiveExtensionTests()
+        $this.MatchingArchiveFileNameTests = $this.GetMatchingArchiveFileNameTests()
+        $this.MatchingArchiveFilePathTests = $this.GetMatchingArchiveFilePathTests()
+        $this.MatchingArchiveFileResultTests = $this.GetMatchingArchiveFileResultTests()
+        $this.MatchingExtensionTests = $this.GetMatchingExtensionTests()
+        $this.MatchingFileNameTests = $this.GetMatchingFileNameTests()
+        $this.MatchingFilePathTests = $this.GetMatchingFilePathTests()
+        $this.MatchingFileTypeTests = $this.GetMatchingFileTypeTests()
+        $this.MatchingFileSizeTests = $this.GetMatchingFileSizeTests()
+        $this.MatchingLastModTests = $this.GetMatchingLastModTests()
+        $this.MatchingFileResultTests = $this.GetMatchingFileResultTests()
     }
 
     [void]ValidateSettings() {
@@ -1340,12 +1373,11 @@ class Finder {
             throw "Startpath not defined"
         }
         foreach ($p in $this.Settings.Paths) {
-            if (-not (Test-Path $p))
-            {
-                $p = ExpandPath($p)
-            }
             if (-not (Test-Path $p)) {
-                throw "Startpath not found"
+                $p = ExpandPath($p)
+                if (-not (Test-Path $p)) {
+                    throw "Startpath not found"
+                }
             }
             if ((Get-Item $p).LinkType -eq "SymbolicLink") {
                 if (-not $this.Settings.FollowSymlinks) {
@@ -1353,12 +1385,11 @@ class Finder {
                 }
             }
             if (Test-Path -Path $p -PathType Container) {
-                # TODO: filter by hidden
-                if ($this.MatchesAnyPattern($p, $this.Settings.OutDirPatterns)) {
+                if (-not $this.IsTraversableDirPath($p)) {
                     throw "Startpath does not match find settings"
                 }
             } elseif (Test-Path -Path $p -PathType Leaf) {
-                if ($null -eq $this.FilterToFileResult($p)) {
+                if ($null -eq $this.FilterFilePathToFileResult($p)) {
                     throw "Startpath does not match find settings"
                 }
             } else {
@@ -1379,22 +1410,36 @@ class Finder {
     }
 
     [bool]MatchesAnyPattern([string]$s, [regex[]]$patterns) {
-        return @($patterns | Where-Object { $s -match $_ }).Count -gt 0
+        foreach ($p in $patterns) {
+            if ($s -match $p) {
+                return $true
+            }
+        }
+        return $false
     }
 
-    [Scriptblock[]]GetFilterDirByHiddenTests() {
+    [bool]AnyMatchesAnyPattern([string[]]$strs, [regex[]]$patterns) {
+        foreach ($s in $strs) {
+            if ($this.MatchesAnyPattern($s, $patterns)) {
+                return $true
+            }
+        }
+        return $false
+    }
+
+    [Scriptblock[]]GetIsMatchingDirPathByHiddenTests() {
         $tests = @()
         if (-not $this.Settings.IncludeHidden) {
             $tests += {
-                param([System.IO.DirectoryInfo]$d)
-                return !(IsHiddenDirectory $d)
+                param([string]$d)
+                return !(IsHiddenPath $d)
             }
         }
         return $tests
     }
 
-    [bool]FilterDirByHidden([System.IO.DirectoryInfo]$d) {
-        foreach ($t in $this.FilterDirByHiddenTests) {
+    [bool]IsMatchingDirPathByHidden([string]$d) {
+        foreach ($t in $this.MatchingDirPathByHiddenTests) {
             if (-not $t.Invoke($d)) {
                 return $false
             }
@@ -1402,19 +1447,20 @@ class Finder {
         return $true
     }
 
-    [Scriptblock[]]GetFilterDirByInPatternsTests() {
+    [Scriptblock[]]GetIsMatchingDirPathByInPatternsTests() {
         $tests = @()
         if ($this.Settings.InDirPatterns.Count -gt 0) {
             $tests += {
-                param([System.IO.DirectoryInfo]$d)
-                return $this.MatchesAnyPattern($d.FullName, $this.Settings.InDirPatterns)
+                param([string]$d)
+                $elems = PathElems($d)
+                return $this.AnyMatchesAnyPattern($elems, $this.Settings.InDirPatterns)
             }
         }
         return $tests
     }
 
-    [bool]FilterDirByInPatterns([System.IO.DirectoryInfo]$d) {
-        foreach ($t in $this.FilterDirByInPatternsTests) {
+    [bool]IsMatchingDirPathByInPatterns([string]$d) {
+        foreach ($t in $this.MatchingDirPathByInPatternsTests) {
             if (-not $t.Invoke($d)) {
                 return $false
             }
@@ -1422,19 +1468,20 @@ class Finder {
         return $true
     }
 
-    [Scriptblock[]]GetFilterDirByOutPatternsTests() {
+    [Scriptblock[]]GetIsMatchingDirPathByOutPatternsTests() {
         $tests = @()
         if ($this.Settings.OutDirPatterns.Count -gt 0) {
             $tests += {
-                param([System.IO.DirectoryInfo]$d)
-                return !$this.MatchesAnyPattern($d.FullName, $this.Settings.OutDirPatterns)
+                param([string]$d)
+                $elems = PathElems($d)
+                return !$this.MatchesAnyPattern($elems, $this.Settings.OutDirPatterns)
             }
         }
         return $tests
     }
 
-    [bool]FilterDirByOutPatterns([System.IO.DirectoryInfo]$d) {
-        foreach ($t in $this.FilterDirByOutPatternsTests) {
+    [bool]IsMatchingDirPathByOutPatterns([string]$d) {
+        foreach ($t in $this.MatchingDirPathByOutPatternsTests) {
             if (-not $t.Invoke($d)) {
                 return $false
             }
@@ -1442,40 +1489,280 @@ class Finder {
         return $true
     }
 
-    [bool]IsMatchingDir([System.IO.DirectoryInfo]$d) {
-        return $this.FilterDirByHidden($d) -and $this.FilterDirByInPatterns($d) -and $this.FilterDirByOutPatterns($d)
+    [bool]IsTraversableDirPath([string]$d) {
+        return $this.IsMatchingDirPathByHidden($d) -and
+                $this.IsMatchingDirPathByOutPatterns($d)
+    }
+
+    [bool]IsMatchingDirPath([string]$d) {
+        return $this.IsMatchingDirPathByHidden($d) -and 
+                $this.IsMatchingDirPathByInPatterns($d) -and
+                $this.IsMatchingDirPathByOutPatterns($d)
+    }
+
+    [bool]IsNullOrMatchingDirPath([string]$d) {
+        return [string]::IsNullOrEmpty($d) -or
+                $this.IsMatchingDirPath($d)
+    }
+
+    [Scriptblock[]]GetIsMatchingFileNameByHiddenTests() {
+        $tests = @()
+        if (-not $this.Settings.IncludeHidden) {
+            $tests += {
+                param([string]$fileName)
+                return !(IsHiddenName $fileName)
+            }
+        }
+        return $tests
+    }
+
+    [bool]IsMatchingFileNameByHidden([string]$fileName) {
+        foreach ($t in $this.MatchingFileNameByHiddenTests) {
+            if (-not $t.Invoke($fileName)) {
+                return $false
+            }
+        }
+        return $true
+    }
+
+    [Scriptblock[]]GetMatchingArchiveExtensionTests() {
+        $tests = @()
+        if ($this.Settings.InArchiveExtensions.Count -gt 0) {
+            $tests += {
+                param([string]$ext)
+                return $this.Settings.InArchiveExtensions.Contains($ext)
+            }
+        } elseif ($this.Settings.OutArchiveExtensions.Count -gt 0) {
+            $tests += {
+                param([string]$ext)
+                return !$this.Settings.OutArchiveExtensions.Contains($ext)
+            }
+        }
+        return $tests
+    }
+
+    [Scriptblock[]]GetMatchingArchiveFileNameTests() {
+        $tests = @()
+        if ($this.Settings.InArchiveFilePatterns.Count -gt 0) {
+            $tests += {
+                param([string]$fileName)
+                return $this.MatchesAnyPattern($fileName, $this.Settings.InArchiveFilePatterns)
+            }
+        } elseif ($this.Settings.OutArchiveFilePatterns.Count -gt 0) {
+            $tests += {
+                param([string]$fileName)
+                return !$this.MatchesAnyPattern($fileName, $this.Settings.OutArchiveFilePatterns)
+            }
+        }
+        return $tests
+    }
+
+    [Scriptblock[]]GetMatchingArchiveFilePathTests() {
+        $tests = @()
+        if ($this.MatchingArchiveExtensionTests.Count -gt 0) {
+            $tests += {
+                param([string]$filePath)
+                $ext = GetFileExtension($filePath)
+                foreach ($t in $this.MatchingArchiveExtensionTests) {
+                    if (-not $t.Invoke($ext)) {
+                        return $false
+                    }
+                }
+                return $true
+            }
+        }
+        if ($this.MatchingArchiveFileNameTests.Count -gt 0) {
+            $tests += {
+                param([string]$filePath)
+                $fileName = [System.IO.Path]::GetFileName($filePath)
+                foreach ($t in $this.MatchingArchiveFileNameTests) {
+                    if (-not $t.Invoke($fileName)) {
+                        return $false
+                    }
+                }
+                return $true
+            }
+        }
+        return $tests
+    }
+
+    [bool]IsMatchingArchiveFilePath([string]$filePath) {
+        foreach ($t in $this.MatchingArchiveFilePathTests) {
+            if (-not $t.Invoke($filePath)) {
+                return $false
+            }
+        }
+        return $true
     }
 
     [Scriptblock[]]GetMatchingArchiveFileResultTests() {
         $tests = @()
-        if ($this.Settings.InArchiveExtensions.Count -gt 0) {
+
+        if ($this.MatchingArchiveFilePathTests.Count -gt 0) {
             $tests += {
-                param([FileResult]$f)
-                return $this.Settings.InArchiveExtensions.Contains($f.File.Extension)
-            }
-        } elseif ($this.Settings.OutArchiveExtensions.Count -gt 0) {
-            $tests += {
-                param([FileResult]$f)
-                return !$this.Settings.OutArchiveExtensions.Contains($f.File.Extension)
-            }
-        }
-        if ($this.Settings.InArchiveFilePatterns.Count -gt 0) {
-            $tests += {
-                param([FileResult]$f)
-                return $this.MatchesAnyPattern($f.File.Name, $this.Settings.InArchiveFilePatterns)
-            }
-        } elseif ($this.Settings.OutArchiveFilePatterns.Count -gt 0) {
-            $tests += {
-                param([FileResult]$f)
-                return !$this.MatchesAnyPattern($f.File.Name, $this.Settings.OutArchiveFilePatterns)
+                param([FileResult]$fr)
+                foreach ($t in $this.MatchingArchiveFilePathTests) {
+                    if (-not $t.Invoke($fr.FilePath)) {
+                        return $false
+                    }
+                }
+                return $true
             }
         }
         return $tests
     }
 
-    [bool]IsMatchingArchiveFileResult([FileResult]$f) {
-        foreach ($t in $this.ArchiveFileResultTests) {
-            if (-not $t.Invoke($f)) {
+    [bool]IsMatchingArchiveFileResult([FileResult]$fr) {
+        foreach ($t in $this.MatchingArchiveFileResultTests) {
+            if (-not $t.Invoke($fr)) {
+                return $false
+            }
+        }
+        return $true
+    }
+
+    [Scriptblock[]]GetMatchingExtensionTests() {
+        $tests = @()
+        if ($this.Settings.InExtensions.Count -gt 0) {
+            $tests += {
+                param([string]$ext)
+                return $this.Settings.InExtensions.Contains($ext)
+            }
+        } elseif ($this.Settings.OutExtensions.Count -gt 0) {
+            $tests += {
+                param([string]$ext)
+                return !$this.Settings.OutExtensions.Contains($ext)
+            }
+        }
+        return $tests
+    }
+
+    [Scriptblock[]]GetMatchingFileNameTests() {
+        $tests = @()
+        if ($this.Settings.InFilePatterns.Count -gt 0) {
+            $tests += {
+                param([string]$fileName)
+                return $this.MatchesAnyPattern($fileName, $this.Settings.InFilePatterns)
+            }
+        } elseif ($this.Settings.OutFilePatterns.Count -gt 0) {
+            $tests += {
+                param([string]$fileName)
+                return !$this.MatchesAnyPattern($fileName, $this.Settings.OutFilePatterns)
+            }
+        }
+        return $tests
+    }
+
+    [Scriptblock[]]GetMatchingFilePathTests() {
+        $tests = @()
+        if ($this.MatchingExtensionTests.Count -gt 0) {
+            $tests += {
+                param([string]$filePath)
+                $ext = GetFileExtension($filePath)
+                foreach ($t in $this.MatchingExtensionTests) {
+                    if (-not $t.Invoke($ext)) {
+                        return $false
+                    }
+                }
+                return $true
+            }
+        }
+        if ($this.MatchingFileNameTests.Count -gt 0) {
+            $tests += {
+                param([string]$filePath)
+                $fileName = [System.IO.Path]::GetFileName($filePath)
+                foreach ($t in $this.MatchingFileNameTests) {
+                    if (-not $t.Invoke($fileName)) {
+                        return $false
+                    }
+                }
+                return $true
+            }
+        }
+        return $tests
+    }
+
+    [bool]IsMatchingFilePath([string]$filePath) {
+        foreach ($t in $this.MatchingFilePathTests) {
+            if (-not $t.Invoke($filePath)) {
+                return $false
+            }
+        }
+        return $true
+    }
+
+    [Scriptblock[]]GetMatchingFileTypeTests() {
+        $tests = @()
+        if ($this.Settings.InFileTypes.Count -gt 0) {
+            $tests += {
+                param([FileType]$fileType)
+                return $this.Settings.InFileTypes.Contains($fileType)
+            }
+        } elseif ($this.Settings.OutFileTypes.Count -gt 0) {
+            $tests += {
+                param([FileType]$fileType)
+                return !$this.Settings.OutFileTypes.Contains($fileType)
+            }
+        }
+        return $tests
+    }
+
+    [bool]IsMatchingFileType([FileType]$fileType) {
+        foreach ($t in $this.MatchingFileTypeTests) {
+            if (-not $t.Invoke($fileType)) {
+                return $false
+            }
+        }
+        return $true
+    }
+
+    [Scriptblock[]]GetMatchingFileSizeTests() {
+        $tests = @()
+        if ($this.Settings.MaxSize -gt 0) {
+            $tests += {
+                param([long]$fileSize)
+                return $fileSize -le $this.Settings.MaxSize
+            }
+        }
+        if ($this.Settings.MinSize -gt 0) {
+            $tests += {
+                param([long]$fileSize)
+                return $fileSize -ge $this.Settings.MinSize
+            }
+        }
+        return $tests
+    }
+
+    [bool]IsMatchingFileSize([long]$fileSize) {
+        foreach ($t in $this.MatchingFileSizeTests) {
+            if (-not $t.Invoke($fileSize)) {
+                return $false
+            }
+        }
+        return $true
+    }
+
+    [Scriptblock[]]GetMatchingLastModTests() {
+        $tests = @()
+
+        if ($this.Settings.MaxLastMod -gt [DateTime]::MinValue) {
+            $tests += {
+                param([DateTime]$lastMod)
+                return $lastMod -le $this.Settings.MaxLastMod
+            }
+        }
+        if ($this.Settings.MinLastMod -gt [DateTime]::MinValue) {
+            $tests += {
+                param([DateTime]$lastMod)
+                return $lastMod -ge $this.Settings.MinLastMod
+            }
+        }
+        return $tests
+    }
+
+    [bool]IsMatchingLastMod([DateTime]$lastMod) {
+        foreach ($t in $this.MatchingLastModTests) {
+            if (-not $t.Invoke($lastMod)) {
                 return $false
             }
         }
@@ -1484,69 +1771,36 @@ class Finder {
 
     [Scriptblock[]]GetMatchingFileResultTests() {
         $tests = @()
-        if ($this.Settings.InExtensions.Count -gt 0) {
+        if ($this.MatchingFilePathTests.Count -gt 0) {
             $tests += {
-                param([FileResult]$f)
-                return $this.Settings.InExtensions.Contains($f.File.Extension)
-            }
-        } elseif ($this.Settings.OutExtensions.Count -gt 0) {
-            $tests += {
-                param([FileResult]$f)
-                return !$this.Settings.OutExtensions.Contains($f.File.Extension)
+                param([FileResult]$fr)
+                return $this.IsMatchingFilePath($fr.FilePath)
             }
         }
-        if ($this.Settings.InFilePatterns.Count -gt 0) {
+        if ($this.MatchingFileTypeTests.Count -gt 0) {
             $tests += {
-                param([FileResult]$f)
-                return $this.MatchesAnyPattern($f.File.Name, $this.Settings.InFilePatterns)
-            }
-        } elseif ($this.Settings.OutFilePatterns.Count -gt 0) {
-            $tests += {
-                param([FileResult]$f)
-                return !$this.MatchesAnyPattern($f.File.Name, $this.Settings.OutFilePatterns)
+                param([FileResult]$fr)
+                return $this.IsMatchingFileType($fr.Type)
             }
         }
-        if ($this.Settings.InFileTypes.Count -gt 0) {
+        if ($this.MatchingFileSizeTests.Count -gt 0) {
             $tests += {
-                param([FileResult]$f)
-                return $this.Settings.InFileTypes.Contains($f.Type)
-            }
-        } elseif ($this.Settings.OutFileTypes.Count -gt 0) {
-            $tests += {
-                param([FileResult]$f)
-                return !$this.Settings.OutFileTypes.Contains($f.Type)
+                param([FileResult]$fr)
+                return $this.IsMatchingFileSize($fr.File.Length)
             }
         }
-        if ($this.Settings.MaxLastMod -gt [DateTime]::MinValue) {
+        if ($this.MatchingLastModTests.Count -gt 0) {
             $tests += {
-                param([FileResult]$f)
-                return $f.File.LastWriteTimeUtc -le $this.Settings.MaxLastMod
-            }
-        }
-        if ($this.Settings.MinLastMod -gt [DateTime]::MinValue) {
-            $tests += {
-                param([FileResult]$f)
-                return $f.File.LastWriteTimeUtc -ge $this.Settings.MinLastMod
-            }
-        }
-        if ($this.Settings.MaxSize -gt 0) {
-            $tests += {
-                param([FileResult]$f)
-                return $f.File.Length -le $this.Settings.MaxSize
-            }
-        }
-        if ($this.Settings.MinSize -gt 0) {
-            $tests += {
-                param([FileResult]$f)
-                return $f.File.Length -ge $this.Settings.MinSize
+                param([FileResult]$fr)
+                return $this.IsMatchingLastMod($fr.File.LastWriteTimeUtc)
             }
         }
         return $tests
     }
 
-    [bool]IsMatchingFileResult([FileResult]$f) {
-        foreach ($t in $this.FileResultTests) {
-            if (-not $t.Invoke($f)) {
+    [bool]IsMatchingFileResult([FileResult]$fr) {
+        foreach ($t in $this.MatchingFileResultTests) {
+            if (-not $t.Invoke($fr)) {
                 # Write-Host "$f did not pass test: $t"
                 return $false
             }
@@ -1554,30 +1808,56 @@ class Finder {
         return $true
     }
 
-    [FileResult]FilterToFileResult([System.IO.FileInfo]$file) {
-        if (-not $this.IsMatchingDir($file.Directory)) {
+    [FileResult]FilterArchiveFilePathToFileResult([string]$filePath) {
+        if (-not $this.Settings.IncludeArchives -and -not $this.Settings.ArchivesOnly) {
             return $null
         }
-        if ((-not $this.Settings.IncludeHidden) -and (IsHiddenName($file.Name))) {
+        if (-not $this.IsMatchingArchiveFilePath($filePath)) {
             return $null
         }
-        $fileResult = [FileResult]::new($file, $this.FileTypes.GetFileType($file))
-        if ($fileResult.Type -eq [FileType]::Archive) {
-            if ($this.Settings.IncludeArchives -and $this.IsMatchingArchiveFileResult($fileResult)) {
-                return $fileResult
-            }
-            return $null
-        }
-        if (-not $this.Settings.ArchivesOnly -and $this.IsMatchingFileResult($fileResult)) {
-            return $fileResult
-        }
-        return $null
+
+        return [FileResult]::new($filePath, [FileType]::Archive, 0, [DateTime]::MinValue)
     }
 
-    [FileResult[]]FilterToFileResults([System.IO.FileInfo[]]$files) {
+    [FileResult]FilterRegularFilePathToFileResult([string]$filePath, [FileType]$fileType) {
+        if ($this.Settings.ArchivesOnly) {
+            return $null
+        }
+        if (-not $this.IsMatchingFilePath($filePath) -or -not $this.IsMatchingFileType($fileType)) {
+            return $null
+        }
+
+        [long]$size = 0
+        [DateTime]$lastMod = [DateTime]::MinValue
+        if ($this.MatchingFileSizeTests.Count -gt 0 -or $this.MatchingLastModTests.Count -gt 0) {
+            $pathFile = [System.IO.FileInfo]::new($filePath)
+            $size = $pathFile.Length
+            $lastMod = $pathFile.LastWriteTimeUtc
+            if (-not $this.IsMatchingFileSize($size) -or -not $this.IsMatchingLastMod($lastMod)) {
+                return $null
+            }
+        }
+        
+        return [FileResult]::new($filePath, $fileType, $size, $lastMod)
+    }
+
+    [FileResult]FilterFilePathToFileResult([string]$filePath) {
+        if (-not $this.IsNullOrMatchingDirPath([System.IO.Path]::GetDirectoryName($filePath)) -or 
+                -not $this.IsMatchingFileNameByHidden([System.IO.Path]::GetFileName($filePath))) {
+            return $null
+        }
+
+        $fileType = $this.FileTypes.GetFileTypeForFilePath($filePath)
+        if ($fileType -eq [FileType]::Archive) {
+            return $this.FilterArchiveFilePathToFileResult($filePath)
+        }
+        return $this.FilterRegularFilePathToFileResult($filePath, $fileType)
+    }
+
+    [FileResult[]]FilterFilePathsToFileResults([string[]]$filePaths) {
         $fileResults = @()
-        foreach ($file in $files) {
-            $fileResult = $this.FilterToFileResult($file)
+        foreach ($filePath in $filePaths) {
+            $fileResult = $this.FilterFilePathToFileResult($filePath)
             if ($null -ne $fileResult) {
                 $fileResults += $fileResult
             }
@@ -1585,7 +1865,7 @@ class Finder {
         return $fileResults
     }
 
-    [FileResult[]]RecGetPathResults([System.IO.DirectoryInfo]$dirPath, [int]$minDepth, [int]$maxDepth, [int]$currentDepth) {
+    [FileResult[]]RecGetDirPathResults([string]$dirPath, [int]$minDepth, [int]$maxDepth, [int]$currentDepth) {
         $recurse = $true
         if ($currentDepth -eq $maxDepth) {
             $recurse = $false
@@ -1594,16 +1874,19 @@ class Finder {
         }
 
         # Get the dirs and files under file_path
-        $pathDirs = @()
-        $pathFiles = @()
+        $subDirPaths = @()
+        $subFilePaths = @()
         $fileResults = @()
         if ($recurse) {
             # Force is needed to get hidden dirs
-            $pathDirs = Get-ChildItem -Force -Recurse:$false -Path $dirPath -Directory | Where-Object { $this.FilterDirByHidden($_) -and $this.FilterDirByOutPatterns($_) }
+            $pathDirs = Get-ChildItem -Force -Recurse:$false -Path $dirPath -Directory
             if (-not $this.Settings.FollowSymlinks) {
                 # filter out symlinks
                 $pathDirs = $pathDirs | Where-Object { $_.LinkType -ne "SymbolicLink" }
             }
+            $dirNames = $pathDirs | Select-Object -ExpandProperty Name |
+                    Where-Object { $this.IsTraversableDirPath($_) }
+            $subDirPaths = $dirNames | ForEach-Object { [System.IO.Path]::Combine($dirPath, $_) }
         }
         if ($minDepth -lt 0 -or $currentDepth -ge $minDepth) {
             # Force is needed to get hidden files
@@ -1612,12 +1895,15 @@ class Finder {
                 # filter out symlinks
                 $pathFiles = $pathFiles | Where-Object { $_.LinkType -ne "SymbolicLink" }
             }
+            $fileNames = $pathFiles | Select-Object -ExpandProperty Name |
+                    Where-Object { $this.IsMatchingFilePath($_) -and $this.IsMatchingFileType($this.FileTypes.GetFileTypeForFilePath($_)) }
+            $subFilePaths = $fileNames | ForEach-Object { [System.IO.Path]::Combine($dirPath, $_) }
         }
 
         # Filter the dirs and files
-        $fileResults += $this.FilterToFileResults($pathFiles)
-        foreach ($pathDir in $pathDirs) {
-            $fileResults += $this.RecGetPathResults($pathDir, $minDepth, $maxDepth, $currentDepth + 1)
+        $fileResults += $this.FilterFilePathsToFileResults($subFilePaths)
+        foreach ($subDirPath in $subDirPaths) {
+            $fileResults += $this.RecGetDirPathResults($subDirPath, $minDepth, $maxDepth, $currentDepth + 1)
         }
 
         return $fileResults
@@ -1625,36 +1911,39 @@ class Finder {
 
     [FileResult[]]GetPathResults([string]$path) {
         $fileResults = @()
-        if ($path.StartsWith('~')) {
+        if (-not (Test-Path $path)) {
             $path = ExpandPath($path)
+            if (-not (Test-Path $path)) {
+                throw "Startpath not found"
+            }
         }
         if (Test-Path -Path $path -PathType Container) {
             # if max_depth is zero, we can skip since a directory cannot be a result
             if ($this.Settings.MaxDepth -eq 0) {
                 return $fileResults
             }
-            $pathDir = [System.IO.DirectoryInfo]::new($path)
-            if ($this.FilterDirByHidden($pathDir) -and $this.FilterDirByOutPatterns($pathDir)) {
+            if ($this.IsTraversableDirPath($path)) {
                 $maxDepth = $this.Settings.MaxDepth
                 if (-not $this.Settings.Recursive) {
                     $maxDepth = 1
                 }
-                $fileResults += $this.RecGetPathResults($pathDir, $this.Settings.MinDepth, $maxDepth, 1)
+                $fileResults += $this.RecGetDirPathResults($path, $this.Settings.MinDepth, $maxDepth, 1)
             } else {
                 throw "Startpath does not match find settings"
             }
-        } else {
+        } elseif (Test-Path -Path $path -PathType Leaf) {
             # if min_depth > zero, we can skip since the file is at depth zero
             if ($this.Settings.MinDepth -gt 0) {
                 return @()
             }
-            $pathFile = [System.IO.FileInfo]::new($path)
-            $pathFileResult = [FileResult]::new($pathFile, $this.FileTypes.GetFileType($pathFile))
-            if ($this.IsMatchingFileResult($pathFileResult)) {
+            $pathFileResult = $this.FilterFilePathToFileResult($path)
+            if ($null -ne $pathFileResult) {
                 $fileResults += $pathFileResult
             } else {
                 throw "Startpath does not match find settings"
             }
+        } else {
+            throw "Startpath does not match find settings"
         }
         return $fileResults
     }
@@ -1664,25 +1953,33 @@ class Finder {
         foreach ($path in $this.Settings.Paths) {
             $fileResults += $this.GetPathResults($path)
         }
-        $fileResultSorter = [FileResultSorter]::new($this.Settings)
-        return $fileResultSorter.Sort($fileResults)
+        if ($fileResults.Count -gt 1) {
+            $fileResultSorter = [FileResultSorter]::new($this.Settings)
+            return $fileResultSorter.Sort($fileResults)
+        }
+        return $fileResults
     }
 
     [FileResult[]]Find() {
         return $this.GetFileResults()
     }
-
-    [void]PrintMatchingDirs([FileResult[]]$fileResults, [FileResultFormatter]$formatter) {
+ 
+    [string[]]GetMatchingDirs([FileResult[]]$fileResults) {
         $dirs = @()
         if ($fileResults.Count -gt 0) {
             $dirs = $fileResults |
-                    ForEach-Object { $_.File.Directory } |
+                    ForEach-Object { [System.IO.Path]::GetDirectoryName($_) } |
                     Select-Object -Unique
         }
+        return $dirs
+    }
+
+    [void]PrintMatchingDirs([FileResult[]]$fileResults, [FileResultFormatter]$formatter) {
+        $dirs = $this.GetMatchingDirs($fileResults)
         if ($dirs.Count -gt 0) {
             LogMsg("`nMatching directories ($($dirs.Count)):")
             foreach ($d in $dirs) {
-                LogMsg($formatter.FormatDirectory($d))
+                LogMsg($formatter.FormatDirPath($d))
             }
         } else {
             LogMsg("`nMatching directories: 0")
