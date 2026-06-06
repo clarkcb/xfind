@@ -331,7 +331,9 @@ public class Finder
 			return null;
 		}
 
-		if (!IsMatchingFilePath(filePath) || !IsMatchingFileType(fileType))
+		if (!IsMatchingFilePath(filePath) || !IsMatchingFileType(fileType)
+		                                  || !IsMatchingFileSize(filePath.Length)
+		                                  || !IsMatchingLastMod(filePath.LastWriteTimeUtc))
 		{
 			return null;
 		}
@@ -368,11 +370,18 @@ public class Finder
 		}
 
 		var pathResults = new List<FileResult>();
-		var recurse = currentDepth != maxDepth;
+		var recurse = maxDepth < 0 || currentDepth < maxDepth;
+
+		var symlinkFilter = (FilePath filePath) => true;
+		if (!Settings.FollowSymlinks)
+		{
+			symlinkFilter = filePath => !filePath.IsSymlink;
+		}
 
 		if (minDepth < 0 || currentDepth >= minDepth)
 		{
 			pathResults.AddRange(dirPath.EnumerateFiles("*", _enumerationOptions)
+				.Where(symlinkFilter)
 				.Select(FilterToFileResult)
 				.Where(fr => fr != null)
 				.Select(fr => fr!));
@@ -381,6 +390,7 @@ public class Finder
 		if (recurse)
 		{
 			var pathDirs = dirPath.EnumerateDirectories()
+				.Where(symlinkFilter)
 				.Where(IsTraversableDirPath);
 			foreach (var pathDir in pathDirs)
 			{
@@ -393,6 +403,10 @@ public class Finder
 
 	private List<FileResult> GetFileResults(FilePath path)
 	{
+		if (!Settings.FollowSymlinks && path.IsSymlink)
+		{
+			throw new FindException(FindError.StartpathNotMatchFindSettings);
+		}
 		if (path.IsDirectory)
 		{
 			// if MaxDepth is zero, we can skip since a directory cannot be a result
