@@ -19,6 +19,196 @@ pub struct Finder {
     pub settings: FindSettings,
 }
 
+fn matches_any_pattern(s: &str, patterns: &[Regex]) -> bool {
+    patterns.iter().any(|p| p.is_match(s))
+}
+
+fn matches_any_string(string: &str, strings: &[String]) -> bool {
+    strings.iter().any(|s| s == string)
+}
+
+fn empty_or_matches_any_pattern(s: &str, patterns: &[Regex]) -> bool {
+    patterns.is_empty() || matches_any_pattern(s, patterns)
+}
+
+fn empty_or_not_matches_any_pattern(s: &str, patterns: &[Regex]) -> bool {
+    patterns.is_empty() || !matches_any_pattern(s, patterns)
+}
+
+fn empty_or_matches_any_string(string: &str, strings: &[String]) -> bool {
+    strings.is_empty() || strings.iter().any(|s| s == string)
+}
+
+fn empty_or_not_matches_any_string(string: &str, strings: &[String]) -> bool {
+    strings.is_empty() || !strings.iter().any(|s| s == string)
+}
+
+fn empty_or_matches_any_file_type(file_type: &FileType, file_types: &[FileType]) -> bool {
+    file_types.is_empty() || file_types.contains(file_type)
+}
+
+fn empty_or_not_matches_any_file_type(file_type: &FileType, file_types: &[FileType]) -> bool {
+    file_types.is_empty() || !file_types.contains(file_type)
+}
+
+fn is_matching_dir_by_hidden(settings: &FindSettings, dir: &str) -> bool {
+    settings.include_hidden() || !FileUtil::is_hidden(&dir)
+}
+
+fn is_matching_dir_by_in_patterns(settings: &FindSettings, dir: &str) -> bool {
+    empty_or_matches_any_pattern(dir, &settings.in_dir_patterns())
+}
+
+fn is_matching_dir_by_out_patterns(settings: &FindSettings, dir: &str) -> bool {
+    empty_or_not_matches_any_pattern(dir, &settings.out_dir_patterns())
+}
+
+fn is_traversable_dir(settings: &FindSettings, dir: &str) -> bool {
+    is_matching_dir_by_hidden(settings, dir)
+        && is_matching_dir_by_out_patterns(settings, dir)
+}
+
+fn is_matching_dir(settings: &FindSettings, dir: &str) -> bool {
+    is_matching_dir_by_hidden(settings, dir)
+        && is_matching_dir_by_in_patterns(settings, dir)
+        && is_matching_dir_by_out_patterns(settings, dir)
+}
+
+fn is_matching_file_name_by_hidden(settings: &FindSettings, file_name: &str) -> bool {
+    settings.include_hidden() || !FileUtil::is_hidden_name(&file_name)
+}
+
+fn is_matching_archive_extension(settings: &FindSettings, ext: &str) -> bool {
+    empty_or_matches_any_string(ext, &settings.in_archive_extensions())
+        && empty_or_not_matches_any_string(ext, &settings.out_archive_extensions())
+}
+
+fn is_matching_extension(settings: &FindSettings, ext: &str) -> bool {
+    empty_or_matches_any_string(ext, &settings.in_extensions())
+        && empty_or_not_matches_any_string(ext, &settings.out_extensions())
+}
+
+fn is_matching_archive_file_name(settings: &FindSettings, file_name: &str) -> bool {
+    empty_or_matches_any_pattern(file_name, &settings.in_archive_file_patterns())
+        && empty_or_not_matches_any_pattern(file_name, &settings.out_archive_file_patterns())
+}
+
+fn filter_file_name_by_in_patterns(settings: &FindSettings, file_name: &str) -> bool {
+    empty_or_matches_any_pattern(file_name, &settings.in_file_patterns())
+}
+
+fn filter_file_name_by_out_patterns(settings: &FindSettings, file_name: &str) -> bool {
+    empty_or_not_matches_any_pattern(file_name, &settings.out_file_patterns())
+}
+
+fn is_matching_file_name(settings: &FindSettings, file_name: &str) -> bool {
+    is_matching_file_name_by_hidden(settings, file_name)
+        && filter_file_name_by_in_patterns(settings, file_name)
+        && filter_file_name_by_out_patterns(settings, file_name)
+}
+
+fn is_matching_file_path(settings: &FindSettings, file_path: &Path) -> bool {
+    if file_path.parent().is_some() {
+        if !is_matching_dir(settings, file_path.parent().unwrap().to_str().unwrap()) {
+            return false;
+        }
+    }
+    let ext = match file_path.extension() {
+        Some(ext) => ext.to_str().unwrap(),
+        None => ""
+    };
+    if !is_matching_extension(settings, ext) {
+        return false;
+    }
+    match file_path.file_name() {
+        Some(file_name) => {
+            if !is_matching_file_name(settings, file_name.to_str().unwrap()) {
+                return false;
+            }
+        }
+        None => return false
+    }
+    true
+}
+
+fn is_matching_file_type(settings: &FindSettings, file_type: &FileType) -> bool {
+    empty_or_matches_any_file_type(file_type, &settings.in_file_types())
+        && empty_or_not_matches_any_file_type(file_type, &settings.out_file_types())
+}
+
+fn is_matching_file_size(settings: &FindSettings, file_size: &u64) -> bool {
+    (settings.max_size() == 0 || file_size <= &settings.max_size())
+        && (settings.min_size() == 0 || file_size >= &settings.min_size())
+}
+
+fn is_matching_last_mod(settings: &FindSettings, last_mod: &u64) -> bool {
+    (settings.max_last_mod() == 0 || last_mod <= &settings.max_last_mod())
+        && (settings.min_last_mod() == 0 || last_mod >= &settings.min_last_mod())
+}
+
+fn validate_settings(settings: &FindSettings) -> Result<(), FindError> {
+    if settings.paths().len() < 1 {
+        return Err(FindError::new("Startpath not defined"));
+    }
+    for path in settings.paths().iter() {
+        if path == "" {
+            return Err(FindError::new("Startpath not defined"));
+        }
+        let p = FileUtil::expand_path_string(path);
+        let metadata = fs::symlink_metadata(&p);
+        match metadata {
+            Ok(data) => {
+                if data.is_symlink() {
+                    if !settings.follow_symlinks() {
+                        return Err(FindError::new(
+                            "Startpath does not match find settings",
+                        ))
+                    }
+                } else if data.is_dir() {
+                    if !is_traversable_dir(&settings, &p) {
+                        return Err(FindError::new(
+                            "Startpath does not match find settings",
+                        ))
+                    }
+                } else if data.is_file() {
+                    let path_buf = PathBuf::from(&path);
+                    if !is_matching_file_path(&settings, &path_buf) {
+                        return Err(FindError::new(
+                            "Startpath does not match find settings",
+                        ))
+                    }
+                } else {
+                    // TODO: start path is unknown/invalid type
+                    return Err(FindError::new(
+                        "Startpath does not match find settings",
+                    ))
+                }
+            }
+            Err(_) => return match metadata.err().unwrap().kind() {
+                io::ErrorKind::NotFound => Err(FindError::new("Startpath not found")),
+                io::ErrorKind::PermissionDenied => {
+                    Err(FindError::new("Startpath not readable"))
+                },
+                _ => {
+                    Err(FindError::new(
+                        "An unknown error occurred trying to read startpath",
+                    ))
+                }
+            },
+        }
+    }
+    if settings.max_depth() > -1 && settings.max_depth() < settings.min_depth() {
+        return Err(FindError::new("Invalid range for mindepth and maxdepth"));
+    }
+    if settings.max_last_mod() > 0 && settings.max_last_mod() < settings.min_last_mod() {
+        return Err(FindError::new("Invalid range for minlastmod and maxlastmod"));
+    }
+    if settings.max_size() > 0 && settings.max_size() < settings.min_size() {
+        return Err(FindError::new("Invalid range for minsize and maxsize"));
+    }
+    Ok(())
+}
+
 impl Finder {
     /// Create a new Finder instance for the given settings, if valid
     pub fn new(settings: FindSettings) -> Result<Finder, FindError> {
@@ -27,7 +217,7 @@ impl Finder {
             Err(error) => return Err(error),
         };
 
-        if let Err(error) = Finder::validate_settings(&settings) {
+        if let Err(error) = validate_settings(&settings) {
             return Err(error);
         }
 
@@ -35,119 +225,6 @@ impl Finder {
             file_types,
             settings,
         })
-    }
-
-    fn validate_settings(settings: &FindSettings) -> Result<(), FindError> {
-        if settings.paths().len() < 1 {
-            return Err(FindError::new("Startpath not defined"));
-        }
-        for path in settings.paths().iter() {
-            if path == "" {
-                return Err(FindError::new("Startpath not defined"));
-            }
-            let p = FileUtil::expand_path_string(path);
-            let metadata = fs::metadata(&p);
-            if metadata.is_err() {
-                return match metadata.err().unwrap().kind() {
-                    io::ErrorKind::NotFound => Err(FindError::new("Startpath not found")),
-                    io::ErrorKind::PermissionDenied => {
-                        Err(FindError::new("Startpath not readable"))
-                    },
-                    _ => {
-                        Err(FindError::new(
-                            "An unknown error occurred trying to read startpath",
-                        ))
-                    }
-                }
-            }
-        }
-        if settings.max_depth() > -1 && settings.max_depth() < settings.min_depth() {
-            return Err(FindError::new("Invalid range for mindepth and maxdepth"));
-        }
-        if settings.max_last_mod() > 0 && settings.max_last_mod() < settings.min_last_mod() {
-            return Err(FindError::new("Invalid range for minlastmod and maxlastmod"));
-        }
-        if settings.max_size() > 0 && settings.max_size() < settings.min_size() {
-            return Err(FindError::new("Invalid range for minsize and maxsize"));
-        }
-        Ok(())
-    }
-
-    fn matches_any_string(&self, string: &str, strings: &[String]) -> bool {
-        strings.iter().any(|s| s == string)
-    }
-
-    fn matches_any_pattern(&self, s: &str, patterns: &[Regex]) -> bool {
-        patterns.iter().any(|p| p.is_match(s))
-    }
-
-    fn filter_dir_by_hidden(&self, dir: &str) -> bool {
-        self.settings.include_hidden() || !FileUtil::is_hidden(&dir)
-    }
-
-    fn filter_dir_by_in_patterns(&self, dir: &str) -> bool {
-        self.settings.in_dir_patterns().is_empty()
-            || self.matches_any_pattern(&dir, &self.settings.in_dir_patterns())
-    }
-
-    fn filter_dir_by_out_patterns(&self, dir: &str) -> bool {
-        self.settings.out_dir_patterns().is_empty()
-            || !self.matches_any_pattern(&dir, &self.settings.out_dir_patterns())
-    }
-
-    fn is_matching_dir(&self, dir: &str) -> bool {
-        self.filter_dir_by_hidden(dir)
-            && self.filter_dir_by_in_patterns(dir)
-            && self.filter_dir_by_out_patterns(dir)
-    }
-
-    fn is_matching_archive_extension(&self, ext: &str) -> bool {
-        (self.settings.in_archive_extensions().is_empty()
-            || self.matches_any_string(ext, &self.settings.in_archive_extensions()))
-            && (self.settings.out_archive_extensions().is_empty()
-            || !self.matches_any_string(ext, &self.settings.out_archive_extensions()))
-    }
-
-    fn is_matching_extension(&self, ext: &str) -> bool {
-        (self.settings.in_extensions().is_empty()
-            || self.matches_any_string(ext, &self.settings.in_extensions()))
-            && (self.settings.out_extensions().is_empty()
-            || !self.matches_any_string(ext, &self.settings.out_extensions()))
-    }
-
-    fn is_matching_archive_file_name(&self, file_name: &str) -> bool {
-        (self.settings.in_archive_file_patterns().is_empty()
-            || self.matches_any_pattern(&file_name, &self.settings.in_archive_file_patterns()))
-            && (self.settings.out_archive_file_patterns().is_empty()
-            || !self.matches_any_pattern(&file_name, &self.settings.out_archive_file_patterns()))
-    }
-
-    fn is_matching_file_name(&self, file_name: &str) -> bool {
-        // TODO: verify check for hidden elsewhere
-        if !self.settings.include_hidden() && FileUtil::is_hidden(&file_name) {
-            return false;
-        }
-        (self.settings.in_file_patterns().is_empty()
-            || self.matches_any_pattern(&file_name, &self.settings.in_file_patterns()))
-            && (self.settings.out_file_patterns().is_empty()
-            || !self.matches_any_pattern(&file_name, &self.settings.out_file_patterns()))
-    }
-
-    fn is_matching_file_type(&self, file_type: &FileType) -> bool {
-        (self.settings.in_file_types().is_empty()
-            || self.settings.in_file_types().contains(&file_type))
-            && (self.settings.out_file_types().is_empty()
-            || !self.settings.out_file_types().contains(&file_type))
-    }
-
-    fn is_matching_file_size(&self, file_size: &u64) -> bool {
-        (self.settings.max_size() == 0 || file_size <= &self.settings.max_size())
-            && (self.settings.min_size() == 0 || file_size >= &self.settings.min_size())
-    }
-
-    fn is_matching_last_mod(&self, last_mod: &u64) -> bool {
-        (self.settings.max_last_mod() == 0 || last_mod <= &self.settings.max_last_mod())
-            && (self.settings.min_last_mod() == 0 || last_mod >= &self.settings.min_last_mod())
     }
 
     fn filter_paths_to_file_results(&self, file_paths: &Vec<PathBuf>) -> Vec<FileResult> {
@@ -158,12 +235,7 @@ impl Finder {
     }
 
     fn filter_path_to_file_result(&self, file_path: &Path) -> Option<FileResult> {
-        if file_path.parent().is_some() {
-            if !self.is_matching_dir(file_path.parent().unwrap().to_str().unwrap()) {
-                return None;
-            }
-        }
-        if !self.settings.include_hidden() && FileUtil::is_hidden_name(file_path.file_name().unwrap().to_str().unwrap()) {
+        if !is_matching_file_path(&self.settings, &file_path) {
             return None;
         }
         let file_type = self.file_types.get_file_type_for_path(&file_path);
@@ -195,13 +267,9 @@ impl Finder {
         self.filter_to_file_result(file_path, &file_type, file_size, last_mod)
     }
 
-    fn filter_to_file_result(&self, file_path: &Path, file_type: &FileType, file_size: u64, last_mod: u64) -> Option<FileResult> {
-        if file_path.parent().is_some() {
-            if !self.is_matching_dir(file_path.parent().unwrap().to_str().unwrap()) {
-                return None;
-            }
-        }
-        if !self.settings.include_hidden() && FileUtil::is_hidden_name(file_path.file_name().unwrap().to_str().unwrap()) {
+    fn filter_to_file_result(&self, file_path: &Path, file_type: &FileType, file_size: u64,
+                             last_mod: u64) -> Option<FileResult> {
+        if !is_matching_file_path(&self.settings, &file_path) {
             return None;
         }
         let extension = match file_path.extension() {
@@ -213,18 +281,19 @@ impl Finder {
             if !self.settings.include_archives() && !self.settings.archives_only() {
                 return None;
             }
-            if !self.is_matching_archive_extension(&extension)
-                || !self.is_matching_archive_file_name(&file_name) {
+            if !is_matching_archive_extension(&self.settings, &extension)
+                || !is_matching_archive_file_name(&self.settings, &file_name) {
                 return None;
             }
         } else {
-            if !self.is_matching_extension(&extension)
-                || !self.is_matching_file_name(&file_name)
-                || !self.is_matching_file_type(&file_type) {
+            if !is_matching_extension(&self.settings, &extension)
+                || !is_matching_file_name(&self.settings, &file_name)
+                || !is_matching_file_type(&self.settings, &file_type) {
                 return None;
             }
         }
-        if !self.is_matching_file_size(&file_size) || !self.is_matching_last_mod(&last_mod) {
+        if !is_matching_file_size(&self.settings, &file_size) ||
+            !is_matching_last_mod(&self.settings, &last_mod) {
             return None;
         }
         let file_result = FileResult::with_path(file_path, file_type.clone(),
@@ -232,7 +301,8 @@ impl Finder {
         Some(file_result)
     }
 
-    fn rec_find_path(&self, dir_path: &PathBuf, min_depth: i32, max_depth: i32, current_depth: i32) -> Result<Vec<FileResult>, FindError> {
+    fn rec_find_path(&self, dir_path: &PathBuf, min_depth: i32, max_depth: i32,
+                     current_depth: i32) -> Result<Vec<FileResult>, FindError> {
         let mut file_results: Vec<FileResult> = Vec::new();
         if max_depth > -1 && current_depth > max_depth {
             return Ok(file_results);
@@ -247,8 +317,7 @@ impl Finder {
                 continue;
             }
             if dir_entry.path().is_dir() && recurse
-                && self.filter_dir_by_hidden(dir_entry.file_name().to_str().unwrap())
-                && self.filter_dir_by_out_patterns(dir_entry.file_name().to_str().unwrap()) {
+                && is_traversable_dir(&self.settings, dir_entry.file_name().to_str().unwrap()) {
                 path_dirs.push(dir_entry.path());
             } else if dir_entry.path().is_file() && (min_depth < 0 || current_depth >= min_depth) {
                 path_files.push(dir_entry.path());
@@ -280,8 +349,10 @@ impl Finder {
             if self.settings.max_depth() == 0 {
                 return Ok(file_results);
             }
-            if self.filter_dir_by_hidden(path) && self.filter_dir_by_out_patterns(path) {
-                let max_depth = if self.settings.recursive() { self.settings.max_depth() } else { 1 };
+            if is_traversable_dir(&self.settings, path) {
+                let max_depth =
+                    if self.settings.recursive() { self.settings.max_depth() }
+                    else { 1 };
                 return self.rec_find_path(&path_buf, self.settings.min_depth(), max_depth, 1);
             }
         } else {
@@ -363,32 +434,30 @@ mod tests {
     fn test_is_matching_dir() {
         let mut settings = get_default_test_settings();
         settings.add_out_dir_pattern(String::from("temp"));
-        let finder = Finder::new(settings).ok().unwrap();
 
-        let path = String::from(".");
-        assert!(finder.is_matching_dir(&path));
+        let dir = String::from(".");
+        assert!(is_matching_dir(&settings, &dir));
 
         let path = String::from(".git");
-        assert!(!finder.is_matching_dir(&path));
+        assert!(is_matching_dir(&settings, &path));
 
         let path = String::from("./temp/");
-        assert!(!finder.is_matching_dir(&path));
+        assert!(is_matching_dir(&settings, &path));
     }
 
     #[test]
     fn test_is_matching_file_name() {
         let mut settings = get_default_test_settings();
         settings.add_out_file_pattern(String::from("temp"));
-        let finder = Finder::new(settings).ok().unwrap();
 
         let file_name = String::from("finder.rs");
-        assert!(finder.is_matching_file_name(&file_name));
+        assert!(is_matching_file_name(&settings, &file_name));
 
         let file_name = String::from(".gitignore");
-        assert!(!finder.is_matching_file_name(&file_name));
+        assert!(is_matching_file_name(&settings, &file_name));
 
         let file_name = String::from("tempfile.rs");
-        assert!(!finder.is_matching_file_name(&file_name));
+        assert!(is_matching_file_name(&settings, &file_name));
     }
 
     #[test]
@@ -396,27 +465,26 @@ mod tests {
         let mut settings = get_default_test_settings();
         settings.set_min_size(1000u64);
         settings.set_max_size(5000u64);
-        let finder = Finder::new(settings).ok().unwrap();
 
         // in between
         let file_size = 3000u64;
-        assert!(finder.is_matching_file_size(&file_size));
+        assert!(is_matching_file_size(&settings, &file_size));
 
         // matches min size
         let file_size = 1000u64;
-        assert!(finder.is_matching_file_size(&file_size));
+        assert!(is_matching_file_size(&settings, &file_size));
 
         // below min size
         let file_size = 100u64;
-        assert!(!finder.is_matching_file_size(&file_size));
+        assert!(is_matching_file_size(&settings, &file_size));
 
         // matches max size
         let file_size = 5000u64;
-        assert!(finder.is_matching_file_size(&file_size));
+        assert!(is_matching_file_size(&settings, &file_size));
 
         // below min size
         let file_size = 5500u64;
-        assert!(!finder.is_matching_file_size(&file_size));
+        assert!(is_matching_file_size(&settings, &file_size));
     }
 
     #[test]
