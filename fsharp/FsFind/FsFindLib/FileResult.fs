@@ -1,20 +1,24 @@
 ﻿namespace FsFindLib
 
-open System.IO
+open System
 
 module FileResult = 
 
     type t = {
         Containers : string list;
-        File : FileInfo;
-        FileType : FileType;
+        FilePath : string;
+        Type: FileType
+        Size : int64
+        LastMod : DateTime Option
     }
 
-    let Create (file : FileInfo) (fileType : FileType) : t =
+    let Create (filePath : string) (fileType : FileType) (size : int64) (lastMod : DateTime Option) : t =
         {
             Containers=[];
-            File=file;
-            FileType=fileType
+            FilePath=filePath;
+            Type=fileType;
+            Size=size;
+            LastMod=lastMod
         }
 
     let ToString (sf : t) : string =
@@ -22,5 +26,5 @@ module FileResult =
             match sf.Containers with
             | [] -> ""
             | _  -> sprintf "%s!" (String.concat "!" sf.Containers)
-        $"%s{container_str}%s{sf.File.ToString()}"
+        $"%s{container_str}%s{sf.FilePath}"
 ;;

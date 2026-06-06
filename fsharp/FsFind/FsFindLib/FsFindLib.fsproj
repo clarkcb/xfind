@@ -11,6 +11,7 @@
     <Compile Include="Common.fs" />
     <Compile Include="Logger.fs" />
     <Compile Include="EmbeddedResource.fs" />
+    <Compile Include="FindError.fs" />
     <Compile Include="FindException.fs" />
     <Compile Include="FileUtil.fs" />
     <Compile Include="ArgTokenizer.fs" />

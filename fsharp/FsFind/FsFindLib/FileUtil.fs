@@ -14,10 +14,14 @@ module FileUtil =
     let GetHomePath () : string = 
         Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)
 
-    let GetFileExtension (fi : FileInfo): string =
-        let ext = fi.Extension
-        if String.IsNullOrEmpty(ext) then ""
-        else ext.Substring(1)        
+    let GetFilePathExtension (filePath: string): string =
+        let fileName = Path.GetFileName(filePath)
+        if String.IsNullOrEmpty(fileName) || not (fileName.Contains(".")) || fileName.LastIndexOf(".") < 1 then ""
+        else
+            let ext = Path.GetExtension(fileName)
+            if String.IsNullOrEmpty(ext) then ""
+            // else ext.Substring(1)
+            else ext
 
     let NormalizePath (path : string) : string = 
         path.TrimEnd(Path.DirectorySeparatorChar)
@@ -52,7 +56,7 @@ module FileUtil =
     let Exists (filePath : string) : bool =
         IsDirectory filePath ||
         IsFile filePath
-    
+
     let GetRelativePath (fullPath : string) (startPath : string) : string =
         let startFullPath = NormalizePath (DirectoryInfo startPath).FullName
         let normStartPath = NormalizePath startPath
@@ -60,37 +64,19 @@ module FileUtil =
         then fullPath.Replace (startFullPath, normStartPath)
         else fullPath
 
-    let GetDirElems (dir : DirectoryInfo) : string list =
-        let mutable elems = [dir.Name]
-        let mutable parent = dir.Parent
-        let root = Path.DirectorySeparatorChar.ToString()
-        while parent <> null && parent.Name <> root do
-            elems <- parent.Name :: elems
-            parent <- parent.Parent
-        elems
+    let GetDirPathElems (dirPath: string) : string list =
+        dirPath.Split(Path.DirectorySeparatorChar) |> Array.toList
 
-    let IsDotDir (filePath : string): bool = dotDirs.Contains(NormalizePath filePath)
+    let IsDotDirPath (dirPath: string): bool = dotDirs.Contains(NormalizePath dirPath)
 
     let IsHiddenName (name : string) : bool = 
         //let hasHiddenAttribute = f.Exists && (f.Attributes &&& FileAttributes.Hidden) <> 0
-        name.Length > 1 && name[0] = '.' && not (IsDotDir name)
+        name.Length > 1 && name[0] = '.' && not (IsDotDirPath name)
 
-    let rec IsHiddenDirectory (d : DirectoryInfo) : bool = 
-        if IsHiddenName d.Name then
-            true
-        elif null <> d.Parent then
-            IsHiddenDirectory d.Parent
-        else
-            false
-
-    let IsHiddenFile (f : FileSystemInfo) : bool = 
-        (f.Name[0] = '.' && not (IsDotDir f.Name)) ||
-        (f.Exists && (f.Attributes &&& FileAttributes.Hidden) = FileAttributes.Hidden)
-
-    let SepCount (filePath : string) : int =
-        filePath.ToCharArray()
-        |> Array.filter (fun (c : char) -> c = Path.DirectorySeparatorChar)
-        |> Array.length
+    let rec IsHiddenPath (path : string) : bool = 
+        let elems = GetDirPathElems path
+        if List.isEmpty elems then false
+        else List.contains true (List.map IsHiddenName elems)
 
     let GetFileContents (filePath : string) (encoding : Encoding) : string =
         let contents =

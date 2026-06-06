@@ -99,7 +99,7 @@ module FindOptions =
         ArgTokenizer(options)
 
     // These are required to do a "forward declaration" of the UpdateSettingsFromDefaultFiles
-    let dummyUpdateSettingsFromDefaultFiles: FindSettings -> Result<FindSettings, string> = (fun (settings : FindSettings) -> Error "not implemented")
+    let dummyUpdateSettingsFromDefaultFiles: FindSettings -> Result<FindSettings, string> = (fun (_: FindSettings) -> Error "not implemented")
     let mutable forwardUpdateSettingsFromDefaultFiles = ref dummyUpdateSettingsFromDefaultFiles
     
     let rec ApplyArgTokenToSettings (argToken : ArgToken) (settings : FindSettings) : Result<FindSettings, string> =

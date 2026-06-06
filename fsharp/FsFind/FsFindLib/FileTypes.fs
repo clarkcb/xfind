@@ -92,58 +92,55 @@ type FileTypes() =
         | FileType.Xml -> xml
         | _ -> unknown
 
-    member this.GetFileType (f : FileInfo) : FileType =
+    member this.GetFileTypeForFilePath (filePath: string) : FileType =
         // most specific first
-        if this.IsCodeFile f then FileType.Code
-        else if this.IsArchiveFile f then FileType.Archive
-        else if this.IsAudioFile f then FileType.Audio
-        else if this.IsFontFile f then FileType.Font
-        else if this.IsImageFile f then FileType.Image
-        else if this.IsVideoFile f then FileType.Video
+        if this.IsCodeFilePath filePath then FileType.Code
+        else if this.IsArchiveFilePath filePath then FileType.Archive
+        else if this.IsAudioFilePath filePath then FileType.Audio
+        else if this.IsFontFilePath filePath then FileType.Font
+        else if this.IsImageFilePath filePath then FileType.Image
+        else if this.IsVideoFilePath filePath then FileType.Video
         // most general last
-        else if this.IsXmlFile f then FileType.Xml
-        else if this.IsTextFile f then FileType.Text
-        else if this.IsBinaryFile f then FileType.Binary
+        else if this.IsXmlFilePath filePath then FileType.Xml
+        else if this.IsTextFilePath filePath then FileType.Text
+        else if this.IsBinaryFilePath filePath then FileType.Binary
         else FileType.Unknown
 
-    member this.IsArchiveFile (f : FileInfo) : bool =
-        Seq.exists (fun x -> x = f.Name) this.FileTypeNameDictionary[archive] ||
-        Seq.exists (fun x -> x = f.Extension.ToLowerInvariant()) this.FileTypeExtDictionary[archive]
+    member this.IsFilePathForType (filePath: string, typeName : string) : bool =
+        let fileName = Path.GetFileName(filePath)
+        let ext = FileUtil.GetFilePathExtension(filePath)
+        Seq.exists (fun x -> x = fileName) this.FileTypeNameDictionary[typeName] ||
+        Seq.exists (fun x -> x = ext) this.FileTypeExtDictionary[typeName]
 
-    member this.IsAudioFile (f : FileInfo) : bool =
-        Seq.exists (fun x -> x = f.Name) this.FileTypeNameDictionary[audio] ||
-        Seq.exists (fun x -> x = f.Extension.ToLowerInvariant()) this.FileTypeExtDictionary[audio]
+    member this.IsArchiveFilePath (filePath: string) : bool =
+        this.IsFilePathForType(filePath, archive)
 
-    member this.IsBinaryFile (f : FileInfo) : bool =
-        Seq.exists (fun x -> x = f.Name) this.FileTypeNameDictionary[binary] ||
-        Seq.exists (fun x -> x = f.Extension.ToLowerInvariant()) this.FileTypeExtDictionary[binary]
+    member this.IsAudioFilePath (filePath: string) : bool =
+        this.IsFilePathForType(filePath, audio)
 
-    member this.IsCodeFile (f : FileInfo) : bool =
-        Seq.exists (fun x -> x = f.Name) this.FileTypeNameDictionary[code] ||
-        Seq.exists (fun x -> x = f.Extension.ToLowerInvariant()) this.FileTypeExtDictionary[code]
+    member this.IsBinaryFilePath (filePath: string) : bool =
+        this.IsFilePathForType(filePath, binary)
 
-    member this.IsFontFile (f : FileInfo) : bool =
-        Seq.exists (fun x -> x = f.Name) this.FileTypeNameDictionary[font] ||
-        Seq.exists (fun x -> x = f.Extension.ToLowerInvariant()) this.FileTypeExtDictionary[font]
+    member this.IsCodeFilePath (filePath: string) : bool =
+        this.IsFilePathForType(filePath, code)
 
-    member this.IsImageFile (f : FileInfo) : bool =
-        Seq.exists (fun x -> x = f.Name) this.FileTypeNameDictionary[image] ||
-        Seq.exists (fun x -> x = f.Extension.ToLowerInvariant()) this.FileTypeExtDictionary[image]
+    member this.IsFontFilePath (filePath: string) : bool =
+        this.IsFilePathForType(filePath, font)
 
-    member this.IsTextFile (f : FileInfo) : bool =
-        Seq.exists (fun x -> x = f.Name) this.FileTypeNameDictionary[text] ||
-        Seq.exists (fun x -> x = f.Extension.ToLowerInvariant()) this.FileTypeExtDictionary[text]
+    member this.IsImageFilePath (filePath: string) : bool =
+        this.IsFilePathForType(filePath, image)
 
-    member this.IsVideoFile (f : FileInfo) : bool =
-        Seq.exists (fun x -> x = f.Name) this.FileTypeNameDictionary[video] ||
-        Seq.exists (fun x -> x = f.Extension.ToLowerInvariant()) this.FileTypeExtDictionary[video]
+    member this.IsTextFilePath (filePath: string) : bool =
+        this.IsFilePathForType(filePath, text)
 
-    member this.IsUnknownFile (f : FileInfo) : bool =
-        (this.GetFileType f) = FileType.Unknown
+    member this.IsVideoFilePath (filePath: string) : bool =
+        this.IsFilePathForType(filePath, video)
 
-    member this.IsXmlFile (f : FileInfo) : bool =
-        Seq.exists (fun x -> x = f.Name) this.FileTypeNameDictionary[xml] ||
-        Seq.exists (fun x -> x = f.Extension.ToLowerInvariant()) this.FileTypeExtDictionary[xml]
+    member this.IsUnknownFilePath (filePath: string) : bool =
+        (this.GetFileTypeForFilePath filePath) = FileType.Unknown
+
+    member this.IsXmlFilePath (filePath: string) : bool =
+        this.IsFilePathForType(filePath, xml)
 
 module FileTypesUtil =
     let FileTypesListToString (lst : FileType list) : string = 

@@ -5,24 +5,24 @@ open System.Text.RegularExpressions
 
 type FileResultFormatter (settings : FindSettings) =
 
-    member this.FormatDirectoryWithColor (dir : DirectoryInfo) : string =
-        if dir = null
+    member this.FormatDirPathWithColor (dirPath: string) : string =
+        if dirPath = null
         then "."
         else
-            let dirName = dir.ToString()
-            match (Seq.tryFind (fun p -> (p:Regex).Match(dirName).Success) settings.InDirPatterns) with
+            // let dirName = dirPath.ToString()
+            match (Seq.tryFind (fun p -> (p:Regex).Match(dirPath).Success) settings.InDirPatterns) with
             | Some dirPattern ->
-                let dirMatch = dirPattern.Match(dirName)
-                ColorUtil.Colorize dirName dirMatch.Index (dirMatch.Index + dirMatch.Length) settings.DirColor
-            | None -> dirName
+                let dirMatch = dirPattern.Match(dirPath)
+                ColorUtil.Colorize dirPath dirMatch.Index (dirMatch.Index + dirMatch.Length) settings.DirColor
+            | None -> dirPath
 
-    member this.FormatDirectoryFun =
+    member this.FormatDirPathFun =
         if settings.Colorize
-        then this.FormatDirectoryWithColor
-        else fun (dir : DirectoryInfo) -> dir.ToString()
+        then this.FormatDirPathWithColor
+        else fun (dirPath : string) -> dirPath
 
-    member this.FormatDirectory (dir : DirectoryInfo) : string =
-        this.FormatDirectoryFun dir
+    member this.FormatDirPath (dirPath : string) : string =
+        this.FormatDirPathFun dirPath
 
     member this.FormatFileNameWithColor (fileName : string) : string =
         let formattedFileName =
@@ -48,8 +48,8 @@ type FileResultFormatter (settings : FindSettings) =
         this.FormatFileNameFun fileName
 
     member this.FormatFileResult (result : FileResult.t) : string =
-        let parent = this.FormatDirectory result.File.Directory
-        let fileName = this.FormatFileName result.File.Name
+        let parent = this.FormatDirPath (Path.GetDirectoryName result.FilePath)
+        let fileName = this.FormatFileName (Path.GetFileName result.FilePath)
         Path.Join(parent, fileName)
 
 ;;

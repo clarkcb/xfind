@@ -84,6 +84,6 @@ type FindOptionsTests () =
             Assert.That(settings.Debug, Is.True)
             Assert.That(settings.FollowSymlinks, Is.True)
             Assert.That(settings.IncludeHidden, Is.True)
-        | Error e ->
+        | Error _ ->
             Assert.That(true, Is.False)
         ()

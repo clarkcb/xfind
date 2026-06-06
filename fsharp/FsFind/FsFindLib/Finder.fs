@@ -11,28 +11,28 @@ type Finder (settings : FindSettings) =
     // member methods
     member this.ValidatePaths (paths : string list) : string list =
         if List.isEmpty paths
-        then ["Startpath not defined"]
+        then [FindError.StartpathNotDefined]
         elif List.exists (fun p -> not (FileUtil.Exists(p))) paths
-        then ["Startpath not found"]
+        then [FindError.StartpathNotFound]
         elif not settings.FollowSymlinks && not (List.isEmpty (paths |> List.filter FileUtil.IsSymlink))
-        then ["Startpath does not match find settings"]
+        then [FindError.StartpathNotMatchFindSettings]
         elif (not (List.isEmpty (List.filter FileUtil.IsDirectory paths))
-              && List.exists (fun d -> (not (this.IsTraversableDir(DirectoryInfo(d))))) paths)
-        then ["Startpath does not match find settings"]
+              && List.exists (fun d -> (not (this.IsTraversableDirPath(d)))) paths)
+        then [FindError.StartpathNotMatchFindSettings]
         elif (not (List.isEmpty (List.filter FileUtil.IsFile paths))
               && (List.exists (fun f -> this.FilterFilePathToFileResult(f).IsNone) (List.filter FileUtil.IsFile paths)))
-        then ["Startpath does not match find settings"]
+        then [FindError.StartpathNotMatchFindSettings]
         else []
 
     member this.ValidateSettings () : string list =
         match this.ValidatePaths settings.Paths with
             | [] ->
                 if settings.MaxDepth > -1 && settings.MinDepth > -1 && settings.MaxDepth < settings.MinDepth
-                then ["Invalid range for mindepth and maxdepth"]
+                then [FindError.InvalidRangeMinDepthMaxDepth]
                 elif settings.MaxLastMod.IsSome && settings.MinLastMod.IsSome && settings.MaxLastMod.Value < settings.MinLastMod.Value
-                then ["Invalid range for minlastmod and maxlastmod"]
+                then [FindError.InvalidRangeMinLastModMaxLastMod]
                 elif settings.MaxSize > 0 && settings.MinSize > 0 && settings.MaxSize < settings.MinSize
-                then ["Invalid range for minsize and maxsize"]
+                then [FindError.InvalidRangeMinSizeMaxSize]
                 else []
             | errs -> errs
 
@@ -51,8 +51,8 @@ type Finder (settings : FindSettings) =
     member this.MatchesAnyPattern (s : string) (patterns : Regex list) : bool =
         Seq.exists (fun p -> (p:Regex).Match(s).Success) patterns
 
-    member this.AnyMatchesAnyPattern (slist : string seq) (patterns : Regex list) : bool =
-        Seq.exists (fun s -> this.MatchesAnyPattern s patterns) slist
+    member this.AnyMatchesAnyPattern (sList: string seq) (patterns : Regex list) : bool =
+        Seq.exists (fun s -> this.MatchesAnyPattern s patterns) sList
 
     member this.EmptyOrMatchesAnyPattern (s : string) (patterns : Regex list) : bool =
         List.isEmpty patterns || this.MatchesAnyPattern s patterns
@@ -60,17 +60,17 @@ type Finder (settings : FindSettings) =
     member this.EmptyOrNotMatchesAnyPattern (s : string) (patterns : Regex list) : bool =
         List.isEmpty patterns || not (this.MatchesAnyPattern s patterns)
 
-    member this.EmptyOrAnyMatchesAnyPattern (slist : string seq) (patterns : Regex list) : bool =
-        List.isEmpty patterns || this.AnyMatchesAnyPattern slist patterns
+    member this.EmptyOrAnyMatchesAnyPattern (sList: string seq) (patterns : Regex list) : bool =
+        List.isEmpty patterns || this.AnyMatchesAnyPattern sList patterns
 
-    member this.EmptyOrNotAnyMatchesAnyPattern (slist : string seq) (patterns : Regex list) : bool =
-        List.isEmpty patterns || not (this.AnyMatchesAnyPattern slist patterns)
+    member this.EmptyOrNotAnyMatchesAnyPattern (sList: string seq) (patterns : Regex list) : bool =
+        List.isEmpty patterns || not (this.AnyMatchesAnyPattern sList patterns)
 
-    member this.EmptyOrMatchesAnyString (s : string) (slist : string list) : bool =
-        List.isEmpty slist || List.exists (fun x -> x = s) slist
+    member this.EmptyOrMatchesAnyString (s : string) (sList: string list) : bool =
+        List.isEmpty sList || List.exists (fun x -> x = s) sList
 
-    member this.EmptyOrNotMatchesAnyString (s : string) (slist : string list) : bool =
-        List.isEmpty slist || not (List.exists (fun x -> x = s) slist)
+    member this.EmptyOrNotMatchesAnyString (s : string) (sList: string list) : bool =
+        List.isEmpty sList || not (List.exists (fun x -> x = s) sList)
 
     member this.EmptyOrMatchesAnyFileType (fileType : FileType) (fileTypes : FileType list) : bool =
         List.isEmpty fileTypes || List.exists (fun ft -> ft = fileType) fileTypes
@@ -78,167 +78,194 @@ type Finder (settings : FindSettings) =
     member this.EmptyOrNotMatchesAnyFileType (fileType : FileType) (fileTypes : FileType list) : bool =
         List.isEmpty fileTypes || not (List.exists (fun ft -> ft = fileType) fileTypes)
 
-    member this.IsMatchingDirByHidden (d : DirectoryInfo) : bool =
-        (settings.IncludeHidden ||
-         not (FileUtil.IsHiddenDirectory d))
-
     member this.IsMatchingDirPathByHidden (dirPath : string) : bool =
-        this.IsMatchingDirByHidden(DirectoryInfo(dirPath))
+        (settings.IncludeHidden || not (FileUtil.IsHiddenPath dirPath))
 
-    member this.IsMatchingDirByInPatterns (d : DirectoryInfo) : bool =
-        let elems = FileUtil.GetDirElems(d)
+    member this.IsMatchingDirPathByInPatterns (dirPath: string) : bool =
+        let elems = FileUtil.GetDirPathElems(dirPath)
         this.EmptyOrAnyMatchesAnyPattern elems settings.InDirPatterns
 
-    member this.IsMatchingDirByOutPatterns (d : DirectoryInfo) : bool =
-        let elems = FileUtil.GetDirElems(d)
+    member this.IsMatchingDirPathByOutPatterns (dirPath: string) : bool =
+        let elems = FileUtil.GetDirPathElems(dirPath)
         this.EmptyOrNotAnyMatchesAnyPattern elems settings.OutDirPatterns
 
-    member this.IsTraversableDir (d : DirectoryInfo) : bool =
-        this.IsMatchingDirByHidden(d) &&
-        this.IsMatchingDirByOutPatterns(d)
+    member this.IsTraversableDirPath (dirPath: string) : bool =
+        this.IsMatchingDirPathByHidden(dirPath) &&
+        this.IsMatchingDirPathByOutPatterns(dirPath)
 
-    member this.IsMatchingDir (d : DirectoryInfo) : bool =
-        this.IsMatchingDirByHidden(d) &&
-        this.IsMatchingDirByInPatterns(d) &&
-        this.IsMatchingDirByOutPatterns(d)
+    member this.IsMatchingDirPath (dirPath: string) : bool =
+        this.IsMatchingDirPathByHidden(dirPath) &&
+        this.IsMatchingDirPathByInPatterns(dirPath) &&
+        this.IsMatchingDirPathByOutPatterns(dirPath)
+
+    member this.IsNullOrMatchingDirPath (dirPath: string) : bool =
+        dirPath = null || this.IsMatchingDirPath(dirPath)
+
+    member this.IsMatchingFileNameByHidden (fileName: string) : bool =
+        (settings.IncludeHidden || not (FileUtil.IsHiddenName fileName))
 
     member this.IsMatchingArchiveExtension (ext : string) : bool =
         this.EmptyOrMatchesAnyString ext settings.InArchiveExtensions &&
         this.EmptyOrNotMatchesAnyString ext settings.OutArchiveExtensions
 
-    member this.IsMatchingExtension (ext : string) : bool =
-        this.EmptyOrMatchesAnyString ext settings.InExtensions &&
-        this.EmptyOrNotMatchesAnyString ext settings.OutExtensions
-
     member this.IsMatchingArchiveFileName (fileName : string) : bool =
         this.EmptyOrMatchesAnyPattern fileName settings.InArchiveFilePatterns &&
         this.EmptyOrNotMatchesAnyPattern fileName settings.OutArchiveFilePatterns
 
+    member this.IsMatchingArchiveFilePath (filePath: string) : bool =
+        this.IsMatchingArchiveExtension (FileUtil.GetFilePathExtension filePath) &&
+        this.IsMatchingArchiveFileName (Path.GetFileName filePath)
+
+    member this.IsMatchingArchiveFileResult (fr : FileResult.t) : bool =
+        this.IsMatchingArchiveFilePath(fr.FilePath)
+
+    member this.IsMatchingExtension (ext : string) : bool =
+        this.EmptyOrMatchesAnyString ext settings.InExtensions &&
+        this.EmptyOrNotMatchesAnyString ext settings.OutExtensions
+
     member this.IsMatchingFileName (fileName : string) : bool =
         this.EmptyOrMatchesAnyPattern fileName settings.InFilePatterns &&
         this.EmptyOrNotMatchesAnyPattern fileName settings.OutFilePatterns
+
+    member this.IsMatchingFilePath (filePath: string) : bool =
+        this.IsMatchingExtension (FileUtil.GetFilePathExtension filePath) &&
+        this.IsMatchingFileName (Path.GetFileName filePath)
 
     member this.IsMatchingFileType (fileType : FileType) : bool =
         this.EmptyOrMatchesAnyFileType fileType settings.InFileTypes &&
         this.EmptyOrNotMatchesAnyFileType fileType settings.OutFileTypes
 
     member this.IsMatchingFileSize (fileSize : int64) : bool =
-        (settings.MinSize = 0 || fileSize >= settings.MinSize) &&
-        (settings.MaxSize = 0 || fileSize <= settings.MaxSize)
+        (settings.MinSize <= 0 || fileSize >= settings.MinSize) &&
+        (settings.MaxSize <= 0 || fileSize <= settings.MaxSize)
 
-    member this.IsMatchingLastMod (lastMod : DateTime) : bool =
-        (settings.MinLastMod.IsNone || lastMod >= settings.MinLastMod.Value) &&
-        (settings.MaxLastMod.IsNone || lastMod <= settings.MaxLastMod.Value)
+    member this.IsMatchingLastMod (lastMod : DateTime Option) : bool =
+        (settings.MinLastMod.IsNone || lastMod.Value >= settings.MinLastMod.Value) &&
+        (settings.MaxLastMod.IsNone || lastMod.Value <= settings.MaxLastMod.Value)
 
     member this.IsMatchingFileResult (fr : FileResult.t) : bool =
-        this.IsMatchingExtension(fr.File.Extension) &&
-        this.IsMatchingFileName(fr.File.Name) &&
-        this.IsMatchingFileType(fr.FileType) &&
-        this.IsMatchingFileSize(fr.File.Length) &&
-        this.IsMatchingLastMod(fr.File.LastWriteTimeUtc)
+        this.IsMatchingFilePath(fr.FilePath) &&
+        this.IsMatchingFileType(fr.Type) &&
+        this.IsMatchingFileSize(fr.Size) &&
+        this.IsMatchingLastMod(fr.LastMod)
 
-    member this.IsMatchingArchiveFileResult (fr : FileResult.t) : bool =
-        this.IsMatchingArchiveExtension(fr.File.Extension) &&
-        this.IsMatchingArchiveFileName(fr.File.Name)
-
-    member this.FilterFileInfoToFileResult (f: FileInfo) : FileResult.t Option =
-        if not settings.FollowSymlinks && f.Exists && f.Attributes.HasFlag(FileAttributes.ReparsePoint) then
+    member this.FilterArchiveFilePathToFileResult (filePath: string) : FileResult.t Option =
+        if not settings.IncludeArchives && not settings.ArchivesOnly then
             None
-        elif not (this.IsMatchingDir(f.Directory)) then
-            None
-        elif not settings.IncludeHidden && FileUtil.IsHiddenName f.Name then
+        elif not (this.IsMatchingArchiveFilePath filePath) then
             None
         else
-            let fr = FileResult.Create f (_fileTypes.GetFileType f)
-            if fr.FileType = FileType.Archive then
-                if settings.IncludeArchives && this.IsMatchingArchiveFileResult fr then
-                    Some fr
-                else
-                    None
-            elif not settings.ArchivesOnly && this.IsMatchingFileResult fr then
-                Some fr
-            else
+            let fr = FileResult.Create filePath FileType.Archive 0L None
+            Some fr
+
+    member this.FilterRegularFilePathToFileResult (filePath: string) (fileType: FileType) : FileResult.t Option =
+        if settings.ArchivesOnly then
+            None
+        elif not (this.IsMatchingFilePath filePath) || not (this.IsMatchingFileType fileType) then
+            None
+        else
+            let fileInfo = FileInfo(filePath)
+            let size = fileInfo.Length
+            let lastMod = Some fileInfo.LastWriteTimeUtc
+            if not (this.IsMatchingFileSize size) || not (this.IsMatchingLastMod lastMod) then
                 None
-    
-    member this.FilterFilePathToFileResult (filePath: string) : FileResult.t Option =
-        this.FilterFileInfoToFileResult(FileInfo(filePath))
+            else
+                let fr = FileResult.Create filePath fileType fileInfo.Length (Some fileInfo.LastWriteTimeUtc)
+                Some fr
 
-    member this.MatchFile (f : FileInfo) (startPathSepCount : int) : bool =
-        if f.Directory = null then
-            true
+    member this.FilterFilePathToFileResult (filePath: string) : FileResult.t Option =
+        if not (this.IsNullOrMatchingDirPath (Path.GetDirectoryName filePath)) ||
+           not (this.IsMatchingFileNameByHidden (Path.GetFileName filePath)) then
+            None
         else
-            let fileSepCount = FileUtil.SepCount f.FullName
-            let depth = fileSepCount - startPathSepCount
-            depth >= settings.MinDepth &&
-            (settings.MaxDepth < 1 || depth <= settings.MaxDepth) &&
-            this.IsMatchingDir f.Directory
-   
-    member this.RecGetFileResults (dir : DirectoryInfo) (minDepth : int) (maxDepth : int) (currentDepth : int) : FileResult.t list =
+            let fileType = (_fileTypes.GetFileTypeForFilePath filePath)
+            if fileType = FileType.Archive then this.FilterArchiveFilePathToFileResult filePath
+            else this.FilterRegularFilePathToFileResult filePath fileType
+
+    member this.RecGetFileResults (dirPath : string) (minDepth : int) (maxDepth : int) (currentDepth : int) : FileResult.t list =
         if maxDepth > -1 && currentDepth > maxDepth then
             []
         else
+            let dir = DirectoryInfo(dirPath)
+            let symLinkFilter =
+                if settings.FollowSymlinks then (fun _ -> true) else (fun f -> not (FileUtil.IsSymlink(f)))
             let fileResults =
                 if minDepth < 0 || currentDepth >= minDepth then
                     dir.EnumerateFiles("*", _enumerationOptions)
-                    |> Seq.choose this.FilterFileInfoToFileResult
+                    |> Seq.map (fun f -> Path.Join(dirPath, f.Name))
+                    |> Seq.filter symLinkFilter
+                    |> Seq.choose this.FilterFilePathToFileResult
                     |> List.ofSeq
                 else []
             let dirResults =
                 if maxDepth < 0 || currentDepth < maxDepth then
                     dir.EnumerateDirectories()
-                    |> Seq.filter this.IsTraversableDir
+                    |> Seq.map (fun d -> Path.Join(dirPath, d.Name))
+                    |> Seq.filter symLinkFilter
+                    |> Seq.filter this.IsTraversableDirPath
                     |> Seq.map (fun d -> this.RecGetFileResults d minDepth maxDepth (currentDepth + 1))
                     |> Seq.collect id
                     |> List.ofSeq
                 else []
             List.concat [fileResults; dirResults]
-   
-    member this.GetFileResults (filePath : string) : FileResult.t list =
-        let fp =
-            if Directory.Exists(filePath) || File.Exists(filePath)
-            then filePath
-            else FileUtil.ExpandPath(filePath)
-        if Directory.Exists(fp) then
-            // if MaxDepth is zero, we can skip since a directory cannot be a result
-            if settings.MaxDepth <> 0 then
-                let dir = DirectoryInfo(fp)
-                if (this.IsMatchingDirByHidden dir) && (this.IsMatchingDirByOutPatterns dir) then
-                    let maxDepth = if settings.Recursive then settings.MaxDepth else 1
-                    this.RecGetFileResults dir settings.MinDepth maxDepth 1
-                else
-                    []
-            else
-                []
+
+    member this.GetFileResults (path: string) : Result<FileResult.t list, string> =
+        let p =
+            if Directory.Exists(path) || File.Exists(path)
+            then path
+            else FileUtil.ExpandPath(path)
+        if not settings.FollowSymlinks && FileUtil.IsSymlink(p) then
+            Error FindError.StartpathNotMatchFindSettings
         else
-            // if MinDepth > zero, we can skip since the file is at depth zero
-            if settings.MinDepth <= 0 then
-                let fileInfo = FileInfo(fp)
-                let fileResult = this.FilterFileInfoToFileResult fileInfo
-                if fileResult.IsSome then
-                    [fileResult.Value]
+            if Directory.Exists(p) then
+                // if MaxDepth is zero, we can skip since a directory cannot be a result
+                if settings.MaxDepth <> 0 then
+                    if (this.IsTraversableDirPath path) then
+                        let maxDepth = if settings.Recursive then settings.MaxDepth else 1
+                        Ok (this.RecGetFileResults p settings.MinDepth maxDepth 1)
+                    else
+                        Error FindError.StartpathNotMatchFindSettings
                 else
-                    []
+                    Error FindError.StartpathNotMatchFindSettings
+            elif File.Exists(p) then
+                // if MinDepth > zero, we can skip since the file is at depth zero
+                if settings.MinDepth <= 0 then
+                    let fileResult = this.FilterFilePathToFileResult p
+                    if fileResult.IsSome then
+                        Ok [fileResult.Value]
+                    else
+                        Error FindError.StartpathNotMatchFindSettings
+                else
+                    Error FindError.StartpathNotMatchFindSettings
             else
-                []
+                Error FindError.StartpathNotMatchFindSettings
 
-    member this.Find () : FileResult.t list =
+    member this.Find () : Result<FileResult.t list, string> =
         this.SetEnumerationOptions()
-        let fileResults = settings.Paths |> List.collect this.GetFileResults
-        let fileResultSorter = FileResultSorter(settings)
-        fileResultSorter.Sort fileResults
+        let results : Result<FileResult.t list, string> list = settings.Paths |> List.map this.GetFileResults
+        if List.exists (fun (r : Result<FileResult.t list, string>) -> r.IsError) results then
+            let err = results |> List.find _.IsError
+            err
+        else
+            let fileResults = results |> List.map (Result.defaultValue []) |> List.collect id
+            if List.length fileResults > 1 then
+                let fileResultSorter = FileResultSorter(settings)
+                Ok (fileResultSorter.Sort fileResults)
+            else
+                Ok fileResults
 
-    member this.GetMatchingDirs (fileResults : FileResult.t list) : DirectoryInfo list = 
+    member this.GetMatchingDirPaths (fileResults : FileResult.t list) : string list = 
         fileResults
-        |> Seq.map (fun f -> f.File.Directory)
-        |> Seq.distinctBy (fun d -> d.FullName)
+        |> Seq.map (fun fr -> Path.GetDirectoryName(fr.FilePath))
+        |> Seq.distinct
         |> List.ofSeq
 
     member this.PrintMatchingDirs (fileResults : FileResult.t list) (formatter : FileResultFormatter) : unit = 
-        let dirs = this.GetMatchingDirs fileResults
+        let dirs = this.GetMatchingDirPaths fileResults
         if dirs.Length > 0 then
             Logger.Log $"\nMatching directories (%d{dirs.Length}):"
             for d in dirs do
-                printfn $"%s{formatter.FormatDirectory(d)}"
+                printfn $"%s{formatter.FormatDirPath(d)}"
         else
             Logger.Log "\nMatching directories: 0"
 

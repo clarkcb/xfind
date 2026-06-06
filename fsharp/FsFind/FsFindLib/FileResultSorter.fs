@@ -1,29 +1,30 @@
 namespace FsFindLib
 
 open System
+open System.IO
 
 type FileResultSorter (settings : FindSettings) =
 
     member this.CompareByPath (fr1 : FileResult.t) (fr2 : FileResult.t) : int =
         let cmp = if settings.SortCaseInsensitive then StringComparison.OrdinalIgnoreCase else StringComparison.Ordinal
-        let dirNameCmp = String.Compare(fr1.File.DirectoryName, fr2.File.DirectoryName, cmp)
-        if dirNameCmp = 0 then String.Compare(fr1.File.Name, fr2.File.Name, cmp) else dirNameCmp
+        let dirPathCmp = String.Compare(Path.GetDirectoryName(fr1.FilePath), Path.GetDirectoryName(fr2.FilePath), cmp)
+        if dirPathCmp = 0 then String.Compare(Path.GetFileName(fr1.FilePath), Path.GetFileName(fr2.FilePath), cmp) else dirPathCmp
 
     member this.CompareByName (fr1 : FileResult.t) (fr2 : FileResult.t) : int =
         let cmp = if settings.SortCaseInsensitive then StringComparison.OrdinalIgnoreCase else StringComparison.Ordinal
-        let fileNameCmp = String.Compare(fr1.File.Name, fr2.File.Name, cmp)
-        if fileNameCmp = 0 then String.Compare(fr1.File.DirectoryName, fr2.File.DirectoryName, cmp) else fileNameCmp
+        let fileNameCmp = String.Compare(Path.GetFileName(fr1.FilePath), Path.GetFileName(fr2.FilePath), cmp)
+        if fileNameCmp = 0 then String.Compare(Path.GetDirectoryName(fr1.FilePath), Path.GetDirectoryName(fr2.FilePath), cmp) else fileNameCmp
 
     member this.CompareBySize (fr1 : FileResult.t) (fr2 : FileResult.t) : int =
-        let sizeCmp = fr1.File.Length.CompareTo(fr2.File.Length)
+        let sizeCmp = fr1.Size.CompareTo(fr2.Size)
         if sizeCmp = 0 then (this.CompareByPath fr1 fr2) else sizeCmp
 
     member this.CompareByType (fr1 : FileResult.t) (fr2 : FileResult.t) : int =
-        let typeCmp = fr1.FileType.CompareTo(fr2.FileType)
+        let typeCmp = fr1.Type.CompareTo(fr2.Type)
         if typeCmp = 0 then (this.CompareByPath fr1 fr2) else typeCmp
 
     member this.CompareByLastMod (fr1 : FileResult.t) (fr2 : FileResult.t) : int =
-        let lastModCmp = fr1.File.LastWriteTimeUtc.CompareTo(fr2.File.LastWriteTimeUtc)
+        let lastModCmp = fr1.LastMod.Value.CompareTo(fr2.LastMod.Value)
         if lastModCmp = 0 then (this.CompareByPath fr1 fr2) else lastModCmp
 
     member this.GetFileResultComparator : FileResult.t -> FileResult.t -> int =

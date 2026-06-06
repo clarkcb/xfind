@@ -16,14 +16,17 @@ module Main =
         if errs.Length > 0 then
             HandleError errs.Head settings.Colorize
 
-        let files = finder.Find()
-        let formatter = FileResultFormatter(settings)
+        match finder.Find() with
+        | Ok files ->
+            let formatter = FileResultFormatter(settings)
 
-        if settings.PrintDirs then
-            finder.PrintMatchingDirs files formatter
+            if settings.PrintDirs then
+                finder.PrintMatchingDirs files formatter
 
-        if settings.PrintFiles then
-            finder.PrintMatchingFiles files formatter
+            if settings.PrintFiles then
+                finder.PrintMatchingFiles files formatter
+                
+        | Error e -> HandleError e settings.Colorize
 
 
     [<EntryPoint>]

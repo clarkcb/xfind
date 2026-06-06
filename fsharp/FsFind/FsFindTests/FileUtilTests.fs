@@ -80,58 +80,58 @@ type FileUtilTests () =
     [<Test>]
     member this.IsDotDir_IsSingleDot_IsDotDir () =
         let dotDir = "."
-        Assert.That(FileUtil.IsDotDir(dotDir))
+        Assert.That(FileUtil.IsDotDirPath(dotDir))
         ()
 
     [<Test>]
     member this.IsDotDir_IsSingleDotWithTrailingSlash_IsDotDir () =
         let dotDir = "./"
-        Assert.That(FileUtil.IsDotDir(dotDir))
+        Assert.That(FileUtil.IsDotDirPath(dotDir))
         ()
 
     [<Test>]
     member this.IsDotDir_IsDoubleDot_IsDotDir () =
         let dotDir = ".."
-        Assert.That(FileUtil.IsDotDir(dotDir))
+        Assert.That(FileUtil.IsDotDirPath(dotDir))
         ()
 
     [<Test>]
     member this.IsDotDir_IsDoubleDotWithTrailingSlash_IsDotDir () =
         let dotDir = "../"
-        Assert.That(FileUtil.IsDotDir(dotDir))
+        Assert.That(FileUtil.IsDotDirPath(dotDir))
         ()
 
     [<Test>]
     member this.IsDotDir_IsNotDotDir_IsNotDotDir () =
         let nonDotDir = "~/path"
-        Assert.That(FileUtil.IsDotDir(nonDotDir), Is.False)
+        Assert.That(FileUtil.IsDotDirPath(nonDotDir), Is.False)
         ()
 
     //////////////////////////////////////////////////////////////
-    // IsHidden tests
+    // IsHiddenPath tests
     //////////////////////////////////////////////////////////////
     [<Test>]
     member this.IsHidden_StartsWithDot_IsHidden () =
-        let hiddenFile = FileInfo(".FileUtilTests.cs")
-        Assert.That(FileUtil.IsHiddenFile(hiddenFile))
+        let hiddenFile = "./.FileUtilTests.cs"
+        Assert.That(FileUtil.IsHiddenPath(hiddenFile))
         ()
 
     [<Test>]
     member this.IsHidden_NotStartsWithDot_NotIsHidden () =
-        let hiddenFile = FileInfo("FileUtilTests.cs")
-        Assert.That(FileUtil.IsHiddenFile(hiddenFile), Is.False)
+        let hiddenFile = "./FileUtilTests.cs"
+        Assert.That(FileUtil.IsHiddenPath(hiddenFile), Is.False)
         ()
 
     [<Test>]
     member this.IsHidden_SingleDot_NotIsHidden () =
-        let dotDir = DirectoryInfo(".")
-        Assert.That(FileUtil.IsHiddenFile(dotDir), Is.False)
+        let dotDir = "."
+        Assert.That(FileUtil.IsHiddenPath(dotDir), Is.False)
         ()
 
     [<Test>]
     member this.IsHidden_DoubleDot_NotIsHidden () =
-        let dotDir = DirectoryInfo("..")
-        Assert.That(FileUtil.IsHiddenFile(dotDir), Is.False)
+        let dotDir = ".."
+        Assert.That(FileUtil.IsHiddenPath(dotDir), Is.False)
         ()
 
     //////////////////////////////////////////////////////////////

@@ -1,6 +1,5 @@
 namespace FsFindTests
 
-open System.IO
 open NUnit.Framework
 open FsFindLib
 
@@ -15,120 +14,120 @@ type FileTypesTests () =
 
     [<Test>]
     member this.GetFileType_ArchiveFile_FileTypeArchive () =
-        let archiveFile = FileInfo("archive.zip")
-        Assert.That(this.FileTypes.GetFileType(archiveFile), Is.EqualTo(FileType.Archive))
+        let archiveFile = "archive.zip"
+        Assert.That(this.FileTypes.GetFileTypeForFilePath(archiveFile), Is.EqualTo(FileType.Archive))
         ()
 
     [<Test>]
     member this.GetFileType_AudioFile_FileTypeAudio () =
-        let audioFile = FileInfo("music.mp3")
-        Assert.That(this.FileTypes.GetFileType(audioFile), Is.EqualTo(FileType.Audio))
+        let audioFile = "music.mp3"
+        Assert.That(this.FileTypes.GetFileTypeForFilePath(audioFile), Is.EqualTo(FileType.Audio))
         ()
 
     [<Test>]
     member this.GetFileType_BinaryFile_FileTypeBinary () =
-        let binaryFile = FileInfo("binary.exe")
-        Assert.That(this.FileTypes.GetFileType(binaryFile), Is.EqualTo(FileType.Binary))
+        let binaryFile = "binary.exe"
+        Assert.That(this.FileTypes.GetFileTypeForFilePath(binaryFile), Is.EqualTo(FileType.Binary))
         ()
 
     [<Test>]
     member this.GetFileType_CodeFile_FileTypeCode () =
-        let codeFile = FileInfo("code.cs")
-        Assert.That(this.FileTypes.GetFileType(codeFile), Is.EqualTo(FileType.Code))
+        let codeFile = "code.cs"
+        Assert.That(this.FileTypes.GetFileTypeForFilePath(codeFile), Is.EqualTo(FileType.Code))
         ()
 
     [<Test>]
     member this.GetFileType_FontFile_FileTypeFont () =
-        let fontFile = FileInfo("font.ttf")
-        Assert.That(this.FileTypes.GetFileType(fontFile), Is.EqualTo(FileType.Font))
+        let fontFile = "font.ttf"
+        Assert.That(this.FileTypes.GetFileTypeForFilePath(fontFile), Is.EqualTo(FileType.Font))
         ()
 
     [<Test>]
     member this.GetFileType_ImageFile_FileTypeImage () =
-        let imageFile = FileInfo("image.png")
-        Assert.That(this.FileTypes.GetFileType(imageFile), Is.EqualTo(FileType.Image))
+        let imageFile = "image.png"
+        Assert.That(this.FileTypes.GetFileTypeForFilePath(imageFile), Is.EqualTo(FileType.Image))
         ()
 
     [<Test>]
     member this.GetFileType_TextFile_FileTypeText () =
-        let textFile = FileInfo("text.txt")
-        Assert.That(this.FileTypes.GetFileType(textFile), Is.EqualTo(FileType.Text))
+        let textFile = "text.txt"
+        Assert.That(this.FileTypes.GetFileTypeForFilePath(textFile), Is.EqualTo(FileType.Text))
         ()
 
     [<Test>]
     member this.GetFileType_VideoFile_FileTypeVideo () =
-        let videoFile = FileInfo("movie.mp4")
-        Assert.That(this.FileTypes.GetFileType(videoFile), Is.EqualTo(FileType.Video))
+        let videoFile = "movie.mp4"
+        Assert.That(this.FileTypes.GetFileTypeForFilePath(videoFile), Is.EqualTo(FileType.Video))
         ()
 
     [<Test>]
     member this.GetFileType_XmlFile_FileTypeXml () =
-        let xmlFile = FileInfo("markup.xml")
-        Assert.That(this.FileTypes.GetFileType(xmlFile), Is.EqualTo(FileType.Xml))
+        let xmlFile = "markup.xml"
+        Assert.That(this.FileTypes.GetFileTypeForFilePath(xmlFile), Is.EqualTo(FileType.Xml))
         ()
 
     [<Test>]
     member this.GetFileType_UnknownFile_FileTypeUnknown () =
-        let unknownFile = FileInfo("unknown.xyz")
-        Assert.That(this.FileTypes.GetFileType(unknownFile), Is.EqualTo(FileType.Unknown))
+        let unknownFile = "unknown.xyz"
+        Assert.That(this.FileTypes.GetFileTypeForFilePath(unknownFile), Is.EqualTo(FileType.Unknown))
         ()
 
     [<Test>]
     member this.IsArchiveFile_ArchiveFile_True () =
-        let archiveFile = FileInfo("archive.zip")
-        Assert.That(this.FileTypes.IsArchiveFile(archiveFile))
+        let archiveFile = "archive.zip"
+        Assert.That(this.FileTypes.IsArchiveFilePath(archiveFile))
         ()
 
     [<Test>]
     member this.IsAudioFile_AudioFile_True () =
-        let audioFile = FileInfo("music.mp3")
-        Assert.That(this.FileTypes.IsAudioFile(audioFile))
+        let audioFile = "music.mp3"
+        Assert.That(this.FileTypes.IsAudioFilePath(audioFile))
         ()
 
     [<Test>]
     member this.IsBinaryFile_BinaryFile_True () =
-        let binaryFile = FileInfo("binary.exe")
-        Assert.That(this.FileTypes.IsBinaryFile(binaryFile))
+        let binaryFile = "binary.exe"
+        Assert.That(this.FileTypes.IsBinaryFilePath(binaryFile))
         ()
 
     [<Test>]
     member this.IsCodeFile_CodeFile_True () =
-        let codeFile = FileInfo("code.cs")
-        Assert.That(this.FileTypes.IsCodeFile(codeFile))
+        let codeFile = "code.cs"
+        Assert.That(this.FileTypes.IsCodeFilePath(codeFile))
         ()
 
     [<Test>]
     member this.IsFontFile_FontFile_True () =
-        let fontFile = FileInfo("font.ttf")
-        Assert.That(this.FileTypes.IsFontFile(fontFile))
+        let fontFile = "font.ttf"
+        Assert.That(this.FileTypes.IsFontFilePath(fontFile))
         ()
 
     [<Test>]
     member this.IsImageFile_ImageFile_True () =
-        let imageFile = FileInfo("image.png")
-        Assert.That(this.FileTypes.IsImageFile(imageFile))
+        let imageFile = "image.png"
+        Assert.That(this.FileTypes.IsImageFilePath(imageFile))
         ()
 
     [<Test>]
     member this.IsTextFile_TextFile_True () =
-        let textFile = FileInfo("text.txt")
-        Assert.That(this.FileTypes.IsTextFile(textFile))
+        let textFile = "text.txt"
+        Assert.That(this.FileTypes.IsTextFilePath(textFile))
         ()
 
     [<Test>]
     member this.IsVideoFile_VideoFile_True () =
-        let videoFile = FileInfo("movie.mp4")
-        Assert.That(this.FileTypes.IsVideoFile(videoFile))
+        let videoFile = "movie.mp4"
+        Assert.That(this.FileTypes.IsVideoFilePath(videoFile))
         ()
 
     [<Test>]
     member this.IsXmlFile_XmlFile_True () =
-        let xmlFile = FileInfo("markup.xml")
-        Assert.That(this.FileTypes.IsXmlFile(xmlFile))
+        let xmlFile = "markup.xml"
+        Assert.That(this.FileTypes.IsXmlFilePath(xmlFile))
         ()
 
     // [<Test>]
     // member this.IsSearchableFile_XmlFile_True () =
-    //     let xmlFile = FileInfo("markup.xml")
+    //     let xmlFile = "markup.xml"
     //     Assert.IsTrue(this.FileTypes.IsSearchableFile(xmlFile))
     //     ()
