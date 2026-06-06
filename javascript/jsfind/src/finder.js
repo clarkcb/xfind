@@ -237,29 +237,36 @@ class Finder {
         if (!this.settings.includeArchives && !this.settings.archivesOnly) {
             return null;
         }
-        const fr = new FileResult(filePath, FileType.ARCHIVE, 0, 0);
-        if (this.isMatchingArchiveFileResult(fr)) {
-            return fr;
+
+        if (!this.isMatchingArchiveFilePath(filePath)) {
+            return null;
         }
-        return null;
+
+        return new FileResult(filePath, FileType.ARCHIVE, 0, 0);
     }
 
     filterRegularFilePathToFileResult(filePath, fileType, stat) {
         if (this.settings.archivesOnly) {
             return null;
         }
+
+        if (!this.isMatchingFilePath(filePath) || !this.isMatchingFileType(fileType)) {
+            return null;
+        }
+
         let fileSize = 0;
         let lastMod = 0;
         if (this.settings.needLastMod() || this.settings.needSize()) {
             stat = stat || fs.statSync(filePath);
             if (this.settings.needSize()) fileSize = stat.size;
             if (this.settings.needLastMod()) lastMod = stat.mtime.getTime();
+
+            if (!this.isMatchingFileSize(fileSize) || !this.isMatchingLastMod(lastMod)) {
+                return null;
+            }
         }
-        const fr = new FileResult(filePath, fileType, fileSize, lastMod);
-        if (this.isMatchingFileResult(fr)) {
-            return fr;
-        }
-        return null;
+
+        return new FileResult(filePath, fileType, fileSize, lastMod);
     }
 
     filterToFileResult(filePath, stat) {

@@ -307,10 +307,10 @@
         }
         if ([self.settings needSize]) fileSize = stat.fileSize;
         if ([self.settings needLastMod]) lastMod = stat.fileModificationDate;
-    }
 
-    if (![self isMatchingFileSize:fileSize] || ![self isMatchingLastMod:lastMod]) {
-        return nil;
+        if (![self isMatchingFileSize:fileSize] || ![self isMatchingLastMod:lastMod]) {
+            return nil;
+        }
     }
 
     return [[FileResult alloc] initWithFilePath:filePath fileType:fileType fileSize:fileSize lastMod:lastMod];

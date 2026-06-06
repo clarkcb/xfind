@@ -11,6 +11,7 @@
 import os
 from pathlib import Path
 import sys
+import tempfile
 import unittest
 
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)[:-6]))
@@ -31,66 +32,134 @@ class FinderTest(unittest.TestCase):
             Path(archive_path).touch()
 
 ################################################################################
-# is_matching_dir_path tests
+# is_included_dir_path tests
 ################################################################################
-    def test_is_matching_dir_path_no_patterns(self):
+    def test_is_included_dir_path_no_patterns(self):
         settings = self.get_settings()
         finder = Finder(settings)
         d = Path('plfind')
         self.assertTrue(finder.is_matching_dir_path(d))
 
-    def test_is_matching_dir_path_matches_in_pattern(self):
+    def test_is_included_dir_path_matches_in_pattern(self):
         settings = self.get_settings()
         settings.add_patterns('plfind', 'in_dir_patterns')
         finder = Finder(settings)
         d = Path('plfind')
         self.assertTrue(finder.is_matching_dir_path(d))
 
-    def test_is_matching_dir_path_no_match_in_pattern(self):
+    def test_is_included_dir_path_no_match_in_pattern(self):
         settings = self.get_settings()
         settings.add_patterns('plfind', 'in_dir_patterns')
         finder = Finder(settings)
         d = Path('pyfind')
         self.assertFalse(finder.is_matching_dir_path(d))
 
-    def test_is_matching_dir_path_matches_out_pattern(self):
+    def test_is_included_dir_path_matches_out_pattern(self):
         settings = self.get_settings()
         settings.add_patterns('pyfind', 'out_dir_patterns')
         finder = Finder(settings)
         d = Path('pyfind')
         self.assertFalse(finder.is_matching_dir_path(d))
 
-    def test_is_matching_dir_path_no_match_out_pattern(self):
+    def test_is_included_dir_path_no_match_out_pattern(self):
         settings = self.get_settings()
         settings.add_patterns('pyfind', 'out_dir_patterns')
         finder = Finder(settings)
         d = Path('plfind')
         self.assertTrue(finder.is_matching_dir_path(d))
 
-    def test_is_matching_dir_path_single_dot(self):
+    def test_is_included_dir_path_single_dot(self):
         settings = self.get_settings()
         finder = Finder(settings)
         d = Path('.')
         self.assertTrue(finder.is_matching_dir_path(d))
 
-    def test_is_matching_dir_path_double_dot(self):
+    def test_is_included_dir_path_double_dot(self):
         settings = self.get_settings()
         finder = Finder(settings)
         d = Path('..')
         self.assertTrue(finder.is_matching_dir_path(d))
 
-    def test_is_matching_dir_path_hidden_dir_path(self):
+    def test_is_included_dir_path_hidden_dir_path(self):
         settings = self.get_settings()
         finder = Finder(settings)
         d = Path('.git')
         self.assertFalse(finder.is_matching_dir_path(d))
 
-    def test_is_matching_dir_path_hidden_dir_path_include_hidden(self):
+    def test_is_included_dir_path_hidden_dir_path_include_hidden(self):
         settings = self.get_settings()
         settings.include_hidden = True
         finder = Finder(settings)
         d = Path('.git')
         self.assertTrue(finder.is_matching_dir_path(d))
+
+    def test_is_traversable_dir_path_ignores_in_patterns(self):
+        settings = self.get_settings()
+        settings.add_patterns('keep', 'in_dir_patterns')
+        finder = Finder(settings)
+        self.assertTrue(finder.is_traversable_dir_path(Path('other')))
+
+    def test_is_included_dir_path_applies_in_patterns(self):
+        settings = self.get_settings()
+        settings.add_patterns('keep', 'in_dir_patterns')
+        finder = Finder(settings)
+        self.assertFalse(finder.is_matching_dir_path(Path('other')))
+
+    def test_find_files_traverses_through_nonmatching_ancestor_dir(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            target_file = root / 'outer' / 'keep' / 'target.txt'
+            target_file.parent.mkdir(parents=True)
+            target_file.touch()
+
+            settings = FindSettings()
+            settings.add_path(root)
+            settings.add_patterns('keep', 'in_dir_patterns')
+            finder = Finder(settings)
+
+            file_results = finder.find_files()
+            result_paths = {fr.path for fr in file_results}
+            self.assertIn(target_file, result_paths)
+
+    def test_find_files_out_pattern_prunes_even_if_descendant_matches_in_pattern(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            pruned_file = root / 'skip' / 'keep' / 'target.txt'
+            pruned_file.parent.mkdir(parents=True)
+            pruned_file.touch()
+
+            settings = FindSettings()
+            settings.add_path(root)
+            settings.add_patterns('keep', 'in_dir_patterns')
+            settings.add_patterns('skip', 'out_dir_patterns')
+            finder = Finder(settings)
+
+            file_results = finder.find_files()
+            result_paths = {fr.path for fr in file_results}
+            self.assertNotIn(pruned_file, result_paths)
+
+    def test_find_files_hidden_dir_phased_include_hidden(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            target_file = root / '.hidden' / 'keep' / 'target.txt'
+            target_file.parent.mkdir(parents=True)
+            target_file.touch()
+
+            hidden_off_settings = FindSettings()
+            hidden_off_settings.add_path(root)
+            hidden_off_settings.add_patterns('keep', 'in_dir_patterns')
+            hidden_off_settings.include_hidden = False
+            hidden_off_finder = Finder(hidden_off_settings)
+            hidden_off_results = {fr.path for fr in hidden_off_finder.find_files()}
+            self.assertNotIn(target_file, hidden_off_results)
+
+            hidden_on_settings = FindSettings()
+            hidden_on_settings.add_path(root)
+            hidden_on_settings.add_patterns('keep', 'in_dir_patterns')
+            hidden_on_settings.include_hidden = True
+            hidden_on_finder = Finder(hidden_on_settings)
+            hidden_on_results = {fr.path for fr in hidden_on_finder.find_files()}
+            self.assertIn(target_file, hidden_on_results)
 
 ################################################################################
 # filter_to_file_result tests

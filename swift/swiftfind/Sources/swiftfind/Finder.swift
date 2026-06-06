@@ -283,10 +283,10 @@ public class Finder {
             } catch {
                 print("Error: \(error)")
             }
-        }
 
-        if !isMatchingFileSize(fileSize) || !isMatchingLastMod(lastMod) {
-            return nil
+            if !isMatchingFileSize(fileSize) || !isMatchingLastMod(lastMod) {
+                return nil
+            }
         }
 
         return FileResult(filePath: filePath, fileType: fileType, fileSize: fileSize, lastMod: lastMod)

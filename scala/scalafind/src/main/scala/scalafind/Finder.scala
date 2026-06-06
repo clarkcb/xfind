@@ -277,7 +277,7 @@ class Finder (settings: FindSettings) {
         val iterator = subPathStream.iterator()
         while (iterator.hasNext) {
           val subPath = iterator.next
-          if (!Files.isSymbolicLink(subPath) || settings.followSymlinks) {
+          if (settings.followSymlinks || !Files.isSymbolicLink(subPath)) {
             if (Files.isDirectory(subPath) && recurse == RecursionType.Recurse && isTraversableDirPath(subPath)) {
               pathDirs += subPath
             } else {
@@ -292,7 +292,7 @@ class Finder (settings: FindSettings) {
         case e: IOException =>
           e.printStackTrace()
       }
-      Seq.empty ++ pathDirs.flatMap(recFindPath(_, minDepth, maxDepth, currentDepth + 1))
+      Seq.empty ++ pathResults ++ pathDirs.flatMap(recFindPath(_, minDepth, maxDepth, currentDepth + 1))
     }
   }
 
@@ -370,11 +370,11 @@ object Finder {
   }
 
   private def emptyOrMatchesAnyPattern(s: String, patterns: Set[Regex]): Boolean = {
-    patterns.isEmpty || patterns.exists (_.findFirstMatchIn(s).isDefined)
+    patterns.isEmpty || matchesAnyPattern(s, patterns)
   }
 
   private def emptyOrNotMatchesAnyPattern(s: String, patterns: Set[Regex]): Boolean = {
-    patterns.isEmpty || !patterns.exists (_.findFirstMatchIn(s).isDefined)
+    patterns.isEmpty || !matchesAnyPattern(s, patterns)
   }
 
   private def emptyOrAnyMatchesAnyPattern(strings: Iterable[String], patterns: Set[Regex]): Boolean = {

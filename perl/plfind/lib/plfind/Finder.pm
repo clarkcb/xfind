@@ -337,13 +337,13 @@ sub filter_archive_file_path_to_file_result {
         return;
     }
 
+    if (!$self->is_matching_archive_file_path($file_path)) {
+        return;
+    }
+
     my $file_size = 0;
     my $last_mod = 0;
-    my $file_result = plfind::FileResult->new($file_path, plfind::FileType->ARCHIVE, $file_size, $last_mod);
-    if ($self->is_matching_archive_file_result($file_result)) {
-        return $file_result;
-    }
-    return;
+    return plfind::FileResult->new($file_path, plfind::FileType->ARCHIVE, $file_size, $last_mod);
 }
 
 sub filter_reg_file_path_to_file_result {
@@ -351,6 +351,10 @@ sub filter_reg_file_path_to_file_result {
     my ($self, $file_path, $file_type) = @_;
 
     if ($self->{settings}->{archives_only}) {
+        return;
+    }
+
+    if (!$self->is_matching_file_path($file_path) || !$self->is_matching_file_type($file_type)) {
         return;
     }
 
@@ -374,12 +378,13 @@ sub filter_reg_file_path_to_file_result {
         # 12	Actual number of blocks allocated
         $file_size = $fpstat->[7];
         $last_mod = $fpstat->[9];
+
+        if (!$self->is_matching_file_size($file_size) || !$self->is_matching_last_mod($last_mod)) {
+            return;
+        }
     }
-    my $file_result = plfind::FileResult->new($file_path, $file_type, $file_size, $last_mod);
-    if ($self->is_matching_file_result($file_result)) {
-        return $file_result;
-    }
-    return;
+
+    return plfind::FileResult->new($file_path, $file_type, $file_size, $last_mod);
 }
 
 sub filter_to_file_result {

@@ -447,13 +447,13 @@ class Finder
             return null;
         }
 
+        if (!$this->is_matching_archive_file_path($file_path)) {
+            return null;
+        }
+
         $file_size = 0;
         $last_mod = 0;
-        $file_result = new FileResult($file_path, FileType::Archive, $file_size, $last_mod);
-        if ($this->is_matching_archive_file_result($file_result)) {
-            return $file_result;
-        }
-        return null;
+        return new FileResult($file_path, FileType::Archive, $file_size, $last_mod);
     }
 
     /**
@@ -464,6 +464,10 @@ class Finder
     public function filter_reg_file_path_to_file_result(string $file_path, FileType $file_type): ?FileResult
     {
         if ($this->settings->archives_only) {
+            return null;
+        }
+
+        if (!$this->is_matching_file_path($file_path) || !$this->is_matching_file_type($file_type)) {
             return null;
         }
 
@@ -479,13 +483,13 @@ class Finder
                     $file_size = $stat['size'];
                 }
             }
+
+            if (!$this->is_matching_file_size($file_size) || !$this->is_matching_last_mod($last_mod)) {
+                return null;
+            }
         }
 
-        $file_result = new FileResult($file_path, $file_type, $file_size, $last_mod);
-        if ($this->is_matching_file_result($file_result)) {
-            return $file_result;
-        }
-        return null;
+        return new FileResult($file_path, $file_type, $file_size, $last_mod);
     }
 
     /**
@@ -494,8 +498,7 @@ class Finder
      */
     public function filter_to_file_result(string $file_path): ?FileResult
     {
-        $dir = dirname($file_path);
-        if (!$this->is_null_or_matching_dir_path($dir)) {
+        if (!$this->is_null_or_matching_dir_path(dirname($file_path))) {
             return null;
         }
 

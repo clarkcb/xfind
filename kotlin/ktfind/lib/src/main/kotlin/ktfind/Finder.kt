@@ -282,10 +282,10 @@ class Finder(val settings: FindSettings) {
                 logError(e.message!!)
                 return null
             }
-        }
 
-        if (!isMatchingFileSize(fileSize) || !isMatchingLastMod(lastMod)) {
-            return null
+            if (!isMatchingFileSize(fileSize) || !isMatchingLastMod(lastMod)) {
+                return null
+            }
         }
 
         return FileResult(filePath, fileType, fileSize, lastMod)
@@ -316,7 +316,7 @@ class Finder(val settings: FindSettings) {
         try {
             Files.newDirectoryStream(path).use { stream ->
                 stream.forEach {
-                    if (!Files.isSymbolicLink(it) || settings.followSymlinks) {
+                    if (settings.followSymlinks || !Files.isSymbolicLink(it)) {
                         if (Files.isDirectory(it) && recurse && isTraversableDirPath(it)) {
                             pathDirs.add(it)
                         } else if (Files.isRegularFile(it) && (minDepth < 0 || currentDepth >= minDepth)) {

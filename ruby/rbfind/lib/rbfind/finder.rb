@@ -153,18 +153,21 @@ module RbFind
         return nil
       end
 
+      unless matching_archive_file_path?(file_path)
+        return nil
+      end
+
       file_size = 0
       last_mod = nil
-      file_result = FileResult.new(file_path, FileType::ARCHIVE, file_size, last_mod)
-
-      if matching_archive_file_result?(file_result)
-        return file_result
-      end
-      nil
+      FileResult.new(file_path, FileType::ARCHIVE, file_size, last_mod)
     end
 
     def filter_reg_file_path_to_file_result(file_path, file_type)
       if @settings.archives_only
+        return nil
+      end
+
+      unless matching_file_path?(file_path) && matching_file_type?(file_type)
         return nil
       end
 
@@ -178,13 +181,13 @@ module RbFind
         if @settings.need_size?
           file_size = stat.size
         end
-      end
-      file_result = FileResult.new(file_path, file_type, file_size, last_mod)
 
-      if matching_file_result?(file_result)
-        return file_result
+        unless matching_file_size?(file_size) && matching_last_mod?(last_mod)
+          return nil
+        end
       end
-      nil
+
+      FileResult.new(file_path, file_type, file_size, last_mod)
     end
 
     def filter_to_file_result(file_path)

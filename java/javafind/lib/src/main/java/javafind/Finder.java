@@ -178,7 +178,8 @@ public class Finder {
     }
 
     boolean isMatchingArchiveFileName(final String fileName) {
-        return emptyOrMatchesAnyPattern(fileName, settings.getInArchiveFilePatterns())
+        return isMatchingFileNameByHidden(fileName)
+                && emptyOrMatchesAnyPattern(fileName, settings.getInArchiveFilePatterns())
                 && emptyOrNotMatchesAnyPattern(fileName, settings.getOutArchiveFilePatterns());
     }
 
@@ -191,7 +192,8 @@ public class Finder {
     }
 
     boolean isMatchingArchiveFilePath(final Path filePath) {
-        return isMatchingArchiveExtensionForFilePath(filePath)
+        return isNullOrMatchingDirPath(filePath.getParent())
+                && isMatchingArchiveExtensionForFilePath(filePath)
                 && isMatchingArchiveFileNameForFilePath(filePath);
     }
 
@@ -213,7 +215,8 @@ public class Finder {
     }
 
     boolean isMatchingFileName(final String fileName) {
-        return emptyOrMatchesAnyPattern(fileName, settings.getInFilePatterns())
+        return isMatchingFileNameByHidden(fileName)
+                && emptyOrMatchesAnyPattern(fileName, settings.getInFilePatterns())
                 && emptyOrNotMatchesAnyPattern(fileName, settings.getOutFilePatterns());
     }
 
@@ -226,7 +229,6 @@ public class Finder {
 
     boolean isMatchingFilePath(final Path filePath) {
         return isNullOrMatchingDirPath(filePath.getParent())
-                && isMatchingFileNameByHidden(filePath.getFileName().toString())
                 && isMatchingExtensionForFilePath(filePath)
                 && isMatchingFileNameForFilePath(filePath);
     }
@@ -302,10 +304,10 @@ public class Finder {
                 Logger.logError(e.getMessage());
                 return Optional.empty();
             }
-        }
 
-        if (!isMatchingFileSize(fileSize) || !isMatchingLastMod(lastMod)) {
-            return Optional.empty();
+            if (!isMatchingFileSize(fileSize) || !isMatchingLastMod(lastMod)) {
+                return Optional.empty();
+            }
         }
 
         return Optional.of(new FileResult(filePath, fileType, fileSize, lastMod));

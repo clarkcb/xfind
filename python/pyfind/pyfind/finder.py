@@ -208,17 +208,19 @@ class Finder:
         if not self.settings.include_archives and not self.settings.archives_only:
             return None
 
+        if not self.is_matching_archive_file_path(file_path):
+            return None
+
         file_size = 0
         last_mod = 0.0
-        file_result = FileResult(path=file_path, file_type=FileType.ARCHIVE, file_size=file_size,
-                                 last_mod=last_mod)
-        if self.is_matching_archive_file_result(file_result):
-            return file_result
-        return None
+        return FileResult(path=file_path, file_type=FileType.ARCHIVE, file_size=file_size, last_mod=last_mod)
 
     def filter_reg_file_path_to_file_result(self, file_path: Path, file_type: FileType) -> Optional[FileResult]:
         """Return a FileResult instance if the given regular file_path matches find settings, else None."""
         if self.settings.archives_only:
+            return None
+
+        if not self.is_matching_file_path(file_path) or not self.is_matching_file_type(file_type):
             return None
 
         file_size = 0
@@ -229,11 +231,11 @@ class Finder:
                 file_size = stat.st_size
             if self.settings.need_last_mod():
                 last_mod = stat.st_mtime
-        file_result = FileResult(path=file_path, file_type=file_type, file_size=file_size,
-                                 last_mod=last_mod)
-        if self.is_matching_file_result(file_result):
-            return file_result
-        return None
+
+            if not self.is_matching_file_size(file_size) or not self.is_matching_last_mod(last_mod):
+                return None
+
+        return FileResult(path=file_path, file_type=file_type, file_size=file_size, last_mod=last_mod)
 
     def filter_to_file_result(self, file_path: Path) -> Optional[FileResult]:
         """Return a FileResult instance if the given file_path matches find settings, else None."""

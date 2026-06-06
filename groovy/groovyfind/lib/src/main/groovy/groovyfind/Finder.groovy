@@ -294,10 +294,10 @@ class Finder {
                 Logger.logError(e.message)
                 return Optional.empty()
             }
-        }
 
-        if (!isMatchingFileSize(fileSize) | !isMatchingLastMod(lastMod)) {
-            return Optional.empty()
+            if (!isMatchingFileSize(fileSize) | !isMatchingLastMod(lastMod)) {
+                return Optional.empty()
+            }
         }
 
         Optional.of(new FileResult(filePath, fileType, fileSize, lastMod))

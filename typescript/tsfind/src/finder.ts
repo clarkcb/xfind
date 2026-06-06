@@ -246,29 +246,36 @@ export class Finder {
         if (!this._settings.includeArchives && !this._settings.archivesOnly) {
             return null;
         }
-        const fr = new FileResult(filePath, FileType.Archive, 0, 0);
-        if (this.isMatchingArchiveFileResult(fr)) {
-            return fr;
+
+        if (!this.isMatchingArchiveFilePath(filePath)) {
+            return null;
         }
-        return null;
+
+        return new FileResult(filePath, FileType.Archive, 0, 0);
     }
 
     public filterRegularFilePathToFileResult(filePath: string, fileType: FileType, stat: fs.Stats | null = null): FileResult | null {
         if (this._settings.archivesOnly) {
             return null;
         }
+
+        if (!this.isMatchingFilePath(filePath) || !this.isMatchingFileType(fileType)) {
+            return null;
+        }
+
         let fileSize = 0;
         let lastMod = 0;
         if (this._settings.needLastMod() || this._settings.needSize()) {
             stat = stat || fs.statSync(filePath);
             if (this._settings.needSize()) fileSize = stat.size;
             if (this._settings.needLastMod()) lastMod = stat.mtime.getTime();
+
+            if (!this.isMatchingFileSize(fileSize) || !this.isMatchingLastMod(lastMod)) {
+                return null;
+            }
         }
-        const fr = new FileResult(filePath, fileType, fileSize, lastMod);
-        if (this.isMatchingFileResult(fr)) {
-            return fr;
-        }
-        return null;
+
+        return new FileResult(filePath, fileType, fileSize, lastMod);
     }
 
     public filterToFileResult(filePath: string, stat: fs.Stats | null = null): FileResult | null {
