@@ -5,7 +5,7 @@
 
 void test_validate_settings(void);
 
-void test_is_matching_dir(void);
+void test_is_matching_dir_path(void);
 
 void test_is_matching_dir_in_dir_patterns(void);
 

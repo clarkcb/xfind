@@ -69,7 +69,6 @@ int main(const int argc, char *argv[])
         }
     }
 
-    destroy_file_results(results);
     destroy_finder(finder);
     destroy_settings(settings);
 

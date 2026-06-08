@@ -95,6 +95,19 @@ bool string_matches_regex_node_with_matches(const char *s, RegexNode *regex_node
     return matches;
 }
 
+bool string_node_matches_regex_node(const StringNode *string_node, RegexNode *regex_node)
+{
+    const StringNode *d = string_node;
+    unsigned short matches = 0;
+    while (matches == 0 && d != NULL && d->string != NULL) {
+        if (string_matches_regex_node(d->string, regex_node) == 1) {
+            matches = 1;
+        }
+        d = d->next;
+    }
+    return matches;
+}
+
 size_t regex_node_count(RegexNode *regex_node)
 {
     size_t count = 0;

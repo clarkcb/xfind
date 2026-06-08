@@ -67,8 +67,8 @@ void test_validate_settings(void)
     destroy_settings(settings);
 }
 
-void test_is_matching_dir(void) {
-    printf("\ntest_is_matching_dir()\n");
+void test_is_matching_dir_path(void) {
+    printf("\ntest_is_matching_dir_path()\n");
 
     FindSettings *settings = get_default_settings();
 

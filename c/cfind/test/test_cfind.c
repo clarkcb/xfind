@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
 
     // test_finder
 	test_validate_settings();
-	test_is_matching_dir();
+	test_is_matching_dir_path();
     test_is_matching_dir_in_dir_patterns();
     test_is_matching_dir_out_dir_patterns();
     test_is_matching_file_path();

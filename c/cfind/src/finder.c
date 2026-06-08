@@ -124,19 +124,13 @@ bool is_matching_dir_path_by_in_patterns(const Finder *finder, const char *dir_p
     }
 
     // Split into dir elements to match against
-    StringNode *dir_elems = new_string_node_from_char_split(PATH_SEPARATOR, dir_path);
+    const StringNode *dir_elems = new_string_node_from_char_split(PATH_SEPARATOR, dir_path);
     if (dir_elems == NULL) return 1;
 
-    const StringNode *d = dir_elems;
-    unsigned short matches = 0;
-    while (matches == 0 && d != NULL && d->string != NULL) {
-        if (string_matches_regex_node(d->string, finder->settings->in_dir_patterns) == 1) {
-            matches = 1;
-        }
-        d = d->next;
+    if (string_node_matches_regex_node(dir_elems, finder->settings->in_dir_patterns) == 1) {
+        return 1;
     }
-    destroy_string_node(dir_elems);
-    return matches;
+    return 0;
 }
 
 bool is_matching_dir_path_by_out_patterns(const Finder *finder, const char *dir_path)
@@ -146,25 +140,19 @@ bool is_matching_dir_path_by_out_patterns(const Finder *finder, const char *dir_
     const size_t dir_len = strnlen(dir_path, MAX_PATH_LENGTH);
     if (dir_len == 0) return 1;
 
-    // empty in_dir_patterns is a match
+    // empty out_dir_patterns is a match
     if (is_null_or_empty_regex_node(finder->settings->out_dir_patterns) == 1) {
         return 1;
     }
 
     // Split into dir elements to match against
-    StringNode *dir_elems = new_string_node_from_char_split(PATH_SEPARATOR, dir_path);
+    const StringNode *dir_elems = new_string_node_from_char_split(PATH_SEPARATOR, dir_path);
     if (dir_elems == NULL) return 1;
 
-    const StringNode *d = dir_elems;
-    unsigned short matches = 1;
-    while (matches == 1 && d != NULL && d->string != NULL) {
-        if (string_matches_regex_node(d->string, finder->settings->out_dir_patterns) == 1) {
-            matches = 0;
-        }
-        d = d->next;
+    if (string_node_matches_regex_node(dir_elems, finder->settings->out_dir_patterns) == 1) {
+        return 0;
     }
-    destroy_string_node(dir_elems);
-    return matches;
+    return 1;
 }
 
 bool is_traversable_dir_path(const Finder *finder, const char *dir_path)
@@ -548,7 +536,8 @@ static error_t find_path(const Finder *finder, const Path *path, FileResults *re
 
     struct stat st;
 
-    if (stat(expanded, &st) == -1) {
+    // check for symbolic link
+    if (lstat(expanded, &st) == -1) {
         // this shouldn't happen if we made it this far
         err = (error_t)errno;
         if (err == ENOENT) err = E_STARTPATH_NOT_FOUND;
@@ -558,6 +547,27 @@ static error_t find_path(const Finder *finder, const Path *path, FileResults *re
         free(expanded);
         free(path_s);
         return err;
+    }
+
+    if (S_ISLNK(st.st_mode)) {
+        if (finder->settings->follow_symlinks == 1) {
+            // call stat to get underlying dir/file
+            if (stat(expanded, &st) == -1) {
+                // this shouldn't happen if we made it this far
+                err = (error_t)errno;
+                if (err == ENOENT) err = E_STARTPATH_NOT_FOUND;
+            }
+
+            if (err != E_OK) {
+                free(expanded);
+                free(path_s);
+                return err;
+            }
+        } else {
+            free(expanded);
+            free(path_s);
+            return E_STARTPATH_NON_MATCHING;
+        }
     }
 
     Path *expanded_path = new_path(expanded);
