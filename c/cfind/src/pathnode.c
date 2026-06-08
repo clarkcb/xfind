@@ -35,6 +35,14 @@ Path *new_path_from_dir_and_file_name(const char *dir, const char *file_name)
     return path;
 }
 
+// It is okay for dir to be null but not file_name
+bool is_null_or_empty_path(const Path *path) {
+    if (path == NULL || path->file_name == NULL) {
+        return 1;
+    }
+    return 0;
+}
+
 Path *copy_path(const Path *path)
 {
     Path *p = malloc(sizeof(Path));

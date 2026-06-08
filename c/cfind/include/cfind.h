@@ -796,23 +796,29 @@ typedef struct Finder {
     FileTypes *file_types;
 } Finder;
 
-Finder *new_finder(const FindSettings *s, const FileTypes *ft);
+Finder *new_finder(const FindSettings *settings);
 
 error_t validate_settings(const FindSettings *settings);
 
-bool is_matching_dir(const FindSettings *settings, const char *dir);
+bool is_traversable_dir_path(const Finder *finder, const char *dir_path);
 
-bool is_matching_path(const FindSettings *settings, const Path *path,
-                      const FileType *file_type, uint64_t file_size, long last_mod);
+bool is_matching_dir_path(const Finder *finder, const char *dir_path);
 
-bool filter_path(const FindSettings *settings, const Path *path,
-                 const FileType *file_type, uint64_t file_size, long last_mod);
+bool is_null_or_matching_dir_path(const Finder *finder, const char *dir_path);
 
-error_t filter_to_file_results(const Finder *finder, const PathNode *file_paths, FileResults *results);
+bool is_matching_archive_file_path(const Finder *finder, const Path *file_path);
 
-error_t filter_paths_to_file_results(const Finder *finder, const PathNode *file_paths, FileResults *results);
+bool is_matching_archive_file_result(const Finder *finder, const FileResult *result);
 
-error_t find(const FindSettings *settings, FileResults *results);
+bool is_matching_file_path(const Finder *finder, const Path *file_path);
+
+bool is_matching_file_result(const Finder *finder, const FileResult *result);
+
+error_t filter_file_path_to_file_results(const Finder *finder, const Path *file_path, FileResults *results);
+
+error_t filter_file_paths_to_file_results(const Finder *finder, const PathNode *file_paths, FileResults *results);
+
+error_t find(const Finder *finder, FileResults *results);
 
 void destroy_finder(Finder *finder);
 

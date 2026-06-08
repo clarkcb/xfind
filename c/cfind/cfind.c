@@ -18,7 +18,7 @@ void main_handle_error(const error_t err, const FindSettings *settings)
     }
 }
 
-int main(int argc, char *argv[])
+int main(const int argc, char *argv[])
 {
     FindOptions *options = empty_find_options();
     error_t err = get_find_options(options);
@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
 
-    FindSettings *settings = default_settings();
+    FindSettings *settings = get_default_settings();
     err = settings_from_args(argc - 1, ++argv, options, settings);
     if (err != E_OK) {
         main_handle_error(err, settings);
@@ -40,16 +40,18 @@ int main(int argc, char *argv[])
         print_settings(settings);
     }
 
+    Finder *finder = new_finder(settings);
+
+    // this will contain the find results
+    FileResults *results = empty_file_results();
+
     if (settings->print_usage) {
         print_usage();
     } else if (settings->print_version) {
         // TODO
     } else {
 
-        // this will contain the find results
-        FileResults *results = empty_file_results();
-
-        err = find(settings, results);
+        err = find(finder, results);
         if (err == E_OK) {
             if (settings->print_dirs) {
                 print_dir_results(results, settings);
@@ -67,6 +69,8 @@ int main(int argc, char *argv[])
         }
     }
 
+    destroy_file_results(results);
+    destroy_finder(finder);
     destroy_settings(settings);
 
     return (int) err;

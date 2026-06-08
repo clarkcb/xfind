@@ -18,6 +18,8 @@ Path *new_path(const char *file_path);
 
 Path *new_path_from_dir_and_file_name(const char *dir, const char *file_name);
 
+bool is_null_or_empty_path(const Path *path);
+
 Path *copy_path(const Path *path);
 
 int path_cmp(const Path *p1, const Path *p2);

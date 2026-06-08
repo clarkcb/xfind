@@ -39,7 +39,7 @@ FileTypes *new_file_types(void)
 
 error_t parse_file_types(const char * file_types_json_str, FileTypes *file_types);
 
-error_t get_file_types(FileTypes *file_types)
+error_t set_file_types(FileTypes *file_types)
 {
     error_t err = E_OK;
 
@@ -79,6 +79,13 @@ error_t get_file_types(FileTypes *file_types)
     free(full_path);
 
     return err;
+}
+
+FileTypes *get_file_types() {
+    FileTypes *file_types = new_file_types();
+    const error_t err = set_file_types(file_types);
+    assert(err == E_OK);
+    return file_types;
 }
 
 error_t parse_file_types(const char * const file_types_json_str, FileTypes *file_types)

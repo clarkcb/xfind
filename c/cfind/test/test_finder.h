@@ -11,19 +11,19 @@ void test_is_matching_dir_in_dir_patterns(void);
 
 void test_is_matching_dir_out_dir_patterns(void);
 
-void test_filter_path(void);
+void test_is_matching_file_path(void);
 
-void test_is_matching_path_in_extensions(void);
+void test_is_matching_file_path_in_extensions(void);
 
-void test_is_matching_path_out_extensions(void);
+void test_is_matching_file_path_out_extensions(void);
 
-void test_is_matching_path_in_file_patterns(void);
+void test_is_matching_file_path_in_file_patterns(void);
 
-void test_is_matching_path_out_file_patterns(void);
+void test_is_matching_file_path_out_file_patterns(void);
 
-void test_is_matching_path_in_file_types(void);
+void test_is_matching_file_result_in_file_types(void);
 
-void test_is_matching_path_out_file_types(void);
+void test_is_matching_file_result_out_file_types(void);
 
 void test_follow_symlinks_default_settings(void);
 

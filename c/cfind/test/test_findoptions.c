@@ -24,7 +24,7 @@ void test_settings_from_args(void)
     error_t err = get_find_options(options);
     assert(err == E_OK);
 
-    FindSettings *settings = default_settings();
+    FindSettings *settings = get_default_settings();
     err = settings_from_args(argc, argv, options, settings);
     assert(err == E_OK);
 
@@ -66,7 +66,7 @@ void test_settings_from_json_string(void) {
     error_t err = get_find_options(options);
     assert(err == E_OK);
 
-    FindSettings *settings = default_settings();
+    FindSettings *settings = get_default_settings();
     err = settings_from_json_string(json_string, options, settings);
     assert(err == E_OK);
 
@@ -112,7 +112,7 @@ void test_settings_from_json_file(void) {
     error_t err = get_find_options(options);
     assert(err == E_OK);
 
-    FindSettings *settings = default_settings();
+    FindSettings *settings = get_default_settings();
     err = settings_from_json_file(json_file, options, settings);
     assert(err == E_OK);
 }

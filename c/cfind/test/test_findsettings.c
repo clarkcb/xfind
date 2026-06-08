@@ -10,7 +10,7 @@ void test_default_settings(void)
 {
     printf("\ntest_default_settings()\n");
 
-    FindSettings *settings = default_settings();
+    FindSettings *settings = get_default_settings();
     const char* color = settings->archives_only == false ? CONSOLE_COLOR_GREEN : CONSOLE_COLOR_RED;
     printf("%ssettings->archives_only: %d%s\n", color, settings->archives_only, CONSOLE_COLOR_RESET);
     assert(settings->archives_only == false);
@@ -159,7 +159,7 @@ void test_add_extensions_to_settings(void)
 {
     printf("\ntest_add_extensions_to_settings()\n");
 
-    FindSettings *settings = default_settings();
+    FindSettings *settings = get_default_settings();
 
     printf("Adding in-archive-extensions: \"zip,gz\"\n");
     assert(settings->in_archive_extensions == NULL);
@@ -214,7 +214,7 @@ void test_add_patterns_to_settings(void)
 {
     printf("\ntest_add_patterns_to_settings()\n");
 
-    FindSettings *settings = default_settings();
+    FindSettings *settings = get_default_settings();
 
     printf("Adding in-archive-file-pattern: \"foo\"\n");
     assert(settings->in_archive_file_patterns == NULL);
@@ -283,7 +283,7 @@ void test_set_archives_only_in_settings(void)
 {
     printf("\ntest_set_archives_only_in_settings()\n");
 
-    FindSettings *settings = default_settings();
+    FindSettings *settings = get_default_settings();
 
     assert(settings->archives_only == false);
     printf("set_archives_only(1)\n");
@@ -303,7 +303,7 @@ void test_set_debug_in_settings(void)
 {
     printf("\ntest_set_debug_in_settings()\n");
 
-    FindSettings *settings = default_settings();
+    FindSettings *settings = get_default_settings();
 
     assert(settings->debug == false);
     printf("set_debug(1)\n");

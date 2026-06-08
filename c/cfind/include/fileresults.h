@@ -25,6 +25,8 @@ FileResult *new_file_result(const Path *path, FileType file_type, uint64_t file_
 
 FileResults *empty_file_results(void);
 
+bool is_null_or_empty_file_result(const FileResult *result);
+
 bool is_null_or_empty_file_results(const FileResults *results);
 
 FileResults *new_file_results(FileResult *r);

@@ -72,8 +72,7 @@ void test_get_file_type_for_ext(void)
         XML,
         UNKNOWN
     };
-    FileTypes *file_types = new_file_types();
-    get_file_types(file_types);
+    FileTypes *file_types = get_file_types();
     for (int i=0; i < arrlen; i++) {
         printf("ext: \"%s\"\n", exts[i]);
         FileType ft = get_file_type_for_ext(exts[i], file_types);
@@ -88,6 +87,7 @@ void test_get_file_type_for_ext(void)
         printf("%sactual ft:   %s%s\n", color, ftname, CONSOLE_COLOR_RESET);
         assert(ft == expected[i]);
     }
+    destroy_file_types(file_types);
 }
 
 void test_is_file_type_for_ext(void)
@@ -119,8 +119,7 @@ void test_is_file_type_for_ext(void)
         XML,
         UNKNOWN
     };
-    FileTypes *file_types = new_file_types();
-    get_file_types(file_types);
+    FileTypes *file_types = get_file_types();
     for (int i=0; i < arrlen; i++) {
         printf("ext: \"%s\"\n", exts[i]);
         unsigned short expected_is_archive = expected[i] == ARCHIVE ? 1 : 0;
@@ -193,4 +192,5 @@ void test_is_file_type_for_ext(void)
         printf("%sis_unknown: %d%s\n", color, is_unknown, CONSOLE_COLOR_RESET);
         assert(is_unknown == expected_is_unknown);
     }
+    destroy_file_types(file_types);
 }

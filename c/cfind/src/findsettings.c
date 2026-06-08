@@ -9,9 +9,8 @@
 
 unsigned int num_digits_ulong(unsigned long num);
 
-FindSettings *default_settings(void)
+void *set_default_settings(FindSettings *settings)
 {
-    FindSettings *settings = malloc(sizeof(FindSettings));
     assert(settings != NULL);
 
     settings->archives_only = false;
@@ -51,7 +50,13 @@ FindSettings *default_settings(void)
     settings->sort_case_insensitive = false;
     settings->sort_descending = false;
     settings->verbose = false;
+}
 
+FindSettings *get_default_settings(void)
+{
+    FindSettings *settings = malloc(sizeof(FindSettings));
+    assert(settings != NULL);
+    set_default_settings(settings);
     return settings;
 }
 

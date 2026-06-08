@@ -17,13 +17,18 @@ void test_validate_settings(void)
 {
     printf("\ntest_validate_settings()\n");
 
-    FindSettings *settings = default_settings();
+    error_t err = E_OK;
+
+    FindSettings *settings = get_default_settings();
+
+    Finder *finder = new_finder(settings);
+
     int empty_paths = is_null_or_empty_path_node(settings->paths);
     const char* color = empty_paths == 1 ? CONSOLE_COLOR_GREEN : CONSOLE_COLOR_RED;
     printf("%sis_null_or_empty_string_node(settings->paths): %d%s\n", color, empty_paths, CONSOLE_COLOR_RESET);
     assert(empty_paths == 1);
 
-    error_t err = validate_settings(settings);
+    err = validate_settings(finder);
     color = err == E_STARTPATH_NOT_DEFINED ? CONSOLE_COLOR_GREEN : CONSOLE_COLOR_RED;
     if (err == E_STARTPATH_NOT_DEFINED) {
         printf("%svalidate_settings(settings): E_STARTPATH_NOT_DEFINED%s\n", color, CONSOLE_COLOR_RESET);
@@ -51,257 +56,258 @@ void test_validate_settings(void)
     printf("%spath_node_count(settings->paths): %zu%s\n", color, path_count, CONSOLE_COLOR_RESET);
     assert(path_count == 2);
 
-    err = validate_settings(settings);
+    err = validate_settings(finder);
     color = err == E_STARTPATH_NOT_FOUND ? CONSOLE_COLOR_GREEN : CONSOLE_COLOR_RED;
     if (err == E_STARTPATH_NOT_FOUND) {
         printf("%svalidate_settings(settings): E_STARTPATH_NOT_FOUND%s\n", color, CONSOLE_COLOR_RESET);
     }
     assert(err == E_STARTPATH_NOT_FOUND);
 
+    destroy_finder(finder);
     destroy_settings(settings);
 }
 
 void test_is_matching_dir(void) {
     printf("\ntest_is_matching_dir()\n");
 
-    FindSettings *settings = default_settings();
+    FindSettings *settings = get_default_settings();
+
+    Finder *finder = new_finder(settings);
+
     // const char* f = ".";
     // Path *p1 = new_path(f);
     // settings->paths = new_path_node(p1);
 
     // test current dot dir
     const char* dot_dir = ".";
-    const unsigned short res1 = is_matching_dir(settings, dot_dir);
+    const unsigned short res1 = is_matching_dir_path(finder, dot_dir);
     const char* color = res1 == 1 ? CONSOLE_COLOR_GREEN : CONSOLE_COLOR_RED;
     printf("%sis_matching_dir(\"%s\"): %d%s\n", color, dot_dir, res1, CONSOLE_COLOR_RESET);
     assert(res1 == 1);
 
     // test parent dot dir
     const char* parent_dir = "..";
-    const unsigned short res2 = is_matching_dir(settings, parent_dir);
+    const unsigned short res2 = is_matching_dir_path(finder, parent_dir);
     color = res2 == 1 ? CONSOLE_COLOR_GREEN : CONSOLE_COLOR_RED;
     printf("%sis_matching_dir(\"%s\"): %d%s\n", color, parent_dir, res2, CONSOLE_COLOR_RESET);
     assert(res2 == 1);
 
     // test "test" dir
     const char* test_dir = "test";
-    const unsigned short res3 = is_matching_dir(settings, test_dir);
+    const unsigned short res3 = is_matching_dir_path(finder, test_dir);
     color = res3 == 1 ? CONSOLE_COLOR_GREEN : CONSOLE_COLOR_RED;
     printf("%sis_matching_dir(\"%s\"): %d%s\n", color, test_dir, res3, CONSOLE_COLOR_RESET);
     assert(res3 == 1);
 
+    destroy_finder(finder);
     destroy_settings(settings);
 }
 
 void test_is_matching_dir_in_dir_patterns(void) {
     printf("\ntest_is_matching_dir_in_dir_patterns()\n");
 
-    FindSettings *settings = default_settings();
+    FindSettings *settings = get_default_settings();
     Path *p = new_path(".");
     settings->paths = new_path_node(p);
+
+    Finder *finder = new_finder(settings);
 
     // test "test" dir with "test" in_dir_pattern
     const char* test_dir = "test";
     printf("Adding in-dir-pattern: \"%s\"\n", test_dir);
     settings->in_dir_patterns = new_regex_node_from_string("test");
-    const unsigned short res1 = is_matching_dir(settings, test_dir);
+    const unsigned short res1 = is_matching_dir_path(finder, test_dir);
     const char* color = res1 == 1 ? CONSOLE_COLOR_GREEN : CONSOLE_COLOR_RED;
     printf("%sis_matching_dir(\"%s\"): %d%s\n", color, test_dir, res1, CONSOLE_COLOR_RESET);
     assert(res1 == 1);
 
     // test "other" dir with "test" in_dir_pattern
     const char* other_dir = "other";
-    const unsigned short res2 = is_matching_dir(settings, other_dir);
+    const unsigned short res2 = is_matching_dir_path(finder, other_dir);
     color = res2 == 0 ? CONSOLE_COLOR_GREEN : CONSOLE_COLOR_RED;
     printf("%sis_matching_dir(\"%s\"): %d%s\n", color, other_dir, res2, CONSOLE_COLOR_RESET);
     assert(res2 == 0);
 
+    destroy_finder(finder);
     destroy_settings(settings);
 }
 
 void test_is_matching_dir_out_dir_patterns(void) {
     printf("\ntest_is_matching_dir_out_dir_patterns()\n");
 
-    FindSettings *settings = default_settings();
+    FindSettings *settings = get_default_settings();
     Path *p = new_path(".");
     settings->paths = new_path_node(p);
+
+    Finder *finder = new_finder(settings);
 
     // test "test" dir with "test" out_dir_pattern
     const char* test_dir = "test";
     printf("Adding out-dir-pattern: \"%s\"\n", test_dir);
     settings->out_dir_patterns = new_regex_node_from_string("test");
-    const unsigned short res1 = is_matching_dir(settings, test_dir);
+    const unsigned short res1 = is_matching_dir_path(finder, test_dir);
     const char* color = res1 == 0 ? CONSOLE_COLOR_GREEN : CONSOLE_COLOR_RED;
     printf("%sis_matching_dir(\"%s\"): %d%s\n", color, test_dir, res1, CONSOLE_COLOR_RESET);
     assert(res1 == 0);
 
     // test "other" dir with "test" out_dir_pattern
     const char* other_dir = "other";
-    const unsigned short res2 = is_matching_dir(settings, other_dir);
+    const unsigned short res2 = is_matching_dir_path(finder, other_dir);
     color = res2 == 1 ? CONSOLE_COLOR_GREEN : CONSOLE_COLOR_RED;
     printf("%sis_matching_dir(\"%s\"): %d%s\n", color, test_dir, res2, CONSOLE_COLOR_RESET);
     assert(res2 == 1);
 
+    destroy_finder(finder);
     destroy_settings(settings);
 }
 
-void test_filter_path(void) {
-    printf("\ntest_filter_path()\n");
+void test_is_matching_file_path(void) {
+    printf("\ntest_is_matching_file_path()\n");
 
-    FindSettings *settings = default_settings();
+    FindSettings *settings = get_default_settings();
     Path *p = new_path(".");
     settings->paths = new_path_node(p);
 
-    FileTypes *file_types = new_file_types();
-    const error_t err = get_file_types(file_types);
-    assert(err == E_OK);
+    Finder *finder = new_finder(settings);
 
     const char* test_file = "./test_finder.c";
-    const Path *test_path = new_path(test_file);
-    const FileType ft = CODE;
-    const unsigned short res1 = filter_path(settings, test_path, &ft, 0, 0);
+    const Path *test_file_path = new_path(test_file);
+    const unsigned short res1 = is_matching_file_path(finder, test_file_path);
     const char* color = res1 == 1 ? CONSOLE_COLOR_GREEN : CONSOLE_COLOR_RED;
-    printf("%sfilter_path(\"%s\"): %d%s\n", color, test_file, res1, CONSOLE_COLOR_RESET);
+    printf("%sis_matching_file_path(\"%s\"): %d%s\n", color, test_file, res1, CONSOLE_COLOR_RESET);
     assert(res1 == 1);
 
     const char* hidden_file = "./.hidden.c";
-    const Path *hidden_path = new_path(hidden_file);
-    const unsigned short res2 = filter_path(settings, hidden_path, &ft, 0, 0);
+    const Path *hidden_file_path = new_path(hidden_file);
+    const unsigned short res2 = is_matching_file_path(finder, hidden_file_path);
     color = res2 == 0 ? CONSOLE_COLOR_GREEN : CONSOLE_COLOR_RED;
-    printf("%sfilter_path(\"%s\"): %d%s\n", color, hidden_file, res2, CONSOLE_COLOR_RESET);
+    printf("%sis_matching_file_path(\"%s\"): %d%s\n", color, hidden_file, res2, CONSOLE_COLOR_RESET);
     assert(res2 == 0);
 
+    destroy_finder(finder);
     destroy_settings(settings);
 }
 
-void test_is_matching_path_in_extensions(void) {
-    printf("\ntest_is_matching_path_in_extensions()\n");
+void test_is_matching_file_path_in_extensions(void) {
+    printf("\ntest_is_matching_file_path_in_extensions()\n");
 
-    FindSettings *settings = default_settings();
+    FindSettings *settings = get_default_settings();
     Path *p = new_path(".");
     settings->paths = new_path_node(p);
     printf("Adding in-extension: \"c\"\n");
     settings->in_extensions = new_string_node("c");
 
-    FileTypes *file_types = new_file_types();
-    const error_t err = get_file_types(file_types);
-    assert(err == E_OK);
+    Finder *finder = new_finder(settings);
 
     const char* matching_file = "test_finder.c";
-    const Path *matching_path = new_path(matching_file);
-    const FileType ft = CODE;
-    const unsigned short res1 = is_matching_path(settings, matching_path, &ft, 0, 0);
+    const Path *matching_file_path = new_path(matching_file);
+    const unsigned short res1 = is_matching_file_path(finder, matching_file_path);
     const char* color = res1 == 1 ? CONSOLE_COLOR_GREEN : CONSOLE_COLOR_RED;
-    printf("%sis_matching_path(\"%s\"): %d%s\n", color, matching_file, res1, CONSOLE_COLOR_RESET);
+    printf("%sis_matching_file_path(\"%s\"): %d%s\n", color, matching_file, res1, CONSOLE_COLOR_RESET);
     assert(res1 == 1);
 
     const char* non_matching_file = "test_finder.h";
-    const Path *non_matching_path = new_path(non_matching_file);
-    const unsigned short res2 = is_matching_path(settings, non_matching_path, &ft, 0, 0);
+    const Path *non_matching_file_path = new_path(non_matching_file);
+    const unsigned short res2 = is_matching_file_path(finder, non_matching_file_path);
     color = res2 == 0 ? CONSOLE_COLOR_GREEN : CONSOLE_COLOR_RED;
-    printf("%sis_matching_path(\"%s\"): %d%s\n", color, non_matching_file, res2, CONSOLE_COLOR_RESET);
+    printf("%sis_matching_file_path(\"%s\"): %d%s\n", color, non_matching_file, res2, CONSOLE_COLOR_RESET);
     assert(res2 == 0);
 
+    destroy_finder(finder);
     destroy_settings(settings);
 }
 
-void test_is_matching_path_out_extensions(void) {
-    printf("\ntest_is_matching_path_out_extensions()\n");
+void test_is_matching_file_path_out_extensions(void) {
+    printf("\ntest_is_matching_file_path_out_extensions()\n");
 
-    FindSettings *settings = default_settings();
+    FindSettings *settings = get_default_settings();
     Path *p = new_path(".");
     settings->paths = new_path_node(p);
     printf("Adding out-extension: \"c\"\n");
     settings->out_extensions = new_string_node("c");
 
-    FileTypes *file_types = new_file_types();
-    const error_t err = get_file_types(file_types);
-    assert(err == E_OK);
+    Finder *finder = new_finder(settings);
 
     const char* matching_file = "test_finder.c";
-    const Path *matching_path = new_path(matching_file);
-    const FileType ft = CODE;
-    const unsigned short res1 = is_matching_path(settings, matching_path, &ft, 0, 0);
+    const Path *matching_file_path = new_path(matching_file);
+    const unsigned short res1 = is_matching_file_path(finder, matching_file_path);
     const char* color = res1 == 0 ? CONSOLE_COLOR_GREEN : CONSOLE_COLOR_RED;
-    printf("%sis_matching_path(\"%s\"): %d%s\n", color, matching_file, res1, CONSOLE_COLOR_RESET);
+    printf("%sis_matching_file_path(\"%s\"): %d%s\n", color, matching_file, res1, CONSOLE_COLOR_RESET);
     assert(res1 == 0);
 
     const char* non_matching_file = "test_finder.h";
-    const Path *non_matching_path = new_path(non_matching_file);
-    const unsigned short res2 = is_matching_path(settings, non_matching_path, &ft, 0, 0);
+    const Path *non_matching_file_path = new_path(non_matching_file);
+    const unsigned short res2 = is_matching_file_path(finder, non_matching_file_path);
     color = res2 == 1 ? CONSOLE_COLOR_GREEN : CONSOLE_COLOR_RED;
-    printf("%sis_matching_path(\"%s\"): %d%s\n", color, non_matching_file, res2, CONSOLE_COLOR_RESET);
+    printf("%sis_matching_file_path(\"%s\"): %d%s\n", color, non_matching_file, res2, CONSOLE_COLOR_RESET);
     assert(res2 == 1);
 
+    destroy_finder(finder);
     destroy_settings(settings);
 }
 
-void test_is_matching_path_in_file_patterns(void) {
-    printf("\ntest_is_matching_path_in_file_patterns()\n");
+void test_is_matching_file_path_in_file_patterns(void) {
+    printf("\ntest_is_matching_file_path_in_file_patterns()\n");
 
-    FindSettings *settings = default_settings();
+    FindSettings *settings = get_default_settings();
     Path *p = new_path(".");
     settings->paths = new_path_node(p);
     printf("Adding in-file-pattern: \"test\"\n");
     settings->in_file_patterns = new_regex_node_from_string("test");
 
-    FileTypes *file_types = new_file_types();
-    const error_t err = get_file_types(file_types);
-    assert(err == E_OK);
+    Finder *finder = new_finder(settings);
 
     const char* matching_file = "test_finder.c";
-    const Path *matching_path = new_path(matching_file);
-    const FileType ft = CODE;
-    const unsigned short res1 = is_matching_path(settings, matching_path, &ft, 0, 0);
+    const Path *matching_file_path = new_path(matching_file);
+    const unsigned short res1 = is_matching_file_path(finder, matching_file_path);
     const char* color = res1 == 1 ? CONSOLE_COLOR_GREEN : CONSOLE_COLOR_RED;
-    printf("%sis_matching_path(\"%s\"): %d%s\n", color, matching_file, res1, CONSOLE_COLOR_RESET);
+    printf("%sis_matching_file_path(\"%s\"): %d%s\n", color, matching_file, res1, CONSOLE_COLOR_RESET);
     assert(res1 == 1);
 
     const char* non_matching_file = "finder.c";
-    const Path *non_matching_path = new_path(non_matching_file);
-    const unsigned short res2 = is_matching_path(settings, non_matching_path, &ft, 0, 0);
+    const Path *non_matching_file_path = new_path(non_matching_file);
+    const unsigned short res2 = is_matching_file_path(finder, non_matching_file_path);
     color = res2 == 0 ? CONSOLE_COLOR_GREEN : CONSOLE_COLOR_RED;
-    printf("%sis_matching_path(\"%s\"): %d%s\n", color, non_matching_file, res2, CONSOLE_COLOR_RESET);
+    printf("%sis_matching_file_path(\"%s\"): %d%s\n", color, non_matching_file, res2, CONSOLE_COLOR_RESET);
     assert(res2 == 0);
 
+    destroy_finder(finder);
     destroy_settings(settings);
 }
 
-void test_is_matching_path_out_file_patterns(void) {
-    printf("\ntest_is_matching_path_out_file_patterns()\n");
+void test_is_matching_file_path_out_file_patterns(void) {
+    printf("\ntest_is_matching_file_path_out_file_patterns()\n");
 
-    FindSettings *settings = default_settings();
+    FindSettings *settings = get_default_settings();
     Path *p = new_path(".");
     settings->paths = new_path_node(p);
     printf("Adding out-file-pattern: \"test\"\n");
     settings->out_file_patterns = new_regex_node_from_string("test");
 
-    FileTypes *file_types = new_file_types();
-    const error_t err = get_file_types(file_types);
-    assert(err == E_OK);
+    Finder *finder = new_finder(settings);
 
     const char* matching_file = "test_finder.c";
-    const Path *matching_path = new_path(matching_file);
-    const FileType ft = CODE;
-    const unsigned short res1 = is_matching_path(settings, matching_path, &ft, 0, 0);
+    const Path *matching_file_path = new_path(matching_file);
+    const unsigned short res1 = is_matching_file_path(finder, matching_file_path);
     const char* color = res1 == 0 ? CONSOLE_COLOR_GREEN : CONSOLE_COLOR_RED;
-    printf("%sis_matching_path(\"%s\"): %d%s\n", color, matching_file, res1, CONSOLE_COLOR_RESET);
+    printf("%sis_matching_file_path(\"%s\"): %d%s\n", color, matching_file, res1, CONSOLE_COLOR_RESET);
     assert(res1 == 0);
 
     const char* non_matching_file = "finder.c";
-    const Path *non_matching_path = new_path(non_matching_file);
-    const unsigned short res2 = is_matching_path(settings, non_matching_path, &ft, 0, 0);
+    const Path *non_matching_file_path = new_path(non_matching_file);
+    const unsigned short res2 = is_matching_file_path(finder, non_matching_file_path);
     color = res2 == 1 ? CONSOLE_COLOR_GREEN : CONSOLE_COLOR_RED;
-    printf("%sis_matching_path(\"%s\"): %d%s\n", color, non_matching_file, res2, CONSOLE_COLOR_RESET);
+    printf("%sis_matching_file_path(\"%s\"): %d%s\n", color, non_matching_file, res2, CONSOLE_COLOR_RESET);
     assert(res2 == 1);
 
+    destroy_finder(finder);
     destroy_settings(settings);
 }
 
-void test_is_matching_path_in_file_types(void) {
-    printf("\ntest_is_matching_path_in_file_types()\n");
+void test_is_matching_file_result_in_file_types(void) {
+    printf("\ntest_is_matching_file_result_in_file_types()\n");
 
-    FindSettings *settings = default_settings();
+    FindSettings *settings = get_default_settings();
     Path *p = new_path(".");
     settings->paths = new_path_node(p);
     const FileType file_type = CODE;
@@ -311,33 +317,34 @@ void test_is_matching_path_in_file_types(void) {
     settings->in_file_types = empty_int_node();
     add_int_to_int_node(ftint, settings->in_file_types);
 
-    FileTypes *file_types = new_file_types();
-    const error_t err = get_file_types(file_types);
-    assert(err == E_OK);
+    Finder *finder = new_finder(settings);
 
     const char* matching_file = "finder.c";
-    const Path *matching_path = new_path(matching_file);
-    FileType ft = CODE;
-    const unsigned short res1 = is_matching_path(settings, matching_path, &ft, 0, 0);
+    const Path *matching_file_path = new_path(matching_file);
+    const FileType matching_file_type = CODE;
+    const FileResult *matching_file_result = new_file_result(matching_file_path, matching_file_type, 0, 0);
+    const unsigned short res1 = is_matching_file_result(finder, matching_file_result);
     const char* color = res1 == 1 ? CONSOLE_COLOR_GREEN : CONSOLE_COLOR_RED;
-    printf("%sis_matching_path(\"%s\"): %d%s\n", color, matching_file, res1, CONSOLE_COLOR_RESET);
+    printf("%sis_matching_file_result(\"%s\"): %d%s\n", color, matching_file, res1, CONSOLE_COLOR_RESET);
     assert(res1 == 1);
 
     const char* non_matching_file = "README.md";
-    const Path *non_matching_path = new_path(non_matching_file);
-    ft = TEXT;
-    const unsigned short res2 = is_matching_path(settings, non_matching_path, &ft, 0, 0);
+    const Path *non_matching_file_path = new_path(non_matching_file);
+    const FileType non_matching_file_type = TEXT;
+    const FileResult *non_matching_file_result = new_file_result(non_matching_file_path, non_matching_file_type, 0, 0);
+    const unsigned short res2 = is_matching_file_result(finder, non_matching_file_result);
     color = res2 == 0 ? CONSOLE_COLOR_GREEN : CONSOLE_COLOR_RED;
-    printf("%sis_matching_path(\"%s\"): %d%s\n", color, non_matching_file, res2, CONSOLE_COLOR_RESET);
+    printf("%sis_matching_file_result(\"%s\"): %d%s\n", color, non_matching_file, res2, CONSOLE_COLOR_RESET);
     assert(res2 == 0);
 
+    destroy_finder(finder);
     destroy_settings(settings);
 }
 
-void test_is_matching_path_out_file_types(void) {
-    printf("\ntest_is_matching_path_out_file_types()\n");
+void test_is_matching_file_result_out_file_types(void) {
+    printf("\ntest_is_matching_file_result_out_file_types()\n");
 
-    FindSettings *settings = default_settings();
+    FindSettings *settings = get_default_settings();
     Path *p = new_path(".");
     settings->paths = new_path_node(p);
     const FileType file_type = CODE;
@@ -347,26 +354,27 @@ void test_is_matching_path_out_file_types(void) {
     settings->out_file_types = empty_int_node();
     add_int_to_int_node(ftint, settings->out_file_types);
 
-    FileTypes *file_types = new_file_types();
-    const error_t err = get_file_types(file_types);
-    assert(err == E_OK);
+    Finder *finder = new_finder(settings);
 
     const char* non_matching_file = "finder.c";
-    const Path *non_matching_path = new_path(non_matching_file);
-    FileType ft = CODE;
-    const unsigned short res1 = is_matching_path(settings, non_matching_path, &ft, 0, 0);
+    const Path *non_matching_file_path = new_path(non_matching_file);
+    const FileType non_matching_file_type = CODE;
+    const FileResult *non_matching_file_result = new_file_result(non_matching_file_path, non_matching_file_type, 0, 0);
+    const unsigned short res1 = is_matching_file_result(finder, non_matching_file_result);
     const char* color = res1 == 0 ? CONSOLE_COLOR_GREEN : CONSOLE_COLOR_RED;
-    printf("%sis_matching_path(\"%s\"): %d%s\n", color, non_matching_file, res1, CONSOLE_COLOR_RESET);
+    printf("%sis_matching_file_result(\"%s\"): %d%s\n", color, non_matching_file, res1, CONSOLE_COLOR_RESET);
     assert(res1 == 0);
 
     const char* matching_file = "README.md";
-    const Path *matching_path = new_path(matching_file);
-    ft = TEXT;
-    const unsigned short res2 = is_matching_path(settings, matching_path, &ft, 0, 0);
+    const Path *matching_file_path = new_path(matching_file);
+    const FileType matching_file_type = TEXT;
+    const FileResult *matching_file_result = new_file_result(matching_file_path, matching_file_type, 0, 0);
+    const unsigned short res2 = is_matching_file_result(finder, matching_file_result);
     color = res2 == 1 ? CONSOLE_COLOR_GREEN : CONSOLE_COLOR_RED;
-    printf("%sis_matching_path(\"%s\"): %d%s\n", color, matching_file, res2, CONSOLE_COLOR_RESET);
+    printf("%sis_matching_file_result(\"%s\"): %d%s\n", color, matching_file, res2, CONSOLE_COLOR_RESET);
     assert(res2 == 1);
 
+    destroy_finder(finder);
     destroy_settings(settings);
 }
 
@@ -377,12 +385,15 @@ void test_follow_symlinks_default_settings(void) {
     get_xfind_path(bin_path);
     strcat(bin_path, "/bin");
 
-    FindSettings *settings = default_settings();
+    FindSettings *settings = get_default_settings();
     Path *p = new_path(bin_path);
     settings->paths = new_path_node(p);
 
+    error_t err = E_OK;
+
+    Finder *finder = new_finder(settings);
     FileResults *results = empty_file_results();
-    const error_t err = find(settings, results);
+    err = find(finder, results);
 
     assert(err == E_OK);
     const size_t res_count = file_results_count(results);
@@ -393,6 +404,7 @@ void test_follow_symlinks_default_settings(void) {
     }
 
     destroy_file_results(results);
+    destroy_finder(finder);
     destroy_settings(settings);
 }
 
@@ -403,13 +415,16 @@ void test_follow_symlinks_follow_symlinks(void) {
     get_xfind_path(bin_path);
     strcat(bin_path, "/bin");
 
-    FindSettings *settings = default_settings();
+    FindSettings *settings = get_default_settings();
     Path *p = new_path(bin_path);
     settings->paths = new_path_node(p);
     settings->follow_symlinks = true;
 
+    error_t err = E_OK;
+
+    Finder *finder = new_finder(settings);
     FileResults *results = empty_file_results();
-    const error_t err = find(settings, results);
+    err = find(finder, results);
 
     assert(err == E_OK);
     const size_t res_count = file_results_count(results);
@@ -420,6 +435,7 @@ void test_follow_symlinks_follow_symlinks(void) {
     }
 
     destroy_file_results(results);
+    destroy_finder(finder);
     destroy_settings(settings);
 }
 
@@ -430,13 +446,16 @@ void test_follow_symlinks_no_follow_symlinks(void) {
     get_xfind_path(bin_path);
     strcat(bin_path, "/bin");
 
-    FindSettings *settings = default_settings();
+    FindSettings *settings = get_default_settings();
     Path *p = new_path(bin_path);
     settings->paths = new_path_node(p);
     settings->follow_symlinks = false;
 
+    error_t err = E_OK;
+
+    Finder *finder = new_finder(settings);
     FileResults *results = empty_file_results();
-    const error_t err = find(settings, results);
+    err = find(finder, results);
 
     assert(err == E_OK);
     const size_t res_count = file_results_count(results);
@@ -447,6 +466,7 @@ void test_follow_symlinks_no_follow_symlinks(void) {
     }
 
     destroy_file_results(results);
+    destroy_finder(finder);
     destroy_settings(settings);
 }
 

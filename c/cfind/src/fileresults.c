@@ -29,6 +29,13 @@ FileResults *empty_file_results(void)
     return results;
 }
 
+bool is_null_or_empty_file_result(const FileResult *result)
+{
+    if (result == NULL || result->path == NULL)
+        return 1;
+    return 0;
+}
+
 bool is_null_or_empty_file_results(const FileResults *results)
 {
     if (results == NULL || results->result == NULL)

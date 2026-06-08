@@ -115,7 +115,7 @@ void get_error_message(const error_t err, char *err_msg)
         strncpy(err_buf, "An unknown error occurred trying to read startpath", 100);
         break;
     case E_STARTPATH_NON_MATCHING:
-        strncpy(err_buf, "Startpath does not match find criteria", 100);
+        strncpy(err_buf, "Startpath does not match find settings", 100);
         break;
     case E_STARTPATH_UNSUPPORTED_FILETYPE:
         strncpy(err_buf, "Startpath is an unsupported file type", 100);

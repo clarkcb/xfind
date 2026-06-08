@@ -56,7 +56,9 @@ typedef struct FileTypes {
 
 FileTypes *new_file_types(void);
 
-error_t get_file_types(FileTypes *file_types);
+error_t set_file_types(FileTypes *file_types);
+
+FileTypes *get_file_types(void);
 
 bool is_archive_ext(const char *ext, const FileTypes *file_types);
 

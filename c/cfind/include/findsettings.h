@@ -54,7 +54,9 @@ typedef struct FindSettings {
     bool verbose : 1;
 } FindSettings;
 
-FindSettings *default_settings(void);
+void *set_default_settings(FindSettings *settings);
+
+FindSettings *get_default_settings(void);
 
 size_t settings_strlen(const FindSettings *settings);
 
