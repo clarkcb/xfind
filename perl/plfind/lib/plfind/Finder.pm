@@ -506,8 +506,11 @@ sub find {
         }
         push(@$file_results, @$path_file_results);
     }
-    my $file_result_sorter = plfind::FileResultSorter->new($self->{settings});
-    return ($file_result_sorter->sort($file_results), []);
+    if (scalar @$file_results > 1) {
+        my $file_result_sorter = plfind::FileResultSorter->new($self->{settings});
+        return ($file_result_sorter->sort($file_results), []);
+    }
+    return ($file_results, []);
 }
 
 sub get_matching_dirs {

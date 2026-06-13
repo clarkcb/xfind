@@ -61,7 +61,10 @@ sub main {
         handle_err($errs3->[0], $find_options, $settings->{colorize});
     }
 
-    my $formatter = plfind::FileResultFormatter->new($settings);
+    my $formatter;
+    if (scalar @$file_results) {
+        $formatter = plfind::FileResultFormatter->new($settings);
+    }
 
     # print matching dirs
     if ($settings->{print_dirs}) {
