@@ -67,6 +67,10 @@ class FileUtil {
         }
     }
 
+    static getPathElems(filePath) {
+        return filePath.split(path.sep).filter(p => p !== '');
+    }
+
     static isDotDir(filePath) {
         return DOT_DIRS.indexOf(filePath) > -1;
     }
@@ -76,7 +80,7 @@ class FileUtil {
     }
 
     static isHiddenPath(filePath) {
-        let elems = filePath.split(path.sep).filter(p => p !== '');
+        let elems = FileUtil.getPathElems(filePath);
         return (elems.some((p) => FileUtil.isHiddenName(p)));
     }
 }

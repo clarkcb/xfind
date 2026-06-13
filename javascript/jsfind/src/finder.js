@@ -88,28 +88,40 @@ class Finder {
         }
     }
 
-    matchesAnyElement(s, elements) {
+    static matchesAnyElement(s, elements) {
         return elements.indexOf(s) > -1;
     }
 
-    matchesAnyPattern(s, patterns) {
+    static matchesAnyPattern(s, patterns) {
         return patterns.some((p) => s.search(p) > -1);
     }
 
-    emptyOrMatchesAnyElement(s, elements) {
-        return elements.length === 0 || this.matchesAnyElement(s, elements);
+    static anyMatchesAnyPattern(ss, patterns) {
+        return ss.some((s) => Finder.matchesAnyPattern(s, patterns));
     }
 
-    emptyOrNotMatchesAnyElement(s, elements) {
-        return elements.length === 0 || !this.matchesAnyElement(s, elements);
+    static emptyOrMatchesAnyElement(s, elements) {
+        return elements.length === 0 || Finder.matchesAnyElement(s, elements);
     }
 
-    emptyOrMatchesAnyPattern(s, patterns) {
-        return patterns.length === 0 || this.matchesAnyPattern(s, patterns);
+    static emptyOrNotMatchesAnyElement(s, elements) {
+        return elements.length === 0 || !Finder.matchesAnyElement(s, elements);
     }
 
-    emptyOrNotMatchesAnyPattern(s, patterns) {
-        return patterns.length === 0 || !this.matchesAnyPattern(s, patterns);
+    static emptyOrMatchesAnyPattern(s, patterns) {
+        return patterns.length === 0 || Finder.matchesAnyPattern(s, patterns);
+    }
+
+    static emptyOrNotMatchesAnyPattern(s, patterns) {
+        return patterns.length === 0 || !Finder.matchesAnyPattern(s, patterns);
+    }
+
+    static emptyOrAnyMatchesAnyPattern(ss, patterns) {
+        return patterns.length === 0 || Finder.anyMatchesAnyPattern(ss, patterns);
+    }
+
+    static emptyOrNotAnyMatchesAnyPattern(ss, patterns) {
+        return patterns.length === 0 || !Finder.anyMatchesAnyPattern(ss, patterns);
     }
 
     isMatchingDirPathByHidden(dirPath) {
@@ -117,13 +129,13 @@ class Finder {
     }
 
     isMatchingDirPathByInPatterns(dirPath) {
-        return this.settings.inDirPatterns.length === 0
-            || this.matchesAnyPattern(dirPath, this.settings.inDirPatterns);
+        const elems = FileUtil.getPathElems(dirPath);
+        return Finder.emptyOrAnyMatchesAnyPattern(elems, this.settings.inDirPatterns);
     }
 
     isMatchingDirPathByOutPatterns(dirPath) {
-        return this.settings.outDirPatterns.length === 0
-            || !this.matchesAnyPattern(dirPath, this.settings.outDirPatterns);
+        const elems = FileUtil.getPathElems(dirPath);
+        return Finder.emptyOrNotAnyMatchesAnyPattern(elems, this.settings.outDirPatterns);
     }
 
     isTraversableDirPath(dirPath) {
@@ -147,8 +159,8 @@ class Finder {
     }
 
     isMatchingArchiveExtension(ext) {
-        return (this.emptyOrMatchesAnyElement(ext, this.settings.inArchiveExtensions)
-            && this.emptyOrNotMatchesAnyElement(ext, this.settings.outArchiveExtensions));
+        return (Finder.emptyOrMatchesAnyElement(ext, this.settings.inArchiveExtensions)
+            && Finder.emptyOrNotMatchesAnyElement(ext, this.settings.outArchiveExtensions));
     }
 
     isMatchingArchiveExtensionForFilePath(filePath) {
@@ -160,8 +172,8 @@ class Finder {
     }
 
     isMatchingArchiveFileName(fileName) {
-        return ((this.emptyOrMatchesAnyPattern(fileName, this.settings.inArchiveFilePatterns)) &&
-            (this.emptyOrNotMatchesAnyPattern(fileName, this.settings.outArchiveFilePatterns)));
+        return ((Finder.emptyOrMatchesAnyPattern(fileName, this.settings.inArchiveFilePatterns)) &&
+            (Finder.emptyOrNotMatchesAnyPattern(fileName, this.settings.outArchiveFilePatterns)));
     }
 
     isMatchingArchiveFileNameForFilePath(filePath) {
@@ -182,8 +194,8 @@ class Finder {
 
 
     isMatchingExtension(ext) {
-        return (this.emptyOrMatchesAnyElement(ext, this.settings.inExtensions)
-            && this.emptyOrNotMatchesAnyElement(ext, this.settings.outExtensions));
+        return (Finder.emptyOrMatchesAnyElement(ext, this.settings.inExtensions)
+            && Finder.emptyOrNotMatchesAnyElement(ext, this.settings.outExtensions));
     }
 
     isMatchingExtensionForFilePath(filePath) {
@@ -195,8 +207,8 @@ class Finder {
     }
 
     isMatchingFileName(fileName) {
-        return ((this.emptyOrMatchesAnyPattern(fileName, this.settings.inFilePatterns)) &&
-            (this.emptyOrNotMatchesAnyPattern(fileName, this.settings.outFilePatterns)));
+        return ((Finder.emptyOrMatchesAnyPattern(fileName, this.settings.inFilePatterns)) &&
+            (Finder.emptyOrNotMatchesAnyPattern(fileName, this.settings.outFilePatterns)));
     }
 
     isMatchingFileNameForFilePath(filePath) {
@@ -212,8 +224,8 @@ class Finder {
     }
 
     isMatchingFileType(fileType) {
-        return (this.emptyOrMatchesAnyElement(fileType, this.settings.inFileTypes)
-            && this.emptyOrNotMatchesAnyElement(fileType, this.settings.outFileTypes));
+        return (Finder.emptyOrMatchesAnyElement(fileType, this.settings.inFileTypes)
+            && Finder.emptyOrNotMatchesAnyElement(fileType, this.settings.outFileTypes));
     }
 
     isMatchingFileSize(fileSize) {
