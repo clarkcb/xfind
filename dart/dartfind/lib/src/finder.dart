@@ -197,8 +197,7 @@ class Finder {
   }
 
   bool isMatchingExtensionForFile(File file) {
-    if (settings.inArchiveExtensions.isNotEmpty ||
-        settings.outArchiveExtensions.isNotEmpty) {
+    if (settings.inExtensions.isNotEmpty || settings.outExtensions.isNotEmpty) {
       var fileName = path.basename(file.path);
       var ext = FileUtil.extension(fileName);
       return isMatchingExtension(ext);
