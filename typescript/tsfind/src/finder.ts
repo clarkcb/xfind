@@ -88,40 +88,52 @@ export class Finder {
         }
     }
 
-    private static matchesAnyPattern(s: string, patterns: RegExp[]): boolean {
+    public static matchesAnyPattern(s: string, patterns: RegExp[]): boolean {
         return patterns.some((p: RegExp) => s.search(p) > -1);
     }
 
-    private static matchesAnyString(s: string, elements: string[]): boolean {
+    public static anyMatchesAnyPattern(ss: string[], patterns: RegExp[]): boolean {
+        return ss.some((s: string) => Finder.matchesAnyPattern(s, patterns));
+    }
+
+    public static matchesAnyString(s: string, elements: string[]): boolean {
         return elements.indexOf(s) > -1;
     }
 
-    private static matchesAnyFileType(ft: FileType, fileTypes: FileType[]): boolean {
+    public static matchesAnyFileType(ft: FileType, fileTypes: FileType[]): boolean {
         return fileTypes.indexOf(ft) > -1;
     }
 
-    private static emptyOrMatchesAnyPattern(s: string, patterns: RegExp[]): boolean {
-        return patterns.length === 0 || this.matchesAnyPattern(s, patterns);
+    public static emptyOrMatchesAnyPattern(s: string, patterns: RegExp[]): boolean {
+        return patterns.length === 0 || Finder.matchesAnyPattern(s, patterns);
     }
 
-    private static emptyOrNotMatchesAnyPattern(s: string, patterns: RegExp[]): boolean {
-        return patterns.length === 0 || !this.matchesAnyPattern(s, patterns);
+    public static emptyOrNotMatchesAnyPattern(s: string, patterns: RegExp[]): boolean {
+        return patterns.length === 0 || !Finder.matchesAnyPattern(s, patterns);
     }
 
-    private static emptyOrMatchesAnyString(s: string, elements: string[]): boolean {
-        return elements.length === 0 || this.matchesAnyString(s, elements);
+    public static emptyOrAnyMatchesAnyPattern(ss: string[], patterns: RegExp[]): boolean {
+        return ss.some((s: string) => Finder.emptyOrMatchesAnyPattern(s, patterns));
     }
 
-    private static emptyOrNotMatchesAnyString(s: string, elements: string[]): boolean {
-        return elements.length === 0 || !this.matchesAnyString(s, elements);
+    public static emptyOrNotAnyMatchesAnyPattern(ss: string[], patterns: RegExp[]): boolean {
+        return ss.some((s: string) => !Finder.emptyOrMatchesAnyPattern(s, patterns));
     }
 
-    private static emptyOrMatchesAnyFileType(ft: FileType, fileTypes: FileType[]): boolean {
-        return fileTypes.length === 0 || this.matchesAnyFileType(ft, fileTypes);
+    public static emptyOrMatchesAnyString(s: string, elements: string[]): boolean {
+        return elements.length === 0 || Finder.matchesAnyString(s, elements);
     }
 
-    private static emptyOrNotMatchesAnyFileType(ft: FileType, fileTypes: FileType[]): boolean {
-        return fileTypes.length === 0 || !this.matchesAnyFileType(ft, fileTypes);
+    public static emptyOrNotMatchesAnyString(s: string, elements: string[]): boolean {
+        return elements.length === 0 || !Finder.matchesAnyString(s, elements);
+    }
+
+    public static emptyOrMatchesAnyFileType(ft: FileType, fileTypes: FileType[]): boolean {
+        return fileTypes.length === 0 || Finder.matchesAnyFileType(ft, fileTypes);
+    }
+
+    public static emptyOrNotMatchesAnyFileType(ft: FileType, fileTypes: FileType[]): boolean {
+        return fileTypes.length === 0 || !Finder.matchesAnyFileType(ft, fileTypes);
     }
 
     public isMatchingDirPathByHidden(dirPath: string): boolean {
@@ -129,11 +141,13 @@ export class Finder {
     }
 
     public isMatchingDirPathByInPatterns(dirPath: string): boolean {
-        return Finder.emptyOrMatchesAnyPattern(dirPath, this._settings.inDirPatterns);
+        const elems = FileUtil.getPathElems(dirPath);
+        return Finder.emptyOrAnyMatchesAnyPattern(elems, this._settings.inDirPatterns);
     }
 
     public isMatchingDirPathByOutPatterns(dirPath: string): boolean {
-        return Finder.emptyOrNotMatchesAnyPattern(dirPath, this._settings.outDirPatterns);
+        const elems = FileUtil.getPathElems(dirPath);
+        return Finder.emptyOrNotAnyMatchesAnyPattern(elems, this._settings.outDirPatterns);
     }
 
     public isTraversableDirPath(dirPath: string): boolean {

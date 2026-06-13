@@ -64,6 +64,10 @@ export class FileUtil {
         return FileUtil.getFileContentsSync(filePath, encoding).split(/\r?\n/);
     }
 
+    public static getPathElems(filePath: string): string[] {
+        return filePath.split(path.sep).filter(p => p !== '');
+    }
+
     public static getRelativePath(filePath: string, startpath: string): string {
         if (startpath === '.' && filePath.startsWith(config.HOME)) {
             return '.' + filePath.substring(config.HOME.length);
@@ -80,7 +84,7 @@ export class FileUtil {
     }
 
     public static isHiddenPath(filePath: string): boolean {
-        const elems = filePath.split(path.sep).filter(p => p !== '');
+        const elems = FileUtil.getPathElems(filePath);
         return (elems.some((p) => FileUtil.isHiddenName(p)));
     }
 }
