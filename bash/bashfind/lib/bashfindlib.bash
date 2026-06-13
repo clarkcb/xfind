@@ -252,16 +252,16 @@ validate_settings () {
     for p in ${PATHS[*]}
     do
         p=$(eval echo "$p")
-        resolvedpath=p
-        if [ ! -e $p ]
+        resolvedpath="$p"
+        if [ ! -e "$p" ]
         then
             exit_with_error "Startpath not found"
         fi
-        if [ ! -r $p ]
+        if [ ! -r "$p" ]
         then
             exit_with_error "Startpath not readable"
         fi
-        if [ -L $p ]
+        if [ -L "$p" ]
         then
             if [ $FOLLOW_SYMLINKS == true ]
             then
@@ -270,20 +270,20 @@ validate_settings () {
                 exit_with_error "Startpath does not match find settings"
             fi
         fi
-        if [ -d $p ]
+        if [ -d "$p" ]
         then
-            filter_dir_by_hidden "$p"
+            is_matching_dir_path_by_hidden "$p"
             if [ $? == 0 ]
             then
                 exit_with_error "Startpath does not match find settings"
             fi
 
-            filter_dir_by_out_patterns "$p"
+            is_matching_dir_path_by_out_patterns "$p"
             if [ $? == 0 ]
             then
                 exit_with_error "Startpath does not match find settings"
             fi
-        elif [ -f $p ]
+        elif [ -f "$p" ]
         then
             is_matching_file_path "$p"
             if [ $? == 0 ]
@@ -352,7 +352,7 @@ is_hidden_path () {
     return 0
 }
 
-filter_dir_by_hidden () {
+is_matching_dir_path_by_hidden () {
     local dir_path="$1"
 
     if [ "$dir_path" == "" ]
@@ -378,7 +378,7 @@ filter_dir_by_hidden () {
     return 1
 }
 
-filter_dir_by_in_patterns () {
+is_matching_dir_path_by_in_patterns () {
     local dir_path="$1"
 
     if [ ${#IN_DIR_PATTERNS[@]} -gt 0 ]
@@ -396,7 +396,7 @@ filter_dir_by_in_patterns () {
     return 1
 }
 
-filter_dir_by_out_patterns () {
+is_matching_dir_path_by_out_patterns () {
     local dir_path="$1"
 
     if [ ${#OUT_DIR_PATTERNS[@]} -gt 0 ]
@@ -414,7 +414,7 @@ filter_dir_by_out_patterns () {
     return 1
 }
 
-is_matching_dir () {
+is_traversable_dir_path () {
     local dir_path="$1"
 
     is_dot_dir "$dir_path"
@@ -423,22 +423,90 @@ is_matching_dir () {
         return 1
     fi
 
-    filter_dir_by_hidden "$dir_path"
+    is_matching_dir_path_by_hidden "$dir_path"
     if [ $? == 0 ]
     then
         return 0
     fi
 
-    filter_dir_by_in_patterns "$dir_path"
+    is_matching_dir_path_by_out_patterns "$dir_path"
     if [ $? == 0 ]
     then
         return 0
     fi
 
-    filter_dir_by_out_patterns "$dir_path"
+    return 1
+}
+
+is_matching_dir_path () {
+    local dir_path="$1"
+
+    is_dot_dir "$dir_path"
+    if [ $? == 1 ]
+    then
+        return 1
+    fi
+
+    is_traversable_dir_path "$dir_path"
     if [ $? == 0 ]
     then
         return 0
+    fi
+
+    is_matching_dir_path_by_in_patterns "$dir_path"
+    if [ $? == 0 ]
+    then
+        return 0
+    fi
+
+    return 1
+}
+
+is_null_or_matching_dir_path () {
+    local dir_path="$1"
+
+    if [ "$dir_path" == "" ]
+    then
+        return 1
+    fi
+
+    is_matching_dir_path "$dir_path"
+    if [ $? == 0 ]
+    then
+        return 0
+    fi
+
+    return 1
+}
+
+is_matching_archive_ext () {
+    local file_ext="$1"
+
+    local found_in_ext=0
+    if [ ${#IN_ARCHIVE_EXTENSIONS[@]} -gt 0 ]
+    then
+        for x in ${IN_ARCHIVE_EXTENSIONS[*]}
+        do
+            if [[ "$file_ext" = "$x" ]]
+            then
+                found_in_ext=1
+            fi
+        done
+        if [ $found_in_ext == 0 ]
+        then
+            return 0
+        fi
+    fi
+
+    if [ ${#OUT_ARCHIVE_EXTENSIONS[@]} -gt 0 ]
+    then
+        for x in ${OUT_ARCHIVE_EXTENSIONS[*]}
+        do
+            if [[ "$file_ext" = "$x" ]]
+            then
+                return 0
+            fi
+        done
     fi
 
     return 1
@@ -449,33 +517,8 @@ has_matching_archive_ext () {
 
     if [ ${#IN_ARCHIVE_EXTENSIONS[@]} -gt 0 -o ${#OUT_ARCHIVE_EXTENSIONS[@]} -gt 0 ]
     then
-        local ext="${file_name##*.}"
-        local found_in_ext=0
-        if [ ${#IN_ARCHIVE_EXTENSIONS[@]} -gt 0 ]
-        then
-            for x in ${IN_ARCHIVE_EXTENSIONS[*]}
-            do
-                if [[ "$ext" = "$x" ]]
-                then
-                    found_in_ext=1
-                fi
-            done
-            if [ $found_in_ext == 0 ]
-            then
-                return 0
-            fi
-        fi
-
-        if [ ${#OUT_ARCHIVE_EXTENSIONS[@]} -gt 0 ]
-        then
-            for x in ${OUT_ARCHIVE_EXTENSIONS[*]}
-            do
-                if [[ "$ext" = "$x" ]]
-                then
-                    return 0
-                fi
-            done
-        fi
+        local file_ext="${file_name##*.}"
+        return is_matching_archive_ext "$file_ext"
     fi
 
     return 1
@@ -518,7 +561,7 @@ is_matching_archive_file_name () {
     return 1
 }
 
-is_matching_archive_file () {
+is_matching_archive_file_path () {
     local file_path="$1"
     local file_name=$(basename $file_path)
 
@@ -546,37 +589,49 @@ is_matching_archive_file () {
     return 1
 }
 
+is_matching_ext () {
+    local file_ext="$1"
+
+    if [ ${#IN_EXTENSIONS[@]} -gt 0 ]
+    then
+        local found_in_ext=0
+        for x in ${IN_EXTENSIONS[*]}
+        do
+            if [[ "$file_ext" = "$x" ]]
+            then
+                found_in_ext=1
+            fi
+        done
+        if [ $found_in_ext == 0 ]
+        then
+            return 0
+        fi
+    fi
+
+    if [ ${#OUT_EXTENSIONS[@]} -gt 0 ]
+    then
+        for x in ${OUT_EXTENSIONS[*]}
+        do
+            if [[ "$file_ext" = "$x" ]]
+            then
+                return 0
+            fi
+        done
+    fi
+
+    return 1
+}
+
 has_matching_ext () {
     local file_name="$1"
 
     if [ ${#IN_EXTENSIONS[@]} -gt 0 -o ${#OUT_EXTENSIONS[@]} -gt 0 ]
     then
         local file_ext="${file_name##*.}"
-        if [ ${#IN_EXTENSIONS[@]} -gt 0 ]
+        is_matching_ext "$file_ext"
+        if [ $? == 0 ]
         then
-            local found_in_ext=0
-            for x in ${IN_EXTENSIONS[*]}
-            do
-                if [[ "$file_ext" = "$x" ]]
-                then
-                    found_in_ext=1
-                fi
-            done
-            if [ $found_in_ext == 0 ]
-            then
-                return 0
-            fi
-        fi
-
-        if [ ${#OUT_EXTENSIONS[@]} -gt 0 ]
-        then
-            for x in ${OUT_EXTENSIONS[*]}
-            do
-                if [[ "$file_ext" = "$x" ]]
-                then
-                    return 0
-                fi
-            done
+            return 0
         fi
     fi
 
@@ -615,6 +670,41 @@ is_matching_file_name () {
                 fi
             done
         fi
+    fi
+
+    return 1
+}
+
+is_matching_file_path () {
+    local file_path="$1"
+    local dir_path=$(dirname $file_path)
+    local file_name=$(basename $file_path)
+
+    is_null_or_matching_dir_path "$dir_path"
+    if [ $? == 0 ]
+    then
+        return 0
+    fi
+
+    if [ $INCLUDE_HIDDEN == false ]
+    then
+        is_hidden_name "$file_name"
+        if [ $? == 1 ]
+        then
+            return 0
+        fi
+    fi
+
+    has_matching_ext "$file_name"
+    if [ $? == 0 ]
+    then
+        return 0
+    fi
+
+    is_matching_file_name "$file_name"
+    if [ $? == 0 ]
+    then
+        return 0
     fi
 
     return 1
@@ -697,64 +787,13 @@ is_matching_last_mod () {
     return 1
 }
 
-is_matching_file_path () {
-    local file_path="$1"
-    local dir_path=$(dirname $file_path)
-    local file_name=$(basename $file_path)
-
-    is_matching_dir "$dir_path"
-    if [ $? == 0 ]
-    then
-        return 0
-    fi
-
-    if [ $INCLUDE_HIDDEN == false ]
-    then
-        is_hidden_name "$file_name"
-        if [ $? == 1 ]
-        then
-            return 0
-        fi
-    fi
-
-    has_matching_ext "$file_name"
-    if [ $? == 0 ]
-    then
-        return 0
-    fi
-
-    is_matching_file_name "$file_name"
-    if [ $? == 0 ]
-    then
-        return 0
-    fi
-
-    return 1
-}
-
 is_matching_file_result () {
     local file_path="$1"
     local file_type="$2"
     local file_size=$3
     local last_mod=$4
-    local file_name=$(basename $file_path)
 
-    if [ $INCLUDE_HIDDEN == false ]
-    then
-        is_hidden_name "$file_name"
-        if [ $? == 1 ]
-        then
-            return 0
-        fi
-    fi
-
-    has_matching_ext "$file_name"
-    if [ $? == 0 ]
-    then
-        return 0
-    fi
-
-    is_matching_file_name "$file_name"
+    is_matching_file_path "$file_path"
     if [ $? == 0 ]
     then
         return 0
@@ -781,7 +820,70 @@ is_matching_file_result () {
     return 1
 }
 
-filter_to_file_result () {
+filter_archive_file_path_to_file_result () {
+    local file_path="$1"
+
+    if [ $INCLUDE_ARCHIVES == true -o $ARCHIVES_ONLY == true ]
+    then
+        is_matching_archive_file_path "$file_path"
+        if [ $? == 1 ]
+        then
+            local dir_path=$(dirname $file_path)
+            local file_name=$(basename $file_path)
+            FILE_RESULTS+=("$dir_path,$file_name,archive,0,0")
+        fi
+    fi
+}
+
+filter_reg_file_path_to_file_result () {
+    local file_path="$1"
+    local file_type="$2"
+    local file_size=0
+    local last_mod=0
+
+    if [ $ARCHIVES_ONLY == true ]
+    then
+        return
+    fi
+
+    is_matching_file_path "$file_path"
+    if [ $? == 0 ]
+    then
+        return
+    fi
+
+    is_matching_file_type "$file_type"
+    if [ $? == 0 ]
+    then
+        return
+    fi
+
+    if [ $NEED_FILE_SIZE == true ]
+    then
+        file_size=$(stat -f %z $file_path)
+        is_matching_file_size $file_size
+        if [ $? == 0 ]
+        then
+            return
+        fi
+    fi
+
+    if [ $NEED_LAST_MOD == true ]
+    then
+        last_mod=$(stat -f %m $file_path)
+        is_matching_last_mod $last_mod
+        if [ $? == 0 ]
+        then
+            return
+        fi
+    fi
+
+    local dir_path=$(dirname $file_path)
+    local file_name=$(basename $file_path)
+    FILE_RESULTS+=("$dir_path,$file_name,$file_type,$file_size,$last_mod")
+}
+
+filter_file_path_to_file_result () {
     local file_path="$1"
     local dir_path=$(dirname $file_path)
     local file_name=$(basename $file_path)
@@ -789,7 +891,7 @@ filter_to_file_result () {
     local file_size=0
     local last_mod=0
 
-    is_matching_dir "$dir_path"
+    is_matching_dir_path "$dir_path"
     if [ $? == 0 ]
     then
         return
@@ -808,43 +910,23 @@ filter_to_file_result () {
     local archive_match=$?
     if [ "$archive_match" == 1 ]
     then
-        file_type='archive'
-        if [ $INCLUDE_ARCHIVES == true ]
-        then
-            is_matching_archive_file "$file_name"
-            local file_match=$?
-            if [ "$file_match" == 1 ]
-            then
-                FILE_RESULTS+=("$dir_path,$file_name,$file_type,$file_size,$last_mod")
-            fi
-        fi
+        filter_archive_file_path_to_file_result "$file_path"
     else
         if [ $NEED_FILE_TYPE == true ]
         then
             file_type=$(get_file_type $file_path)
         fi
-        if [ $NEED_FILE_SIZE == true ]
-        then
-            file_size=$(stat -f %z $file_path)
-        fi
-        if [ $NEED_LAST_MOD == true ]
-        then
-            last_mod=$(stat -f %m $file_path)
-        fi
-        is_matching_file_result "$file_name" "$file_type" $file_size $last_mod
-        if [ $? == 1 ]
-        then
-            FILE_RESULTS+=("$dir_path,$file_name,$file_type,$file_size,$last_mod")
-        fi
+
+        filter_reg_file_path_to_file_result "$file_path" "$file_type"
     fi
 }
 
-filter_to_file_results () {
+filter_file_paths_to_file_results () {
     local file_paths=("$@")
 
     for file_path in ${file_paths[*]}
     do
-        filter_to_file_result $file_path
+        filter_file_path_to_file_result $file_path
     done
 }
 
@@ -896,17 +978,11 @@ rec_find_path () {
         path_files=$(find $primary_options $path -type f $other_options)
     fi
 
-    filter_to_file_results "${path_files[*]}"
+    filter_file_paths_to_file_results "${path_files[*]}"
 
     for d in ${path_dirs[*]}
     do
-        filter_dir_by_hidden "$d"
-        if [ $? == 0 ]
-        then
-            continue
-        fi
-
-        filter_dir_by_out_patterns "$d"
+        is_traversable_dir_path "$d"
         if [ $? == 0 ]
         then
             continue
@@ -925,6 +1001,16 @@ find_path () {
         path=$(eval echo "$path")
     fi
 
+    if [ -L "$path" ]
+    then
+        if [ $FOLLOW_SYMLINKS == true ]
+        then
+            resolvedpath=$(realpath "$path")
+        else
+            exit_with_error "Startpath does not match find settings"
+        fi
+    fi
+
     if [ -d "$path" ]
     then
         if [ $MAX_DEPTH -eq 0 ]
@@ -937,54 +1023,48 @@ find_path () {
             MAX_DEPTH=1
         fi
 
-        filter_dir_by_hidden "$d"
+        is_traversable_dir_path "$d"
         if [ $? == 0 ]
         then
-            # TODO: report error that path does not match settings
-            return
-        fi
-
-        filter_dir_by_out_patterns "$d"
-        if [ $? == 0 ]
-        then
-            # TODO: report error that path does not match settings
-            return
+            exit_with_error "Startpath does not match find settings"
         fi
 
         rec_find_path $path 1
 
-    else
-        if [ -f "$path" ]
+    elif [ -f "$path" ]
+    then
+        local file_name=$(basename $path)
+        local file_type='unknown'
+        local file_size=0
+        local last_mod=0
+
+        if [ $NEED_FILE_TYPE == true ]
         then
-            local file_name=$(basename $path)
-            local file_type='unknown'
-            local file_size=0
-            local last_mod=0
-
-            if [ $NEED_FILE_TYPE == true ]
-            then
-                file_type=$(get_file_type $path)
-            fi
-
-            if [ $NEED_FILE_SIZE == true ]
-            then
-                file_size=$(stat -f %z $path)
-            fi
-
-            if [ $NEED_LAST_MOD == true ]
-            then
-                last_mod=$(stat -f %m $path)
-            fi
-
-            is_matching_file_result "$path" "$file_type" $file_size $last_mod
-            local file_match=$?
-            if [ "$file_match" == 1 ]
-            then
-                local dir_path=$(dirname $path)
-                local file_name=$(basename $path)
-                FILE_RESULTS+=("$dir_path,$file_name,$file_type,$file_size,$last_mod")
-            fi
+            file_type=$(get_file_type $path)
         fi
+
+        if [ $NEED_FILE_SIZE == true ]
+        then
+            file_size=$(stat -f %z $path)
+        fi
+
+        if [ $NEED_LAST_MOD == true ]
+        then
+            last_mod=$(stat -f %m $path)
+        fi
+
+        is_matching_file_result "$path" "$file_type" $file_size $last_mod
+        local file_match=$?
+        if [ "$file_match" == 1 ]
+        then
+            local dir_path=$(dirname $path)
+            local file_name=$(basename $path)
+            FILE_RESULTS+=("$dir_path,$file_name,$file_type,$file_size,$last_mod")
+        else
+            exit_with_error "Startpath does not match find settings"
+        fi
+    else
+        exit_with_error "Startpath does not match find settings"
     fi
 }
 
@@ -1110,7 +1190,7 @@ sort_file_results () {
 do_find () {
     for p in ${PATHS[*]}
     do
-        find_path $p
+        find_path "$p"
     done
     if [ ${#FILE_RESULTS[@]} -gt 1 ]
     then
