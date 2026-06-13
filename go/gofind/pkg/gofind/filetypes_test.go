@@ -17,7 +17,7 @@ func TestGetFileType(t *testing.T) {
 		"nonsense.zippitydooda": FileTypeUnknown,
 	}
 
-	fileTypes := FileTypesFromJson()
+	fileTypes := NewFileTypes()
 
 	for k, v := range expected {
 		if ft := fileTypes.GetFileType(k); ft != v {

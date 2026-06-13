@@ -53,7 +53,7 @@ type JsonFileTypes struct {
 	FileTypes []*JsonFileType
 }
 
-func FileTypesFromJson() *FileTypes {
+func FileTypesFromJson() (*FileTypes, error) {
 	config := NewFindConfig()
 
 	var fileTypes FileTypes
@@ -61,11 +61,11 @@ func FileTypesFromJson() *FileTypes {
 	fileTypes.fileTypeNameMap = make(map[string]set)
 	data, err := os.ReadFile(config.FILETYPESPATH)
 	if err != nil {
-		return &fileTypes
+		return nil, err
 	}
 	var jsonFileTypes JsonFileTypes
 	if err = json.Unmarshal(data, &jsonFileTypes); err != nil {
-		return &fileTypes
+		return nil, err
 	}
 	for _, ft := range jsonFileTypes.FileTypes {
 		fileTypes.fileTypeExtMap[ft.Type] = MakeStringSet(ft.Extensions)
@@ -75,7 +75,15 @@ func FileTypesFromJson() *FileTypes {
 	// TEMPORARY
 	//fileTypes.generateCodeFile("/Users/cary/src/xfind/go/gofind/pkg/gofind/filetypesgen.go")
 
-	return &fileTypes
+	return &fileTypes, nil
+}
+
+func NewFileTypes() *FileTypes {
+	fileTypes, err := FileTypesFromJson()
+	if err != nil {
+		// do something
+	}
+	return fileTypes
 }
 
 func (ft *FileTypes) GetFileType(filePath string) FileType {

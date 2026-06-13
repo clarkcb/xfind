@@ -21,10 +21,14 @@ type Finder struct {
 	errChan            chan error
 }
 
-func NewFinder(settings *FindSettings) *Finder {
-	return &Finder{
+func NewFinder(settings *FindSettings) (*Finder, error) {
+	fileTypes, err := FileTypesFromJson()
+	if err != nil {
+		return nil, err
+	}
+	finder := &Finder{
 		settings,               // Settings
-		FileTypesFromJson(),    // fileTypes
+		fileTypes,              // fileTypes
 		NewFileResults(),       // fileResults
 		[]error{},              // errors
 		make(chan *FileResult), // addResultChan
@@ -32,6 +36,11 @@ func NewFinder(settings *FindSettings) *Finder {
 		make(chan bool, 1),     // findDoneChan
 		make(chan error, 1),    // errChan
 	}
+	err = finder.validateSettings()
+	if err != nil {
+		return nil, err
+	}
+	return finder, nil
 }
 
 func (f *Finder) validateSettings() error {
@@ -433,10 +442,6 @@ func (f *Finder) setFileResults() error {
 }
 
 func (f *Finder) Find() (*FileResults, error) {
-	if err := f.validateSettings(); err != nil {
-		return nil, err
-	}
-
 	// send to the find channels
 	if err := f.setFileResults(); err != nil {
 		return nil, err
