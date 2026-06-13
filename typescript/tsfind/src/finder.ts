@@ -113,11 +113,11 @@ export class Finder {
     }
 
     public static emptyOrAnyMatchesAnyPattern(ss: string[], patterns: RegExp[]): boolean {
-        return ss.some((s: string) => Finder.emptyOrMatchesAnyPattern(s, patterns));
+        return patterns.length === 0 || Finder.anyMatchesAnyPattern(ss, patterns);
     }
 
     public static emptyOrNotAnyMatchesAnyPattern(ss: string[], patterns: RegExp[]): boolean {
-        return ss.some((s: string) => !Finder.emptyOrMatchesAnyPattern(s, patterns));
+        return patterns.length === 0 || !Finder.anyMatchesAnyPattern(ss, patterns);
     }
 
     public static emptyOrMatchesAnyString(s: string, elements: string[]): boolean {

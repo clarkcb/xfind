@@ -502,11 +502,9 @@ pub fn print_matching_files(file_results: &Vec<FileResult>, formatter: &FileResu
 #[cfg(test)]
 mod tests {
     use std::path::Path;
-    use std::time::SystemTime;
 
     use super::*;
     use crate::config::Config;
-    use crate::filetypes::FileType;
 
     fn get_default_test_settings() -> FindSettings {
         let mut settings = FindSettings::default();
@@ -523,10 +521,10 @@ mod tests {
         assert!(is_matching_dir_path(&settings, &dir_path));
 
         let dir_path = Path::new(".git");
-        assert!(is_matching_dir_path(&settings, &dir_path));
+        assert!(!is_matching_dir_path(&settings, &dir_path));
 
         let dir_path = Path::new("./temp/");
-        assert!(is_matching_dir_path(&settings, &dir_path));
+        assert!(!is_matching_dir_path(&settings, &dir_path));
     }
 
     #[test]
@@ -538,10 +536,10 @@ mod tests {
         assert!(is_matching_file_name(&settings, &file_name));
 
         let file_name = String::from(".gitignore");
-        assert!(is_matching_file_name(&settings, &file_name));
+        assert!(!is_matching_file_name(&settings, &file_name));
 
         let file_name = String::from("tempfile.rs");
-        assert!(is_matching_file_name(&settings, &file_name));
+        assert!(!is_matching_file_name(&settings, &file_name));
     }
 
     #[test]
@@ -560,7 +558,7 @@ mod tests {
 
         // below min size
         let file_size = 100u64;
-        assert!(is_matching_file_size(&settings, &file_size));
+        assert!(!is_matching_file_size(&settings, &file_size));
 
         // matches max size
         let file_size = 5000u64;
@@ -568,7 +566,7 @@ mod tests {
 
         // below min size
         let file_size = 5500u64;
-        assert!(is_matching_file_size(&settings, &file_size));
+        assert!(!is_matching_file_size(&settings, &file_size));
     }
 
     #[test]
@@ -601,7 +599,6 @@ mod tests {
 
         // archive file
         let file_path = Path::new("./archive.zip");
-        let file_type = FileType::Archive;
         assert!(finder.filter_file_path_to_file_result(&file_path).is_none());
 
         // archive file + include_archives

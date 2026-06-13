@@ -20,61 +20,61 @@ const getSettings = function() {
 describe('testing finder', () => {
 
     /*************************************************************
-     * isMatchingDir tests
+     * isMatchingDirPath tests
      *************************************************************/
-    it('testIsMatchingDir_SingleDot_True', () => {
+    it('testIsMatchingDirPath_SingleDot_True', () => {
         const settings: FindSettings = getSettings();
         const finder: Finder = new Finder(settings);
         expect(finder.isMatchingDirPath('.')).toBeTruthy();
     });
 
-    it('testIsMatchingDir_DoubleDot_True', () => {
+    it('testIsMatchingDirPath_DoubleDot_True', () => {
         const settings: FindSettings = getSettings();
         const finder: Finder = new Finder(settings);
         expect(finder.isMatchingDirPath('..')).toBeTruthy();
     });
 
-    it('testIsMatchingDir_IsHidden_False', () => {
+    it('testIsMatchingDirPath_IsHidden_False', () => {
         const settings: FindSettings = getSettings();
         const finder: Finder = new Finder(settings);
         expect(finder.isMatchingDirPath('.git')).toBeFalsy();
     });
 
-    it('testIsMatchingDir_IsHiddenIncludeHidden_True', () => {
+    it('testIsMatchingDirPath_IsHiddenIncludeHidden_True', () => {
         const settings: FindSettings = getSettings();
         settings.includeHidden = true;
         const finder: Finder = new Finder(settings);
         expect(finder.isMatchingDirPath('.git')).toBeTruthy();
     });
 
-    it('testIsMatchingDir_NoPatterns_True', () => {
+    it('testIsMatchingDirPath_NoPatterns_True', () => {
         const settings: FindSettings = getSettings();
         const finder: Finder = new Finder(settings);
         expect(finder.isMatchingDirPath('/Users')).toBeTruthy();
     });
 
-    it('testIsMatchingDir_MatchesInPattern_True', () => {
+    it('testIsMatchingDirPath_MatchesInPattern_True', () => {
         const settings: FindSettings = getSettings();
         settings.addInDirPatterns('Find');
         const finder: Finder = new Finder(settings);
         expect(finder.isMatchingDirPath('CsFind')).toBeTruthy();
     });
 
-    it('testIsMatchingDir_MatchesOutPattern_False', () => {
+    it('testIsMatchingDirPath_MatchesOutPattern_False', () => {
         const settings: FindSettings = getSettings();
         settings.addOutDirPatterns('Find');
         const finder: Finder = new Finder(settings);
         expect(finder.isMatchingDirPath('CsFind')).toBeFalsy();
     });
 
-    it('testIsMatchingDir_DoesNotMatchInPattern_False', () => {
+    it('testIsMatchingDirPath_DoesNotMatchInPattern_False', () => {
         const settings: FindSettings = getSettings();
         settings.addInDirPatterns('FindFiles');
         const finder: Finder = new Finder(settings);
         expect(finder.isMatchingDirPath('CsFind')).toBeFalsy();
     });
 
-    it('testIsMatchingDir_DoesNotMatchOutPattern_True', () => {
+    it('testIsMatchingDirPath_DoesNotMatchOutPattern_True', () => {
         const settings: FindSettings = getSettings();
         settings.addOutDirPatterns('FindFiles');
         const finder: Finder = new Finder(settings);

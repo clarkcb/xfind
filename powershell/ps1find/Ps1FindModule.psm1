@@ -1132,6 +1132,10 @@ class FileResult {
         $this.Size = $Size
         $this.LastMod = $LastMod
     }
+    
+    [string]ToString() {
+        return $this.FilePath
+    }
 }
 #endregion
 

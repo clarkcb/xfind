@@ -254,36 +254,42 @@ defmodule ExFindTest.FinderTest do
   ################################################################################
   # validate_settings tests
   ################################################################################
-  test "valid settings" do
+  test "minimal valid settings" do
     settings = FindSettings.new([paths: ["."]])
-    assert Finder.validate_settings(settings) == {:ok, "Settings are valid"}
+    finder = Finder.new(settings)
+    assert Finder.validate_settings(finder) == {:ok, "Settings are valid"}
   end
 
   test "startpath not defined" do
     settings = FindSettings.new([paths: []])
-    assert Finder.validate_settings(settings) == {:error, "Startpath not defined"}
+    finder = Finder.new(settings)
+    assert Finder.validate_settings(finder) == {:error, "Startpath not defined"}
   end
 
   test "startpath not found" do
     settings = FindSettings.new([paths: ["/non/existent/path"]])
-    assert Finder.validate_settings(settings) == {:error, "Startpath not found"}
+    finder = Finder.new(settings)
+    assert Finder.validate_settings(finder) == {:error, "Startpath not found"}
   end
 
 test "invalid range for mindepth and maxdepth" do
     settings = FindSettings.new([min_depth: 2, max_depth: 1, paths: ["."]])
-    assert Finder.validate_settings(settings) == {:error, "Invalid range for mindepth and maxdepth"}
+    finder = Finder.new(settings)
+    assert Finder.validate_settings(finder) == {:error, "Invalid range for mindepth and maxdepth"}
   end
 
   test "invalid range for minsize and maxsize" do
     settings = FindSettings.new([min_size: 2000, max_size: 1000, paths: ["."]])
-    assert Finder.validate_settings(settings) == {:error, "Invalid range for minsize and maxsize"}
+    finder = Finder.new(settings)
+    assert Finder.validate_settings(finder) == {:error, "Invalid range for minsize and maxsize"}
   end
 
   test "invalid range for minlastmod and maxlastmod" do
     min_last_mod = DateTime.utc_now |> DateTime.add(-1000)
     max_last_mod = DateTime.utc_now |> DateTime.add(-2000)
     settings = FindSettings.new([min_last_mod: min_last_mod, max_last_mod: max_last_mod, paths: ["."]])
-    assert Finder.validate_settings(settings) == {:error, "Invalid range for minlastmod and maxlastmod"}
+    finder = Finder.new(settings)
+    assert Finder.validate_settings(finder) == {:error, "Invalid range for minlastmod and maxlastmod"}
   end
 
   ################################################################################
