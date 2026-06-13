@@ -215,7 +215,13 @@ fn validate_settings(settings: &FindSettings) -> Result<(), FindError> {
         if path == "" {
             return Err(FindError::new("Startpath not defined"));
         }
-        let path_buf = PathBuf::from(&path);
+        let mut path_buf = PathBuf::from(&path);
+        if !path_buf.try_exists().unwrap() {
+            path_buf = FileUtil::expand_path(&path_buf);
+            if !path_buf.try_exists().unwrap() {
+                return Err(FindError::new("Startpath not found"));
+            }
+        }
         let metadata = fs::symlink_metadata(&path_buf);
         match metadata {
             Ok(data) => {
