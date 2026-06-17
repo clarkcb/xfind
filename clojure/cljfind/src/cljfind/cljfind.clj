@@ -1,9 +1,12 @@
 (ns cljfind.cljfind
   (:require [cljfind.findsettings])
+  (:require [cljfind.finder])
   (:import [cljfind.findsettings FindSettings])
+  (:import [cljfind.finder Finder])
   (:use [cljfind.common :only (log-msg log-errors)]
-        [cljfind.finder :only
-          (find-files print-matching-dirs print-matching-files)]
+        [cljfind.finder]
+;        [cljfind.finder :only
+;          (->Finder find-files print-matching-dirs print-matching-files)]
         [cljfind.findoptions :only (settings-from-args usage)])
   (:gen-class))
 
@@ -15,11 +18,12 @@
       (do
         (if (:debug settings) (log-msg settings))
         (if (:print-usage settings) (usage))
-        (let [[files errs] (find-files settings)]
+        (let [finder (->Finder settings)
+              [files errs] (find-files finder)]
           (if (empty? errs)
             (do
-              (if (:print-dirs settings) (print-matching-dirs files settings))
-              (if (:print-files settings) (print-matching-files files settings)))
+              (if (:print-dirs settings) (print-matching-dirs finder files))
+              (if (:print-files settings) (print-matching-files finder files)))
             (do
               (log-errors errs (:colorize settings))
               (usage)))))

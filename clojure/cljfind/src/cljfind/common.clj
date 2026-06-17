@@ -6,12 +6,12 @@
   (doseq [m msgs] (println m)))
 
 (defn log-error
-  ([^String err]
-    (log-error err true))
-  ([^String err, colorize]
-    (if colorize
-      (.println *err* (str "\n" CONSOLE_COLOR_BOLD_RED "ERROR: " err CONSOLE_COLOR_RESET))
-      (.println *err* (str "\nERROR: " err)))))
+   ([^String err]
+     (log-error err true))
+   ([^String err, colorize]
+     (if colorize
+       (.println ^java.io.PrintWriter *err* (str "\n" CONSOLE_COLOR_BOLD_RED "ERROR: " err CONSOLE_COLOR_RESET))
+       (.println ^java.io.PrintWriter *err* (str "\nERROR: " err)))))
 
 (defn log-errors
   ([errs]

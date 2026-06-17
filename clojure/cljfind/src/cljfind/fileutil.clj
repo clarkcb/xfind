@@ -15,13 +15,28 @@
 
 (def ^:const DOT_DIRS #{"." ".."})
 
+(def ^:private ^"[Ljava.nio.file.LinkOption;" NO_LINK_OPTIONS
+  (into-array LinkOption []))
+
+(defn path->string ^String [^Path p]
+  (.toString p))
+
+(defn file->path-string ^String [^File f]
+  (.getPath f))
+
+(defn parent-path ^Path [^Path p]
+  (.getParent p))
+
+(defn file-name-path ^Path [^Path p]
+  (.getFileName p))
+
 (defn path-str ^String [p]
   (cond
-    (instance? Path p) (.toString p)
-    (instance? File p) (.getPath p)
+    (instance? Path p) (path->string ^Path p)
+    (instance? File p) (file->path-string ^File p)
     :else p))
 
-(defn to-path [^String f & rest]
+(defn to-path ^Path [^String f & rest]
   (let [rest' (if (nil? rest) (into-array String []) (into-array String rest))]
     (Paths/get f rest')))
 
@@ -30,8 +45,8 @@
         sep-index (.indexOf path-str File/separator)
         user-str (System/getProperty "user.home")
         user-path (to-path user-str)
-        home-path (.getParent user-path)
-        home-str (if (nil? home-path) "." (.toString home-path))]
+        home-path (parent-path user-path)
+        home-str (if (nil? home-path) "." (path->string home-path))]
     (if (.startsWith path-str "~")
       (if (or (= path-str "~") (= path-str (str "~" File/separator)))
         user-path
@@ -41,52 +56,52 @@
       p)))
 
 (defn exists-path? [^Path f]
-  (Files/exists f (into-array LinkOption [])))
+  (Files/exists f NO_LINK_OPTIONS))
 
 (defn readable-path? [^Path f]
   (Files/isReadable f))
 
 (defn get-parent-name ^String [^Path f]
-  (let [parent (.getParent f)]
-    (if (nil? parent) "" (.toString parent))))
+  (let [parent (parent-path f)]
+    (if (nil? parent) "" (path->string parent))))
 
 (defn get-name ^String [f]
   (cond
-    (instance? Path f) (.toString (.getFileName f))
-    (instance? File f) (.getName f)
-    (instance? java.util.zip.ZipEntry f) (.getName f)
-    (instance? java.util.jar.JarEntry f) (.getName f)
+    (instance? Path f) (path->string (file-name-path ^Path f))
+    (instance? File f) (.getName ^File f)
+    (instance? java.util.zip.ZipEntry f) (.getName ^java.util.zip.ZipEntry f)
+    (instance? java.util.jar.JarEntry f) (.getName ^java.util.jar.JarEntry f)
     :else f))
 
 (defn get-path-name ^String [^Path f]
-  (.toString (.getFileName f)))
+  (path->string (file-name-path f)))
 
 (defn get-ext ^String [f]
-  (let [name (get-name f)
+  (let [^String name (str (get-name f))
         dotindex (.lastIndexOf name ".")]
     (if
       (and
        (> dotindex 0)
        (< dotindex (- (.length name) 1)))
-      (.toLowerCase (peek (split name #"\.")))
+      (.toLowerCase ^String (peek (split name #"\.")))
       "")))
 
 (defn get-path-ext ^String [^Path f]
-  (get-ext (.toString (.getFileName f))))
+  (get-ext (path->string (file-name-path f))))
 
 (defn has-ext? [f ^String ext]
   (= (.toLowerCase ext) (get-ext f)))
 
-(defn is-dir-path? [^Path d]
-  (Files/isDirectory d (into-array LinkOption [])))
+(defn dir-path? [^Path d]
+  (Files/isDirectory d NO_LINK_OPTIONS))
 
-(defn is-file-path? [^Path f]
-  (Files/isRegularFile f (into-array LinkOption [])))
+(defn regular-file-path? [^Path f]
+  (Files/isRegularFile f NO_LINK_OPTIONS))
 
-(defn is-symlink-path? [^Path f]
+(defn symlink-path? [^Path f]
   (Files/isSymbolicLink f))
 
-(defn is-dot-dir? [^String name]
+(defn dot-dir? [^String name]
   (contains? DOT_DIRS name))
 
 (defn split-path [p]
@@ -94,12 +109,12 @@
 
 (defn hidden? [^String name]
   (and
-    (.startsWith name ".")
-    (not (is-dot-dir? name))))
+   (.startsWith name ".")
+   (not (dot-dir? name))))
 
 (defn hidden-dir-path? [^Path d]
   (let [elems (split-path d)]
     (some #(hidden? %) elems)))
 
 (defn hidden-file-path? [^Path f]
-  (hidden? (.toString (.getFileName f))))
+  (hidden? (path->string (file-name-path f))))

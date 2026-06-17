@@ -5,7 +5,7 @@
   (:require [clojure.test :refer :all])
   (:use [clojure.string :as str :only (join)]
         [cljfind.fileutil :only
-         (expand-path get-ext has-ext? hidden? is-dot-dir? split-path to-path)]))
+         (expand-path dot-dir? get-ext has-ext? hidden? split-path to-path)]))
 
 (deftest test-expand-path
   (let [user-str (System/getProperty "user.home")
@@ -52,8 +52,8 @@
 
 (deftest test-is-dot-dir?
   (testing "test-is-dot-dir?"
-    (is (is-dot-dir? "."))
-    (is (is-dot-dir? ".."))))
+    (is (dot-dir? "."))
+    (is (dot-dir? ".."))))
 
 (deftest test-split-path
   (testing "test-split-path"

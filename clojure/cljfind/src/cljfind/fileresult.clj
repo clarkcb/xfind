@@ -32,8 +32,8 @@
    (->FileResult containers path file-type file-size last-mod)))
 
 (defn file-result-path ^String [^FileResult fr]
-  (str (if (empty? (:containers fr)) "" (str (string/join "!" (:containers fr)) "!"))
-       (.toString (:path fr))))
+   (str (if (empty? (:containers fr)) "" (str (string/join "!" (:containers fr)) "!"))
+        (.toString ^Path (:path fr))))
 
 (defn get-cmp-elems [^FindSettings settings]
   "get an elem comparator"
@@ -95,15 +95,15 @@
           typecmp)))))
 
 (defn get-comp-by-lastmod
-  "get a lastmod comparator"
-  [^FindSettings settings]
-  (let [comp-by-path (get-comp-by-path settings)
-        cmp-elems (get-cmp-elems settings)]
-    (fn [^FileResult fr1 ^FileResult fr2]
-      (let [res (cmp-elems (.toMillis (:last-mod fr1)) (.toMillis (:last-mod fr2)))]
-        (if (= 0 res)
-          (comp-by-path fr1 fr2)
-          res)))))
+   "get a lastmod comparator"
+   [^FindSettings settings]
+   (let [comp-by-path (get-comp-by-path settings)
+         cmp-elems (get-cmp-elems settings)]
+     (fn [^FileResult fr1 ^FileResult fr2]
+       (let [res (cmp-elems (.toMillis ^java.nio.file.attribute.FileTime (:last-mod fr1)) (.toMillis ^java.nio.file.attribute.FileTime (:last-mod fr2)))]
+         (if (= 0 res)
+           (comp-by-path fr1 fr2)
+           res)))))
 
 (defn get-file-result-comparator
   "get a comparator for sorting file results"

@@ -9,12 +9,14 @@
 (ns cljfind.findoptions
   #^{:author "Cary Clark",
      :doc "Defines the available command-line options and utility functions"}
-  (:require [cljfind.findsettings]
+  (:require [cljfind.argtokenizer]
+            [cljfind.findsettings]
             [clojure.java.io :as io]
             [clojure.string :as str]
             [clojure.data.json :as json])
   (:import (java.io File)
            (java.nio.file Paths Path Files)
+           (cljfind.argtokenizer ArgTokenizer)
            (cljfind.findsettings FindSettings))
   (:use [clojure.instant :only (read-instant-date)]
         [clojure.java.io :only (file)]
@@ -131,9 +133,9 @@
 (declare update-settings-from-file)
 
 (defn update-settings-from-tokens
-  ([arg-tokenizer ^FindSettings settings tokens]
+  ([^ArgTokenizer arg-tokenizer ^FindSettings settings tokens]
     (update-settings-from-tokens arg-tokenizer settings tokens []))
-  ([arg-tokenizer ^FindSettings settings tokens errs]
+  ([^ArgTokenizer arg-tokenizer ^FindSettings settings tokens errs]
     (if (or (empty? tokens) (not (empty? errs)))
       [settings errs]
       (let [token (first tokens)
@@ -189,7 +191,7 @@
   (let [arg-tokenizer (get-arg-tokenizer-for-options FIND-OPTIONS)]
     (update-settings-from-tokens arg-tokenizer DEFAULT-FIND-SETTINGS tokens)))
 
-(defn update-settings-from-arg-map [arg-tokenizer ^FindSettings settings arg-map]
+(defn update-settings-from-arg-map [^ArgTokenizer arg-tokenizer ^FindSettings settings arg-map]
   (let [[tokens errs] (tokenize-arg-map arg-tokenizer arg-map)]
     (if (not (empty? errs))
       [settings errs]
@@ -199,7 +201,7 @@
   (let [arg-tokenizer (get-arg-tokenizer-for-options FIND-OPTIONS)]
     (update-settings-from-arg-map arg-tokenizer DEFAULT-FIND-SETTINGS arg-map)))
 
-(defn update-settings-from-json [arg-tokenizer ^FindSettings settings ^String json]
+(defn update-settings-from-json [^ArgTokenizer arg-tokenizer ^FindSettings settings ^String json]
   (let [[tokens errs] (tokenize-json arg-tokenizer json)]
     (if (not (empty? errs))
       [settings errs]
@@ -209,7 +211,7 @@
   (let [arg-tokenizer (get-arg-tokenizer-for-options FIND-OPTIONS)]
     (update-settings-from-json arg-tokenizer DEFAULT-FIND-SETTINGS json)))
 
-(defn update-settings-from-file [arg-tokenizer ^FindSettings settings f]
+(defn update-settings-from-file [^ArgTokenizer arg-tokenizer ^FindSettings settings f]
   (let [[tokens errs] (tokenize-file arg-tokenizer f)]
     (if (not (empty? errs))
       [settings errs]
@@ -219,12 +221,12 @@
   (let [arg-tokenizer (get-arg-tokenizer-for-options FIND-OPTIONS)]
     (update-settings-from-file arg-tokenizer DEFAULT-FIND-SETTINGS f)))
 
-(defn update-settings-from-default-files [arg-tokenizer ^FindSettings settings]
+(defn update-settings-from-default-files [^ArgTokenizer arg-tokenizer ^FindSettings settings]
   (if (exists-path? (to-path DEFAULTFINDSETTINGSPATH))
     (update-settings-from-file arg-tokenizer settings DEFAULTFINDSETTINGSPATH)
     [DEFAULT-FIND-SETTINGS []]))
 
-(defn update-settings-from-args [arg-tokenizer ^FindSettings settings args]
+(defn update-settings-from-args [^ArgTokenizer arg-tokenizer ^FindSettings settings args]
   (let [[tokens errs] (tokenize-args arg-tokenizer args)]
     (if (not (empty? errs))
       [settings errs]
@@ -233,7 +235,9 @@
 (defn settings-from-args [args]
   (let [settings (assoc DEFAULT-FIND-SETTINGS :print-files true)
         arg-tokenizer (get-arg-tokenizer-for-options FIND-OPTIONS)]
-    (if (some #(.endsWith % "defaultfiles") args)
+    ;; if args contains a defaultfiles option, process the args with the rest,
+    ;; otherwise go ahead and update from default files now
+    (if (some #(str/ends-with? (str %) "defaultfiles") args)
       (update-settings-from-args arg-tokenizer settings args)
       (let [[settings' errs] (update-settings-from-default-files arg-tokenizer settings)]
         (if (not (empty? errs))

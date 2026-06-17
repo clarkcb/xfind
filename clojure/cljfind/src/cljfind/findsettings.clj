@@ -207,9 +207,9 @@
     (str "[\"" (str/join "\", \"" (sort ss)) "\"]")))
 
 (defn pattern-set-to-string ^String [ps]
-  (if (empty? ps)
-    "[]"
-    (str "[\"" (str/join "\", \"" (sort (map #(.pattern %) ps))) "\"]")))
+   (if (empty? ps)
+     "[]"
+     (str "[\"" (str/join "\", \"" (sort (map #(.pattern ^java.util.regex.Pattern %) ps))) "\"]")))
 
 (defn filetype-set-to-string ^String [fts]
   (if (empty? fts)
