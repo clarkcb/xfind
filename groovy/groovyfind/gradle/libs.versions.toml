@@ -3,7 +3,7 @@
 [versions]
 groovy = '5.0.4'
 groovy-json = '5.0.4'
-junit-jupiter = "6.0.3"
+junit-jupiter = "6.1.0"
 
 [libraries]
 groovy = { module = "org.apache.groovy:groovy", version.ref = "groovy" }

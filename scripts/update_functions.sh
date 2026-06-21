@@ -243,6 +243,9 @@ update_csharp_version () {
         return
     fi
 
+    log "cd $cs_version_path"
+    cd "$cs_version_path"
+
     dotnet list package --format json | jq -r '
         .projects[]
         | .frameworks[]?
@@ -379,7 +382,7 @@ update_elixir_version () {
 
 update_fsharp_version () {
     local base_path="$1"
-    local ex_version_name="$2"
+    local fs_version_name="$2"
 
     log "language: F#"
     log "version: $fs_version_name"
