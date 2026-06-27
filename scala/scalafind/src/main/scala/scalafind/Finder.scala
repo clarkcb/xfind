@@ -361,43 +361,43 @@ object Finder {
     }
   }
 
-  private def matchesAnyPattern(s: String, patterns: Set[Regex]): Boolean = {
+  def matchesAnyPattern(s: String, patterns: Set[Regex]): Boolean = {
     patterns exists (_.findFirstMatchIn(s).isDefined)
   }
 
-  private def anyMatchesAnyPattern(strings: Iterable[String], patterns: Set[Regex]): Boolean = {
+  def anyMatchesAnyPattern(strings: Iterable[String], patterns: Set[Regex]): Boolean = {
     strings exists (matchesAnyPattern(_, patterns))
   }
 
-  private def emptyOrMatchesAnyPattern(s: String, patterns: Set[Regex]): Boolean = {
+  def emptyOrMatchesAnyPattern(s: String, patterns: Set[Regex]): Boolean = {
     patterns.isEmpty || matchesAnyPattern(s, patterns)
   }
 
-  private def emptyOrNotMatchesAnyPattern(s: String, patterns: Set[Regex]): Boolean = {
+  def emptyOrNotMatchesAnyPattern(s: String, patterns: Set[Regex]): Boolean = {
     patterns.isEmpty || !matchesAnyPattern(s, patterns)
   }
 
-  private def emptyOrAnyMatchesAnyPattern(strings: Iterable[String], patterns: Set[Regex]): Boolean = {
+  def emptyOrAnyMatchesAnyPattern(strings: Iterable[String], patterns: Set[Regex]): Boolean = {
     patterns.isEmpty || anyMatchesAnyPattern(strings, patterns)
   }
 
-  private def emptyOrNotAnyMatchesAnyPattern(strings: Iterable[String], patterns: Set[Regex]): Boolean = {
+  def emptyOrNotAnyMatchesAnyPattern(strings: Iterable[String], patterns: Set[Regex]): Boolean = {
     patterns.isEmpty || !anyMatchesAnyPattern(strings, patterns)
   }
 
-  private def emptyOrMatchesAnyString(s: String, stringSet: Set[String]): Boolean = {
+  def emptyOrMatchesAnyString(s: String, stringSet: Set[String]): Boolean = {
     stringSet.isEmpty || stringSet.contains(s)
   }
 
-  private def emptyOrNotMatchesAnyString(s: String, stringSet: Set[String]): Boolean = {
+  def emptyOrNotMatchesAnyString(s: String, stringSet: Set[String]): Boolean = {
     stringSet.isEmpty || !stringSet.contains(s)
   }
 
-  private def emptyOrMatchesAnyFileType(fileType: FileType, fileTypeSet: Set[FileType]): Boolean = {
+  def emptyOrMatchesAnyFileType(fileType: FileType, fileTypeSet: Set[FileType]): Boolean = {
     fileTypeSet.isEmpty || fileTypeSet.contains(fileType)
   }
 
-  private def emptyOrNotMatchesAnyFileType(fileType: FileType, fileTypeSet: Set[FileType]): Boolean = {
+  def emptyOrNotMatchesAnyFileType(fileType: FileType, fileTypeSet: Set[FileType]): Boolean = {
     fileTypeSet.isEmpty || !fileTypeSet.contains(fileType)
   }
 

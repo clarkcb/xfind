@@ -19,10 +19,10 @@ fun find(settings: FindSettings) {
         val formatter = FileResultFormatter(settings)
 
         if (settings.printDirs) {
-            finder.printMatchingDirs(fileResults, formatter)
+            Finder.printMatchingDirs(fileResults, formatter)
         }
         if (settings.printFiles) {
-            finder.printMatchingFiles(fileResults, formatter)
+            Finder.printMatchingFiles(fileResults, formatter)
         }
     }
 }

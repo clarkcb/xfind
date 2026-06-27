@@ -84,43 +84,43 @@ public class Finder {
         }
     }
 
-    private static boolean matchesAnyPattern(final String s, final Set<Pattern> patternSet) {
+    public static boolean matchesAnyPattern(final String s, final Set<Pattern> patternSet) {
         return null != s && patternSet.stream().anyMatch(p -> p.matcher(s).find());
     }
 
-    private boolean anyMatchesAnyPattern(final List<String> sList, final Set<Pattern> patternSet) {
+    public static boolean anyMatchesAnyPattern(final List<String> sList, final Set<Pattern> patternSet) {
         return sList.stream().anyMatch(s -> matchesAnyPattern(s, patternSet));
     }
 
-    private boolean emptyOrMatchesAnyPattern(final String s, final Set<Pattern> patternSet) {
+    public static boolean emptyOrMatchesAnyPattern(final String s, final Set<Pattern> patternSet) {
         return patternSet.isEmpty() || matchesAnyPattern(s, patternSet);
     }
 
-    private boolean emptyOrNotMatchesAnyPattern(final String s, final Set<Pattern> patternSet) {
+    public static boolean emptyOrNotMatchesAnyPattern(final String s, final Set<Pattern> patternSet) {
         return patternSet.isEmpty() || !matchesAnyPattern(s, patternSet);
     }
 
-    private boolean emptyOrAnyMatchesAnyPattern(final List<String> sList, final Set<Pattern> patternSet) {
+    public static boolean emptyOrAnyMatchesAnyPattern(final List<String> sList, final Set<Pattern> patternSet) {
         return patternSet.isEmpty() || anyMatchesAnyPattern(sList, patternSet);
     }
 
-    private boolean emptyOrNotAnyMatchesAnyPattern(final List<String> sList, final Set<Pattern> patternSet) {
+    public static boolean emptyOrNotAnyMatchesAnyPattern(final List<String> sList, final Set<Pattern> patternSet) {
         return patternSet.isEmpty() || !anyMatchesAnyPattern(sList, patternSet);
     }
 
-    private boolean emptyOrMatchesAnyString(final String s, final Set<String> stringSet) {
+    public static boolean emptyOrMatchesAnyString(final String s, final Set<String> stringSet) {
         return stringSet.isEmpty() || stringSet.contains(s);
     }
 
-    private boolean emptyOrNotMatchesAnyString(final String s, final Set<String> stringSet) {
+    public static boolean emptyOrNotMatchesAnyString(final String s, final Set<String> stringSet) {
         return stringSet.isEmpty() || !stringSet.contains(s);
     }
 
-    private boolean emptyOrMatchesAnyFileType(final FileType fileType, final Set<FileType> fileTypeSet) {
+    public static boolean emptyOrMatchesAnyFileType(final FileType fileType, final Set<FileType> fileTypeSet) {
         return fileTypeSet.isEmpty() || fileTypeSet.contains(fileType);
     }
 
-    private boolean emptyOrNotMatchesAnyFileType(final FileType fileType, final Set<FileType> fileTypeSet) {
+    public static boolean emptyOrNotMatchesAnyFileType(final FileType fileType, final Set<FileType> fileTypeSet) {
         return fileTypeSet.isEmpty() || !fileTypeSet.contains(fileType);
     }
 

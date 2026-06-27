@@ -66,49 +66,6 @@ class Finder(val settings: FindSettings) {
         }
     }
 
-    private fun matchesAnyPattern(s: String, patternSet: Set<Regex>): Boolean {
-        return patternSet.any { p -> p.containsMatchIn(s) }
-    }
-
-    private fun anyMatchesAnyPattern(
-        sList: List<String>,
-        patternSet: Set<Regex>
-    ): Boolean {
-        return sList.any { s -> matchesAnyPattern(s, patternSet) }
-    }
-
-    private fun emptyOrMatchesAnyPattern(s: String, patternSet: Set<Regex>): Boolean {
-        return patternSet.isEmpty() || matchesAnyPattern(s, patternSet)
-    }
-
-    private fun emptyOrNotMatchesAnyPattern(s: String, patternSet: Set<Regex>): Boolean {
-        return patternSet.isEmpty() || !matchesAnyPattern(s, patternSet)
-    }
-
-    private fun emptyOrAnyMatchesAnyPattern(sList: List<String>, patternSet: Set<Regex>): Boolean {
-        return patternSet.isEmpty() || anyMatchesAnyPattern(sList, patternSet)
-    }
-
-    private fun emptyOrNotAnyMatchesAnyPattern(sList: List<String>, patternSet: Set<Regex>): Boolean {
-        return patternSet.isEmpty() || !anyMatchesAnyPattern(sList, patternSet)
-    }
-
-    private fun emptyOrMatchesAnyString(s: String, stringSet: Set<String>): Boolean {
-        return stringSet.isEmpty() || stringSet.contains(s)
-    }
-
-    private fun emptyOrNotMatchesAnyString(s: String, stringSet: Set<String>): Boolean {
-        return stringSet.isEmpty() || !stringSet.contains(s)
-    }
-
-    private fun emptyOrMatchesAnyFileType(fileType: FileType, fileTypeSet: Set<FileType>): Boolean {
-        return fileTypeSet.isEmpty() || fileTypeSet.contains(fileType)
-    }
-
-    private fun emptyOrNotMatchesAnyFileType(fileType: FileType, fileTypeSet: Set<FileType>): Boolean {
-        return fileTypeSet.isEmpty() || !fileTypeSet.contains(fileType)
-    }
-
     fun isMatchingPathBySymlink(path: Path): Boolean {
         return settings.followSymlinks || !path.isSymbolicLink()
     }
@@ -399,25 +356,70 @@ class Finder(val settings: FindSettings) {
         return fileResults.toList()
     }
 
-    fun printMatchingDirs(fileResults: List<FileResult>, formatter: FileResultFormatter) {
-        val dirs = fileResults.mapNotNull { f -> f.path.parent }.distinct().sorted()
-        if (dirs.isEmpty()) {
-            log("\nMatching directories: 0")
-        } else {
-            log("\nMatching directories (${dirs.size}):")
-            for (d in dirs) {
-                log(formatter.formatDirPath(d))
+    companion object {
+        fun matchesAnyPattern(s: String, patternSet: Set<Regex>): Boolean {
+            return patternSet.any { p -> p.containsMatchIn(s) }
+        }
+
+        fun anyMatchesAnyPattern(
+            sList: List<String>,
+            patternSet: Set<Regex>
+        ): Boolean {
+            return sList.any { s -> matchesAnyPattern(s, patternSet) }
+        }
+
+        fun emptyOrMatchesAnyPattern(s: String, patternSet: Set<Regex>): Boolean {
+            return patternSet.isEmpty() || matchesAnyPattern(s, patternSet)
+        }
+
+        fun emptyOrNotMatchesAnyPattern(s: String, patternSet: Set<Regex>): Boolean {
+            return patternSet.isEmpty() || !matchesAnyPattern(s, patternSet)
+        }
+
+        fun emptyOrAnyMatchesAnyPattern(sList: List<String>, patternSet: Set<Regex>): Boolean {
+            return patternSet.isEmpty() || anyMatchesAnyPattern(sList, patternSet)
+        }
+
+        fun emptyOrNotAnyMatchesAnyPattern(sList: List<String>, patternSet: Set<Regex>): Boolean {
+            return patternSet.isEmpty() || !anyMatchesAnyPattern(sList, patternSet)
+        }
+
+        fun emptyOrMatchesAnyString(s: String, stringSet: Set<String>): Boolean {
+            return stringSet.isEmpty() || stringSet.contains(s)
+        }
+
+        fun emptyOrNotMatchesAnyString(s: String, stringSet: Set<String>): Boolean {
+            return stringSet.isEmpty() || !stringSet.contains(s)
+        }
+
+        fun emptyOrMatchesAnyFileType(fileType: FileType, fileTypeSet: Set<FileType>): Boolean {
+            return fileTypeSet.isEmpty() || fileTypeSet.contains(fileType)
+        }
+
+        fun emptyOrNotMatchesAnyFileType(fileType: FileType, fileTypeSet: Set<FileType>): Boolean {
+            return fileTypeSet.isEmpty() || !fileTypeSet.contains(fileType)
+        }
+
+        fun printMatchingDirs(fileResults: List<FileResult>, formatter: FileResultFormatter) {
+            val dirs = fileResults.mapNotNull { f -> f.path.parent }.distinct().sorted()
+            if (dirs.isEmpty()) {
+                log("\nMatching directories: 0")
+            } else {
+                log("\nMatching directories (${dirs.size}):")
+                for (d in dirs) {
+                    log(formatter.formatDirPath(d))
+                }
             }
         }
-    }
 
-    fun printMatchingFiles(fileResults: List<FileResult>, formatter: FileResultFormatter) {
-        if (fileResults.isEmpty()) {
-            log("\nMatching files: 0")
-        } else {
-            log("\nMatching files (${fileResults.size}):")
-            for (fr in fileResults) {
-                log(formatter.formatFileResult(fr))
+        fun printMatchingFiles(fileResults: List<FileResult>, formatter: FileResultFormatter) {
+            if (fileResults.isEmpty()) {
+                log("\nMatching files: 0")
+            } else {
+                log("\nMatching files (${fileResults.size}):")
+                for (fr in fileResults) {
+                    log(formatter.formatFileResult(fr))
+                }
             }
         }
     }

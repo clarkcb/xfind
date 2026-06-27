@@ -74,43 +74,43 @@ class Finder {
         }
     }
 
-    private static boolean matchesAnyPattern(final String s, final Set<Pattern> patternSet) {
+    static boolean matchesAnyPattern(final String s, final Set<Pattern> patternSet) {
         patternSet.stream().anyMatch(p -> p.matcher(s).find())
     }
 
-    private static boolean anyMatchesAnyPattern(final List<String> sList, final Set<Pattern> patternSet) {
+    static boolean anyMatchesAnyPattern(final List<String> sList, final Set<Pattern> patternSet) {
         sList.any { s -> matchesAnyPattern(s, patternSet) }
     }
 
-    private static boolean emptyOrMatchesAnyPattern(final String s, final Set<Pattern> patternSet) {
+    static boolean emptyOrMatchesAnyPattern(final String s, final Set<Pattern> patternSet) {
         patternSet.empty || matchesAnyPattern(s, patternSet)
     }
 
-    private static boolean emptyOrNotMatchesAnyPattern(final String s, final Set<Pattern> patternSet) {
+    static boolean emptyOrNotMatchesAnyPattern(final String s, final Set<Pattern> patternSet) {
         patternSet.empty || !matchesAnyPattern(s, patternSet)
     }
 
-    private static boolean emptyOrAnyMatchesAnyPattern(final List<String> sList, final Set<Pattern> patternSet) {
+    static boolean emptyOrAnyMatchesAnyPattern(final List<String> sList, final Set<Pattern> patternSet) {
         patternSet.empty || anyMatchesAnyPattern(sList, patternSet)
     }
 
-    private static boolean emptyOrNotAnyMatchesAnyPattern(final List<String> sList, final Set<Pattern> patternSet) {
+    static boolean emptyOrNotAnyMatchesAnyPattern(final List<String> sList, final Set<Pattern> patternSet) {
         patternSet.empty || !anyMatchesAnyPattern(sList, patternSet)
     }
 
-    private static boolean emptyOrMatchesAnyString(final String s, final Set<String> stringSet) {
+    static boolean emptyOrMatchesAnyString(final String s, final Set<String> stringSet) {
         stringSet.empty || stringSet.contains(s)
     }
 
-    private static boolean emptyOrNotMatchesAnyString(final String s, final Set<String> stringSet) {
+    static boolean emptyOrNotMatchesAnyString(final String s, final Set<String> stringSet) {
         stringSet.empty || !stringSet.contains(s)
     }
 
-    private static boolean emptyOrMatchesAnyFileType(final FileType fileType, final Set<FileType> fileTypeSet) {
+    static boolean emptyOrMatchesAnyFileType(final FileType fileType, final Set<FileType> fileTypeSet) {
         fileTypeSet.empty || fileTypeSet.contains(fileType)
     }
 
-    private static boolean emptyOrNotMatchesAnyFileType(final FileType fileType, final Set<FileType> fileTypeSet) {
+    static boolean emptyOrNotMatchesAnyFileType(final FileType fileType, final Set<FileType> fileTypeSet) {
         fileTypeSet.empty || !fileTypeSet.contains(fileType)
     }
 
