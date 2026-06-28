@@ -1,0 +1,65 @@
+{
+    "ref": {
+        "common_startpaths": ["$XFIND_PATH/scripts"],
+        "scriptpath": "$XFIND_PATH/scripts",
+        "sharedpath": "$XFIND_PATH/shared"
+    },
+    "scenarios": [
+        {
+            "group": "settings-validation",
+            "name": "validate valid dirpath",
+            "args": ["$XFIND_PATH/shared"]
+        },
+        {
+            "group": "settings-validation",
+            "name": "validate non-existent dirpath",
+            "args": ["$XFIND_PATH/sharedZZZ"],
+            "replace_exe_name": true
+        },
+        {
+            "group": "settings-validation",
+            "name": "validate non-matching dirpath",
+            "args": ["-D", "share", "$XFIND_PATH/shared"],
+            "replace_exe_name": true
+        },
+        {
+            "group": "settings-validation",
+            "name": "validate valid filepath",
+            "args": ["$XFIND_PATH/shared/filetypes.json"]
+        },
+        {
+            "group": "settings-validation",
+            "name": "validate non-existent filepath",
+            "args": ["$XFIND_PATH/shared/nonexistent.json"],
+            "replace_exe_name": true
+        },
+        {
+            "group": "settings-validation",
+            "name": "validate non-matching filepath",
+            "args": ["-F", "file", "$XFIND_PATH/shared/filetypes.json"],
+            "replace_exe_name": true
+        },
+        {
+            "group": "settings-validation",
+            "name": "validate dir symlink nofollowsymlinks",
+            "args": ["$XFIND_PATH/scripts/myenv/bin"],
+            "replace_exe_name": true
+        },
+        {
+            "group": "settings-validation",
+            "name": "validate dir symlink followsymlinks",
+            "args": ["--followsymlinks", "$XFIND_PATH/scripts/myenv/bin"]
+        },
+        {
+            "group": "settings-validation",
+            "name": "validate file symlink nofollowsymlinks",
+            "args": ["$XFIND_PATH/bin/pyfind"],
+            "replace_exe_name": true
+        },
+        {
+            "group": "settings-validation",
+            "name": "validate file symlink followsymlinks",
+            "args": ["--followsymlinks", "$XFIND_PATH/bin/pyfind"]
+        }
+    ]
+}

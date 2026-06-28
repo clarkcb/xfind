@@ -1,0 +1,25 @@
+{
+    "ref": {
+        "common_startpaths": ["$XFIND_PATH/scripts"],
+        "scriptpath": "$XFIND_PATH/scripts",
+        "sharedpath": "$XFIND_PATH/shared"
+    },
+    "scenarios": [
+        {
+            "group": "filter-dirs",
+            "name": "multiple in-dirs",
+            "args": ["-x", "java", "-d", "app", "-d", "lib", "-f", "Find", "$XFIND_PATH/java/javafind"],
+            "common_args": [
+            ]
+        },
+        {
+            "group": "filter-dirs",
+            "name": "multiple in-dirs one out-dir",
+            "args": ["-x", "java", "-d", "app", "-d", "lib", "-D", "test", "-f", "Find", "$XFIND_PATH/java/javafind"],
+            "common_args": [
+            ]
+        }        
+    ],
+    "ignore_scenarios": [
+    ]
+}

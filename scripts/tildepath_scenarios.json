@@ -1,0 +1,28 @@
+{
+    "ref": {
+        "common_out_dirpatterns": [
+            "pycache", "venv"
+        ],
+        "common_startpaths": ["~/src/xfind/scripts"],
+        "scriptpath": "$XFIND_PATH/scripts",
+        "sharedpath": "$XFIND_PATH/shared"
+    },
+    "scenarios": [
+        {
+            "group": "tilde-path",
+            "name": "tilde in startpath",
+            "args": ["-t", "code", "~/src/xfind/scripts"],
+            "common_args": [
+                "common_out_dirpatterns"
+            ]
+        },
+        {
+            "group": "tilde-path",
+            "name": "tilde with name in startpath",
+            "args": ["-t", "code", "~cary/src/xfind/scripts"],
+            "common_args": [
+                "common_out_dirpatterns"
+            ]
+        }
+    ]
+}

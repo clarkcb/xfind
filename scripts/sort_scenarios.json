@@ -1,0 +1,154 @@
+{
+    "ref": {
+        "common_startpaths": ["$XFIND_PATH/shared"],
+        "scriptpath": "$XFIND_PATH/scripts",
+        "sharedpath": "$XFIND_PATH/shared"
+    },
+    "scenarios": [
+        {
+            "group": "sort-by",
+            "name": "default sort-by",
+            "args": [],
+            "common_args": [
+                "common_startpaths"
+            ]
+        },
+        {
+            "group": "sort-by",
+            "name": "sort-by path",
+            "args": ["--sort-by", "path"],
+            "common_args": [
+                "common_startpaths"
+            ]
+        },
+        {
+            "group": "sort-by",
+            "name": "sort-by name",
+            "args": ["--sort-by", "name"],
+            "common_args": [
+                "common_startpaths"
+            ]
+        },
+        {
+            "group": "sort-by",
+            "name": "sort-by size",
+            "args": ["--sort-by", "size"],
+            "common_args": [
+                "common_startpaths"
+            ]
+        },
+        {
+            "group": "sort-by",
+            "name": "sort-by type",
+            "args": ["--sort-by", "type"],
+            "common_args": [
+                "common_startpaths"
+            ]
+        },{
+            "group": "sort-by",
+            "name": "default sort-by descending",
+            "args": ["--sort-descending"],
+            "common_args": [
+                "common_startpaths"
+            ]
+        },
+        {
+            "group": "sort-by",
+            "name": "sort-by path",
+            "args": ["--sort-by", "path", "--sort-descending"],
+            "common_args": [
+                "common_startpaths"
+            ]
+        },
+        {
+            "group": "sort-by",
+            "name": "sort-by name",
+            "args": ["--sort-by", "name", "--sort-descending"],
+            "common_args": [
+                "common_startpaths"
+            ]
+        },
+        {
+            "group": "sort-by",
+            "name": "sort-by size",
+            "args": ["--sort-by", "size", "--sort-descending"],
+            "common_args": [
+                "common_startpaths"
+            ]
+        },
+        {
+            "group": "sort-by",
+            "name": "sort-by type",
+            "args": ["--sort-by", "type", "--sort-descending"],
+            "common_args": [
+                "common_startpaths"
+            ]
+        },
+        {
+            "group": "sort-by",
+            "name": "default sort-by case-insensitive",
+            "args": ["--sort-caseinsensitive"],
+            "common_args": [
+                "common_startpaths"
+            ]
+        },
+        {
+            "group": "sort-by",
+            "name": "sort-by path case-insensitive",
+            "args": ["--sort-by", "path", "--sort-caseinsensitive"],
+            "common_args": [
+                "common_startpaths"
+            ]
+        },
+        {
+            "group": "sort-by",
+            "name": "sort-by name case-insensitive",
+            "args": ["--sort-by", "name", "--sort-caseinsensitive"],
+            "common_args": [
+                "common_startpaths"
+            ]
+        },
+        {
+            "group": "sort-by",
+            "name": "default sort-by case-insensitive",
+            "args": ["--sort-caseinsensitive", "--sort-descending"],
+            "common_args": [
+                "common_startpaths"
+            ]
+        },
+        {
+            "group": "sort-by",
+            "name": "sort-by path case-insensitive descending",
+            "args": ["--sort-by", "path", "--sort-caseinsensitive", "--sort-descending"],
+            "common_args": [
+                "common_startpaths"
+            ]
+        },
+        {
+            "group": "sort-by",
+            "name": "sort-by name case-insensitive",
+            "args": ["--sort-by", "name", "--sort-caseinsensitive", "--sort-descending"],
+            "common_args": [
+                "common_startpaths"
+            ]
+        }
+    ],
+    "ignore_scenarios": [
+        {
+            "group": "sort-by",
+            "name": "sort-by name",
+            "args": ["-D", "venv", "-t", "code", "--sort-by", "name"],
+            "common_args": [
+                "common_startpaths"
+            ]
+        },
+        {
+            "group": "sort-by",
+            "name": "sort-by unsorted",
+            "args": ["-D", "venv", "-t", "code", "--sort-by", "unsorted"],
+            "common_args": [
+                "common_startpaths"
+            ]
+        }
+    ]
+}

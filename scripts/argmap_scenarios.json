@@ -1,0 +1,55 @@
+{
+    "ref": {
+        "common_flags": [],
+        "uncommon_flags": ["-C"],
+        "common_startpaths": ["$XFIND_PATH/scripts"],
+        "scriptpath": "$XFIND_PATH/scripts",
+        "sharedpath": "$XFIND_PATH/shared"
+    },
+    "scenarios": [
+        {
+            "group": "help/usage",
+            "name": "no args",
+            "args": [],
+            "common_args": [
+                "common_flags"
+            ],
+            "replace_exe_name": true
+        },
+        {
+            "group": "help/usage",
+            "name": "help",
+            "args": ["-h"],
+            "common_args": [
+                "common_flags"
+            ],
+            "replace_exe_name": true
+        },
+        {
+            "group": "arg-map",
+            "name": "combined short args",
+            "args": ["-D", "venv", "-Cvzx", "py", "$XFIND_PATH/python/pyfind"],
+            "common_args": [
+                "common_flags"
+            ]
+        },
+        {
+            "group": "arg-map",
+            "name": "long arg with equals",
+            "args": ["--settings-file=$XFIND_PATH/shared/settings.json"],
+            "common_args": [
+                "common_flags"
+            ]
+        },
+        {
+            "group": "arg-map",
+            "name": "args with path option arg",
+            "args": ["-D", "venv", "-Cvzx", "py", "--path", "$XFIND_PATH/python/pyfind"],
+            "common_args": [
+                "common_flags"
+            ]
+        }
+    ],
+    "ignore_scenarios": [
+    ]
+}

@@ -1,0 +1,32 @@
+{
+    "ref": {
+        "common_startpaths": ["$XFIND_PATH/scripts"],
+        "scriptpath": "$XFIND_PATH/scripts",
+        "sharedpath": "$XFIND_PATH/shared"
+    },
+    "scenarios": [
+        {
+            "group": "default-files",
+            "name": "include default files by default",
+            "args": ["-x", "py", "$XFIND_PATH/scripts"],
+            "common_args": [
+            ]
+        },
+        {
+            "group": "default-files",
+            "name": "include default files with --defaultfiles",
+            "args": ["-x", "py", "--defaultfiles", "$XFIND_PATH/scripts"],
+            "common_args": [
+            ]
+        },
+        {
+            "group": "default-files",
+            "name": "exclude default files with --nodefaultfiles",
+            "args": ["-x", "py", "--nodefaultfiles", "$XFIND_PATH/scripts"],
+            "common_args": [
+            ]
+        }
+    ],
+    "ignore_scenarios": [
+    ]
+}

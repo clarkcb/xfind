@@ -13,6 +13,7 @@ import os
 import re
 import subprocess
 import sys
+import time
 
 from termcolor import colored
 
@@ -285,6 +286,7 @@ class Benchmarker(object):
         self.include_scenarios = []
         self.skip_groups = ['settings-only']
         self.skip_scenarios = ['use invalid settings-file']
+        self.max_run_secs = 15
         # TODO: a more general way of replacing env vars
         self.replace_values = {
             '$XFIND_PATH': os.environ.get('XFIND_PATH', os.path.join(os.environ.get('HOME'), 'src/xfind')),
@@ -656,21 +658,23 @@ class Benchmarker(object):
         """This run version starts procs for all language versions before going back and 
            capturing their outputs
         """
-        xsearch_procs = {}
+        exe_procs = {}
+        exe_starts = {}
         exe_output = {}
-        xsearch_times = {}
+        exe_times = {}
         lang_results = []
         for x in self.exe_names:
             fullargs = ['time', x] + s.args
             print(' '.join(fullargs[1:]))
-            xsearch_procs[x] = subprocess.Popen(fullargs, bufsize=-1, stdout=subprocess.PIPE,
+            exe_procs[x] = subprocess.Popen(fullargs, bufsize=-1, stdout=subprocess.PIPE,
                                                 stderr=subprocess.PIPE)
+            exe_starts[x] = time.time()
 
         for x in self.exe_names:
-            p = xsearch_procs[x]
+            p = exe_procs[x]
             output_lines = []
             error_lines = []
-            while True:
+            while time.time() - exe_starts[x] < self.max_run_secs:
                 output_line = p.stdout.readline()
                 error_line = p.stderr.readline()
                 if not output_line and not error_line:
@@ -736,8 +740,8 @@ class Benchmarker(object):
             exe_output[x] = output_lines
             if self.debug:
                 print('{} output:\n"{}"'.format(x, '\n'.join(output_lines)))
-            xsearch_times[x] = self.times_from_lines([e for e in error_lines if e])
-            time_dict = xsearch_times[x]
+            exe_times[x] = self.times_from_lines([e for e in error_lines if e])
+            time_dict = exe_times[x]
             if 'real' not in time_dict and 'elapsed' not in time_dict:
                 raise Exception(f'No real or elapsed time for {x}')
             treal = time_dict['real'] if 'real' in time_dict else time_dict['elapsed']
@@ -796,6 +800,9 @@ class Benchmarker(object):
     def run(self):
         if 'pyfind' in self.exe_names or 'pysearch' in self.exe_names:
             self.activate_pyvenv()
+        if not self.scenarios:
+            log_error('No scenarios specified')
+            sys.exit(1)
         scenario_results = ScenarioResults(scenarios=self.scenarios, exe_names=self.exe_names)
         runs = 0
         try:
