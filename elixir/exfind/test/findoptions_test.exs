@@ -70,7 +70,7 @@ defmodule ExFindTest.FindOptionsTest do
     {
       "in-ext": ["ex", "exs"],
       "path": ["~/src/xfind/elixir/exfind"],
-      "out-dirpattern": ["dep"]
+      "out-dirpattern": ["dep"],
       "out-filepattern": ["test"],
       "debug": true,
       "followsymlinks": true,
@@ -101,7 +101,7 @@ defmodule ExFindTest.FindOptionsTest do
     {
       "in-ext": ["ex", "exs",
       "path": ["~/src/xfind/elixir/exfind"],
-      "out-dirpattern": ["dep"]
+      "out-dirpattern": ["dep"],
       "out-filepattern": ["test"],
       "debug": true,
       "includehidden": true,
@@ -117,7 +117,7 @@ defmodule ExFindTest.FindOptionsTest do
     {
       "in-ext": ["ex", "exs"],
       "path": ["~/src/xfind/elixir/exfind"],
-      "out-dirpattern": ["dep"]
+      "out-dirpattern": ["dep"],
       "out-filepattern": ["test"],
       "debug": true,
       "includehidden": true
@@ -144,7 +144,7 @@ defmodule ExFindTest.FindOptionsTest do
     {
       "in-ext": ["ex", "exs",
       "path": ["~/src/xfind/elixir/exfind"],
-      "out-dirpattern": ["dep"]
+      "out-dirpattern": ["dep"],
       "out-filepattern": ["test"],
       "debug": true,
       "includehidden": true,

@@ -284,6 +284,10 @@ func (f *Finder) filterRegFilePathToFileResult(filePath string, fileType FileTyp
 		lastMod = fi.ModTime()
 	}
 
+	if !f.isMatchingFileSize(fileSize) || !f.isMatchingLastMod(lastMod) {
+		return nil
+	}
+
 	return NewFileResult(filePath, fileType, fileSize, lastMod)
 }
 

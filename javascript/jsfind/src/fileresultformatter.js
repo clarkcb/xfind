@@ -8,7 +8,7 @@ const {ConsoleColor} = require('./consolecolor');
 const path = require('path');
 
 class FileResultFormatter {
-  'use strict'
+  settings;
 
   constructor(settings) {
     this.settings = settings;

@@ -45,16 +45,16 @@ class Finder {
             if (!Files.isReadable(p)) {
                 throw new FindException(STARTPATH_NOT_READABLE.message)
             }
-            if (Files.isSymbolicLink(path)) {
+            if (Files.isSymbolicLink(p)) {
                 if (!settings.followSymlinks) {
                     throw new FindException(STARTPATH_DOES_NOT_MATCH_FIND_SETTINGS.message)
                 }
-            } else if (Files.isDirectory(path)) {
-                if (!isTraversableDirPath(path)) {
+            } else if (Files.isDirectory(p)) {
+                if (!isTraversableDirPath(p)) {
                     throw new FindException(STARTPATH_DOES_NOT_MATCH_FIND_SETTINGS.message)
                 }
-            } else if (Files.isRegularFile(path)) {
-                if (filterToFileResult(path).isEmpty()) {
+            } else if (Files.isRegularFile(p)) {
+                if (filterToFileResult(p).isEmpty()) {
                     throw new FindException(STARTPATH_DOES_NOT_MATCH_FIND_SETTINGS.message)
                 }
             } else {

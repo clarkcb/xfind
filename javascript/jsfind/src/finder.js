@@ -385,8 +385,9 @@ class Finder {
     }
 
     getMatchingDirs(fileResults) {
-        const dirs = fileResults.map(fr => fr.filePath);
-        return common.setFromArray(dirs);
+        const dirs = fileResults.map(fr => path.dirname(fr.filePath));
+        const dirSet = common.setFromArray(dirs);
+        return dirSet.sort();
     }
 
     printMatchingDirs(fileResults, formatter) {

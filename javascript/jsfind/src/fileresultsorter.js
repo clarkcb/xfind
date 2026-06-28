@@ -8,7 +8,7 @@ const path = require('path');
 
 
 class FileResultSorter {
-  'use strict'
+  settings;
 
   constructor (settings) {
     this.settings = settings;

@@ -35,18 +35,24 @@ int main(int argc, char *argv[]) {
 
         const std::vector<FileResult> file_results = finder.find();
 
-        const auto formatter = FileResultFormatter(settings_ptr);
+        if (settings.print_dirs() || settings.print_files()) {
+            const auto formatter = FileResultFormatter(settings_ptr);
 
-        if (settings.print_dirs()) {
-            print_file_result_dirs(file_results, formatter);
-        }
+            if (settings.print_dirs()) {
+                print_file_result_dirs(file_results, formatter);
+            }
 
-        if (settings.print_files()) {
-            print_file_results(file_results, formatter);
+            if (settings.print_files()) {
+                print_file_results(file_results, formatter);
+            }
         }
     } catch (const FindException& e) {
         log_msg("");
-        log_error_color(e.what(), settings_ptr->colorize());
+        bool colorize = true;
+        if (settings_ptr != nullptr) {
+            colorize = settings_ptr->colorize();
+        }
+        log_error_color(e.what(), colorize);
         options_ptr->usage();
     }
 

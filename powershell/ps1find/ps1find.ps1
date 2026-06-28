@@ -36,14 +36,16 @@ function Main {
         $finder = [Finder]::new($settings)
         $files = $finder.Find()
 
-        $formatter = [FileResultFormatter]::new($settings)
+        if ($settings.PrintDirs -or $settings.PrintFiles) {
+            $formatter = [FileResultFormatter]::new($settings)
 
-        if ($settings.PrintDirs) {
-            $finder.PrintMatchingDirs($files, $formatter)
-        }
+            if ($settings.PrintDirs) {
+                $finder.PrintMatchingDirs($files, $formatter)
+            }
 
-        if ($settings.PrintFiles) {
-            $finder.PrintMatchingFiles($files, $formatter)
+            if ($settings.PrintFiles) {
+                $finder.PrintMatchingFiles($files, $formatter)
+            }
         }
     }
     catch {

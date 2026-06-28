@@ -1154,7 +1154,7 @@ class FileResultFormatter {
         if ($settings.Colorize -and $settings.InDirPatterns.Length -gt 0) {
             $this.FormatDirPathBlock = {
                 param([string]$dirPath)
-                return $this.FormatDirPathWithColor($dir)
+                return $this.FormatDirPathWithColor($dirPath)
             }
         } else {
             $this.FormatDirPathBlock = {
@@ -1915,11 +1915,10 @@ class Finder {
 
     [FileResult[]]GetPathResults([string]$path) {
         $fileResults = @()
+        # Even though powershell understands ~, dotnet does not, so just start with expanded path
+        $path = ExpandPath($path)
         if (-not (Test-Path $path)) {
-            $path = ExpandPath($path)
-            if (-not (Test-Path $path)) {
-                throw "Startpath not found"
-            }
+            throw "Startpath not found"
         }
         if (Test-Path -Path $path -PathType Container) {
             # if max_depth is zero, we can skip since a directory cannot be a result

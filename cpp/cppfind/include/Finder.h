@@ -55,22 +55,23 @@ namespace cppfind {
             int max_depth, int current_depth) const;
     };
 
-
-    static bool matches_any_pattern(std::string_view s, const std::unordered_set<RegexPattern, RegexPatternHash>& patterns);
-    static bool any_matches_any_pattern(const std::vector<std::string>& ss, const std::unordered_set<RegexPattern, RegexPatternHash>& patterns);
-    static bool empty_or_matches_any_pattern(std::string_view s, const std::unordered_set<RegexPattern, RegexPatternHash>& patterns);
-    static bool empty_or_not_matches_any_pattern(std::string_view s, const std::unordered_set<RegexPattern, RegexPatternHash>& patterns);
-    static bool empty_or_matches_any_string(std::string_view s, const std::unordered_set<std::string>& string_set);
-    static bool empty_or_not_matches_any_string(std::string_view s, const std::unordered_set<std::string>& string_set);
-    static bool empty_or_matches_any_file_type(const FileType& file_type, const std::unordered_set<FileType>& file_types);
-    static bool empty_or_not_matches_any_file_type(const FileType& file_type, const std::unordered_set<FileType>& file_types);
-    static bool path_matches_any_pattern(const std::filesystem::path& path, const std::unordered_set<RegexPattern, RegexPatternHash>& patterns);
-    static bool path_not_matches_any_pattern(const std::filesystem::path& path, const std::unordered_set<RegexPattern, RegexPatternHash>& patterns);
-    static bool empty_or_path_matches_any_pattern(const std::filesystem::path& path, const std::unordered_set<RegexPattern, RegexPatternHash>& patterns);
-    static bool empty_or_path_not_matches_any_pattern(const std::filesystem::path& path, const std::unordered_set<RegexPattern, RegexPatternHash>& patterns);
-    static bool is_matching_path_by_symlink(const std::filesystem::path& path, bool follow_symlinks);
-    static bool is_matching_path_by_hidden(const std::filesystem::path& path, bool include_hidden);
-    static bool is_matching_file_name_by_hidden(const std::string& file_name, bool include_hidden);
+    bool matches_any_pattern(std::string_view s, const std::unordered_set<RegexPattern, RegexPatternHash>& patterns);
+    bool any_matches_any_pattern(const std::vector<std::string>& ss, const std::unordered_set<RegexPattern, RegexPatternHash>& patterns);
+    bool empty_or_matches_any_pattern(std::string_view s, const std::unordered_set<RegexPattern, RegexPatternHash>& patterns);
+    bool empty_or_not_matches_any_pattern(std::string_view s, const std::unordered_set<RegexPattern, RegexPatternHash>& patterns);
+    bool empty_or_any_matches_any_pattern(const std::vector<std::string>& ss, const std::unordered_set<RegexPattern, RegexPatternHash>& patterns);
+    bool empty_or_not_any_matches_any_pattern(const std::vector<std::string>& ss, const std::unordered_set<RegexPattern, RegexPatternHash>& patterns);
+    bool empty_or_matches_any_string(std::string_view s, const std::unordered_set<std::string>& string_set);
+    bool empty_or_not_matches_any_string(std::string_view s, const std::unordered_set<std::string>& string_set);
+    bool empty_or_matches_any_file_type(const FileType& file_type, const std::unordered_set<FileType>& file_types);
+    bool empty_or_not_matches_any_file_type(const FileType& file_type, const std::unordered_set<FileType>& file_types);
+    bool path_matches_any_pattern(const std::filesystem::path& path, const std::unordered_set<RegexPattern, RegexPatternHash>& patterns);
+    bool path_not_matches_any_pattern(const std::filesystem::path& path, const std::unordered_set<RegexPattern, RegexPatternHash>& patterns);
+    bool empty_or_path_matches_any_pattern(const std::filesystem::path& path, const std::unordered_set<RegexPattern, RegexPatternHash>& patterns);
+    bool empty_or_path_not_matches_any_pattern(const std::filesystem::path& path, const std::unordered_set<RegexPattern, RegexPatternHash>& patterns);
+    bool is_matching_path_by_symlink(const std::filesystem::path& path, bool follow_symlinks);
+    bool is_matching_path_by_hidden(const std::filesystem::path& path, bool include_hidden);
+    bool is_matching_file_name_by_hidden(const std::string& file_name, bool include_hidden);
 
     std::vector<std::filesystem::path> get_matching_dir_paths(const std::vector<FileResult>& file_results);
     void print_file_result_dirs(const std::vector<FileResult>& file_results, const FileResultFormatter& formatter);

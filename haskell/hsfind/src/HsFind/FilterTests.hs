@@ -5,7 +5,7 @@ module HsFind.FilterTests
 
 import Data.Maybe (fromJust, isJust, isNothing)
 
-import System.FilePath (takeFileName)
+import System.FilePath (takeFileName, splitDirectories)
 import Text.Regex.PCRE ( (=~) )
 import Data.Time (UTCTime)
 
@@ -42,6 +42,19 @@ data FilterTests = FilterTests
   , archiveFilePathTests :: [FilePath -> Bool]
   , archiveFileResultTests :: [FileResult -> Bool]
   }
+
+anyMatchesAnyPattern :: [String] -> [String] -> Bool
+anyMatchesAnyPattern strings patterns = any (\s -> any (\p -> s =~ p :: Bool) patterns) strings
+
+getFilterDirPathByInPatterns :: [String] -> (FilePath -> Bool)
+getFilterDirPathByInPatterns inPatterns = doFilter
+  where doFilter | null inPatterns = const True
+                 | otherwise = \p -> anyMatchesAnyPattern (splitDirectories p) inPatterns
+
+getFilterDirPathByOutPatterns :: [String] -> (FilePath -> Bool)
+getFilterDirPathByOutPatterns outPatterns = doFilter
+  where doFilter | null outPatterns = const True
+                 | otherwise = \p -> not $ anyMatchesAnyPattern (splitDirectories p) outPatterns
 
 getFilterFilePathByHidden :: Bool -> (FilePath -> Bool)
 getFilterFilePathByHidden includeHidden' = doFilter
@@ -102,10 +115,10 @@ getPathByHiddenTests :: FindSettings -> [FilePath -> Bool]
 getPathByHiddenTests settings = [getFilterFilePathByHidden (includeHidden settings)]
 
 getDirPathByInPatternsTests :: FindSettings -> [FilePath -> Bool]
-getDirPathByInPatternsTests settings = [getFilterFilePathByInPatterns (inDirPatterns settings)]
+getDirPathByInPatternsTests settings = [getFilterDirPathByInPatterns (inDirPatterns settings)]
 
 getDirPathByOutPatternsTests :: FindSettings -> [FilePath -> Bool]
-getDirPathByOutPatternsTests settings = [getFilterFilePathByOutPatterns (outDirPatterns settings)]
+getDirPathByOutPatternsTests settings = [getFilterDirPathByOutPatterns (outDirPatterns settings)]
 
 getArchiveFilePathByInExtensionsTests :: FindSettings -> [FilePath -> Bool]
 getArchiveFilePathByInExtensionsTests settings = [getFilterFilePathByInExtensions (inArchiveExtensions settings)]

@@ -14,7 +14,7 @@
 #include "FileResultSorter.h"
 
 namespace cppfind {
-    static bool matches_any_pattern(const std::string_view s,
+    bool matches_any_pattern(const std::string_view s,
         const std::unordered_set<RegexPattern, RegexPatternHash>& patterns) {
         const std::string ss{s};
         return std::ranges::any_of(patterns.cbegin(), patterns.cend(), [ss](const RegexPattern& p) {
@@ -22,14 +22,14 @@ namespace cppfind {
         });
     }
 
-    static bool any_matches_any_pattern(const std::vector<std::string>& ss,
+    bool any_matches_any_pattern(const std::vector<std::string>& ss,
         const std::unordered_set<RegexPattern, RegexPatternHash>& patterns) {
         return std::ranges::any_of(ss.cbegin(), ss.cend(), [patterns](const std::string& s) {
             return matches_any_pattern(s, patterns);
         });
     }
 
-    static bool empty_or_matches_any_pattern(const std::string_view s,
+    bool empty_or_matches_any_pattern(const std::string_view s,
         const std::unordered_set<RegexPattern, RegexPatternHash>& patterns) {
         if (patterns.empty()) {
             return true;
@@ -40,7 +40,7 @@ namespace cppfind {
         });
     }
 
-    static bool empty_or_not_matches_any_pattern(const std::string_view s,
+    bool empty_or_not_matches_any_pattern(const std::string_view s,
         const std::unordered_set<RegexPattern, RegexPatternHash>& patterns) {
         if (patterns.empty()) {
             return true;
@@ -51,7 +51,23 @@ namespace cppfind {
         });
     }
 
-    static bool empty_or_matches_any_string(const std::string_view s,
+    bool empty_or_any_matches_any_pattern(const std::vector<std::string>& ss,
+        const std::unordered_set<RegexPattern, RegexPatternHash>& patterns) {
+        if (patterns.empty()) {
+            return true;
+        }
+        return any_matches_any_pattern(ss, patterns);
+    }
+
+    bool empty_or_not_any_matches_any_pattern(const std::vector<std::string>& ss,
+        const std::unordered_set<RegexPattern, RegexPatternHash>& patterns) {
+        if (patterns.empty()) {
+            return true;
+        }
+        return !any_matches_any_pattern(ss, patterns);
+    }
+
+    bool empty_or_matches_any_string(const std::string_view s,
         const std::unordered_set<std::string>& string_set) {
         if (string_set.empty()) {
             return true;
@@ -60,7 +76,7 @@ namespace cppfind {
         return string_set.contains(str);
     }
 
-    static bool empty_or_not_matches_any_string(const std::string_view s,
+    bool empty_or_not_matches_any_string(const std::string_view s,
         const std::unordered_set<std::string>& string_set) {
         if (string_set.empty()) {
             return true;
@@ -69,7 +85,7 @@ namespace cppfind {
         return !string_set.contains(str);
     }
 
-    static bool empty_or_matches_any_file_type(const FileType& file_type,
+    bool empty_or_matches_any_file_type(const FileType& file_type,
         const std::unordered_set<FileType>& file_types) {
         if (file_types.empty()) {
             return true;
@@ -77,7 +93,7 @@ namespace cppfind {
         return file_types.contains(file_type);
     }
 
-    static bool empty_or_not_matches_any_file_type(const FileType& file_type,
+    bool empty_or_not_matches_any_file_type(const FileType& file_type,
         const std::unordered_set<FileType>& file_types) {
         if (file_types.empty()) {
             return true;
@@ -85,19 +101,19 @@ namespace cppfind {
         return !file_types.contains(file_type);
     }
 
-    static bool path_matches_any_pattern(const std::filesystem::path& path,
+    bool path_matches_any_pattern(const std::filesystem::path& path,
         const std::unordered_set<RegexPattern, RegexPatternHash>& patterns) {
         const std::vector<std::string> segments(path.begin(), path.end());
         return any_matches_any_pattern(segments, patterns);
     }
 
-    static bool path_not_matches_any_pattern(const std::filesystem::path& path,
+    bool path_not_matches_any_pattern(const std::filesystem::path& path,
         const std::unordered_set<RegexPattern, RegexPatternHash>& patterns) {
         const std::vector<std::string> segments(path.begin(), path.end());
         return !any_matches_any_pattern(segments, patterns);
     }
 
-    static bool empty_or_path_matches_any_pattern(const std::filesystem::path& path,
+    bool empty_or_path_matches_any_pattern(const std::filesystem::path& path,
         const std::unordered_set<RegexPattern, RegexPatternHash>& patterns) {
         if (patterns.empty()) {
             return true;
@@ -105,7 +121,7 @@ namespace cppfind {
         return path_matches_any_pattern(path, patterns);
     }
 
-    static bool empty_or_path_not_matches_any_pattern(const std::filesystem::path& path,
+    bool empty_or_path_not_matches_any_pattern(const std::filesystem::path& path,
         const std::unordered_set<RegexPattern, RegexPatternHash>& patterns) {
         if (patterns.empty()) {
             return true;
@@ -113,15 +129,15 @@ namespace cppfind {
         return path_not_matches_any_pattern(path, patterns);
     }
 
-    static bool is_matching_path_by_symlink(const std::filesystem::path& path, bool follow_symlinks) {
+    bool is_matching_path_by_symlink(const std::filesystem::path& path, bool follow_symlinks) {
         return follow_symlinks || !std::filesystem::is_symlink(path);
     }
 
-    static bool is_matching_path_by_hidden(const std::filesystem::path& path, bool include_hidden) {
+    bool is_matching_path_by_hidden(const std::filesystem::path& path, bool include_hidden) {
         return include_hidden || !FileUtil::is_hidden_path(path);
     }
 
-    static bool is_matching_file_name_by_hidden(const std::string& file_name, bool include_hidden) {
+    bool is_matching_file_name_by_hidden(const std::string& file_name, bool include_hidden) {
         return include_hidden || !FileUtil::is_hidden(file_name);
     }
 

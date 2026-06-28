@@ -305,7 +305,7 @@ sub is_matching_file_path {
 
 sub is_matching_file_type {
     my ($self, $file_type) = @_;
-    return empty_or_not_matches_any_file_type($file_type, $self->{settings}->{in_file_types})
+    return empty_or_matches_any_file_type($file_type, $self->{settings}->{in_file_types})
         && empty_or_not_matches_any_file_type($file_type, $self->{settings}->{out_file_types});
 }
 

@@ -37,7 +37,7 @@ import qualified Data.ByteString.Char8 as BC
 import Data.Char (toLower)
 import Data.List (elemIndices, isPrefixOf)
 import System.Directory (doesDirectoryExist, doesFileExist, listDirectory, getFileSize, getModificationTime, pathIsSymbolicLink)
-import System.FilePath ((</>), dropFileName, splitPath, takeFileName)
+import System.FilePath ((</>), dropFileName, splitDirectories, takeFileName)
 import System.IO (hSetNewlineMode, IOMode(..), universalNewlineMode, withFile)
 import Data.Time (UTCTime)
 
@@ -113,7 +113,7 @@ isHiddenName :: String -> Bool
 isHiddenName n = isPrefixOf "." n && notElem n dotDirs
 
 isHiddenFilePath :: FilePath -> Bool
-isHiddenFilePath f = any isHiddenName $ splitPath f
+isHiddenFilePath f = any isHiddenName $ splitDirectories f
 
 getDirectoryFiles :: FilePath -> IO [FilePath]
 getDirectoryFiles dir = do

@@ -3,6 +3,7 @@ package gofind
 import (
 	"bytes"
 	"fmt"
+	"path"
 	"path/filepath"
 	"slices"
 	"strings"
@@ -95,9 +96,10 @@ func (frs *FileResults) GetMatchingDirs() []string {
 	dirMap := make(map[string]bool)
 	var dirs []string
 	for _, r := range frs.FileResults {
-		if _, value := dirMap[r.FilePath]; !value {
-			dirMap[r.FilePath] = true
-			dirs = append(dirs, r.FilePath)
+		dir := path.Dir(r.FilePath)
+		if _, value := dirMap[dir]; !value {
+			dirMap[dir] = true
+			dirs = append(dirs, dir)
 		}
 	}
 	return dirs
