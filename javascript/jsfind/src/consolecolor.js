@@ -4,7 +4,7 @@
  * Define a console color enum for use in colorized console output
  */
 
-'use strict'
+'use strict';
 
 const ConsoleColor = Object.freeze({
   RESET: '\u001b[0m',

@@ -1,4 +1,9 @@
 {
-  "plugins": ["@babel/plugin-transform-class-properties"],
-  "presets": ["minify"]
+  "presets": [
+    ["@babel/preset-env", {
+      "targets": {
+        "node": "current"
+      }
+    }]
+  ]
 }

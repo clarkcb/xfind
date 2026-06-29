@@ -3,8 +3,8 @@
  *
  * FileResultFormatter class provides formatting of search result instances
  */
-const {colorToConsoleColor} = require('./color');
-const {ConsoleColor} = require('./consolecolor');
+const { colorToConsoleColor } = require('./color');
+const { ConsoleColor } = require('./consolecolor');
 const path = require('path');
 
 class FileResultFormatter {
@@ -14,12 +14,12 @@ class FileResultFormatter {
     this.settings = settings;
     if (settings.colorize) {
       if (settings.inDirPatterns.length > 0) {
-        this.formatDirPath = function(path) {
+        this.formatDirPath = function (path) {
           return this.formatDirPathWithColor(path);
         };
       }
       if (settings.inExtensions.length > 0 || settings.inFilePatterns.length > 0) {
-        this.formatFileName = function(fileName) {
+        this.formatFileName = function (fileName) {
           return this.formatFileNameWithColor(fileName);
         };
       }
@@ -35,11 +35,13 @@ class FileResultFormatter {
     if (matchEndIndex < s.length) {
       suffix = s.slice(matchEndIndex);
     }
-    return prefix +
+    return (
+      prefix +
       colorToConsoleColor(color) +
       s.slice(matchStartIndex, matchEndIndex) +
       ConsoleColor.RESET +
-      suffix;
+      suffix
+    );
   }
 
   formatDirPathWithColor(dirPath) {
@@ -49,7 +51,12 @@ class FileResultFormatter {
       for (let p of this.settings.inDirPatterns) {
         let m = p.exec(formattedPath);
         if (m) {
-          formattedPath = this.colorize(formattedPath, m.index, m.index + m[0].length, this.settings.dirColor);
+          formattedPath = this.colorize(
+            formattedPath,
+            m.index,
+            m.index + m[0].length,
+            this.settings.dirColor
+          );
           break;
         }
       }
@@ -66,14 +73,24 @@ class FileResultFormatter {
     for (let p of this.settings.inFilePatterns) {
       let m = p.exec(formattedFileName);
       if (m) {
-        formattedFileName = this.colorize(formattedFileName, m.index, m.index + m[0].length, this.settings.fileColor);
+        formattedFileName = this.colorize(
+          formattedFileName,
+          m.index,
+          m.index + m[0].length,
+          this.settings.fileColor
+        );
         break;
       }
     }
     if (this.settings.inExtensions.length > 0) {
       let idx = formattedFileName.lastIndexOf('.');
       if (idx > 0 && idx < formattedFileName.length - 1) {
-        formattedFileName = this.colorize(formattedFileName, idx + 1, formattedFileName.length, this.settings.extColor);
+        formattedFileName = this.colorize(
+          formattedFileName,
+          idx + 1,
+          formattedFileName.length,
+          this.settings.extColor
+        );
       }
     }
     return formattedFileName;
