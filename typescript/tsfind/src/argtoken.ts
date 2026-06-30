@@ -6,16 +6,16 @@
 
 'use strict';
 
-import {ArgTokenType} from "./argtokentype";
+import { ArgTokenType } from './argtokentype';
 
 export class ArgToken {
-    name: string;
-    type: ArgTokenType;
-    value: boolean | number | string | string[];
+  name: string;
+  type: ArgTokenType;
+  value: boolean | number | string | string[];
 
-    constructor(name: string, type: ArgTokenType, value: boolean | number | string | string[]) {
-        this.name = name;
-        this.type = type;
-        this.value = value;
-    }
+  constructor(name: string, type: ArgTokenType, value: boolean | number | string | string[]) {
+    this.name = name;
+    this.type = type;
+    this.value = value;
+  }
 }

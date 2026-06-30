@@ -8,8 +8,8 @@
 'use strict';
 
 export enum ArgTokenType {
-    Unknown,
-    Bool,
-    Str,
-    Int
+  Unknown,
+  Bool,
+  Str,
+  Int,
 }
