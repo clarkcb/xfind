@@ -69,7 +69,7 @@ class FileResult
             $s = join(FileResult::CONTAINER_SEPARATOR, $this->containers) .
                 FileResult::CONTAINER_SEPARATOR;
         }
-        $s .= FileUtil::join_paths($this->path, $this->file_name);
+        $s .= $this->file_path;
         return $s;
     }
 }
