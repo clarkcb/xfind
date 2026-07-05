@@ -4,7 +4,7 @@
  * Some tests of findsettings.js
  */
 
-import {FindSettings} from '../src/findsettings';
+import { FindSettings } from '../src/findsettings';
 
 describe('testing findsettings', () => {
     it('testDefaultSettings', () => {
@@ -37,7 +37,7 @@ describe('testing findsettings', () => {
 
     it('testAddExtensionsAsArray', () => {
         const settings: FindSettings = new FindSettings();
-        settings.addInExtensions(['js','java']);
+        settings.addInExtensions(['js', 'java']);
         expect(settings.inExtensions.length).toEqual(2);
         expect(settings.inExtensions[0]).toEqual('js');
         expect(settings.inExtensions[1]).toEqual('java');

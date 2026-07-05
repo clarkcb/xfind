@@ -5,20 +5,19 @@
  */
 
 import * as config from '../src/config';
-import {Finder} from '../src/finder';
-import {FindSettings} from '../src/findsettings';
-import {FileType} from "../src/filetype";
-import {FileResult} from "../src/fileresult";
-import path from "path";
+import { Finder } from '../src/finder';
+import { FindSettings } from '../src/findsettings';
+import { FileType } from '../src/filetype';
+import { FileResult } from '../src/fileresult';
+import path from 'path';
 
-const getSettings = function() {
+const getSettings = function () {
     const settings: FindSettings = new FindSettings();
     settings.paths.push('.');
     return settings;
 };
 
 describe('testing finder', () => {
-
     /*************************************************************
      * isMatchingDirPath tests
      *************************************************************/
@@ -326,7 +325,7 @@ describe('testing finder', () => {
         let binPath = path.join(config.XFIND_PATH, 'bin');
         settings.paths.push(binPath);
         const finder = new Finder(settings);
-        finder.find().then(fileResults => {
+        finder.find().then((fileResults) => {
             expect(fileResults.length < 4).toBeTruthy();
         });
     });
@@ -337,7 +336,7 @@ describe('testing finder', () => {
         settings.paths.push(binPath);
         settings.followSymlinks = true;
         const finder = new Finder(settings);
-        finder.find().then(fileResults => {
+        finder.find().then((fileResults) => {
             expect(fileResults.length === 0 || fileResults.length > 2).toBeTruthy();
         });
     });
@@ -348,7 +347,7 @@ describe('testing finder', () => {
         settings.paths.push(binPath);
         settings.followSymlinks = false;
         const finder = new Finder(settings);
-        finder.find().then(fileResults => {
+        finder.find().then((fileResults) => {
             expect(fileResults.length < 4).toBeTruthy();
         });
     });

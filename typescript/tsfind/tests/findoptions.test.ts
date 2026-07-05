@@ -4,8 +4,8 @@
  * Some tests of findoptions.js
  */
 
-import {FindOptions} from '../src/findoptions';
-import {FindSettings} from '../src/findsettings';
+import { FindOptions } from '../src/findoptions';
+import { FindSettings } from '../src/findsettings';
 
 describe('testing findoptions', () => {
     it('testNoArgs', () => {
@@ -35,7 +35,7 @@ describe('testing findoptions', () => {
         const args: string[] = ['-x', 'js,java', '.'];
         findOptions.settingsFromArgs(args, function (err: Error | void, settings: FindSettings) {
             if (err) {
-                console.log("There was an error calling settingsFromArgs: " + err);
+                console.log('There was an error calling settingsFromArgs: ' + err);
                 expect(false).toEqual(true);
             }
             expect(settings.inExtensions.length).toEqual(2);
@@ -49,9 +49,9 @@ describe('testing findoptions', () => {
     it('testInvalidArg', () => {
         const findOptions: FindOptions = new FindOptions();
         const args: string[] = ['-Q'];
-        findOptions.settingsFromArgs(args, function(err: Error|void) {
+        findOptions.settingsFromArgs(args, function (err: Error | void) {
             if (err) {
-                const expected = "Invalid option: Q";
+                const expected = 'Invalid option: Q';
                 expect(err.message).toEqual(expected);
             } else {
                 expect(false).toEqual(true);
@@ -62,7 +62,8 @@ describe('testing findoptions', () => {
     it('testSettingsFromJson', () => {
         const findOptions: FindOptions = new FindOptions();
         const settings: FindSettings = new FindSettings();
-        const json: string = '{\n' +
+        const json: string =
+            '{\n' +
             '  "path": "~/src/xfind/",\n' +
             '  "in-ext": ["js","ts"],\n' +
             '  "out-dirpattern": "node_module",\n' +
@@ -71,7 +72,7 @@ describe('testing findoptions', () => {
             '  "followsymlinks": true,\n' +
             '  "includehidden": true\n' +
             '}';
-        const err: Error|void = findOptions.updateSettingsFromJson(settings, json);
+        const err: Error | void = findOptions.updateSettingsFromJson(settings, json);
         expect(err).toBeUndefined();
         expect(settings.paths.length).toEqual(1);
         expect(settings.paths[0]).toEqual('~/src/xfind/');

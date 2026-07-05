@@ -4,8 +4,8 @@
  * Some tests of fileresult.js
  */
 
-import {FileType} from '../src/filetype';
-import {FileResult} from '../src/fileresult';
+import { FileType } from '../src/filetype';
+import { FileResult } from '../src/fileresult';
 
 describe('testing fileresult', () => {
     it('testFileResultAbsPath', () => {

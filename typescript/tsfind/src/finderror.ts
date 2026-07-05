@@ -5,8 +5,8 @@
  */
 
 export class FindError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = 'FindError';
-  }
+    constructor(message: string) {
+        super(message);
+        this.name = 'FindError';
+    }
 }

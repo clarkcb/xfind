@@ -4,7 +4,7 @@
  * Some tests of fileutil.js
  */
 
-import {FileUtil} from '../src/fileutil';
+import { FileUtil } from '../src/fileutil';
 
 describe('testing fileutil', () => {
     /***************************************************************************
@@ -17,12 +17,12 @@ describe('testing fileutil', () => {
 
     it('testGetMissingExtension', () => {
         const file = 'filename.';
-        expect(FileUtil.getExtension(file)).toEqual("");
+        expect(FileUtil.getExtension(file)).toEqual('');
     });
 
     it('testGetNoExtension', () => {
         const file = 'filename';
-        expect(FileUtil.getExtension(file)).toEqual("");
+        expect(FileUtil.getExtension(file)).toEqual('');
     });
 
     it('testGetHiddenTxtExtension', () => {
@@ -32,12 +32,12 @@ describe('testing fileutil', () => {
 
     it('testGetHiddenMissingExtension', () => {
         const file = '.filename.';
-        expect(FileUtil.getExtension(file)).toEqual("");
+        expect(FileUtil.getExtension(file)).toEqual('');
     });
 
     it('testGetHiddenNoExtension', () => {
         const file = '.filename';
-        expect(FileUtil.getExtension(file)).toEqual("");
+        expect(FileUtil.getExtension(file)).toEqual('');
     });
 
     /***************************************************************************
@@ -72,7 +72,7 @@ describe('testing fileutil', () => {
     });
 
     it('testIsDotDirNotDotDir', () => {
-        const filepath = "~/path";
+        const filepath = '~/path';
         expect(FileUtil.isDotDir(filepath)).toBeFalsy();
     });
 
@@ -136,7 +136,7 @@ describe('testing fileutil', () => {
      * expandPath tests
      **************************************************************************/
     it('testExpandPathPathWithTilde', () => {
-        const filepath = "~/filename.txt";
+        const filepath = '~/filename.txt';
         const expected = `${process.env.HOME}/filename.txt`;
         expect(FileUtil.expandPath(filepath)).toEqual(expected);
     });

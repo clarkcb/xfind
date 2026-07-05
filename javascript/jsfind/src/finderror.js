@@ -5,10 +5,10 @@
  */
 
 class FindError extends Error {
-  constructor(message) {
-    super(message);
-    this.name = 'FindError';
-  }
+    constructor(message) {
+        super(message);
+        this.name = 'FindError';
+    }
 }
 
 exports.FindError = FindError;

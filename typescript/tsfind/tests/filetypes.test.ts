@@ -4,8 +4,8 @@
  * Some tests of filetypes.js
  */
 
-import {FileType} from '../src/filetype';
-import {FileTypes} from '../src/filetypes';
+import { FileType } from '../src/filetype';
+import { FileTypes } from '../src/filetypes';
 
 describe('testing filetypes', () => {
     it('testFileTypesArchiveFile', () => {
