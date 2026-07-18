@@ -1,55 +1,55 @@
 {
-    "name": "jsfind",
-    "version": "0.1.0",
-    "description": "An implementation of xfind in JavaScript + Node.js",
-    "author": {
-        "name": "Cary Clark",
-        "email": "clarkcb@gmail.com"
-    },
-    "engines": {
-        "node": ">=26.1.0"
-    },
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/clarkcb/xfind.git"
-    },
-    "main": "./dist/api.js",
-    "bin": {
-        "jsfind": "bin/jsfind"
-    },
-    "keywords": [
-        "xfind",
-        "javascript",
-        "node.js"
-    ],
-    "private": true,
-    "type": "commonjs",
-    "directories": {
-        "test": "tests"
-    },
-    "scripts": {
-        "build": "babel src -d dist",
-        "clean": "rm -rf ./dist ./node_modules package-lock.json",
-        "lint": "eslint .",
-        "test": "jest",
-        "coverage": "jest --coverage",
-        "formatall": "npx prettier --write ./*.js ./*.json ./*.mjs ./src ./tests"
-    },
-    "files": [
-        "data/",
-        "dist/"
-    ],
-    "license": "MIT",
-    "devDependencies": {
-        "@babel/cli": "^8.0.1",
-        "@babel/core": "^8.0.1",
-        "@babel/preset-env": "^8.0.2",
-        "@eslint/js": "^10.0.1",
-        "eslint": "^10.6.0",
-        "eslint-config-prettier": "^10.1.8",
-        "eslint-plugin-jest": "^29.15.3",
-        "globals": "^17.7.0",
-        "jest": "^30.4.2",
-        "prettier": "^3.9.1"
-    }
+  "name": "jsfind",
+  "version": "0.1.0",
+  "description": "An implementation of xfind in JavaScript + Node.js",
+  "author": {
+    "name": "Cary Clark",
+    "email": "clarkcb@gmail.com"
+  },
+  "engines": {
+    "node": ">=26.1.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/clarkcb/xfind.git"
+  },
+  "main": "./dist/api.js",
+  "bin": {
+    "jsfind": "bin/jsfind"
+  },
+  "keywords": [
+    "xfind",
+    "javascript",
+    "node.js"
+  ],
+  "private": true,
+  "type": "commonjs",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "build": "babel src -d dist",
+    "clean": "rm -rf ./dist ./node_modules package-lock.json",
+    "lint": "eslint .",
+    "test": "jest",
+    "coverage": "jest --coverage",
+    "formatall": "npx prettier --write ./*.js ./*.json ./*.mjs ./src ./tests"
+  },
+  "files": [
+    "data/",
+    "dist/"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "@babel/cli": "^8.0.1",
+    "@babel/core": "^8.0.1",
+    "@babel/preset-env": "^8.0.2",
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.6.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-jest": "^29.15.3",
+    "globals": "^17.7.0",
+    "jest": "^30.4.2",
+    "prettier": "^3.9.1"
+  }
 }

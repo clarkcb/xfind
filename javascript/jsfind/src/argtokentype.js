@@ -7,10 +7,10 @@
 'use strict';
 
 const ArgTokenType = {
-    Unknown: 0,
-    Bool: 1,
-    Str: 2,
-    Int: 3,
+  Unknown: 0,
+  Bool: 1,
+  Str: 2,
+  Int: 3,
 };
 Object.freeze(ArgTokenType);
 

@@ -5,11 +5,11 @@
  */
 
 class ArgToken {
-    constructor(name, type, value) {
-        this.name = name;
-        this.type = type;
-        this.value = value;
-    }
+  constructor(name, type, value) {
+    this.name = name;
+    this.type = type;
+    this.value = value;
+  }
 }
 
 exports.ArgToken = ArgToken;

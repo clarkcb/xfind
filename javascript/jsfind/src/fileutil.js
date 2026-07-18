@@ -16,73 +16,73 @@ const EACCES = 'EACCES';
 const DOT_DIRS = ['.', '..', './', '../'];
 
 class FileUtil {
-    static expandPath(filePath) {
-        filePath = trimFromEnd(filePath, '/\\');
-        if (filePath.indexOf('~') === 0) {
-            const userPath = os.homedir();
-            if (filePath === '~') {
-                return userPath;
-            }
-            if (filePath.startsWith('~/')) {
-                return path.join(userPath, filePath.substring(2));
-            }
-            let homePath = path.dirname(userPath);
-            return path.join(homePath, filePath.substring(1));
+  static expandPath(filePath) {
+    filePath = trimFromEnd(filePath, '/\\');
+    if (filePath.indexOf('~') === 0) {
+      const userPath = os.homedir();
+      if (filePath === '~') {
+        return userPath;
+      }
+      if (filePath.startsWith('~/')) {
+        return path.join(userPath, filePath.substring(2));
+      }
+      let homePath = path.dirname(userPath);
+      return path.join(homePath, filePath.substring(1));
+    }
+    return filePath;
+  }
+
+  static getExtension(filePath) {
+    let f = path.basename(filePath);
+    let idx = f.lastIndexOf('.');
+    if (idx > 0 && idx < f.length - 1) {
+      return f.substring(idx + 1);
+    }
+    return '';
+  }
+
+  static getFileContentsSync(filePath, encoding) {
+    return fs.readFileSync(filePath, { encoding }).toString();
+  }
+
+  static getFileContents(filePath, encoding) {
+    return new Promise((resolve, reject) => {
+      fs.readFile(filePath, { encoding }, (err, data) => {
+        if (err) {
+          common.log('An error occurred trying to read file: ' + filePath);
+          reject(err);
         }
-        return filePath;
-    }
+        resolve(data.toString());
+      });
+    });
+  }
 
-    static getExtension(filePath) {
-        let f = path.basename(filePath);
-        let idx = f.lastIndexOf('.');
-        if (idx > 0 && idx < f.length - 1) {
-            return f.substring(idx + 1);
-        }
-        return '';
-    }
+  static getFileLinesSync(filePath, encoding) {
+    return FileUtil.getFileContentsSync(filePath, encoding).split(/\r?\n/);
+  }
 
-    static getFileContentsSync(filePath, encoding) {
-        return fs.readFileSync(filePath, { encoding }).toString();
+  static getRelativePath(filePath, startpath) {
+    if (startpath === '.' && filePath.startsWith(process.env.HOME)) {
+      return '.' + filePath.substring(process.env.HOME.length);
     }
+  }
 
-    static getFileContents(filePath, encoding) {
-        return new Promise((resolve, reject) => {
-            fs.readFile(filePath, { encoding }, (err, data) => {
-                if (err) {
-                    common.log('An error occurred trying to read file: ' + filePath);
-                    reject(err);
-                }
-                resolve(data.toString());
-            });
-        });
-    }
+  static getPathElems(filePath) {
+    return filePath.split(path.sep).filter((p) => p !== '');
+  }
 
-    static getFileLinesSync(filePath, encoding) {
-        return FileUtil.getFileContentsSync(filePath, encoding).split(/\r?\n/);
-    }
+  static isDotDir(filePath) {
+    return DOT_DIRS.indexOf(filePath) > -1;
+  }
 
-    static getRelativePath(filePath, startpath) {
-        if (startpath === '.' && filePath.startsWith(process.env.HOME)) {
-            return '.' + filePath.substring(process.env.HOME.length);
-        }
-    }
+  static isHiddenName(fileName) {
+    return fileName.length > 1 && fileName.charAt(0) === '.' && !FileUtil.isDotDir(fileName);
+  }
 
-    static getPathElems(filePath) {
-        return filePath.split(path.sep).filter((p) => p !== '');
-    }
-
-    static isDotDir(filePath) {
-        return DOT_DIRS.indexOf(filePath) > -1;
-    }
-
-    static isHiddenName(fileName) {
-        return fileName.length > 1 && fileName.charAt(0) === '.' && !FileUtil.isDotDir(fileName);
-    }
-
-    static isHiddenPath(filePath) {
-        let elems = FileUtil.getPathElems(filePath);
-        return elems.some((p) => FileUtil.isHiddenName(p));
-    }
+  static isHiddenPath(filePath) {
+    let elems = FileUtil.getPathElems(filePath);
+    return elems.some((p) => FileUtil.isHiddenName(p));
+  }
 }
 
 exports.FileUtil = FileUtil;
