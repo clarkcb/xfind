@@ -21,6 +21,42 @@ defmodule ExFind.Finder do
     __struct__([file_types: file_types, settings: settings])
   end
 
+  def matches_any_string?(string, strings) do
+    Enum.any?(strings, fn s -> s == string end)
+  end
+
+  def empty_or_matches_any_string?(string, strings) do
+    Enum.empty?(strings) or matches_any_string?(string, strings)
+  end
+
+  def empty_or_not_matches_any_string?(string, strings) do
+    Enum.empty?(strings) or not matches_any_string?(string, strings)
+  end
+
+  def matches_any_pattern?(string, patterns) do
+    Enum.any?(patterns, fn p -> Regex.match?(p, string) end)
+  end
+
+  def empty_or_matches_any_pattern?(string, patterns) do
+    Enum.empty?(patterns) or matches_any_pattern?(string, patterns)
+  end
+
+  def empty_or_not_matches_any_pattern?(string, patterns) do
+    Enum.empty?(patterns) or not matches_any_pattern?(string, patterns)
+  end
+
+  def any_matches_any_pattern?(strings, patterns) do
+    Enum.any?(strings, fn s -> matches_any_pattern?(s, patterns) end)
+  end
+
+  def empty_or_any_matches_any_pattern?(strings, patterns) do
+    Enum.empty?(patterns) or any_matches_any_pattern?(strings, patterns)
+  end
+
+  def empty_or_not_any_matches_any_pattern?(strings, patterns) do
+    Enum.empty?(patterns) or not any_matches_any_pattern?(strings, patterns)
+  end
+
   def matching_dir_by_hidden?(finder, dir) do
     # IO.puts("matching_dir_by_hidden?(#{dir})")
     (finder.settings.include_hidden or not FileUtil.hidden_path?(dir))
@@ -28,14 +64,12 @@ defmodule ExFind.Finder do
 
   def matching_dir_by_in_patterns?(finder, dir) do
     # IO.puts("matching_dir_by_in_patterns?(#{dir})")
-    (Enum.empty?(finder.settings.in_dir_patterns)
-     or StringUtil.any_matches_any_pattern(Path.split(dir), finder.settings.in_dir_patterns))
+     empty_or_any_matches_any_pattern?(Path.split(dir), finder.settings.in_dir_patterns)
   end
 
   def matching_dir_by_out_patterns?(finder, dir) do
     # IO.puts("matching_dir_by_out_patterns?(#{dir})")
-    (Enum.empty?(finder.settings.out_dir_patterns)
-     or !StringUtil.any_matches_any_pattern(Path.split(dir), finder.settings.out_dir_patterns))
+    empty_or_not_any_matches_any_pattern?(Path.split(dir), finder.settings.out_dir_patterns)
   end
 
   defp traversable_dir?(finder, dir) do
@@ -59,72 +93,63 @@ defmodule ExFind.Finder do
     (finder.settings.include_hidden or not FileUtil.hidden_name?(file_name))
   end
 
-  defp matching_extension?(ext, in_extensions, out_extensions) do
-    # IO.puts("matching_extension?(#{ext})")
-    (Enum.empty?(in_extensions) or Enum.any?(in_extensions, fn e -> e == ext end))
-    and (Enum.empty?(out_extensions) or !Enum.any?(out_extensions, fn e -> e == ext end))
-  end
-
   def matching_archive_extension?(finder, ext) do
-    # IO.puts("matching_archive_extension?(#{file_name})")
-    matching_extension?(ext, finder.settings.in_archive_extensions, finder.settings.out_archive_extensions)
+    # IO.puts("matching_extension?(#{ext})")
+    empty_or_matches_any_string?(ext, finder.settings.in_archive_extensions)
+    and empty_or_not_matches_any_string?(ext, finder.settings.out_archive_extensions)
   end
 
   def has_matching_archive_extension?(finder, file_name) do
     # IO.puts("has_matching_archive_extension?(#{file_name})")
-    case {finder.settings.in_archive_extensions, finder.settings.out_archive_extensions} do
-      {[], []} -> true
-      {in_exts, out_exts} ->
-        ext = FileUtil.get_extension(file_name)
-        matching_extension?(ext, in_exts, out_exts)
+    if not Enum.empty?(finder.settings.in_archive_extensions) or not Enum.empty?(finder.settings.out_archive_extensions) do
+      ext = FileUtil.get_extension(file_name)
+      matching_archive_extension?(finder, ext)
+    else
+      true
     end
   end
 
   def matching_extension?(finder, ext) do
     # IO.puts("matching_extension?(#{ext})")
-    matching_extension?(ext, finder.settings.in_extensions, finder.settings.out_extensions)
+    empty_or_matches_any_string?(ext, finder.settings.in_extensions)
+    and empty_or_not_matches_any_string?(ext, finder.settings.out_extensions)
   end
 
   def has_matching_extension?(finder, file_name) do
     # IO.puts("has_matching_extension?(#{file_name})")
-    case {finder.settings.in_extensions, finder.settings.out_extensions} do
-      {[], []} -> true
-      {in_exts, out_exts} ->
-        ext = FileUtil.get_extension(file_name)
-        matching_extension?(ext, in_exts, out_exts)
+    if not Enum.empty?(finder.settings.in_extensions) or not Enum.empty?(finder.settings.out_extensions) do
+      ext = FileUtil.get_extension(file_name)
+      matching_extension?(finder, ext)
+    else
+      true
     end
-  end
-
-  defp matching_file_name?(file_name, in_file_patterns, out_file_patterns) do
-    # IO.puts("_matching_file_name?(#{file_name})")
-    (Enum.empty?(in_file_patterns)
-     or Enum.any?(in_file_patterns, fn p -> Regex.match?(p, file_name) end))
-    and (Enum.empty?(out_file_patterns)
-         or !Enum.any?(out_file_patterns, fn p -> Regex.match?(p, file_name) end))
   end
 
   def matching_archive_file_name?(finder, file_name) do
     # IO.puts("matching_file_name?(#{file_name})")
-    case {finder.settings.in_archive_file_patterns, finder.settings.out_archive_file_patterns} do
-      {[], []} -> true
-      {in_patterns, out_patterns} ->
-        matching_file_name?(file_name, in_patterns, out_patterns)
-    end
-  end
-
-  def matching_file_name?(finder, file_name) do
-    # IO.puts("matching_file_name?(#{file_name})")
-    case {finder.settings.in_file_patterns, finder.settings.out_file_patterns} do
-      {[], []} -> true
-      {in_patterns, out_patterns} ->
-        matching_file_name?(file_name, in_patterns, out_patterns)
-    end
+    empty_or_matches_any_pattern?(file_name, finder.settings.in_archive_file_patterns)
+    and empty_or_not_matches_any_pattern?(file_name, finder.settings.out_archive_file_patterns)
   end
 
   def matching_archive_file_path?(finder, file_path) do
     # IO.puts("matching_archive_file_path?(#{file_path})")
     file_name = Path.basename(file_path)
     has_matching_archive_extension?(finder, file_name) and matching_archive_file_name?(finder, file_name)
+  end
+
+  # TODO: change this to matching_archive_file_result
+  def matching_archive_file_path?(finder, file_path, _file_size, _last_mod) do
+    # IO.puts("matching_archive_file_path?(#{file_path})")
+    file_name = Path.basename(file_path)
+    (finder.settings.include_hidden or not FileUtil.hidden_name?(Path.basename(file_name)))
+    and has_matching_archive_extension?(finder, file_name)
+    and matching_archive_file_name?(finder, file_name)
+  end
+
+  def matching_file_name?(finder, file_name) do
+    # IO.puts("matching_file_name?(#{file_name})")
+    empty_or_matches_any_pattern?(file_name, finder.settings.in_file_patterns)
+    and empty_or_not_matches_any_pattern?(file_name, finder.settings.out_file_patterns)
   end
 
   def matching_file_path?(finder, file_path) do
@@ -153,14 +178,7 @@ defmodule ExFind.Finder do
          or last_mod <= DateTime.to_unix(finder.settings.max_last_mod))
   end
 
-  def matching_archive_file_path?(finder, file_path, _file_size, _last_mod) do
-    # IO.puts("matching_archive_file_path?(#{file_path})")
-    file_name = Path.basename(file_path)
-    (finder.settings.include_hidden or not FileUtil.hidden_name?(Path.basename(file_name)))
-    and has_matching_archive_extension?(finder, file_name)
-    and matching_archive_file_name?(finder, file_name)
-  end
-
+  # TODO: change this to matching_file_result
   def matching_file_path?(finder, file_path, file_type, file_size, last_mod) do
     # IO.puts("matching_file_path?(#{file_path})")
     file_name = Path.basename(file_path)
@@ -193,9 +211,14 @@ defmodule ExFind.Finder do
       if not matching_file_path?(finder, file_path) or not matching_file_type?(finder, file_type) do
         []
       else
-        {file_size, last_mod} =
+        file_stat =
           if FindSettings.need_size?(finder.settings) or FindSettings.need_last_mod?(finder.settings) do
-            file_stat = File.stat!(file_path, [time: :posix])
+            File.stat!(file_path, [time: :posix])
+          else
+            nil
+          end
+        {file_size, last_mod} =
+          if file_stat != nil do
             {file_stat.size, file_stat.mtime}
           else
             {0, 0}
