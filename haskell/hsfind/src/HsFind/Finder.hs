@@ -4,6 +4,7 @@ module HsFind.Finder
   , formatMatchingDirs
   , formatMatchingFiles
   , getFinder
+  , ioValidateFindSettings
   , isMatchingArchiveFilePath
   , isMatchingDirPath
   , isMatchingFilePath
@@ -20,7 +21,7 @@ import Data.Time (UTCTime)
 import HsFind.FileTypes (FileType(..), JsonFileType, getJsonFileTypes, getFileTypesFromJsonFileTypes)
 import HsFind.FileUtil
     (expandPath, filterOutSymlinks, getFileSizes, getModificationTimes, getNonDotDirectoryContents,
-     partitionDirsAndFiles, partitionExisting, pathExists)
+     partitionDirsAndFiles, partitionExisting, pathExists, pathsExist)
 import HsFind.FileResult
     (FileResult(..), formatDirectory, formatFileResult, newFileResult, newFileResultWithSizeAndLastMod,
      sortFileResults)
@@ -39,7 +40,6 @@ getFinder settings = Finder
   , filterTests = getFilterTests settings
   }
 
--- TODO: need to add validation for path existence, will require IO
 validateFindSettings :: FindSettings -> Maybe String
 validateFindSettings settings =
   if printUsage settings
@@ -58,7 +58,28 @@ validateFindSettings settings =
                      , \s -> ["Invalid range for minlastmod and maxlastmod" | invalidLastModRange s]
                      , \s -> ["Invalid range for minsize and maxsize" | maxSize s > 0 && maxSize s < minSize s]
                      ]
-        invalidLastModRange s = isJust (maxLastMod s) && isJust (maxLastMod s) && Just (maxLastMod s) < Just (minLastMod s)
+        invalidLastModRange s = isJust (maxLastMod s) && isJust (minLastMod s) && Just (maxLastMod s) < Just (minLastMod s)
+
+-- This function adds validation for things like path existence that require IO
+ioValidateFindSettings :: FindSettings -> IO (Maybe String)
+ioValidateFindSettings settings =
+  case validateFindSettings settings of
+    Just err -> return $ Just err
+    Nothing -> recIoValidateSettings settings validators []
+  where recIoValidateSettings :: FindSettings -> [FindSettings -> IO [String]] -> [String] -> IO (Maybe String)
+        recIoValidateSettings settings' validators' errs = do
+          case errs of
+            [] -> case validators' of
+                    [] -> return Nothing
+                    (v:vs) -> do
+                      newErrs <- v settings'
+                      recIoValidateSettings settings' vs newErrs
+            _ -> return $ Just $ head errs
+        validators = [ \s -> do
+                             exist <- pathsExist (paths s)
+                             if exist then return []
+                             else return ["Startpath not found"]
+                      ]
 
 matchesFilePathTests :: [FilePath -> Bool] -> FilePath -> Bool
 matchesFilePathTests [] _ = True

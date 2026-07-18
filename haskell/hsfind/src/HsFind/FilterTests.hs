@@ -43,6 +43,22 @@ data FilterTests = FilterTests
   , archiveFileResultTests :: [FileResult -> Bool]
   }
 
+emptyOrMatchesAnyString :: [String] -> String -> Bool
+emptyOrMatchesAnyString [] _ = True
+emptyOrMatchesAnyString strings str = str `elem` strings
+
+emptyOrNotMatchesAnyString :: [String] -> String -> Bool
+emptyOrNotMatchesAnyString [] _ = True
+emptyOrNotMatchesAnyString strings str = str `notElem` strings
+
+emptyOrMatchesAnyPattern :: [String] -> String -> Bool
+emptyOrMatchesAnyPattern [] _ = True
+emptyOrMatchesAnyPattern patterns str = any (\p -> str =~ p :: Bool) patterns
+
+emptyOrNotMatchesAnyPattern :: [String] -> String -> Bool
+emptyOrNotMatchesAnyPattern [] _ = True
+emptyOrNotMatchesAnyPattern patterns str = not $ any (\p -> str =~ p :: Bool) patterns
+
 anyMatchesAnyPattern :: [String] -> [String] -> Bool
 anyMatchesAnyPattern strings patterns = any (\s -> any (\p -> s =~ p :: Bool) patterns) strings
 
@@ -72,14 +88,12 @@ getFilterFilePathByOutExtensions outExtensions' = doFilter
                  | otherwise = \fp -> not (any (hasExtension fp) outExtensions')
 
 getFilterFilePathByInPatterns :: [String] -> (FilePath -> Bool)
-getFilterFilePathByInPatterns inPatterns = doFilter
-  where doFilter | null inPatterns = const True
-                 | otherwise = \fp -> any (\p -> takeFileName fp =~ p :: Bool) inPatterns
+getFilterFilePathByInPatterns inPatterns fp = 
+  emptyOrMatchesAnyPattern inPatterns (takeFileName fp)
 
 getFilterFilePathByOutPatterns :: [String] -> (FilePath -> Bool)
-getFilterFilePathByOutPatterns outPatterns = doFilter
-  where doFilter | null outPatterns = const True
-                 | otherwise = \fp -> all (\p -> not $ takeFileName fp =~ p :: Bool) outPatterns
+getFilterFilePathByOutPatterns outPatterns fp = 
+  emptyOrNotMatchesAnyPattern outPatterns (takeFileName fp)
 
 getFilterFileTypeByInFileTypes :: [FileType] -> (FileType -> Bool)
 getFilterFileTypeByInFileTypes inFileTypes' = doFilter

@@ -5,7 +5,7 @@ import System.IO (hPutStr, stderr)
 
 import HsFind.ConsoleColor (boldRed, consoleReset)
 import HsFind.FindOptions (getFindOptions, getUsage, settingsFromArgs)
-import HsFind.Finder (doFind, formatMatchingDirs, formatMatchingFiles, getFinder, validateFindSettings)
+import HsFind.Finder (doFind, formatMatchingDirs, formatMatchingFiles, getFinder, ioValidateFindSettings)
 import HsFind.FindSettings (FindSettings(..), findSettingsToString)
 
 
@@ -40,7 +40,8 @@ main = do
           logMsg $ if debug settings
                   then findSettingsToString settings ++ "\n"
                   else ""
-          case validateFindSettings settings of
+          maybeErrMsg <- ioValidateFindSettings settings
+          case maybeErrMsg of
             Just errMsg -> do
               logMsg "\n"
               logErrColor errMsg $ colorize settings
