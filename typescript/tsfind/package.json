@@ -1,57 +1,57 @@
 {
-    "name": "tsfind",
-    "version": "0.1.0",
-    "description": "An implementation of xfind in TypeScript + Node.js",
-    "author": {
-        "name": "Cary Clark",
-        "email": "clarkcb@gmail.com"
-    },
-    "engines": {
-        "node": ">=23.10.0"
-    },
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/clarkcb/xfind.git"
-    },
-    "main": "./dist/src/api",
-    "types": "./src/api.d.ts",
-    "bin": {
-        "tsfind": "bin/tsfind"
-    },
-    "private": true,
-    "scripts": {
-        "build": "tsc -p .",
-        "clean": "rm -rf ./dist ./node_modules",
-        "create": "npm run build && npm run test",
-        "refresh": "npm run clean && npm install",
-        "lint": "eslint .",
-        "test": "jest",
-        "coverage": "jest --coverage",
-        "formatall": "npx prettier --write ./*.js ./*.json ./src ./tests"
-    },
-    "keywords": [
-        "xfind",
-        "typescript",
-        "node.js"
-    ],
-    "license": "MIT",
-    "devDependencies": {
-        "@eslint/js": "^10.0.1",
-        "@types/jest": "^30.0.0",
-        "@typescript-eslint/eslint-plugin": "^8.61.1",
-        "@typescript-eslint/parser": "^8.61.1",
-        "eslint": "^10.5.0",
-        "eslint-config-prettier": "^10.1.8",
-        "eslint-plugin-prettier": "^5.5.6",
-        "globals": "^17.6.0",
-        "jest": "^30.4.2",
-        "jiti": "^2.7.0",
-        "prettier": "^3.9.1",
-        "ts-jest": "^29.4.11",
-        "typescript": "^6.0.3",
-        "typescript-eslint": "^8.61.1"
-    },
-    "dependencies": {
-        "@types/node": "^25.9.3"
-    }
+  "name": "tsfind",
+  "version": "0.1.0",
+  "description": "An implementation of xfind in TypeScript + Node.js",
+  "author": {
+    "name": "Cary Clark",
+    "email": "clarkcb@gmail.com"
+  },
+  "engines": {
+    "node": ">=23.10.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/clarkcb/xfind.git"
+  },
+  "main": "./dist/src/api",
+  "types": "./src/api.d.ts",
+  "bin": {
+    "tsfind": "bin/tsfind"
+  },
+  "private": true,
+  "scripts": {
+    "build": "tsc -p .",
+    "clean": "rm -rf ./dist ./node_modules",
+    "create": "npm run build && npm run test",
+    "refresh": "npm run clean && npm install",
+    "lint": "eslint .",
+    "test": "jest",
+    "coverage": "jest --coverage",
+    "formatall": "npx prettier --write ./*.js ./*.json ./src ./tests"
+  },
+  "keywords": [
+    "xfind",
+    "typescript",
+    "node.js"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/jest": "^30.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.61.1",
+    "@typescript-eslint/parser": "^8.61.1",
+    "eslint": "^10.5.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.6",
+    "globals": "^17.6.0",
+    "jest": "^30.4.2",
+    "jiti": "^2.7.0",
+    "prettier": "^3.9.1",
+    "ts-jest": "^29.4.11",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.61.1"
+  },
+  "dependencies": {
+    "@types/node": "^25.9.3"
+  }
 }
