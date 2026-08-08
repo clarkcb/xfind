@@ -4,6 +4,7 @@ import org.json.{JSONArray, JSONException, JSONObject, JSONTokener}
 
 import java.io.IOException
 import java.nio.file.{Files, Path, Paths}
+import java.util.regex.Pattern
 import scala.annotation.tailrec
 import scala.jdk.CollectionConverters.*
 import scala.util.matching.Regex
@@ -20,6 +21,8 @@ class ArgTokenizer(options: List[ArgOption]) {
   private var strMap: Map[String, String] = Map.empty
   private var intMap: Map[String, String] = Map.empty
   private var longMap: Map[String, String] = Map.empty
+
+  private val NUM_MOD_PATTERN = Pattern.compile("^\\d+[ckmgtp]$", Pattern.CASE_INSENSITIVE)
 
   options.foreach { opt =>
     opt.argType match {
@@ -70,40 +73,83 @@ class ArgTokenizer(options: List[ArgOption]) {
     strMap.contains(argName) || intMap.contains(argName) || longMap.contains(argName)
   }
 
-  private def updateArgTokens(argName: String, argVal: Option[Any], argTokens: List[ArgToken]): List[ArgToken] = {
+  @throws[FindException]
+  private def tokenizeSizeArg(argName: String, argVal: String): ArgToken = {
+    var lng = 0L
+    try lng = java.lang.Long.parseLong(argVal)
+    catch {
+      case e: NumberFormatException =>
+        if (NUM_MOD_PATTERN.matcher(argVal).matches) {
+          val numberPart = argVal.substring(0, argVal.length - 1)
+          val modifier = argVal.substring(argVal.length - 1).toLowerCase
+          try {
+            lng = java.lang.Long.parseLong(numberPart)
+            modifier match {
+              case "k" => lng = lng * 1024 // kilobytes
+              case "m" => lng = lng * 1024 * 1024 // megabytes
+              case "g" => lng = lng * 1024 * 1024 * 1024 // gigabytes
+              case "t" => lng = lng * 1024 * 1024 * 1024 * 1024 // terabytes
+              case "p" => lng = lng * 1024 * 1024 * 1024 * 1024 * 1024 // petabytes
+            }
+          } catch {
+            case ex: NumberFormatException =>
+              throw new FindException("Invalid value for option " + argName + ": " + argVal)
+          }
+        }
+        else throw new FindException("Invalid value for option " + argName + ": " + argVal)
+    }
+    ArgToken(argName, ArgTokenType.Long, lng)
+  }
+
+  @throws[FindException]
+  def tokenizeLongArg(argName: String, argVal: String): ArgToken = {
+    if (argName == "maxsize" || argName == "minsize") {
+      tokenizeSizeArg(argName, argVal)
+    } else {
+      var lng = 0L
+      try lng = java.lang.Long.parseLong(argVal)
+      catch {
+        case e: NumberFormatException =>
+          throw new FindException("Invalid value for option " + argName + ": " + argVal)
+      }
+      ArgToken(argName, ArgTokenType.Long, lng)
+    }
+  }
+
+  private def updateArgTokens(argName: String, argVal: Option[Any], argTokens: List[ArgToken]) = {
     val nextArgTokens =
       if (boolMap.contains(argName)) {
         argVal match {
           case None => List(ArgToken(argName, ArgTokenType.Bool, true))
           case Some(value) if value.isInstanceOf[Boolean] => List(ArgToken(argName, ArgTokenType.Bool, value))
-          case Some(value) => throw new FindException("Invalid value for option: %s".format(argName))
+          case Some(value) => throw new FindException("Invalid value for option " + argName + ": " + value)
         }
       } else if (strMap.contains(argName)) {
         argVal match {
-          case None => throw new FindException("Missing value for option: %s".format(argName))
+          case None => throw new FindException("Missing value for option " + argName)
           case Some(value) if value.isInstanceOf[String] => List(ArgToken(argName, ArgTokenType.Str, value))
           case Some(value) if value.isInstanceOf[Iterable[?]] => value.asInstanceOf[Iterable[?]].map(v => ArgToken(argName, ArgTokenType.Str, v))
           case Some(value) if value.isInstanceOf[JSONArray] => value.asInstanceOf[JSONArray].toList.asScala.map(v => ArgToken(argName, ArgTokenType.Str, v))
-          case Some(value) => throw new FindException("Invalid value for option: %s".format(argName))
+          case Some(value) => throw new FindException("Invalid value for option " + argName + ": " + value)
         }
       } else if (intMap.contains(argName)) {
         argVal match {
-          case None => throw new FindException("Missing value for option: %s".format(argName))
+          case None => throw new FindException("Missing value for option " + argName)
           case Some(value) if value.isInstanceOf[Int] => List(ArgToken(argName, ArgTokenType.Int, value))
           case Some(value) if value.isInstanceOf[Long] => List(ArgToken(argName, ArgTokenType.Int, value.asInstanceOf[Long].toInt))
           case Some(value) if value.isInstanceOf[String] => List(ArgToken(argName, ArgTokenType.Int, value.asInstanceOf[String].toInt))
-          case Some(value) => throw new FindException("Invalid value for option: %s".format(argName))
+          case Some(value) => throw new FindException("Invalid value for option " + argName + ": " + value)
         }
       } else if (longMap.contains(argName)) {
         argVal match {
-          case None => throw new FindException("Missing value for option: %s".format(argName))
+          case None => throw new FindException("Missing value for option " + argName)
           case Some(value) if value.isInstanceOf[Long] => List(ArgToken(argName, ArgTokenType.Long, value))
           case Some(value) if value.isInstanceOf[Int] => List(ArgToken(argName, ArgTokenType.Long, value.asInstanceOf[Int].toLong))
-          case Some(value) if value.isInstanceOf[String] => List(ArgToken(argName, ArgTokenType.Long, value.asInstanceOf[String].toLong))
-          case Some(value) => throw new FindException("Invalid value for option: %s".format(argName))
+          case Some(value) if value.isInstanceOf[String] => List(tokenizeLongArg(argName, value.asInstanceOf[String]))
+          case Some(value) => throw new FindException("Invalid value for option " + argName + ": " + value)
         }
       } else {
-        throw new FindException("Invalid option: %s".format(argName))
+        throw new FindException("Invalid option: " + argName)
       }
     argTokens :++ nextArgTokens
   }
