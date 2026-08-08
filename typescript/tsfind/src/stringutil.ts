@@ -53,4 +53,11 @@ export class StringUtil {
     }
     return s.substring(0, i + 1);
   }
+
+  public static stringToInt(s: string): number {
+    const num = Number(s);
+    if (isNaN(num)) return NaN;
+    if (Number.isInteger(num) && s.trim() !== '') return num;
+    return NaN;
+  }
 }
