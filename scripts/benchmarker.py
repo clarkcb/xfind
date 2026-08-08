@@ -30,6 +30,7 @@ class Scenario:
     args: list
     replace_exe_name: bool = False
     case_insensitive_cmp: bool = False
+    ignore_error_line: bool = False
 
 
 @dataclass
@@ -371,6 +372,8 @@ class Benchmarker(object):
                 scenario = Scenario(s['name'], args)
                 if 'replace_exe_name' in s:
                     scenario.replace_exe_name = s['replace_exe_name']
+                if 'ignore_error_line' in s:
+                    scenario.ignore_error_line = s['ignore_error_line']
                 sg.scenarios.append(scenario)
             for g in scenarios_file_group_dict:
                 self.group_names.append(g)
@@ -605,7 +608,9 @@ class Benchmarker(object):
         return time_dict
 
     def compare_outputs(self, s: Scenario, sn: int, xsearch_output: dict[str, list[str]]) -> bool:
-        non_matching = non_matching_outputs(xsearch_output, case_insensitive_cmp=s.case_insensitive_cmp)
+        non_matching = non_matching_outputs(xsearch_output,
+                                            case_insensitive_cmp=s.case_insensitive_cmp,
+                                            ignore_error_line=s.ignore_error_line)
         if non_matching:
             print('\nOutputs of these language versions differ:')
             print(non_matching)
@@ -884,7 +889,8 @@ def lines_for_diff(lines: list[str],
                    skip_blanks: bool = False,
                    sort_lines: bool = False,
                    case_insensitive_cmp: bool = False,
-                   normalize_field_names: bool = False) -> list[str]:
+                   normalize_field_names: bool = False,
+                   ignore_error_line: bool = False) -> list[str]:
     """Return lines modified according to different settings"""
     diff_lines = lines[:]
     if skip_blanks:
@@ -898,6 +904,9 @@ def lines_for_diff(lines: list[str],
             line.replace('_', '').replace('-', '')
             for line in diff_lines
         ]
+    if ignore_error_line:
+        if diff_lines and 'ERROR: ' in diff_lines[0]:
+            diff_lines = diff_lines[1:]
     return diff_lines
 
 
@@ -927,7 +936,8 @@ def non_matching_outputs(exe_output: dict[str, list[str]],
                          sort_lines: bool = True,
                          skip_blanks: bool = True,
                          case_insensitive_cmp: bool = False,
-                         normalize_field_names: bool = False) -> list[tuple[str, str]]:
+                         normalize_field_names: bool = False,
+                         ignore_error_line: bool = False) -> list[tuple[str, str]]:
     """Examines exe_output (a dict of {exe_name : [lines]})
        and returns a list of tuples of non-matching xsearch pairs
       ([(exe_name_1, exe_name_2)]
@@ -940,13 +950,15 @@ def non_matching_outputs(exe_output: dict[str, list[str]],
                                  skip_blanks=skip_blanks,
                                  sort_lines=sort_lines,
                                  case_insensitive_cmp=case_insensitive_cmp,
-                                 normalize_field_names=normalize_field_names)
+                                 normalize_field_names=normalize_field_names,
+                                 ignore_error_line=ignore_error_line)
         for y in xs:
             y_lines = lines_for_diff(exe_output[y],
                                      skip_blanks=skip_blanks,
                                      sort_lines=sort_lines,
                                      case_insensitive_cmp=case_insensitive_cmp,
-                                     normalize_field_names=normalize_field_names)
+                                     normalize_field_names=normalize_field_names,
+                                     ignore_error_line=ignore_error_line)
             if x_lines != y_lines:
                 # print("\n{}:\n\"{}\"".format(x, x_output))
                 # print("\n{}:\n\"{}\"".format(y, y_output))

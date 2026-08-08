@@ -1,0 +1,79 @@
+{
+    "ref": {
+        "common_out_dirpatterns": [
+            "node_modules", "pycache", "target", "venv"
+        ],
+        "common_startpaths": ["~/src/xfind/scripts"],
+        "scriptpath": "$XSEARCH_PATH/scripts",
+        "sharedpath": "$XSEARCH_PATH/shared"
+    },
+    "scenarios": [
+        {
+            "group": "sizemodifiers",
+            "name": "minsize with lowercase k modifier",
+            "args": ["--minsize", "1k", "/Users/cary/src/xsearch/scripts"],
+            "common_args": [
+            ]
+        },
+        {
+            "group": "sizemodifiers",
+            "name": "minsize with uppercase K modifier",
+            "args": ["--minsize", "1K", "/Users/cary/src/xsearch/scripts"],
+            "common_args": [
+            ]
+        },
+        {
+            "group": "sizemodifiers",
+            "name": "minsize with lowercase m modifier",
+            "args": ["--minsize", "1m", "/Users/cary/src/xsearch/scripts"],
+            "common_args": [
+            ]
+        },
+        {
+            "group": "sizemodifiers",
+            "name": "minsize with uppercase M modifier",
+            "args": ["--minsize", "1M", "/Users/cary/src/xsearch/scripts"],
+            "common_args": [
+            ]
+        },
+        {
+            "group": "sizemodifiers",
+            "name": "maxsize with valid k modifier",
+            "args": ["--maxsize", "10k", "/Users/cary/src/xsearch/scripts"],
+            "common_args": [
+            ]
+        },
+        {
+            "group": "sizemodifiers",
+            "name": "maxsize with valid M modifier",
+            "args": ["--maxsize", "1M", "/Users/cary/src/xsearch/scripts"],
+            "common_args": [
+            ]
+        },
+        {
+            "group": "sizemodifiers",
+            "name": "maxsize with invalid Z modifier",
+            "args": ["--maxsize", "1Z", "/Users/cary/src/xsearch/scripts"],
+            "replace_exe_name": true,
+            "ignore_error_line": true,
+            "common_args": [
+            ]
+        },
+        {
+            "group": "sizemodifiers",
+            "name": "minsize and maxsize with valid modifiers",
+            "args": ["--minsize", "1k", "--maxsize", "10k", "/Users/cary/src/xsearch/scripts"],
+            "common_args": [
+            ]
+        },
+        {
+            "group": "sizemodifiers",
+            "name": "minsize and maxsize with invalid modifiers",
+            "args": ["--minsize", "1Z", "--maxsize", "10Y", "/Users/cary/src/xsearch/scripts"],
+            "replace_exe_name": true,
+            "ignore_error_line": true,
+            "common_args": [
+            ]
+        }
+    ]
+}
