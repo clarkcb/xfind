@@ -8,7 +8,10 @@ const { ArgToken } = require('./argtoken');
 const { ArgTokenType } = require('./argtokentype');
 const { FindError } = require('./finderror');
 const { FileUtil } = require('./fileutil');
+const { stringToInt } = require('./stringutil');
 const fs = require('fs');
+
+const numModPattern = new RegExp('^\\d+[ckmgtp]$', 'i');
 
 class ArgTokenizer {
   boolMap;
@@ -37,6 +40,51 @@ class ArgTokenizer {
         }
       }
     }
+  }
+
+  tokenizeSizeArg(argName, argValue) {
+    let i = 0;
+    let err = null;
+    let argToken = null;
+    if (argValue.search(numModPattern) > -1) {
+      let num = parseInt(argValue.substring(0, argValue.length - 1), 10);
+      let modifier = argValue.substring(argValue.length - 1).toLowerCase();
+      if (modifier === 'k') {
+        i = num * 1024;
+      } else if (modifier === 'm') {
+        i = num * 1024 * 1024;
+      } else if (modifier === 'g') {
+        i = num * 1024 * 1024 * 1024;
+      } else if (modifier === 't') {
+        i = num * 1024 * 1024 * 1024 * 1024;
+      } else if (modifier === 'p') {
+        i = num * 1024 * 1024 * 1024 * 1024 * 1024;
+      }
+      argToken = new ArgToken(this.intMap[argName], ArgTokenType.Int, i);
+    } else {
+      let i = stringToInt(argValue);
+      if (isNaN(i)) {
+        err = new Error(`Invalid value for option ${argName}: ${argValue}`);
+      } else {
+        argToken = new ArgToken(this.intMap[argName], ArgTokenType.Int, i);
+      }
+    }
+    return { err, argToken };
+  }
+
+  tokenizeIntArg(argName, argValue) {
+    if (['maxsize', 'minsize'].includes(argName)) {
+      return this.tokenizeSizeArg(argName, argValue);
+    }
+    let i = stringToInt(argValue);
+    let err = null;
+    let argToken = null;
+    if (isNaN(i)) {
+      err = new Error(`Invalid value for option ${argName}: ${argValue}`);
+    } else {
+      argToken = new ArgToken(this.intMap[argName], ArgTokenType.Int, i);
+    }
+    return { err, argToken };
   }
 
   tokenizeArgs(args) {
@@ -95,9 +143,12 @@ class ArgTokenizer {
               if (this.strMap[argName]) {
                 argTokens.push(new ArgToken(this.strMap[argName], ArgTokenType.Str, argValue));
               } else if (this.intMap[argName]) {
-                argTokens.push(
-                  new ArgToken(this.intMap[argName], ArgTokenType.Int, parseInt(argValue, 10))
-                );
+                let argToken = null;
+                ({ err, argToken } = this.tokenizeIntArg(argName, argValue));
+                if (err) {
+                  break;
+                }
+                argTokens.push(argToken);
               } else {
                 argTokens.push(new ArgToken('settings-file', ArgTokenType.Str, argValue));
               }
@@ -157,7 +208,9 @@ class ArgTokenizer {
                 new ArgToken(this.intMap[argName], ArgTokenType.Int, argsObj[argName])
               );
             } else {
-              err = new FindError(`Invalid value for option: ${argName}`);
+              let { err, argToken } = this.tokenizeIntArg(argName, argsObj[argName]);
+              if (err) break;
+              argTokens.push(argToken);
             }
           } else if (argName === 'settings-file') {
             argTokens.push(new ArgToken('settings-file', ArgTokenType.Str, argsObj[argName]));
