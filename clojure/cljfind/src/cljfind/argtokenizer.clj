@@ -46,7 +46,9 @@
   (get-arg-type [this arg])
   (get-long-arg [this arg])
   (get-long-arg-for-arg-and-type [this arg arg-type])
-  (get-value-for-string-and-type [this str-val arg-type])
+  (get-size-value [this arg-name str-val])
+  (get-long-value [this arg-name str-val])
+  (get-value-for-string-and-type [this arg-name str-val arg-type])
   (tokenize-args [this args] [this args tokens errs])
   (tokenize-arg-map [this arg-map] [this arg-map arg-keys tokens errs])
   (tokenize-json [this json-str])
@@ -76,15 +78,35 @@
   (get-long-arg [this arg]
     (get-long-arg-for-arg-and-type this arg (get-arg-type this arg)))
 
-  (get-value-for-string-and-type [this str-val arg-type]
+  (get-size-value [this arg-name str-val]
+    (let [num-modifier (re-find #"(?i)^(\d+)([ckmgtp])$" str-val)]
+      (if (nil? num-modifier)
+        [str-val (str "Invalid value for option " arg-name ": " str-val)]
+        (let [[_ num modifier] num-modifier
+              lng (Long/parseLong num)
+              multiplier (case (.toLowerCase modifier)
+                           "c" 1
+                           "k" 1024
+                           "m" (* 1024 1024)
+                           "g" (* 1024 1024 1024)
+                           "t" (* 1024 1024 1024 1024)
+                           "p" (* 1024 1024 1024 1024 1024)
+                           1)]
+          [(* lng multiplier) nil]))))
+
+  (get-long-value [this arg-name str-val]
+    (try [(Long/parseLong str-val) nil]
+      (catch Exception e
+        (get-size-value this arg-name str-val))))
+
+  (get-value-for-string-and-type [this arg-name str-val arg-type]
     (case arg-type
       :bool [(Boolean/parseBoolean str-val) nil]
       :string [str-val nil]
       :int (try [(Integer/parseInt str-val) nil]
-             (catch Exception e [str-val "Invalid integer value"]))
-      :long (try [(Long/parseLong str-val) nil]
-              (catch Exception e [str-val "Invalid long value"]))
-      [str-val "Unknown argument type"]))
+             (catch Exception e [str-val (str "Invalid value for option " arg-name ": " str-val)]))
+      :long (get-long-value this arg-name str-val)
+      [str-val (str "Unknown argument type for option " arg-name)]))
 
   (tokenize-args [this args]
     (tokenize-args this args [] []))
@@ -102,7 +124,8 @@
             (if (= :unknown arg-type)
               (tokenize-args this [] tokens [(str "Invalid option: " arg-name)])
               (let [long-name (get-long-arg-for-arg-and-type this arg-name arg-type)
-                    [value verr] (get-value-for-string-and-type this (nth matches 2) arg-type)]
+                    str-val (nth matches 2)
+                    [value verr] (get-value-for-string-and-type this arg-name str-val arg-type)]
                 (if (nil? verr)
                   (tokenize-args this (rest args) (conj tokens (->ArgToken long-name arg-type value)) [])
                   (tokenize-args this [] tokens [verr])))))
@@ -111,14 +134,14 @@
           (let [arg-name (second matches)
                 arg-type (get-arg-type this arg-name)]
             (if (= :unknown arg-type)
-              (tokenize-args this [] tokens [(str "Invalid option: " name)])
+              (tokenize-args this [] tokens [(str "Invalid option: " arg-name)])
               (let [long-name (get-long-arg-for-arg-and-type this arg-name arg-type)]
                 (if (= arg-type :bool)
                   (tokenize-args this (rest args) (conj tokens (->ArgToken long-name arg-type true)) [])
                   (if (empty? (rest args))
                     (tokenize-args this [] tokens [(str "Missing arg for option " arg-name)])
                     (let [next-arg (second args)
-                          [value verr] (get-value-for-string-and-type this next-arg arg-type)]
+                          [value verr] (get-value-for-string-and-type this arg-name next-arg arg-type)]
                       (if (nil? verr)
                         (tokenize-args this (drop 2 args) (conj tokens (->ArgToken long-name arg-type value)) [])
                         (tokenize-args this [] tokens [verr]))))))))
@@ -155,7 +178,7 @@
           :bool
           (if (boolean? v)
             (tokenize-arg-map this arg-map (rest arg-keys) (conj tokens (->ArgToken k :bool v)) errs)
-            (tokenize-arg-map this arg-map [] tokens [(str "Invalid value for option: " (name k))]))
+            (tokenize-arg-map this arg-map [] tokens [(str "Invalid value for option " (name k) ": " v)]))
 
           :string
           (if (string? v)
@@ -164,17 +187,17 @@
               (if (empty? v)
                 (tokenize-arg-map this arg-map (rest arg-keys) tokens errs)
                 (tokenize-arg-map this (assoc arg-map k (rest v)) arg-keys (conj tokens (->ArgToken k :string (first v))) errs))
-              (tokenize-arg-map this arg-map [] tokens [(str "Invalid value for option: " (name k))])))
+              (tokenize-arg-map this arg-map [] tokens [(str "Invalid value for option " (name k) ": " v)])))
 
           :int
           (if (int? v)
             (tokenize-arg-map this arg-map (rest arg-keys) (conj tokens (->ArgToken k :int v)) errs)
-            (tokenize-arg-map this arg-map [] tokens [(str "Invalid value for option: " (name k))]))
+            (tokenize-arg-map this arg-map [] tokens [(str "Invalid value for option " (name k) ": " v)]))
 
           :long
           (if (integer? v)
             (tokenize-arg-map this arg-map (rest arg-keys) (conj tokens (->ArgToken k :long v)) errs)
-            (tokenize-arg-map this arg-map [] tokens [(str "Invalid value for option: " (name k))]))
+            (tokenize-arg-map this arg-map [] tokens [(str "Invalid value for option " (name k) ": " v)]))
 
           ;; :unknown
           (tokenize-arg-map this arg-map [] tokens [(str "Invalid option: " (name k))])))))
