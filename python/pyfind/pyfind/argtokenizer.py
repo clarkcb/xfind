@@ -10,6 +10,7 @@
 """
 import json
 import os
+import re
 from collections import deque
 from enum import Enum
 from typing import Any
@@ -43,9 +44,11 @@ class ArgTokenizer:
     """class to tokenize args in various formats into tokens"""
 
     __slots__ = [
-        'bool_dict', 'date_dict', 'int_dict', 'str_dict'
+        '_num_modifier', 'bool_dict', 'date_dict', 'int_dict', 'str_dict'
     ]
     def __init__(self, options: list[Option]):
+        self._num_modifier = re.compile(r'^\d+[ckmgtp]$', re.IGNORECASE)
+
         self.bool_dict: dict[str, str] = {}
         self.date_dict: dict[str, str] = {}
         self.int_dict: dict[str, str] = {}
@@ -67,6 +70,43 @@ class ArgTokenizer:
                 self.date_dict[option.long_arg] = option.long_arg
                 if option.short_arg:
                     self.date_dict[option.short_arg] = option.long_arg
+
+    def tokenize_size_arg(self, arg_name: str, arg_val: str) -> ArgToken:
+        """Tokenize a size arg, which will be an int with an optional size modifier: ckmgtp"""
+        i = 0
+        try:
+            i = int(arg_val)
+        except ValueError:
+            if self._num_modifier.match(arg_val):
+                modifier = arg_val[-1].lower()
+                i = int(arg_val[:-1])
+                # 'c' is the default, == bytes
+                if modifier == 'k':
+                    i *= 1024
+                elif modifier == 'm':
+                    i *= 1024 * 1024
+                elif modifier == 'g':
+                    i *= 1024 * 1024 * 1024
+                elif modifier == 't':
+                    i *= 1024 * 1024 * 1024 * 1024
+                elif modifier == 'p':
+                    i *= 1024 * 1024 * 1024 * 1024 * 1024
+            else:
+                err = f'Invalid value for option {arg_name}: {arg_val}'
+                raise FindException(err)
+        return ArgToken(arg_name, ArgTokenType.INT, i)
+
+    def tokenize_int_arg(self, arg_name: str, arg_val: str) -> ArgToken:
+        """Tokenize an int arg"""
+        if arg_name in ('maxsize', 'minsize'):
+            return self.tokenize_size_arg(arg_name, arg_val)
+        i = 0
+        try:
+            i = int(arg_val)
+        except ValueError:
+            err = f'Invalid value for option {arg_name}: {arg_val}'
+            raise FindException(err)
+        return ArgToken(arg_name, ArgTokenType.INT, i)
 
     def tokenize_args(self, args: list[str]) -> list[ArgToken]:
         """Tokenize list of args"""
@@ -115,16 +155,7 @@ class ArgTokenizer:
                             if arg_name in self.str_dict:
                                 arg_tokens.append(ArgToken(arg_name, ArgTokenType.STR, arg_val))
                             elif arg_name in self.int_dict:
-                                invalid_int = False
-                                i = 0
-                                try:
-                                    i = int(arg_val)
-                                except ValueError:
-                                    invalid_int = True
-                                if invalid_int:
-                                    err = f'Invalid value for option {used_name}: {arg_val}'
-                                    raise FindException(err)
-                                arg_tokens.append(ArgToken(arg_name, ArgTokenType.INT, i))
+                                arg_tokens.append(self.tokenize_int_arg(arg_name, arg_val))
                             elif arg_name in self.date_dict:
                                 arg_tokens.append(ArgToken(arg_name, ArgTokenType.DATE, parse_datetime_str(arg_val)))
                             elif arg_name == 'settings-file':
@@ -148,7 +179,7 @@ class ArgTokenizer:
                 if val is True or val is False:
                     arg_tokens.append(ArgToken(self.bool_dict[key], ArgTokenType.BOOL, val))
                 else:
-                    raise FindException(f'Invalid value for option: {key}')
+                    raise FindException(f'Invalid value for option {key}: {val}')
             elif key in self.str_dict:
                 if type(val) == str:
                     arg_tokens.append(ArgToken(self.str_dict[key], ArgTokenType.STR, val))
@@ -157,19 +188,19 @@ class ArgTokenizer:
                         if type(item) == str:
                             arg_tokens.append(ArgToken(self.str_dict[key], ArgTokenType.STR, item))
                         else:
-                            raise FindException(f'Invalid value for option: {key}')
+                            raise FindException(f'Invalid value for option {key}: {item}')
                 else:
-                    raise FindException(f'Invalid value for option: {key}')
+                    raise FindException(f'Invalid value for option {key}: {val}')
             elif key in self.int_dict:
                 if type(val) == int:
                     arg_tokens.append(ArgToken(self.int_dict[key], ArgTokenType.INT, val))
                 else:
-                    raise FindException(f'Invalid value for option: {key}')
+                    arg_tokens.append(self.tokenize_int_arg(key, val))
             elif key in self.date_dict:
                 if type(val) == str:
                     arg_tokens.append(ArgToken(self.date_dict[key], ArgTokenType.DATE, parse_datetime_str(val)))
                 else:
-                    raise FindException(f'Invalid value for option: {key}')
+                    raise FindException(f'Invalid value for option {key}: {val}')
             else:
                 raise FindException(f'Invalid option: {key}')
         return arg_tokens
