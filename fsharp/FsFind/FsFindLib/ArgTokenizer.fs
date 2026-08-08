@@ -12,6 +12,7 @@ type ArgTokenType =
     | Bool = 1
     | Str = 2
     | Int = 3
+    | Long = 4
 
 type ArgToken = {
     Name : string;
@@ -28,10 +29,13 @@ type Option = {
 
 type ArgTokenizer (options: Option list) =
 
+    let NumModifierPattern = Regex("^([0-9]+)([ckmgtp])$", RegexOptions.Compiled ||| RegexOptions.IgnoreCase)
+
     let MapsFromOptions (options : Option list) =
         let boolDict = Dictionary<string, string>()
         let strDict = Dictionary<string, string>()
         let intDict = Dictionary<string, string>()
+        let longDict = Dictionary<string, string>()
         for o in options do
             if o.ArgType = ArgTokenType.Bool then
                 boolDict.Add(o.LongArg, o.LongArg)
@@ -45,9 +49,16 @@ type ArgTokenizer (options: Option list) =
                 intDict.Add(o.LongArg, o.LongArg)
                 if o.ShortArg <> "" then
                     intDict.Add(o.ShortArg, o.LongArg)
-        (boolDict, strDict, intDict)
+            elif o.ArgType = ArgTokenType.Long then
+                longDict.Add(o.LongArg, o.LongArg)
+                if o.ShortArg <> "" then
+                    longDict.Add(o.ShortArg, o.LongArg)
+        (boolDict, strDict, intDict, longDict)
 
-    let boolMap, strMap, intMap = MapsFromOptions(options)
+    let boolMap,
+        strMap,
+        intMap,
+        longMap = MapsFromOptions(options)
 
     let longArgWithValRegex = Regex("^--([a-zA-Z0-9-]+)=(.*)$")
     let longArgWithoutValRegex = Regex("^--([a-zA-Z0-9-]+)$")
@@ -57,6 +68,34 @@ type ArgTokenizer (options: Option list) =
     let (|RegexMatch|_|) (regex:Regex) (arg:string) =            
         let m = regex.Match(arg)
         if m.Success then Some(m) else None
+
+    member this.TokenizeSizeArg (argName : string) (argVal : string) : Result<ArgToken, string> =
+        match Int64.TryParse argVal with
+        | true, longVal -> Ok { Name=argName; Type=ArgTokenType.Long; Value=longVal }
+        | false, _      ->
+            if NumModifierPattern.IsMatch(argVal) then
+                let lng = int64 (argVal.Substring(0, argVal.Length - 1))
+                let modifier = argVal.Substring(argVal.Length - 1).ToLowerInvariant()
+                let multiplier =
+                    match modifier with
+                    | "k" -> 1024L
+                    | "m" -> 1024L * 1024L
+                    | "g" -> 1024L * 1024L * 1024L
+                    | "t" -> 1024L * 1024L * 1024L * 1024L
+                    | "p" -> 1024L * 1024L * 1024L * 1024L * 1024L
+                    | _         -> 1L
+                Ok { Name=argName; Type=ArgTokenType.Long; Value=lng * multiplier }
+            else
+                Error $"Invalid value for option %s{argName}: %s{argVal}"
+            
+
+    member this.TokenizeLongArg (argName : string) (argVal : string) : Result<ArgToken, string> =
+        if argName = "maxsize" || argName = "minsize" then
+            this.TokenizeSizeArg argName argVal
+        else
+            match Int64.TryParse argVal with
+            | true, longVal -> Ok { Name=argName; Type=ArgTokenType.Long; Value=longVal }
+            | false, _      -> Error $"Invalid value for option %s{argName}: %s{argVal}"
 
     member this.TokenizeArgs (args : string[]) : Result<ArgToken list, string> =
         let rec recTokenizeArgs (argList : string list) (argTokens : ArgToken list) : Result<ArgToken list, string> =
@@ -75,15 +114,19 @@ type ArgTokenizer (options: Option list) =
                             recTokenizeArgs [] [{ Name="help"; Type=ArgTokenType.Bool; Value=true }]
                         else
                             recTokenizeArgs tail (List.append argTokens [{ Name=longArg; Type=ArgTokenType.Bool; Value=true }])
-                    elif strMap.ContainsKey(longArg) || intMap.ContainsKey(longArg) || longArg.Equals("settings-file") then
+                    elif strMap.ContainsKey(longArg) || intMap.ContainsKey(longArg) || longMap.ContainsKey(longArg) || longArg.Equals("settings-file") then
                         match tail with
                         | [] ->
-                            Error $"Missing value for option: %s{longArg}"
+                            Error $"Missing value for option {longArg}"
                         | aHead :: aTail ->
                             if strMap.ContainsKey(longArg) then
                                 recTokenizeArgs aTail (List.append argTokens [{ Name=longArg; Type=ArgTokenType.Str; Value=aHead }])
                             elif intMap.ContainsKey(longArg) then
                                 recTokenizeArgs aTail (List.append argTokens [{ Name=longArg; Type=ArgTokenType.Int; Value=(int aHead) }])
+                            elif longMap.ContainsKey(longArg) then
+                                match this.TokenizeLongArg longArg aHead with
+                                | Ok lngToken -> recTokenizeArgs aTail (List.append argTokens [lngToken])
+                                | Error e -> Error e
                             else
                                 match this.TokenizeFile aHead with
                                 | Ok settingsFileTokens -> recTokenizeArgs aTail (List.append argTokens settingsFileTokens)
@@ -105,6 +148,9 @@ type ArgTokenizer (options: Option list) =
                     elif intMap.ContainsKey(shortArg) then
                         let longArg = intMap[shortArg]
                         recTokenizeArgs (List.append ["--" + longArg] tail) argTokens
+                    elif longMap.ContainsKey(shortArg) then
+                        let longArg = longMap[shortArg]
+                        recTokenizeArgs (List.append ["--" + longArg] tail) argTokens
                     else
                         Error $"Invalid option: %s{shortArg}"
                 | _ ->
@@ -118,7 +164,7 @@ type ArgTokenizer (options: Option list) =
         elif jsonElem.ValueKind = JsonValueKind.String then
             let s = jsonElem.GetString()
             if s = null then
-                Error $"Invalid value for option: {name}"
+                Error $"Invalid value for option {name}: {jsonElem}"
             elif s = "settings-file" then
                 this.TokenizeFile s
             else
@@ -131,18 +177,18 @@ type ArgTokenizer (options: Option list) =
                     if elem.ValueKind = JsonValueKind.String then
                         let s = elem.GetString()
                         if s = null then
-                            Error $"Invalid value for option: {name}"
+                            Error $"Invalid value for option {name}: {elem}"
                         // TODO: add settings-file handling here
                         else
                             recTokenizeJsonElems tail (List.append argTokens [{ Name=name; Type=ArgTokenType.Str; Value=s }])
                     else
-                        Error $"Invalid value for option: {name}"
+                        Error $"Invalid value for option {name}: {elem}"
             let elems = jsonElem.EnumerateArray() |> List.ofSeq
             recTokenizeJsonElems elems []
         elif jsonElem.ValueKind = JsonValueKind.Number then
             let i = jsonElem.GetInt32()
             Ok [{ Name=name; Type=ArgTokenType.Int; Value=i }]
-        else Error $"Invalid value for option: {name}"
+        else Error $"Invalid value for option {name}: {jsonElem}"
 
     member this.TokenizeDictionary (dictionary : Dictionary<string, obj>) : Result<ArgToken list, string> =
         let rec recTokenizeDictionary (keys : string list) (dict : Dictionary<string, obj>) (argTokens : ArgToken list) : Result<ArgToken list, string> =
@@ -173,7 +219,9 @@ type ArgTokenizer (options: Option list) =
                         recTokenizeDictionary tail dict (List.append argTokens newTokens)
                 | :? int as i ->
                     recTokenizeDictionary tail dict (List.append argTokens [{ Name=k; Type=ArgTokenType.Int; Value=i }])
-                | _ -> Error $"Invalid value for option: {k}"
+                | :? int64 as lng ->
+                    recTokenizeDictionary tail dict (List.append argTokens [{ Name=k; Type=ArgTokenType.Long; Value=lng }])
+                | _ -> Error $"Invalid value for option {k}: {dict[k]}"
 
         // keys are sorted so that output is consistent across all versions
         let keys = dictionary.Keys |> List.ofSeq |> List.sort

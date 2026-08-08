@@ -62,9 +62,13 @@ module FindOptions =
     let intActionMap : Map<string, int -> FindSettings -> Unit> =
         [
             ("maxdepth", (fun (i : int) (settings : FindSettings) -> settings.MaxDepth <- i));
-            ("maxsize", (fun (i : int) (settings : FindSettings) -> settings.MaxSize <- i));
             ("mindepth", (fun (i : int) (settings : FindSettings) -> settings.MinDepth <- i));
-            ("minsize", (fun (i : int) (settings : FindSettings) -> settings.MinSize <- i));
+        ] |> Map.ofList
+
+    let longActionMap : Map<string, int64 -> FindSettings -> Unit> =
+        [
+            ("maxsize", (fun (i : int64) (settings : FindSettings) -> settings.MaxSize <- i));
+            ("minsize", (fun (i : int64) (settings : FindSettings) -> settings.MinSize <- i));
         ] |> Map.ofList
 
     type FindOptionsDictionary = Dictionary<string, List<Dictionary<string,string>>>
@@ -80,6 +84,7 @@ module FindOptions =
                 if boolActionMap.ContainsKey(longArg) then ArgTokenType.Bool
                 elif stringActionMap.ContainsKey(longArg) then ArgTokenType.Str
                 elif intActionMap.ContainsKey(longArg) then ArgTokenType.Int
+                elif longActionMap.ContainsKey(longArg) then ArgTokenType.Long
                 else ArgTokenType.Unknown
             yield { ShortArg=shortArg; LongArg=longArg; Description=desc; ArgType=argType } ]
 
@@ -129,6 +134,15 @@ module FindOptions =
                 match argToken.Value with
                 | :? int as i ->
                     intActionMap[argToken.Name] i settings
+                    Ok settings
+                | _ -> Error $"Invalid value for option: {argToken.Name}"
+            else
+                Error $"Invalid value for option: {argToken.Name}"
+        elif argToken.Type = ArgTokenType.Long then
+            if longActionMap.ContainsKey(argToken.Name) then
+                match argToken.Value with
+                | :? int64 as l ->
+                    longActionMap[argToken.Name] l settings
                     Ok settings
                 | _ -> Error $"Invalid value for option: {argToken.Name}"
             else
