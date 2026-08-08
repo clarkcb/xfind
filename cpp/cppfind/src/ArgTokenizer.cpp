@@ -35,6 +35,53 @@ namespace cppfind {
         }
     }
 
+    ArgToken ArgTokenizer::tokenize_long_arg(const std::string& arg_name, const std::string& arg_val) const {
+        long long_val = 0L;
+        long multiplier = 0L;
+        bool invalid = false;
+
+        try {
+            size_t last_char_index = 0;
+
+            // Attempt conversion (using default base 10)
+            long_val = std::stol(arg_val, &last_char_index);
+
+            // Check if there is a multiplier suffix
+            if (last_char_index < arg_val.size()) {
+                if (last_char_index == arg_val.size() - 1) {
+                    switch (std::tolower(static_cast<unsigned char>(arg_val[last_char_index]))) {
+                        case 'c': multiplier = 1L; break;
+                        case 'k': multiplier = 1024L; break;
+                        case 'm': multiplier = 1024L * 1024; break;
+                        case 'g': multiplier = 1024L * 1024 * 1024; break;
+                        case 't': multiplier = 1024L * 1024 * 1024 * 1024; break;
+                        case 'p': multiplier = 1024L * 1024 * 1024 * 1024 * 1024; break;
+                        default:
+                            invalid = true;
+                    }
+                } else {
+                    invalid = true;
+                }
+            } else {
+                multiplier = 1L;
+            }
+
+        } catch (const std::invalid_argument& e) {
+            // Thrown if no numeric conversion could be performed
+            invalid = true;
+
+        } catch (const std::out_of_range& e) {
+            // Thrown if the parsed value is too large or small for a long int
+            invalid = true;
+        }
+
+        if (invalid) {
+            throw FindException("Invalid value for option " + arg_name + ": " + arg_val);
+        }
+
+        return {arg_name, ARG_TOKEN_TYPE_LONG, long_val * multiplier};
+    }
+
     std::vector<ArgToken> ArgTokenizer::tokenize_args(int argc, char **argv) const {
         std::vector<ArgToken> arg_tokens{};
         std::deque<std::string> arg_deque;
@@ -109,9 +156,9 @@ namespace cppfind {
                             const int int_val = std::stoi(next_val);
                             arg_tokens.emplace_back(long_arg, ARG_TOKEN_TYPE_INT, int_val);
                         } else if (m_long_map.contains(next_arg)) {
-                            std::string long_arg = m_long_map.at(next_arg);
-                            const long long_val = std::stol(next_val);
-                            arg_tokens.emplace_back(long_arg, ARG_TOKEN_TYPE_LONG, long_val);
+                            const std::string long_arg = m_long_map.at(next_arg);
+                            auto long_token = tokenize_long_arg(long_arg, next_val);
+                            arg_tokens.push_back(long_token);
                         } else {
                             std::string msg{"Invalid option: "};
                             msg.append(next_arg);
