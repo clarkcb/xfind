@@ -99,7 +99,7 @@ public class Finder
 
 	private static bool MatchesAnyPattern(string s, ISet<Regex> patterns)
 	{
-		return patterns.Any(p => p.Matches(s).Count > 0);
+		return patterns.Any(p => p.Count(s) > 0);
 	}
 
 	private static bool AnyMatchesAnyPattern(IEnumerable<string> slist, ISet<Regex> patterns)

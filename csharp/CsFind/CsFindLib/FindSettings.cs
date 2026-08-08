@@ -51,10 +51,10 @@ public class FindSettings
 	public bool IncludeHidden { get; set; }
 	public int MaxDepth { get; set; }
 	public DateTime? MaxLastMod { get; set; }
-	public int MaxSize { get; set; }
+	public long MaxSize { get; set; }
 	public int MinDepth { get; set; }
 	public DateTime? MinLastMod { get; set; }
-	public int MinSize { get; set; }
+	public long MinSize { get; set; }
 	public ISet<string> OutArchiveExtensions { get; private set; }
 	public ISet<Regex> OutArchiveFilePatterns { get; private set; }
 	public ISet<Regex> OutDirPatterns { get; private set; }
@@ -92,10 +92,10 @@ public class FindSettings
 		IncludeHidden = false;
 		MaxDepth = -1;
 		MaxLastMod = null;
-		MaxSize = 0;
+		MaxSize = 0L;
 		MinDepth = -1;
 		MinLastMod = null;
-		MinSize = 0;
+		MinSize = 0L;
 		OutArchiveExtensions = new HashSet<string>();
 		OutArchiveFilePatterns = new HashSet<Regex>();
 		OutDirPatterns = new HashSet<Regex>();

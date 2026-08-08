@@ -73,9 +73,14 @@ public class FindOptions
 		new()
 		{
 			{ "maxdepth", (i, settings) => settings.MaxDepth = i },
-			{ "maxsize", (i, settings) => settings.MaxSize = i },
 			{ "mindepth", (i, settings) => settings.MinDepth = i },
-			{ "minsize", (i, settings) => settings.MinSize = i },
+		};
+
+	private static readonly Dictionary<string, Action<long, FindSettings>> LongActionDictionary =
+		new()
+		{
+			{ "maxsize", (lng, settings) => settings.MaxSize = lng },
+			{ "minsize", (lng, settings) => settings.MinSize = lng },
 		};
 
 	public List<IOption> Options { get; }
@@ -120,6 +125,10 @@ public class FindOptions
 			else if (IntActionDictionary.ContainsKey(longArg))
 			{
 				argType = ArgTokenType.Int;
+			}
+			else if (LongActionDictionary.ContainsKey(longArg))
+			{
+				argType = ArgTokenType.Long;
 			}
 			else
 			{
@@ -242,6 +251,24 @@ public class FindOptions
 				else if (argToken.Value is JsonElement { ValueKind: JsonValueKind.Number } jsonElem)
 				{
 					intAction(jsonElem.GetInt32(), settings);
+				}
+				else
+				{
+					throw new FindException($"Invalid value for option: {argToken.Name}");
+				}
+			}
+		}
+		else if (argToken.Type == ArgTokenType.Long)
+		{
+			if (LongActionDictionary.TryGetValue(argToken.Name, out var longAction))
+			{
+				if (argToken.Value is long l)
+				{
+					longAction(l, settings);
+				}
+				else if (argToken.Value is JsonElement { ValueKind: JsonValueKind.Number } jsonElem)
+				{
+					longAction(jsonElem.GetInt64(), settings);
 				}
 				else
 				{

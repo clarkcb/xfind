@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace CsFindLib;
 
@@ -12,6 +13,10 @@ public class ArgTokenizer
     private Dictionary<string, string> BoolDictionary { get; } =  new();
     private Dictionary<string, string> StringDictionary { get; } = new();
     private Dictionary<string, string> IntDictionary { get; }  = new();
+    private Dictionary<string, string> LongDictionary { get; }  = new();
+    
+    private static readonly Regex NumModifierPattern = new(@"^\d+[ckmgtp]$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
 
     public ArgTokenizer(List<IOption> options)
     {
@@ -41,7 +46,69 @@ public class ArgTokenizer
 				    IntDictionary[option.ShortArg] = option.LongArg;
 			    }
 		    }
+		    else if (option.ArgType == ArgTokenType.Long)
+		    {
+			    LongDictionary[option.LongArg] = option.LongArg;
+			    if (option.ShortArg != null)
+			    {
+				    LongDictionary[option.ShortArg] = option.LongArg;
+			    }
+		    }
 	    }
+    }
+
+    public ArgToken TokenizeSizeArg(string argName, string argVal)
+    {
+	    long lng;
+	    try
+	    {
+		    lng = long.Parse(argVal);
+	    }
+	    catch (FormatException)
+	    {
+		    if (NumModifierPattern.IsMatch(argVal))
+		    {
+			    lng = argVal[..^1] switch
+			    {
+				    var s when int.TryParse(s, out var num) => num,
+				    _ => throw new FindException($"Invalid value for option {argName}: {argVal}")
+			    };
+			    var modifier = argVal.ToLowerInvariant()[^1];
+			    lng *= modifier switch
+			    {
+				    'c' => 1,
+				    'k' => 1024,
+				    'm' => 1024 * 1024,
+				    'g' => 1024 * 1024 * 1024,
+				    't' => 1024L * 1024 * 1024 * 1024,
+				    'p' => 1024L * 1024 * 1024 * 1024 * 1024,
+				    _ => throw new FindException($"Invalid value for option {argName}: {argVal}")
+			    };
+		    }
+		    else
+		    {
+			    throw new FindException($"Invalid value for option {argName}: {argVal}");
+		    }
+	    }
+	    return new ArgToken(argName, ArgTokenType.Long, lng);
+    }
+
+    public ArgToken TokenizeLongArg(string argName, string argVal)
+    {
+	    if (argName is "maxsize" or "minsize")
+	    {
+		    return TokenizeSizeArg(argName, argVal);
+	    }
+	    long lng;
+	    try
+	    {
+		    lng = long.Parse(argVal);
+	    }
+	    catch (FormatException)
+	    {
+		    throw new FindException($"Invalid value for option {argName}: {argVal}");
+	    }
+	    return new ArgToken(argName, ArgTokenType.Long, lng);
     }
     
     public List<ArgToken> TokenizeArgs(IEnumerable<string> args)
@@ -92,6 +159,10 @@ public class ArgTokenizer
 						{
 							argNames.Add(intArg);
 						}
+						else if (LongDictionary.TryGetValue(c.ToString(), out var longArg))
+						{
+							argNames.Add(longArg);
+						}
 						else
 						{
 							throw new FindException($"Invalid option: {c}");
@@ -106,8 +177,9 @@ public class ArgTokenizer
 						argTokens.Add(new ArgToken(argName, ArgTokenType.Bool, true));
 					}
 					else if (StringDictionary.ContainsKey(argName)
-					         || IntDictionary.ContainsKey(argName) ||
-					         argName.Equals("settings-file"))
+					         || IntDictionary.ContainsKey(argName)
+					         || LongDictionary.ContainsKey(argName)
+					         || argName.Equals("settings-file"))
 					{
 						try
 						{
@@ -119,6 +191,10 @@ public class ArgTokenizer
 							else if (IntDictionary.ContainsKey(argName))
 							{
 								argTokens.Add(new ArgToken(argName, ArgTokenType.Int, int.Parse(argVal)));
+							}
+							else if (LongDictionary.ContainsKey(argName))
+							{
+								argTokens.Add(TokenizeLongArg(argName, argVal));
 							}
 							else
 							{
@@ -165,7 +241,7 @@ public class ArgTokenizer
 				}
 				else
 				{
-					throw new FindException($"Invalid value for option: {key}");
+					throw new FindException($"Invalid value for option {key}: {val}");
 				}
 			}
 			else if (StringDictionary.ContainsKey(key))
@@ -190,7 +266,7 @@ public class ArgTokenizer
 					}
 					else
 					{
-						throw new FindException($"Invalid value for option: {key}");
+						throw new FindException($"Invalid value for option {key}: {val}");
 					}
 				}
 				else if (val is JsonElement { ValueKind: JsonValueKind.Array }  jsonArr)
@@ -206,14 +282,14 @@ public class ArgTokenizer
 							}
 							else
 							{
-								throw new FindException($"Invalid value for option: {key}");
+								throw new FindException($"Invalid value for option {key}: {val}");
 							}
 						}
 					}
 				}
 				else
 				{
-					throw new FindException($"Invalid value for option: {key}");
+					throw new FindException($"Invalid value for option {key}: {val}");
 				}
 			}
 			else if (IntDictionary.ContainsKey(key))
@@ -228,7 +304,22 @@ public class ArgTokenizer
 				}
 				else
 				{
-					throw new FindException($"Invalid value for option: {key}");
+					throw new FindException($"Invalid value for option {key}: {val}");
+				}
+			}
+			else if (LongDictionary.ContainsKey(key))
+			{
+				if (val is long lng)
+				{
+					argTokens.Add(new ArgToken(key, ArgTokenType.Long, lng));
+				}
+				else if (val is JsonElement { ValueKind: JsonValueKind.Number } jsonNum)
+				{
+					argTokens.Add(new ArgToken(key, ArgTokenType.Long, jsonNum.GetInt64()));
+				}
+				else
+				{
+					throw new FindException($"Invalid value for option {key}: {val}");
 				}
 			}
 			else
