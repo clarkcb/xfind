@@ -555,6 +555,7 @@ enum ArgTokenType {
     Bool
     Str
     Int
+    Long
 }
 
 class ArgToken {
@@ -581,11 +582,13 @@ class ArgTokenizer {
     [system.collections.hashtable]$BoolMap
     [system.collections.hashtable]$StrMap
     [system.collections.hashtable]$IntMap
+    [system.collections.hashtable]$LongMap
 
     ArgTokenizer([Option[]]$options) {
         $this.BoolMap = [system.collections.hashtable]::new()
         $this.StrMap = [system.collections.hashtable]::new()
         $this.IntMap = [system.collections.hashtable]::new()
+        $this.LongMap = [system.collections.hashtable]::new()
         foreach ($opt in $options) {
             if ($opt.ArgType -eq [ArgTokenType]::Bool) {
                 $this.BoolMap[$opt.LongArg] = $opt.LongArg
@@ -602,7 +605,50 @@ class ArgTokenizer {
                 if ($opt.ShortArg -ne '') {
                     $this.IntMap[$opt.ShortArg] = $opt.LongArg
                 }
+            } elseif ($opt.ArgType -eq [ArgTokenType]::Long) {
+                $this.LongMap[$opt.LongArg] = $opt.LongArg
+                if ($opt.ShortArg -ne '') {
+                    $this.LongMap[$opt.ShortArg] = $opt.LongArg
+                }
             }
+        }
+    }
+
+    [ArgToken]TokenizeSizeArg([string]$argName, [string]$argVal) {
+        $lng = 0
+        if ([int64]::TryParse($argVal, [ref]$lng)) {
+            return [ArgToken]::new($argName, [ArgTokenType]::Long, $lng)
+        } else {
+            if ($argVal -match "^\d+[ckmgtp]$") {
+                $lng = [int64]$argVal.Substring(0, $argVal.Length - 1)
+                $modifier = $argVal.Substring($argVal.Length - 1, 1).ToLowerInvariant()
+                $multiplier = 1
+                if ($modifier -eq 'k') {
+                    $multiplier = 1024
+                } elseif ($modifier -eq 'm') {
+                    $multiplier = 1024 * 1024
+                } elseif ($modifier -eq 'g') {
+                    $multiplier = 1024 * 1024 * 1024
+                } elseif ($modifier -eq 't') {
+                    $multiplier = 1024 * 1024 * 1024 * 1024
+                } elseif ($modifier -eq 'p') {
+                    $multiplier = 1024 * 1024 * 1024 * 1024 * 1024
+                }
+                return [ArgToken]::new($argName, [ArgTokenType]::Long, $lng * $multiplier)
+            }
+            throw "Invalid value for option ${argName}: $argVal"
+        }
+    }
+
+    [ArgToken]TokenizeLongArg([string]$argName, [string]$argVal) {
+        if ($argName -eq 'maxsize' -or $argName -eq 'minsize') {
+            return $this.TokenizeSizeArg($argName, $argVal)
+        }
+        $lng = 0
+        if ([int64]::TryParse($argVal, [ref]$lng)) {
+            return [ArgToken]::new($argName, [ArgTokenType]::Long, $lng)
+        } else {
+            throw "Invalid value for option ${argName}: $argVal"
         }
     }
 
@@ -638,6 +684,8 @@ class ArgTokenizer {
                             $argNames += $this.StrMap[$c]
                         } elseif ($this.IntMap.ContainsKey($c)) {
                             $argNames += $this.IntMap[$c]
+                        } elseif ($this.LongMap.ContainsKey($c)) {
+                            $argNames += $this.LongMap[$c]
                         }
                     }
                 }
@@ -660,6 +708,8 @@ class ArgTokenizer {
                             $argTokens += [ArgToken]::new($argName, [ArgTokenType]::Str, $argVal)
                         } elseif ($this.IntMap.ContainsKey($argName)) {
                             $argTokens += [ArgToken]::new($argName, [ArgTokenType]::Int, [int]$argVal)
+                        } elseif ($this.LongMap.ContainsKey($argName)) {
+                            $argTokens += $this.TokenizeLongArg($argName, $argVal)
                         } else {
                             throw "Invalid option: $arg"
                         }
@@ -683,7 +733,7 @@ class ArgTokenizer {
                 if ($value -is [bool]) {
                     $argTokens += [ArgToken]::new($key, [ArgTokenType]::Bool, $value)
                 } else {
-                    throw "Invalid value for option: " + $key
+                    throw "Invalid value for option ${key}: $value"
                 }
             } elseif ($this.StrMap.ContainsKey($key)) {
                 if ($value -is [string])
@@ -694,13 +744,21 @@ class ArgTokenizer {
                         $argTokens += [ArgToken]::new($key, [ArgTokenType]::Str, $val)
                     }
                 } else {
-                    throw "Invalid value for option: " + $key
+                    throw "Invalid value for option ${key}: $value"
                 }
             } elseif ($this.IntMap.ContainsKey($key)) {
                 if ($value -is [int] -or $value -is [int64]) {
                     $argTokens += [ArgToken]::new($key, [ArgTokenType]::Int, $value)
                 } else {
-                    throw "Invalid value for option: " + $key
+                    throw "Invalid value for option ${key}: $value"
+                }
+            } elseif ($this.LongMap.ContainsKey($key)) {
+                if ($value -is [int] -or $value -is [int64]) {
+                    $argTokens += [ArgToken]::new($key, [ArgTokenType]::Long, $value)
+                } elseif ($value -is [string]) {
+                    $argTokens += $this.TokenizeLongArg($key, $value)
+                } else {
+                    throw "Invalid value for option ${key}: $value"
                 }
             } elseif ($key -eq 'settings-file') {
                 if ($value -is [string])
@@ -711,7 +769,7 @@ class ArgTokenizer {
                         $argTokens += [ArgToken]::new($key, [ArgTokenType]::Str, $val)
                     }
                 } else {
-                    throw "Invalid value for option: " + $key
+                    throw "Invalid value for option ${key}: $value"
                 }
             } else {
                 throw "Invalid option: " + $key
@@ -956,13 +1014,15 @@ class FindOptions {
             param([int]$i, [FindSettings]$settings)
             $settings.MaxDepth = $i
         }
-        "maxsize" = {
-            param([int]$i, [FindSettings]$settings)
-            $settings.MaxSize = $i
-        }
         "mindepth" = {
             param([int]$i, [FindSettings]$settings)
             $settings.MinDepth = $i
+        }
+    }
+    $LongActionMap = @{
+        "maxsize" = {
+            param([int]$i, [FindSettings]$settings)
+            $settings.MaxSize = $i
         }
         "minsize" = {
             param([int]$i, [FindSettings]$settings)
@@ -991,6 +1051,8 @@ class FindOptions {
                 $ArgType = [ArgTokenType]::Str
             } elseif ($this.IntActionMap.ContainsKey($LongArg)) {
                 $ArgType = [ArgTokenType]::Int
+            } elseif ($this.LongActionMap.ContainsKey($LongArg)) {
+                $ArgType = [ArgTokenType]::Long
             }
             if ($optionObj.ContainsKey('short')) {
                 $ShortArg = $optionObj['short']
@@ -1029,6 +1091,16 @@ class FindOptions {
                 if ($this.IntActionMap.ContainsKey($argToken.Name)) {
                     if ($argToken.Value -is [int] -or $argToken.Value -is [int64]) {
                         $this.IntActionMap[$argToken.Name].Invoke($argToken.Value, $settings)
+                    } else {
+                        throw "Invalid value for option: " + $argToken.Name
+                    }
+                } else {
+                    throw "Invalid option: " + $argToken.Name
+                }
+            } elseif ($argToken.Type -eq [ArgTokenType]::Long) {
+                if ($this.LongActionMap.ContainsKey($argToken.Name)) {
+                    if ($argToken.Value -is [int] -or $argToken.Value -is [int64]) {
+                        $this.LongActionMap[$argToken.Name].Invoke($argToken.Value, $settings)
                     } else {
                         throw "Invalid value for option: " + $argToken.Name
                     }
