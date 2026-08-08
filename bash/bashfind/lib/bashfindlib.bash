@@ -1426,6 +1426,61 @@ settings_from_args () {
     update_settings_from_args ${args[*]}
 }
 
+is_valid_size () {
+    local size="$1"
+    if [[ "$size" =~ ^[0-9]+$ ]]
+    then
+        return 1
+    elif [[ "$size" =~ ^[0-9]+[cC]$ ]]
+    then
+        return 1
+    elif [[ "$size" =~ ^[0-9]+[kK]$ ]]
+    then
+        return 1
+    elif [[ "$size" =~ ^[0-9]+[mM]$ ]]
+    then
+        return 1
+    elif [[ "$size" =~ ^[0-9]+[gG]$ ]]
+    then
+        return 1
+    elif [[ "$size" =~ ^[0-9]+[tT]$ ]]
+    then
+        return 1
+    elif [[ "$size" =~ ^[0-9]+[pP]$ ]]
+    then
+        return 1
+    fi
+    return 0
+}
+
+get_size () {
+    local size="$1"
+    if [[ "$size" =~ ^[0-9]+$ ]]
+    then
+        echo $size
+    elif [[ "$size" =~ ^[0-9]+[cC]$ ]]
+    then
+        echo $((${size%[cC]} * 1))
+    elif [[ "$size" =~ ^[0-9]+[kK]$ ]]
+    then
+        echo $((${size%[kK]} * 1024))
+    elif [[ "$size" =~ ^[0-9]+[mM]$ ]]
+    then
+        echo $((${size%[mM]} * 1024 * 1024))
+    elif [[ "$size" =~ ^[0-9]+[gG]$ ]]
+    then
+        echo $((${size%[gG]} * 1024 * 1024 * 1024))
+    elif [[ "$size" =~ ^[0-9]+[tT]$ ]]
+    then
+        echo $((${size%[tT]} * 1024 * 1024 * 1024 * 1024))
+    elif [[ "$size" =~ ^[0-9]+[pP]$ ]]
+    then
+        echo $((${size%[pP]} * 1024 * 1024 * 1024 * 1024 * 1024))
+    else
+        exit_with_error "Invalid size value: $size"
+    fi
+}
+
 update_settings_from_args () {
     local args=("$@")
     local i=0
@@ -1475,7 +1530,7 @@ update_settings_from_args () {
             --in-archiveext)
                 if [ -z "$arg2" ]
                 then
-                    exit_with_error "Missing argument for option $arg"
+                    exit_with_error "Missing argument for option ${arg:2}"
                 fi
                 IFS=',' read -r -a exts <<< "$arg2"
                 for e in ${exts[*]}
@@ -1487,7 +1542,7 @@ update_settings_from_args () {
             --in-archivefilepattern)
                 if [ -z "$arg2" ]
                 then
-                    exit_with_error "Missing argument for option $arg"
+                    exit_with_error "Missing argument for option ${arg:2}"
                 fi
                 IN_ARCHIVE_FILE_PATTERNS+=($arg2)
                 i=$(($i + 1))
@@ -1495,7 +1550,7 @@ update_settings_from_args () {
             -d | --in-dirpattern)
                 if [ -z "$arg2" ]
                 then
-                    exit_with_error "Missing argument for option $arg"
+                    exit_with_error "Missing argument for option ${arg:2}"
                 fi
                 IN_DIR_PATTERNS+=($arg2)
                 i=$(($i + 1))
@@ -1503,7 +1558,7 @@ update_settings_from_args () {
             -x | --in-ext)
                 if [ -z "$arg2" ]
                 then
-                    exit_with_error "Missing argument for option $arg"
+                    exit_with_error "Missing argument for option ${arg:2}"
                 fi
                 IFS=',' read -r -a exts <<< "$arg2"
                 for e in ${exts[*]}
@@ -1515,7 +1570,7 @@ update_settings_from_args () {
             -f | --in-filepattern)
                 if [ -z "$arg2" ]
                 then
-                    exit_with_error "Missing argument for option $arg"
+                    exit_with_error "Missing argument for option ${arg:2}"
                 fi
                 IN_FILE_PATTERNS+=($arg2)
                 i=$(($i + 1))
@@ -1523,7 +1578,7 @@ update_settings_from_args () {
             -t | --in-filetype)
                 if [ -z "$arg2" ]
                 then
-                    exit_with_error "Missing argument for option $arg"
+                    exit_with_error "Missing argument for option ${arg:2}"
                 fi
                 local file_type=$(echo $arg2 | tr '[:upper:]' '[:lower:]')
                 if [[ ! " ${FILE_TYPES[*]} " =~ [[:space:]]$file_type[[:space:]] ]]
@@ -1537,7 +1592,7 @@ update_settings_from_args () {
             --maxdepth)
                 if [ -z "$arg2" ]
                 then
-                    exit_with_error "Missing argument for option $arg"
+                    exit_with_error "Missing argument for option ${arg:2}"
                 fi
                 MAX_DEPTH=$arg2
                 i=$(($i + 1))
@@ -1545,7 +1600,7 @@ update_settings_from_args () {
             --maxlastmod)
                 if [ -z "$arg2" ]
                 then
-                    exit_with_error "Missing argument for option $arg"
+                    exit_with_error "Missing argument for option ${arg:2}"
                 fi
                 MAX_LAST_MOD=$arg2
                 MAX_LAST_MOD_EPOCH=$(date -j -f "%Y-%m-%d" $MAX_LAST_MOD "+%s")
@@ -1555,16 +1610,21 @@ update_settings_from_args () {
             --maxsize)
                 if [ -z "$arg2" ]
                 then
-                    exit_with_error "Missing argument for option $arg"
+                    exit_with_error "Missing argument for option ${arg:2}"
                 fi
-                MAX_SIZE=$arg2
+                is_valid_size "$arg2"
+                if [ $? == 0 ]
+                then
+                    exit_with_error "Invalid value for option ${arg:2}: $arg2"
+                fi
+                MAX_SIZE=$(get_size "$arg2")
                 NEED_FILE_SIZE=true
                 i=$(($i + 1))
                 ;;
             --mindepth)
                 if [ -z "$arg2" ]
                 then
-                    exit_with_error "Missing argument for option $arg"
+                    exit_with_error "Missing argument for option ${arg:2}"
                 fi
                 MIN_DEPTH=$arg2
                 i=$(($i + 1))
@@ -1572,7 +1632,7 @@ update_settings_from_args () {
             --minlastmod)
                 if [ -z "$arg2" ]
                 then
-                    exit_with_error "Missing argument for option $arg"
+                    exit_with_error "Missing argument for option ${arg:2}"
                 fi
                 MIN_LAST_MOD=$arg2
                 MIN_LAST_MOD_EPOCH=$(date -j -f "%Y-%m-%d" $MIN_LAST_MOD "+%s")
@@ -1582,9 +1642,14 @@ update_settings_from_args () {
             --minsize)
                 if [ -z "$arg2" ]
                 then
-                    exit_with_error "Missing argument for option $arg"
+                    exit_with_error "Missing argument for option ${arg:2}"
                 fi
-                MIN_SIZE=$arg2
+                is_valid_size "$arg2"
+                if [ $? == 0 ]
+                then
+                    exit_with_error "Invalid value for option ${arg:2}: $arg2"
+                fi
+                MIN_SIZE=$(get_size "$arg2")
                 NEED_FILE_SIZE=true
                 i=$(($i + 1))
                 ;;
@@ -1612,7 +1677,7 @@ update_settings_from_args () {
             --out-archiveext)
                 if [ -z "$arg2" ]
                 then
-                    exit_with_error "Missing argument for option $arg"
+                    exit_with_error "Missing argument for option ${arg:2}"
                 fi
                 IFS=',' read -r -a exts <<< "$arg2"
                 for e in ${exts[*]}
@@ -1624,7 +1689,7 @@ update_settings_from_args () {
             --out-archivefilepattern)
                 if [ -z "$arg2" ]
                 then
-                    exit_with_error "Missing argument for option $arg"
+                    exit_with_error "Missing argument for option ${arg:2}"
                 fi
                 OUT_ARCHIVE_FILE_PATTERNS+=($arg2)
                 i=$(($i + 1))
@@ -1632,7 +1697,7 @@ update_settings_from_args () {
             -D | --out-dirpattern)
                 if [ -z "$arg2" ]
                 then
-                    exit_with_error "Missing argument for option $arg"
+                    exit_with_error "Missing argument for option ${arg:2}"
                 fi
                 OUT_DIR_PATTERNS+=($arg2)
                 i=$(($i + 1))
@@ -1640,7 +1705,7 @@ update_settings_from_args () {
             -X | --out-ext)
                 if [ -z "$arg2" ]
                 then
-                    exit_with_error "Missing argument for option $arg"
+                    exit_with_error "Missing argument for option ${arg:2}"
                 fi
                 IFS=',' read -r -a exts <<< "$arg2"
                 for e in ${exts[*]}
@@ -1652,7 +1717,7 @@ update_settings_from_args () {
             -F | --out-filepattern)
                 if [ -z "$arg2" ]
                 then
-                    exit_with_error "Missing argument for option $arg"
+                    exit_with_error "Missing argument for option ${arg:2}"
                 fi
                 OUT_FILE_PATTERNS+=($arg2)
                 i=$(($i + 1))
@@ -1660,7 +1725,7 @@ update_settings_from_args () {
             -T | --out-filetype)
                 if [ -z "$arg2" ]
                 then
-                    exit_with_error "Missing argument for option $arg"
+                    exit_with_error "Missing argument for option ${arg:2}"
                 fi
                 OUT_FILE_TYPES+=($arg2)
                 NEED_FILE_TYPE=true
@@ -1669,7 +1734,7 @@ update_settings_from_args () {
             --path)
                 if [ -z "$arg2" ]
                 then
-                    exit_with_error "Missing argument for option $arg"
+                    exit_with_error "Missing argument for option ${arg:2}"
                 fi
                 PATHS+=($arg2)
                 i=$(($i + 1))
@@ -1686,7 +1751,7 @@ update_settings_from_args () {
             --settings-file)
                 if [ -z "$arg2" ]
                 then
-                    exit_with_error "Missing argument for option $arg"
+                    exit_with_error "Missing argument for option ${arg:2}"
                 fi
                 # SETTINGS_FILE="$arg2"
                 update_settings_from_file "$arg2"
@@ -1698,7 +1763,7 @@ update_settings_from_args () {
             --sort-by)
                 if [ -z "$arg2" ]
                 then
-                    exit_with_error "Missing argument for option $arg"
+                    exit_with_error "Missing argument for option ${arg:2}"
                 fi
                 SORT_BY=$(echo $arg2 | tr '[:upper:]' '[:lower:]')
                 i=$(($i + 1))
@@ -1719,7 +1784,6 @@ update_settings_from_args () {
                 PRINT_VERSION=true
                 ;;
             --*)
-                no_dash_arg=${arg:2}
                 # If arg contains = then split into arg and arg2
                 if [[ "$arg" == *=* ]]
                 then
@@ -1728,17 +1792,17 @@ update_settings_from_args () {
                     then
                         update_settings_from_args ${ARG_VAL[*]}
                     else
-                        exit_with_error "Invalid option: $no_dash_arg"
+                        exit_with_error "Invalid option: ${arg:2}"
                     fi
                 else
-                    exit_with_error "Invalid option: $no_dash_arg"
+                    exit_with_error "Invalid option: ${arg:2}"
                 fi
                 ;;
             -*)
                 arg=${arg:1}
                 if [ ${#arg} -eq 1 ]
                 then
-                    exit_with_error "Invalid option: $arg"
+                    exit_with_error "Invalid option: ${arg:2}"
                 fi
                 SHORT_ARGS=()
                 while [ ${#arg} -gt 0 ]
