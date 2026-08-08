@@ -48,6 +48,55 @@ class ArgTokenizer {
     }
 
     /**
+     * @param string $arg_name
+     * @param string $arg_value
+     * @return ArgToken
+     * @throws FindException
+     */
+    public function tokenize_size_arg(string $arg_name, string $arg_value): ArgToken {
+        $i = 0;
+        if (is_numeric($arg_value)) {
+            $i = intval($arg_value);
+        } elseif (preg_match('/^\d+[ckmgtp]$/i', $arg_value)) {
+            $i = intval(substr($arg_value, 0, strlen($arg_value) - 1));
+            $modifier = strtolower($arg_value[strlen($arg_value) - 1]);
+            if ($modifier == 'k') {
+                $i = $i * 1024;
+            } elseif ($modifier == 'm') {
+                $i = $i * 1024 * 1024;
+            } elseif ($modifier == 'g') {
+                $i = $i * 1024 * 1024 * 1024;
+            } elseif ($modifier == 't') {
+                $i = $i * 1024 * 1024 * 1024 * 1024;
+            } elseif ($modifier == 'p') {
+                $i = $i * 1024 * 1024 * 1024 * 1024 * 1024;
+            }
+        } else {
+            throw new FindException("Invalid value for option $arg_name: $arg_value");
+        }
+        return new ArgToken($arg_name, ArgTokenType::Int, $i);
+    }
+
+    /**
+     * @param string $arg_name
+     * @param string $arg_value
+     * @return ArgToken
+     * @throws FindException
+     */
+    public function tokenize_int_arg(string $arg_name, string $arg_value): ArgToken {
+        if (in_array($arg_name, array("maxsize", "minsize"))) {
+            return $this->tokenize_size_arg($arg_name, $arg_value);
+        }
+        $i = 0;
+        if (is_numeric($arg_value)) {
+            $i = intval($arg_value);
+        } else {
+            throw new FindException("Invalid value for option $arg_name: $arg_value");
+        }
+        return new ArgToken($arg_name, ArgTokenType::Int, $i);
+    }
+
+    /**
      * @param string[] $args
      * @return ArgToken[]
      * @throws FindException
@@ -106,7 +155,7 @@ class ArgTokenizer {
                             if (array_key_exists($arg_name, $this->str_map)) {
                                 $arg_tokens[] = new ArgToken($arg_name, ArgTokenType::Str, $val);
                             } elseif (array_key_exists($arg_name, $this->int_map)) {
-                                $arg_tokens[] = new ArgToken($arg_name, ArgTokenType::Int, intval($val));
+                                $arg_tokens[] = $this->tokenize_int_arg($arg_name, $val);
                             }
                         } else {
                             throw new FindException("Missing value for $arg");
@@ -143,7 +192,7 @@ class ArgTokenizer {
                         return $arg_tokens;
                     }
                 } else {
-                    throw new FindException("Invalid value for option: $arg_name");
+                    throw new FindException("Invalid value for option $arg_name: $arg_value");
                 }
             } elseif (array_key_exists($arg_name, $this->str_map)) {
                 $long_arg = $this->str_map[$arg_name];
@@ -152,22 +201,22 @@ class ArgTokenizer {
                         if (is_string($val)) {
                             $arg_tokens[] = new ArgToken($long_arg, ArgTokenType::Str, $val);
                         } else {
-                            throw new FindException("Invalid value for option: $arg_name");
+                            throw new FindException("Invalid value for option $arg_name: $val");
                         }
                     }
                 } elseif (is_string($arg_value)) {
                     $arg_tokens[] = new ArgToken($long_arg, ArgTokenType::Str, $arg_value);
                 } else {
-                    throw new FindException("Invalid value for option: $arg_name");
+                    throw new FindException("Invalid value for option $arg_name: $arg_value");
                 }
             } elseif (array_key_exists($arg_name, $this->int_map)) {
                 $long_arg = $this->int_map[$arg_name];
                 if (is_int($arg_value)) {
                     $arg_tokens[] = new ArgToken($long_arg, ArgTokenType::Int, $arg_value);
                 } elseif (is_string($arg_value)) {
-                    $arg_tokens[] = new ArgToken($long_arg, ArgTokenType::Int, intval($arg_value));
+                    $arg_tokens[] = $this->tokenize_int_arg($arg_name, $arg_value);
                 } else {
-                    throw new FindException("Invalid value for option: $arg_name");
+                    throw new FindException("Invalid value for option $arg_name: $arg_value");
                 }
             } else {
                 throw new FindException("Invalid option: $arg_name");
