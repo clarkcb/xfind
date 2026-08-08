@@ -40,6 +40,48 @@ sub new {
     return $self;
 }
 
+sub tokenize_size_arg {
+    my ($self, $arg_name, $arg_val) = @_;
+    my $arg_token;
+    my $err;
+    if ($arg_val =~ /^\d+$/) {
+        $arg_token = plfind::ArgToken->new($self->{int_hash}->{$arg_name}, plfind::ArgTokenType->INT, int($arg_val));
+    } elsif ($arg_val =~ /^\d+[ckmgtp]$/i) {
+        my $i = int(substr($arg_val, 0, length($arg_val) - 1));
+        my $modifier = lc(substr($arg_val, length($arg_val) - 1, 1));
+        if ($modifier eq 'k') {
+            $i = $i * 1024;
+        } elsif ($modifier eq 'm') {
+            $i = $i * 1024 * 1024;
+        } elsif ($modifier eq 'g') {
+            $i = $i * 1024 * 1024 * 1024;
+        } elsif ($modifier eq 't') {
+            $i = $i * 1024 * 1024 * 1024 * 1024;
+        } elsif ($modifier eq 'p') {
+            $i = $i * 1024 * 1024 * 1024 * 1024 * 1024;
+        }
+        $arg_token = plfind::ArgToken->new($self->{int_hash}->{$arg_name}, plfind::ArgTokenType->INT, $i);
+    } else {
+        $err = 'Invalid value for option ' . $arg_name . ': ' . $arg_val;
+    }
+    return ($arg_token, $err);
+}
+
+sub tokenize_int_arg {
+    my ($self, $arg_name, $arg_val) = @_;
+    if ($arg_name =~ /^(max|min)size$/) {
+        return $self->tokenize_size_arg($arg_name, $arg_val);
+    }
+    my $arg_token;
+    my $err;
+    if ($arg_val =~ /^\d+$/) {
+        $arg_token = plfind::ArgToken->new($self->{int_hash}->{$arg_name}, plfind::ArgTokenType->INT, int($arg_val));
+    } else {
+        $err = 'Invalid value for option ' . $arg_name . ': ' . $arg_val;
+    }
+    return ($arg_token, $err);
+}
+
 sub tokenize_args {
     my ($self, $args) = @_;
     my @arg_tokens;
@@ -96,11 +138,11 @@ sub tokenize_args {
                             my $arg_token = plfind::ArgToken->new($self->{str_hash}->{$arg_name}, plfind::ArgTokenType->STR, $val);
                             push(@arg_tokens, $arg_token);
                         } elsif (exists $self->{int_hash}->{$arg_name}) {
-                            if ($val =~ /^[\+-]?\d+$/) {
-                                my $arg_token = plfind::ArgToken->new($self->{int_hash}->{$arg_name}, plfind::ArgTokenType->INT, int($val));
+                            my ($arg_token, $err) = $self->tokenize_int_arg($arg_name, $val);
+                            if (defined $err) {
+                                push(@errs, $err);
+                            } elsif (defined $arg_token) {
                                 push(@arg_tokens, $arg_token);
-                            } else {
-                                push(@errs, 'Invalid value for option: ' . $arg_name);
                             }
                         } else {
                             my $arg_token = plfind::ArgToken->new('settings-file', plfind::ArgTokenType->STR, $val);
@@ -147,11 +189,11 @@ sub tokenize_arg_hash {
                 push(@arg_tokens, $arg_token);
             }
         } elsif (exists $self->{int_hash}->{$arg_name}) {
-            if ($arg_value =~ /^\d+$/) {
-                my $arg_token = plfind::ArgToken->new($self->{int_hash}->{$arg_name}, plfind::ArgTokenType->INT, $arg_value);
+            my ($arg_token, $err) = $self->tokenize_int_arg($arg_name, $arg_value);
+            if (defined $err) {
+                push(@errs, $err);
+            } elsif (defined $arg_token) {
                 push(@arg_tokens, $arg_token);
-            } else {
-                push(@errs, 'Invalid value for option: ' . $arg_name);
             }
         } elsif ($arg_name eq 'settings-file') {
             my $arg_token = plfind::ArgToken->new('settings-file', plfind::ArgTokenType->STR, $arg_value);
