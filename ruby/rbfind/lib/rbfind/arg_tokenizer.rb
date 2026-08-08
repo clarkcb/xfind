@@ -24,6 +24,7 @@ module RbFind
   class ArgTokenizer
 
     def initialize(options)
+      @num_modifier = Regexp.new('^\d+[ckmgtp]$', Regexp::IGNORECASE)
       @bool_dict = {}
       @str_dict = {}
       @int_dict = {}
@@ -39,6 +40,43 @@ module RbFind
           @int_dict[long_sym] = long_sym
           @int_dict[o.short_arg.to_sym] = long_sym if o.short_arg
         end
+      end
+    end
+
+    def tokenize_size_arg(arg_name, arg_val)
+      i = 0
+      begin
+        i = Integer(arg_val)
+      rescue ArgumentError => e
+        if @num_modifier.match?(arg_val)
+          i = Integer(arg_val[0...-1])
+          modifier = arg_val[-1].downcase
+          case modifier
+          when 'k' then i = i * 1024
+          when 'm' then i = i * 1024 * 1024
+          when 'g' then i = i * 1024 * 1024 * 1024
+          when 't' then i = i * 1024 * 1024 * 1024 * 1024
+          when 'p' then i = i * 1024 * 1024 * 1024 * 1024 * 1024
+          else i = i * 1
+          end
+        else
+          raise FindError, "Invalid value for option #{arg_name}: #{arg_val}"
+        end
+      end
+      ArgToken.new(arg_name, ArgTokenType::INT, i)
+    end
+
+    def tokenize_int_arg(arg_name, arg_val)
+      if [:maxsize, :minsize].include?(arg_name)
+        tokenize_size_arg(arg_name, arg_val)
+      else
+        i = 0
+        begin
+          i = Integer(arg_val)
+        rescue ArgumentError => e
+          raise FindError, "Invalid value for option #{arg_name}: #{arg_val}"
+        end
+        ArgToken.new(arg_name, ArgTokenType::INT, i)
       end
     end
 
@@ -87,7 +125,7 @@ module RbFind
               if @str_dict.key?(arg_name)
                 arg_tokens << ArgToken.new(arg_name, ArgTokenType::STR, arg_val)
               else
-                arg_tokens << ArgToken.new(arg_name, ArgTokenType::INT, arg_val.to_i)
+                arg_tokens << tokenize_int_arg(arg_name, arg_val)
               end
             else
               raise FindError, "Invalid option: #{arg_name}"
@@ -111,7 +149,7 @@ module RbFind
             arg_tokens << ArgToken.new(arg_name, ArgTokenType::BOOL, arg_value)
             return arg_tokens if [:help, :version].include?(arg_name)
           else
-            raise FindError, "Invalid value for option: #{arg_name}"
+            raise FindError, "Invalid value for option #{arg_name}: #{arg_value}"
           end
         elsif @str_dict.key?(arg_name)
           if arg_value.is_a?(String)
@@ -121,19 +159,19 @@ module RbFind
               if v.is_a?(String)
                 arg_tokens << ArgToken.new(arg_name, ArgTokenType::STR, v)
               else
-                raise FindError, "Invalid value for option: #{arg_name}"
+                raise FindError, "Invalid value for option #{arg_name}: #{arg_value}"
               end
             end
           else
-            raise FindError, "Invalid value for option: #{arg_name}"
+            raise FindError, "Invalid value for option #{arg_name}: #{arg_value}"
           end
         elsif @int_dict.key?(arg_name)
           if arg_value.is_a?(Numeric)
             arg_tokens << ArgToken.new(arg_name, ArgTokenType::INT, arg_value)
           elsif arg_value.is_a?(String)
-            arg_tokens << ArgToken.new(arg_name, ArgTokenType::INT, arg_value.to_i)
+            arg_tokens << tokenize_int_arg(arg_name, arg_value)
           else
-            raise FindError, "Invalid value for option: #{arg_name}"
+            raise FindError, "Invalid value for option #{arg_name}: #{arg_value}"
           end
         else
           raise FindError, "Invalid option: #{arg_name}"

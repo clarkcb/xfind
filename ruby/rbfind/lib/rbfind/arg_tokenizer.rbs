@@ -19,11 +19,16 @@ module RbFind
   end
 
   class ArgTokenizer
+    @num_modifier: Regexp
     @bool_dict: Hash[Symbol, Symbol]
     @str_dict: Hash[Symbol, Symbol]
     @int_dict: Hash[Symbol, Symbol]
 
     def initialize: (Array[FindOption]) -> void
+
+    def tokenize_size_arg: (Symbol arg_name, String arg_val) -> ArgToken
+
+    def tokenize_int_arg: (Symbol arg_name, String arg_val) -> ArgToken
 
     def tokenize_args: (Array[String] args) -> Array[ArgToken]
 
