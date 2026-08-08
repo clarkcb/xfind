@@ -23,6 +23,8 @@ public class ArgTokenizer {
     private var stringDict: [String: String] = [:]
     private var intDict: [String: String] = [:]
     private var longDict: [String: String] = [:]
+    
+    public let numModifierPattern = Regex("(?i)^\\d+[ckmgtp]$")
 
     public init (_ options: [Option]) {
         for o in options {
@@ -47,6 +49,46 @@ public class ArgTokenizer {
                     self.longDict[o.shortArg!] = o.longArg
                 }
             }
+        }
+    }
+
+    public func tokenizeSizeArg(_ argName: String, _ argVal: String) throws -> ArgToken {
+        if let argLng = UInt64(argVal) {
+            return ArgToken(name: argName, type: ArgTokenType.long, value: argLng)
+        } else {
+            if numModifierPattern.test(argVal) {
+                if let lng = UInt64(argVal.prefix(argVal.count - 1)) {
+                    let modifier = argVal.suffix(1).lowercased()
+                    let multiplier: UInt64 =
+                        if modifier == "k" {
+                            1024
+                        } else if modifier == "m" {
+                            1024 * 1024
+                        } else if modifier == "g" {
+                            1024 * 1024 * 1024
+                        } else if modifier == "t" {
+                            1024 * 1024 * 1024 * 1024
+                        } else if modifier == "p" {
+                            1024 * 1024 * 1024 * 1024 * 1024
+                        } else {
+                            1
+                        }
+                    return ArgToken(name: argName, type: ArgTokenType.long, value: lng * multiplier)
+                }
+            }
+
+            throw FindError(msg: "Invalid value for option \(argName): \(argVal)")
+        }
+    }
+
+    public func tokenizeLongArg(_ argName: String, _ argVal: String) throws -> ArgToken {
+        if argName == "maxsize" || argName == "minsize" {
+            return try tokenizeSizeArg(argName, argVal)
+        }
+        if let lng = UInt64(argVal) {
+            return ArgToken(name: argName, type: ArgTokenType.long, value: lng)
+        } else {
+            throw FindError(msg: "Invalid value for option \(argName): \(argVal)")
         }
     }
 
@@ -96,7 +138,7 @@ public class ArgTokenizer {
                 } else {
                     throw FindError(msg: "Invalid option: \(arg)")
                 }
-                
+
                 for argName in argNames {
                     if boolDict.index(forKey: argName) != nil {
                         argTokens.append(ArgToken(name: argName, type: ArgTokenType.bool, value: true))
@@ -115,8 +157,7 @@ public class ArgTokenizer {
                             let intVal = Int32(argVal!) ?? 0
                             argTokens.append(ArgToken(name: argName, type: ArgTokenType.int, value: intVal))
                         } else if longDict.index(forKey: argName) != nil {
-                            let longVal = UInt64(argVal!) ?? 0
-                            argTokens.append(ArgToken(name: argName, type: ArgTokenType.long, value: longVal))
+                            try argTokens.append(tokenizeLongArg(argName, argVal!))
                         } else if argName == "settings-file" {
                             argTokens.append(ArgToken(name: argName, type: ArgTokenType.str, value: argVal!))
                         } else {
@@ -142,7 +183,7 @@ public class ArgTokenizer {
                 if let bool = value as? Bool {
                     argTokens.append(ArgToken(name: key, type: ArgTokenType.bool, value: bool))
                 } else {
-                    throw FindError(msg: "Invalid value for option: \(key)")
+                    throw FindError(msg: "Invalid value for option \(key): \(value)")
                 }
             } else if stringDict.index(forKey: key) != nil || key == "settings-file" {
                 let value = argMap[key]
@@ -153,21 +194,21 @@ public class ArgTokenizer {
                         argTokens.append(ArgToken(name: key, type: ArgTokenType.str, value: s))
                     }
                 } else {
-                    throw FindError(msg: "Invalid value for option: \(key)")
+                    throw FindError(msg: "Invalid value for option \(key): \(value)")
                 }
             } else if intDict.index(forKey: key) != nil {
                 let value = argMap[key]
                 if let intVal = value as? Int32 {
                     argTokens.append(ArgToken(name: key, type: ArgTokenType.int, value: intVal))
                 } else {
-                    throw FindError(msg: "Invalid value for option: \(key)")
+                    throw FindError(msg: "Invalid value for option \(key): \(value)")
                 }
             } else if longDict.index(forKey: key) != nil {
                 let value = argMap[key]
                 if let longVal = value as? UInt64 {
                     argTokens.append(ArgToken(name: key, type: ArgTokenType.long, value: longVal))
                 } else {
-                    throw FindError(msg: "Invalid value for option: \(key)")
+                    throw FindError(msg: "Invalid value for option \(key): \(value)")
                 }
             } else {
                 throw FindError(msg: "Invalid option: \(key)")
