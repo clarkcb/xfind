@@ -7,6 +7,7 @@ import java.nio.file.Paths
 
 import groovy.json.JsonSlurper
 
+import java.util.regex.Pattern
 import java.util.stream.Collectors
 
 @CompileStatic
@@ -15,6 +16,8 @@ class ArgTokenizer {
     private Map<String, String> strMap = new HashMap<>()
     private Map<String, String> intMap = new HashMap<>()
     private Map<String, String> longMap = new HashMap<>()
+
+    private static final Pattern NUM_MOD_PATTERN = Pattern.compile('^\\d+[ckmgtp]$', Pattern.CASE_INSENSITIVE)
 
     ArgTokenizer(final List<Option> options) {
         options.each { opt ->
@@ -40,6 +43,46 @@ class ArgTokenizer {
                 }
             }
         }
+    }
+
+    ArgToken tokenizeSizeArg(final String argName, final String argVal) throws FindException {
+        long lng
+        try {
+            lng = Long.parseLong(argVal)
+        } catch (NumberFormatException ignored) {
+            if (NUM_MOD_PATTERN.matcher(argVal).matches()) {
+                var numberPart = argVal.substring(0, argVal.length() - 1)
+                var modifier = argVal.substring(argVal.length() - 1).toLowerCase()
+                try {
+                    lng = Long.parseLong(numberPart)
+                    switch (modifier) {
+                        case "k" -> lng = lng * 1024 // kilobytes
+                        case "m" -> lng = lng * 1024 * 1024 // megabytes
+                        case "g" -> lng = lng * 1024 * 1024 * 1024 // gigabytes
+                        case "t" -> lng = lng * 1024 * 1024 * 1024 * 1024 // terabytes
+                        case "p" -> lng = lng * 1024 * 1024 * 1024 * 1024 * 1024 // petabytes
+                    }
+                } catch (NumberFormatException e) {
+                    throw new FindException("Invalid value for option " + argName + ": " + argVal)
+                }
+            } else {
+                throw new FindException("Invalid value for option " + argName + ": " + argVal)
+            }
+        }
+        return new ArgToken(argName, ArgTokenType.LONG, lng)
+    }
+
+    ArgToken tokenizeLongArg(final String argName, final String argVal) throws FindException {
+        if (argName == "maxsize" || argName == "minsize") {
+            return tokenizeSizeArg(argName, argVal)
+        }
+        long lng
+        try {
+            lng = Long.parseLong(argVal)
+        } catch (NumberFormatException ignored) {
+            throw new FindException("Invalid value for option " + argName + ": " + argVal)
+        }
+        return new ArgToken(argName, ArgTokenType.LONG, lng)
     }
 
     List<ArgToken> tokenizeArgs(final String[] args) throws FindException {
@@ -104,7 +147,7 @@ class ArgTokenizer {
                             } else if (this.intMap.containsKey(argName)) {
                                 argTokens.add(new ArgToken(this.intMap.get(argName), ArgTokenType.INT, Integer.parseInt(argVal)))
                             } else if (this.longMap.containsKey(argName)) {
-                                argTokens.add(new ArgToken(this.longMap.get(argName), ArgTokenType.LONG, Long.parseLong(argVal)))
+                                argTokens.add(tokenizeLongArg(argName, argVal))
                             } else if (argName == "settings-file") {
                                 argTokens.add(new ArgToken(argName, ArgTokenType.STR, argVal))
                             } else {
@@ -135,7 +178,7 @@ class ArgTokenizer {
                 if (v instanceof Boolean) {
                     argTokens.add(new ArgToken(this.boolMap.get(k), ArgTokenType.BOOL, v))
                 } else {
-                    throw new FindException("Invalid value for option: " + k)
+                    throw new FindException("Invalid value for option " + k + ": " + v)
                 }
             } else if (this.strMap.containsKey(k)) {
                 if (v instanceof String) {
@@ -146,11 +189,11 @@ class ArgTokenizer {
                         if (item instanceof String) {
                             argTokens.add(new ArgToken(this.strMap.get(k), ArgTokenType.STR, item))
                         } else {
-                            throw new FindException("Invalid value for option: " + k)
+                            throw new FindException("Invalid value for option " + k + ": " + item)
                         }
                     }
                 } else {
-                    throw new FindException("Invalid value for option: " + k)
+                    throw new FindException("Invalid value for option " + k + ": " + v)
                 }
             } else if (this.intMap.containsKey(k)) {
                 if (v instanceof Integer) {
@@ -158,13 +201,15 @@ class ArgTokenizer {
                 } else if (v instanceof Long) {
                     argTokens.add(new ArgToken(this.intMap.get(k), ArgTokenType.INT, v.intValue()))
                 } else {
-                    throw new FindException("Invalid value for option: " + k)
+                    throw new FindException("Invalid value for option " + k + ": " + v)
                 }
             } else if (this.longMap.containsKey(k)) {
                 if (v instanceof Long) {
                     argTokens.add(new ArgToken(this.longMap.get(k), ArgTokenType.LONG, v))
                 } else if (v instanceof Integer) {
                     argTokens.add(new ArgToken(this.longMap.get(k), ArgTokenType.LONG, v.longValue()))
+                } else if (v instanceof String s) {
+                    argTokens.add(tokenizeLongArg(k, s))
                 } else {
                     throw new FindException("Missing value for option " + k)
                 }
