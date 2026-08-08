@@ -8,6 +8,7 @@ import java.io.FileNotFoundException
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Paths
+import java.util.regex.Pattern
 
 enum class ArgTokenType {
     UNKNOWN, BOOL, STR, INT, LONG
@@ -17,6 +18,8 @@ data class ArgToken(val name: String, val type: ArgTokenType, val value: Any) {
 }
 
 class ArgTokenizer(options: List<Option>) {
+
+    private val NUM_MOD_PATTERN: Pattern = Pattern.compile("^\\d+[ckmgtp]$", Pattern.CASE_INSENSITIVE)
 
     private var boolMap = mutableMapOf<String, String>()
     private var strMap = mutableMapOf<String, String>()
@@ -60,6 +63,48 @@ class ArgTokenizer(options: List<Option>) {
         }
     }
 
+    @Throws(FindException::class)
+    fun tokenizeSizeArg(argName: String?, argVal: String): ArgToken {
+        var lng: Long
+        try {
+            lng = argVal.toLong()
+        } catch (_: java.lang.NumberFormatException) {
+            if (NUM_MOD_PATTERN.matcher(argVal).matches()) {
+                val numberPart = argVal.substring(0, argVal.length - 1)
+                val modifier = argVal.substring(argVal.length - 1).lowercase()
+                try {
+                    lng = numberPart.toLong()
+                    when (modifier) {
+                        "k" -> lng *= 1024
+                        "m" -> lng *= 1024 * 1024
+                        "g" -> lng *= 1024 * 1024 * 1024
+                        "t" -> lng *= 1024 * 1024 * 1024 * 1024
+                        "p" -> lng *= 1024 * 1024 * 1024 * 1024 * 1024
+                    }
+                } catch (_: java.lang.NumberFormatException) {
+                    throw FindException("Invalid value for option $argName: $argVal")
+                }
+            } else {
+                throw FindException("Invalid value for option $argName: $argVal")
+            }
+        }
+        return ArgToken(argName!!, ArgTokenType.LONG, lng)
+    }
+
+    @Throws(FindException::class)
+    fun tokenizeLongArg(argName: String, argVal: String): ArgToken {
+        if (argName == "maxsize" || argName == "minsize") {
+            return tokenizeSizeArg(argName, argVal)
+        }
+        val lng: Long
+        try {
+            lng = argVal.toLong()
+        } catch (_: NumberFormatException) {
+            throw FindException("Invalid value for option $argName: $argVal")
+        }
+        return ArgToken(argName, ArgTokenType.LONG, lng)
+    }
+
     private fun updateArgTokens(argName: String, argVal: Any?, argTokens: List<ArgToken>): List<ArgToken> {
         val nextArgTokens: List<ArgToken> =
             if (boolMap.containsKey(argName)) {
@@ -71,7 +116,7 @@ class ArgTokenizer(options: List<Option>) {
                         listOf(ArgToken(boolMap[argName]!!, ArgTokenType.BOOL, argVal))
                     }
                     else -> {
-                        throw FindException("Invalid value for option: $argName")
+                        throw FindException("Invalid value for option $argName: $argVal")
                     }
                 }
             } else if (strMap.containsKey(argName)) {
@@ -84,24 +129,24 @@ class ArgTokenizer(options: List<Option>) {
                     }
                     is Collection<*> -> {
                         if (argVal.any({ v -> v !is String })) {
-                            throw FindException("Invalid value for option: $argName")
+                            throw FindException("Invalid value for option $argName: $argVal")
                         }
                         argVal.map { v -> ArgToken(strMap[argName]!!, ArgTokenType.STR, v as String) }.toList()
                     }
                     is JSONArray -> {
                         if (argVal.any({ v -> v !is String })) {
-                            throw FindException("Invalid value for option: $argName")
+                            throw FindException("Invalid value for option $argName: $argVal")
                         }
                         argVal.map { v -> ArgToken(strMap[argName]!!, ArgTokenType.STR, v as String) }.toList()
                     }
                     else -> {
-                        throw FindException("Invalid value for option: $argName")
+                        throw FindException("Invalid value for option $argName: $argVal")
                     }
                 }
             } else if (intMap.containsKey(argName)) {
                 when (argVal) {
                     null -> {
-                        throw FindException("Missing value for option: $argName")
+                        throw FindException("Missing value for option $argName: null")
                     }
                     is Int -> {
                         listOf(ArgToken(intMap[argName]!!, ArgTokenType.INT, argVal))
@@ -113,13 +158,13 @@ class ArgTokenizer(options: List<Option>) {
                         listOf(ArgToken(intMap[argName]!!, ArgTokenType.INT, argVal.toInt()))
                     }
                     else -> {
-                        throw FindException("Invalid value for option: $argName")
+                        throw FindException("Invalid value for option $argName: $argVal")
                     }
                 }
             } else if (longMap.containsKey(argName)) {
                 when (argVal) {
                     null -> {
-                        throw FindException("Missing value for option: $argName")
+                        throw FindException("Missing value for option $argName")
                     }
                     is Long -> {
                         listOf(ArgToken(longMap[argName]!!, ArgTokenType.LONG, argVal))
@@ -128,10 +173,10 @@ class ArgTokenizer(options: List<Option>) {
                         listOf(ArgToken(longMap[argName]!!, ArgTokenType.LONG, argVal.toLong()))
                     }
                     is String -> {
-                        listOf(ArgToken(intMap[argName]!!, ArgTokenType.INT, argVal.toLong()))
+                        listOf(tokenizeLongArg(argName, argVal))
                     }
                     else -> {
-                        throw FindException("Invalid value for option: $argName")
+                        throw FindException("Invalid value for option $argName: $argVal")
                     }
                 }
             } else {
