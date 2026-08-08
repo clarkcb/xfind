@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <errno.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -8,6 +9,83 @@
 
 #include "common.h"
 #include "fileutil.h"
+
+error_t multiplier_for_char(const char m, long *multiplier)
+{
+    switch (m) {
+        case '\0':
+        case 'c':
+        case 'C':
+            *multiplier = 1L;
+            break;
+        case 'k':
+        case 'K':
+            *multiplier = 1024L;
+            break;
+        case 'm':
+        case 'M':
+            *multiplier = 1024L * 1024L;
+            break;
+        case 'g':
+        case 'G':
+            *multiplier = 1024L * 1024L * 1024L;
+            break;
+        case 't':
+        case 'T':
+            *multiplier = 1024L * 1024L * 1024L * 1024L;
+            break;
+        case 'p':
+        case 'P':
+            *multiplier = 1024L * 1024L * 1024L * 1024L * 1024L;
+            break;
+        default:
+            return E_INVALID_ARG_FOR_OPTION;
+    }
+
+    return E_OK;
+}
+
+error_t tokenize_size_arg(const char *arg_name, const char *arg_val, Options *options, ArgTokenNode *arg_token_node)
+{
+    char *end_ptr = NULL;
+
+    // Clear errno before calling the function to ensure accurate error catching
+    errno = 0;
+
+    const long long_val = strtol(arg_val, &end_ptr, 10);
+
+    // 1. Check for overflow or underflow
+    if (errno == ERANGE) {
+        return E_INVALID_ARG_FOR_OPTION;
+    }
+
+    long multiplier = 0L;
+
+    if (end_ptr == NULL) {
+        multiplier = 1L;
+    } else {
+        const error_t mult_err = multiplier_for_char(*end_ptr, &multiplier);
+        if (mult_err != E_OK) {
+            return mult_err;
+        }
+    }
+
+    ArgToken *a = new_long_arg_token(arg_name, long_val * multiplier);
+    add_arg_token_to_arg_token_node(a, arg_token_node);
+    return E_OK;
+}
+
+error_t tokenize_long_arg(const char *arg_name, const char *arg_val, Options *options, ArgTokenNode *arg_token_node)
+{
+    if (strcmp(arg_name, "maxsize") == 0 || strcmp(arg_name, "minsize") == 0) {
+        return tokenize_size_arg(arg_name, arg_val, options, arg_token_node);
+    }
+    char *end_ptr = NULL;
+    const long long_val = strtol(arg_val, &end_ptr, 10);
+    ArgToken *a = new_long_arg_token(arg_name, long_val);
+    add_arg_token_to_arg_token_node(a, arg_token_node);
+    return E_OK;
+}
 
 error_t tokenize_args(const int argc, char *argv[], Options *options, ArgTokenNode *arg_token_node)
 {
@@ -82,10 +160,10 @@ error_t tokenize_args(const int argc, char *argv[], Options *options, ArgTokenNo
                         add_arg_token_to_arg_token_node(a, arg_token_node);
                     } else if (o->arg_type == ARG_TOKEN_TYPE_LONG) {
                         if (arg_val_len == 0) return E_MISSING_ARG_FOR_OPTION;
-                        char *end_ptr = NULL;
-                        const long long_val = strtol(arg_val, &end_ptr, 10);
-                        ArgToken *a = new_long_arg_token(arg_name, long_val);
-                        add_arg_token_to_arg_token_node(a, arg_token_node);
+                        const error_t long_err = tokenize_long_arg(arg_name, arg_val, options, arg_token_node);
+                        if (long_err != E_OK) {
+                            return long_err;
+                        }
                     } else {
                         return E_INVALID_OPTION;
                     }
@@ -129,10 +207,10 @@ error_t tokenize_args(const int argc, char *argv[], Options *options, ArgTokenNo
                             add_arg_token_to_arg_token_node(a, arg_token_node);
                         } else if (o->arg_type == ARG_TOKEN_TYPE_LONG) {
                             if (arg_val == NULL) return E_MISSING_ARG_FOR_OPTION;
-                            char *end_ptr = NULL;
-                            const long long_val = strtol(arg_val, &end_ptr, 10);
-                            ArgToken *a = new_long_arg_token(o->long_arg, long_val);
-                            add_arg_token_to_arg_token_node(a, arg_token_node);
+                            const error_t long_err = tokenize_long_arg(arg_name, arg_val, options, arg_token_node);
+                            if (long_err != E_OK) {
+                                return long_err;
+                            }
                         } else {
                             return E_INVALID_OPTION;
                         }
