@@ -7,6 +7,8 @@
 @property NSDictionary<NSString*,NSString*> *boolDict;
 @property NSDictionary<NSString*,NSString*> *stringDict;
 @property NSDictionary<NSString*,NSString*> *intDict;
+@property Regex *numPattern;
+@property Regex *numModifierPattern;
 
 @end
 
@@ -39,8 +41,55 @@
         self.boolDict = [NSDictionary dictionaryWithDictionary:boolDict];
         self.stringDict = [NSDictionary dictionaryWithDictionary:stringDict];
         self.intDict = [NSDictionary dictionaryWithDictionary:intDict];
+        
+        self.numPattern = [[Regex alloc] initWithPattern:@"^\\d+$"];
+        self.numModifierPattern = [[Regex alloc] initWithPattern:@"^\\d+[ckmgtp]$"];
     }
     return self;
+}
+
+- (ArgToken*) tokenizeSizeArg:(NSString*)argName argVal:(NSString*)argVal error:(NSError **)error {
+    NSString *lcArgVal = [argVal lowercaseString];
+    if ([self.numModifierPattern test:lcArgVal]) {
+        NSUInteger modIdx = [lcArgVal length] - 1;
+        long lngVal = [[lcArgVal substringToIndex:modIdx] integerValue];
+        NSString *modifier = [lcArgVal substringFromIndex:modIdx];
+        long multiplier = 1;
+        if ([modifier isEqualToString:@"c"]) {
+            multiplier = 1L;
+        } else if ([modifier isEqualToString:@"k"]) {
+            multiplier = 1024L;
+        } else if ([modifier isEqualToString:@"m"]) {
+            multiplier = 1024L * 1024;
+        } else if ([modifier isEqualToString:@"g"]) {
+            multiplier = 1024L * 1024 * 1024;
+        } else if ([modifier isEqualToString:@"t"]) {
+            multiplier = 1024L * 1024 * 1024 * 1024;
+        } else if ([modifier isEqualToString:@"p"]) {
+            multiplier = 1024L * 1024 * 1024 * 1024 * 1024;
+        } else {
+            setError(error, [NSString stringWithFormat:@"Invalid value for option %@: %@", argName, argVal]);
+            return nil;
+        }
+        return [[ArgToken alloc] initWithName:argName type:ArgTokenTypeInt value:@(lngVal * multiplier)];
+    }
+
+    setError(error, [NSString stringWithFormat:@"Invalid value for option %@: %@", argName, argVal]);
+    return nil;
+}
+
+- (ArgToken*) tokenizeIntArg:(NSString*)argName argVal:(NSString*)argVal error:(NSError **)error {
+    if ([self.numPattern test:argVal]) {
+        int intVal = [argVal intValue];
+        return [[ArgToken alloc] initWithName:argName type:ArgTokenTypeInt value:@(intVal)];
+    }
+    
+    if ([argName isEqualToString:@"maxsize"] || [argName isEqualToString:@"minsize"]) {
+        return [self tokenizeSizeArg:argName argVal:argVal error:error];
+    }
+    
+    setError(error, [NSString stringWithFormat:@"Invalid value for option %@: %@", argName, argVal]);
+    return nil;
 }
 
 - (NSArray<ArgToken*> *) tokenizeArgs:(NSArray<NSString*> *)args error:(NSError **)error {
@@ -102,14 +151,18 @@
                             argVal = args[i+1];
                             i++;
                         } else {
-                            setError(error, [NSString stringWithFormat:@"Missing value for option %@", arg]);
+                            setError(error, [NSString stringWithFormat:@"Missing value for option %@: %@", arg, argVal]);
                             return nil;
                         }
                     }
                     if (self.stringDict[argName] || [argName isEqualToString:@"settings-file"]) {
                         [argTokens addObject:[[ArgToken alloc] initWithName:argName type:ArgTokenTypeStr value:argVal]];
                     } else if (self.intDict[argName]) {
-                        [argTokens addObject:[[ArgToken alloc] initWithName:argName type:ArgTokenTypeInt value:@([argVal integerValue])]];
+                        ArgToken *intToken = [self tokenizeIntArg:argName argVal:argVal error:error];
+                        if (*error) {
+                            return nil;
+                        }
+                        [argTokens addObject:intToken];
                     } else {
                         setError(error, [NSString stringWithFormat:@"Invalid option: %@", arg]);
                         return nil;
@@ -138,7 +191,7 @@
                 BOOL b = [num boolValue];
                 [argTokens addObject:[[ArgToken alloc] initWithName:key type:ArgTokenTypeBool value:@(b)]];
             } else {
-                setError(error, [@"Invalid value for option: " stringByAppendingString:key]);
+                setError(error, [NSString stringWithFormat:@"Invalid value for option %@: %@", key, val]);
                 return nil;
             }
         } else if (self.stringDict[key] || [key isEqualToString:@"settings-file"]) {
@@ -152,12 +205,12 @@
                         NSString *s = (NSString *)o;
                         [argTokens addObject:[[ArgToken alloc] initWithName:key type:ArgTokenTypeStr value:s]];
                     } else {
-                        setError(error, [@"Invalid value for option: " stringByAppendingString:key]);
+                        setError(error, [NSString stringWithFormat:@"Invalid value for option %@: %@", key, val]);
                         return nil;
                     }
                 }
             } else {
-                setError(error, [@"Invalid value for option: " stringByAppendingString:key]);
+                setError(error, [NSString stringWithFormat:@"Invalid value for option %@: %@", key, val]);
                 return nil;
             }
         } else if (self.intDict[key]) {
@@ -165,8 +218,10 @@
                 NSNumber *num = (NSNumber *)val;
                 NSInteger i = [num integerValue];
                 [argTokens addObject:[[ArgToken alloc] initWithName:key type:ArgTokenTypeInt value:@(i)]];
+            } else if ([val isKindOfClass:[NSString class]]) {
+                [argTokens addObject:[self tokenizeIntArg:key argVal:val error:error]];
             } else {
-                setError(error, [@"Invalid value for option: " stringByAppendingString:key]);
+                setError(error, [NSString stringWithFormat:@"Invalid value for option %@: %@", key, val]);
                 return nil;
             }
         } else {
