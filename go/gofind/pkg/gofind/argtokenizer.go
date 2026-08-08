@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"reflect"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -27,10 +28,11 @@ type ArgToken struct {
 }
 
 type ArgTokenizer struct {
-	BoolMap   map[string]string
-	StringMap map[string]string
-	IntMap    map[string]string
-	LongMap   map[string]string
+	BoolMap            map[string]string
+	StringMap          map[string]string
+	IntMap             map[string]string
+	LongMap            map[string]string
+	NumModifierPattern *regexp.Regexp
 }
 
 // ArgOption interface - implement these methods to use as a type to pass to ArgTokenizer
@@ -71,12 +73,60 @@ func NewArgTokenizer(options []ArgOption) *ArgTokenizer {
 			}
 		}
 	}
+	numModifierPattern := regexp.MustCompile("(?i)^\\d+[ckmgtp]$")
+
 	return &ArgTokenizer{
 		boolMap,
 		stringMap,
 		intMap,
 		longMap,
+		numModifierPattern,
 	}
+}
+
+func (at *ArgTokenizer) TokenizeSizeArg(argName string, argVal string) (*ArgToken, error) {
+	if at.NumModifierPattern.MatchString(argVal) {
+		lcArgVal := strings.ToLower(argVal)
+		longVal, err := strconv.ParseInt(argVal[:(len(argVal)-1)], 0, 64)
+		if err != nil {
+			return nil, fmt.Errorf("Invalid value for option %s: %s", argName, argVal)
+		}
+		modifier := lcArgVal[len(lcArgVal)-1:]
+		var multiplier int64
+		multiplier = 0
+		if modifier == "c" {
+			multiplier = 1
+		} else if modifier == "k" {
+			multiplier = 1024
+		} else if modifier == "m" {
+			multiplier = 1024 * 1024
+		} else if modifier == "g" {
+			multiplier = 1024 * 1024 * 1024
+		} else if modifier == "t" {
+			multiplier = 1024 * 1024 * 1024 * 1024
+		} else if modifier == "p" {
+			multiplier = 1024 * 1024 * 1024 * 1024 * 1024
+		} else {
+			return nil, fmt.Errorf("Invalid value for option %s: %s", argName, argVal)
+		}
+		return &ArgToken{argName, ArgTokenTypeLong, longVal * multiplier}, nil
+	}
+	longVal, err := strconv.ParseInt(argVal, 0, 64)
+	if err != nil {
+		return nil, fmt.Errorf("Invalid value for option %s: %s", argName, argVal)
+	}
+	return &ArgToken{argName, ArgTokenTypeLong, longVal}, nil
+}
+
+func (at *ArgTokenizer) TokenizeLongArg(argName string, argVal string) (*ArgToken, error) {
+	if argName == "maxsize" || argName == "minsize" {
+		return at.TokenizeSizeArg(argName, argVal)
+	}
+	longVal, err := strconv.ParseInt(argVal, 0, 64)
+	if err != nil {
+		return nil, fmt.Errorf("Invalid value for option %s: %s", argName, argVal)
+	}
+	return &ArgToken{argName, ArgTokenTypeLong, longVal}, nil
 }
 
 func (at *ArgTokenizer) TokenizeArgs(args []string) ([]*ArgToken, error) {
@@ -127,7 +177,7 @@ func (at *ArgTokenizer) TokenizeArgs(args []string) ([]*ArgToken, error) {
 					if argVal == "" {
 						i++
 						if len(args) < i+1 {
-							return nil, fmt.Errorf("Missing value for option: %s", argName)
+							return nil, fmt.Errorf("Missing value for option %s", argName)
 						}
 						argVal = args[i]
 					}
@@ -137,15 +187,15 @@ func (at *ArgTokenizer) TokenizeArgs(args []string) ([]*ArgToken, error) {
 					} else if _, isInt := at.IntMap[argName]; isInt {
 						intVal, err := strconv.Atoi(argVal)
 						if err != nil {
-							return nil, fmt.Errorf("Invalid value for option %s", argName)
+							return nil, fmt.Errorf("Invalid value for option %s: %s", argName, argVal)
 						}
 						argTokens = append(argTokens, &ArgToken{argName, ArgTokenTypeInt, intVal})
 					} else if _, isLong := at.LongMap[argName]; isLong {
-						longVal, err := strconv.ParseInt(argVal, 0, 64)
+						lngToken, err := at.TokenizeLongArg(argName, argVal)
 						if err != nil {
-							return nil, fmt.Errorf("Invalid value for option %s", argName)
+							return nil, fmt.Errorf("Invalid value for option %s: %s", argName, argVal)
 						}
-						argTokens = append(argTokens, &ArgToken{argName, ArgTokenTypeLong, longVal})
+						argTokens = append(argTokens, lngToken)
 					} else if argName == "settings-file" {
 						argTokens = append(argTokens, &ArgToken{argName, ArgTokenTypeString, argVal})
 					} else {
@@ -180,7 +230,7 @@ func (at *ArgTokenizer) tokenizeArgMap(argMap ArgMap) ([]*ArgToken, error) {
 			case bool:
 				argTokens = append(argTokens, &ArgToken{bName, ArgTokenTypeBool, v})
 			default:
-				return nil, fmt.Errorf("Invalid value for option: %v", k)
+				return nil, fmt.Errorf("Invalid value for option %v: %v", k, v)
 			}
 		} else if sName, isString := at.StringMap[k]; isString {
 			switch v := v.(type) {
@@ -199,7 +249,7 @@ func (at *ArgTokenizer) tokenizeArgMap(argMap ArgMap) ([]*ArgToken, error) {
 				Log(fmt.Sprintf("reflect.TypeOf(v).Kind(): %v", reflect.TypeOf(v).Kind()))
 				const errMsg = "Unknown data type in ArgMap"
 				Log(errMsg)
-				return nil, fmt.Errorf("Invalid value for option: %v", k)
+				return nil, fmt.Errorf("Invalid value for option %v: %v", k, v)
 			}
 		} else if iName, isInt := at.IntMap[k]; isInt {
 			switch v := v.(type) {
@@ -210,7 +260,7 @@ func (at *ArgTokenizer) tokenizeArgMap(argMap ArgMap) ([]*ArgToken, error) {
 			default:
 				Log(fmt.Sprintf("k: %v", k))
 				Log(fmt.Sprintf("reflect.TypeOf(v).Kind(): %v", reflect.TypeOf(v).Kind()))
-				return nil, fmt.Errorf("Invalid value for option: %v", k)
+				return nil, fmt.Errorf("Invalid value for option %v: %v", k, v)
 			}
 		} else if lName, isLong := at.LongMap[k]; isLong {
 			switch v := v.(type) {
@@ -223,7 +273,7 @@ func (at *ArgTokenizer) tokenizeArgMap(argMap ArgMap) ([]*ArgToken, error) {
 				Log(fmt.Sprintf("reflect.TypeOf(v).Kind(): %v", reflect.TypeOf(v).Kind()))
 				const errMsg = "Unknown data type in ArgMap"
 				Log(errMsg)
-				return nil, fmt.Errorf("Invalid value for option: %v", k)
+				return nil, fmt.Errorf("Invalid value for option %v: %v", k, v)
 			}
 		} else if k == "settings-file" {
 			switch v := v.(type) {
@@ -242,7 +292,7 @@ func (at *ArgTokenizer) tokenizeArgMap(argMap ArgMap) ([]*ArgToken, error) {
 				Log(fmt.Sprintf("reflect.TypeOf(v).Kind(): %v", reflect.TypeOf(v).Kind()))
 				const errMsg = "Unknown data type in ArgMap"
 				Log(errMsg)
-				return nil, fmt.Errorf("Invalid value for option: %v", k)
+				return nil, fmt.Errorf("Invalid value for option %v: %v", k, v)
 			}
 		} else {
 			return nil, fmt.Errorf("Invalid option: %v", k)
