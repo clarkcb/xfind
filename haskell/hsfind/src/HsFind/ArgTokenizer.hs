@@ -12,12 +12,15 @@ module HsFind.ArgTokenizer
 
 import Data.Aeson
 import qualified Data.ByteString.Lazy.Char8 as BC
+import Data.Char (toLower)
 import Data.HashMap.Strict as HashMap (HashMap, keys, lookup)
 import Data.List (isPrefixOf, isSuffixOf, sort)
 import Data.Maybe (fromJust, isJust, listToMaybe)
 import Data.Text (Text, unpack)
 import Data.Vector as Vector (map, toList)
 import GHC.Generics ( Generic )
+import Text.Read (readMaybe)
+import Text.Regex.PCRE ( (=~) )
 
 import HsFind.FileUtil (expandPath, getFileString, isFile)
 
@@ -61,6 +64,42 @@ longNameAndType argTokenizer argName
     stringLongName = Prelude.lookup argName $ stringMap argTokenizer
     intLongName = Prelude.lookup argName $ intMap argTokenizer
 
+anyMatchesAnyPattern :: [String] -> [String] -> Bool
+anyMatchesAnyPattern strings patterns = any (\s -> any (\p -> s =~ p :: Bool) patterns) strings
+
+numModifier :: String
+numModifier = "^(?i)\\d+[ckmgtp]$"
+
+toMultiplier :: Char -> Int
+toMultiplier c = case toLower c of
+  'c' -> 1
+  'k' -> 1024
+  'm' -> 1024 * 1024
+  'g' -> 1024 * 1024 * 1024
+  't' -> 1024 * 1024 * 1024 * 1024
+  'p' -> 1024 * 1024 * 1024 * 1024 * 1024
+  _   -> 1
+
+tokenizeSizeArg :: String -> String -> Either String ArgToken
+tokenizeSizeArg argName argVal =
+  case readMaybe argVal of
+    Just i -> Right $ ArgToken {name=argName, argType=ArgTokenTypeInt, value=TypeC i}
+    Nothing ->
+      if argVal =~ numModifier :: Bool
+        then
+          let i = read (init argVal)
+              modifier = toLower (Prelude.last argVal)
+          in Right $ ArgToken {name=argName, argType=ArgTokenTypeInt, value=TypeC (i * toMultiplier modifier)}
+        else Left $ "Invalid value for option " ++ argName ++ ": " ++ argVal
+
+tokenizeIntArg :: String -> String -> Either String ArgToken
+tokenizeIntArg argName argVal =
+  if argName == "maxsize" || argName == "minsize"
+    then tokenizeSizeArg argName argVal
+    else case readMaybe argVal of
+      Just i -> Right $ ArgToken {name=argName, argType=ArgTokenTypeInt, value=TypeC i}
+      Nothing -> Left $ "Invalid value for option " ++ argName ++ ": " ++ argVal
+
 tokenizeArgs :: ArgTokenizer -> [String] -> Either String [ArgToken]
 tokenizeArgs argTokenizer arguments = recTokenizeArgs argTokenizer arguments []
   where
@@ -86,7 +125,9 @@ tokenizeArgs argTokenizer arguments = recTokenizeArgs argTokenizer arguments []
             else Left $ "Missing value for option: " ++ arg
         (lngName, ArgTokenTypeInt) ->
           if isJust val
-            then recTokenizeArgs argTokenizer (tail args) (tokens ++ [ArgToken {name=lngName, argType=ArgTokenTypeInt, value=TypeC (read (fromJust val))}])
+            then case tokenizeIntArg lngName (fromJust val) of
+              Left e -> Left e
+              Right intToken -> recTokenizeArgs argTokenizer (tail args) (tokens ++ [intToken])
             else Left $ "Missing value for option: " ++ arg
         (_, _) -> Left $ "Invalid option from tokenizeArgs: " ++ arg
     argName :: String -> String
