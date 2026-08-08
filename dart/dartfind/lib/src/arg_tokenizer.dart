@@ -30,6 +30,7 @@ class ArgTokenizer {
   var boolMap = {};
   var stringMap = {};
   var intMap = {};
+  var numModifierPattern = RegExp(r'^(\d+)([ckmgtp])$', caseSensitive: false);
 
   ArgTokenizer(List<Option> options) {
     for (var o in options) {
@@ -49,6 +50,50 @@ class ArgTokenizer {
           intMap[o.shortArg()!] = o.longArg();
         }
       }
+    }
+  }
+
+  ArgToken tokenizeSizeArg(String argName, String argVal) {
+    var match = numModifierPattern.firstMatch(argVal);
+    if (match != null) {
+      var number = int.parse(match.group(1)!);
+      var modifier = match.group(2)!.toLowerCase();
+      switch (modifier) {
+        case 'k':
+          number *= 1024;
+          break;
+        case 'm':
+          number *= 1024 * 1024;
+          break;
+        case 'g':
+          number *= 1024 * 1024 * 1024;
+          break;
+        case 't':
+          number *= 1024 * 1024 * 1024 * 1024;
+          break;
+        case 'p':
+          number *= 1024 * 1024 * 1024 * 1024 * 1024;
+          break;
+      }
+      return ArgToken(argName, ArgTokenType.intType, number);
+    }
+    try {
+      var intVal = int.parse(argVal);
+      return ArgToken(argName, ArgTokenType.intType, intVal);
+    } catch (e) {
+      throw FindException('Invalid value for option $argName: $argVal');
+    }
+  }
+
+  ArgToken tokenizeIntArg(String argName, String argVal) {
+    if (argName == 'maxsize' || argName == 'minsize') {
+      return tokenizeSizeArg(argName, argVal);
+    }
+    try {
+      var intVal = int.parse(argVal);
+      return ArgToken(argName, ArgTokenType.intType, intVal);
+    } catch (e) {
+      throw FindException('Invalid value for option $argName: $argVal');
     }
   }
 
@@ -101,8 +146,7 @@ class ArgTokenizer {
             if (stringMap.containsKey(argName)) {
               argTokens.add(ArgToken(argName, ArgTokenType.stringType, argVal));
             } else {
-              argTokens.add(
-                  ArgToken(argName, ArgTokenType.intType, int.parse(argVal)));
+              argTokens.add(tokenizeIntArg(argName, argVal));
             }
           } else {
             throw FindException('Invalid option: $arg');
