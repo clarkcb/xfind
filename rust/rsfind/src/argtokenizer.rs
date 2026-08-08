@@ -34,6 +34,9 @@ pub struct ArgOption {
     pub arg_type: ArgTokenType,
 }
 
+static LONG_WITH_MODIFIER: Lazy<Regex> = Lazy::new(|| {
+    Regex::new(r"^(?i)(\d+)([ckmgtp])$").unwrap()
+});
 static LONG_ARG_WITH_VAL_REGEX: Lazy<Regex> = Lazy::new(|| {
     Regex::new("^--([a-zA-Z0-9-]+)=(.+)$").unwrap()
 });
@@ -92,6 +95,44 @@ impl ArgTokenizer {
         }
     }
 
+    fn tokenize_size_arg(&self, arg_name: &str, arg_val: &str) -> Result<ArgToken, FindError> {
+        match arg_val.parse::<i64>() {
+            Ok(lng) => Ok(ArgToken::Long { name: arg_name.into(), value: lng }),
+            Err(_error) => {
+                if LONG_WITH_MODIFIER.is_match(arg_val) {
+                    let caps = LONG_WITH_MODIFIER.captures(&arg_val).unwrap();
+                    let lng = String::from(caps.get(1).unwrap().as_str()).parse::<i64>().unwrap_or(0);
+                    let modifier = caps.get(2).unwrap().as_str();
+                    let multiplier = match modifier {
+                        "k" | "K" => 1024,
+                        "m" | "M" => 1024 * 1024,
+                        "g" | "G" => 1024 * 1024 * 1024,
+                        "t" | "T" => 1024 * 1024 * 1024 * 1024,
+                        "p" | "P" => 1024 * 1024 * 1024 * 1024 * 1024,
+                        _ => 1
+                    };
+                    Ok(ArgToken::Long { name: arg_name.into(), value: lng * multiplier })
+
+                } else {
+                    Err(FindError::new(
+                        format!("Invalid value for option {}: {}", &arg_name, &arg_val).as_str(),
+                    ))
+                }
+            }
+        }
+    }
+
+    fn tokenize_long_arg(&self, arg_name: &str, arg_val: &str) -> Result<ArgToken, FindError> {
+        if arg_name == "maxsize" || arg_name == "minsize" {
+            self.tokenize_size_arg(arg_name, arg_val)
+        } else {
+            match arg_val.parse::<i64>() {
+                Ok(lng) => Ok(ArgToken::Long { name: arg_name.into(), value: lng }),
+                Err(error) => Err(FindError::new(&error.to_string())),
+            }
+        }
+    }
+
     fn rec_tokenize_args(&self, mut args: Iter<String>, mut arg_tokens: Vec<ArgToken>) -> Result<Vec<ArgToken>, FindError> {
         match args.next() {
             Some(next_arg) if LONG_ARG_WITH_VAL_REGEX.is_match(&next_arg) => {
@@ -119,9 +160,13 @@ impl ArgTokenizer {
                                 arg_tokens.push(ArgToken::Int { name: long_arg.into(), value: i });
                                 self.rec_tokenize_args(args, arg_tokens)
                             } else if self.long_map.contains_key(long_arg) {
-                                let l = arg_val.parse::<i64>().unwrap_or(0);
-                                arg_tokens.push(ArgToken::Long { name: long_arg.into(), value: l });
-                                self.rec_tokenize_args(args, arg_tokens)
+                                match self.tokenize_long_arg(long_arg, arg_val) {
+                                    Ok(arg_token) => {
+                                        arg_tokens.push(arg_token);
+                                        self.rec_tokenize_args(args, arg_tokens)
+                                    },
+                                    Err(error) => return Err(FindError::new(&error.to_string())),
+                                }
                             } else if long_arg == "settings-file" {
                                 arg_tokens.push(ArgToken::String { name: long_arg.into(), value: arg_val.into() });
                                 self.rec_tokenize_args(args, arg_tokens)
@@ -192,7 +237,7 @@ impl ArgTokenizer {
                 let b = value.as_bool().unwrap();
                 arg_tokens.push(ArgToken::Bool { name: name.into(), value: b });
             } else {
-                return Err(FindError::new(&format!("Invalid value for option: {}", name)));
+                return Err(FindError::new(&format!("Invalid value for option {}: {}", name, value)));
             }
         } else if self.string_map.contains_key(name) {
             if value.is_string() {
@@ -205,11 +250,11 @@ impl ArgTokenizer {
                         let s = v.as_str().unwrap();
                         arg_tokens.push(ArgToken::String { name: name.into(), value: s.to_string() });
                     } else {
-                        return Err(FindError::new(&format!("Invalid value for option: {}", name)));
+                        return Err(FindError::new(&format!("Invalid value for option {}: {}", name, value)));
                     }
                 }
             } else {
-                return Err(FindError::new(&format!("Invalid value for option: {}", name)));
+                return Err(FindError::new(&format!("Invalid value for option {}: {}", name, value)));
             }
         } else if self.int_map.contains_key(name) {
             if value.is_number() {
@@ -221,14 +266,14 @@ impl ArgTokenizer {
                     Err(error) => return Err(FindError::new(&error.to_string())),
                 }
             } else {
-                return Err(FindError::new(&format!("Invalid value for option: {}", name)));
+                return Err(FindError::new(&format!("Invalid value for option {}: {}", name, value)));
             }
         } else if self.long_map.contains_key(name) {
             if value.is_number() {
                 let l = value.as_i64().unwrap();
                 arg_tokens.push(ArgToken::Long { name: name.into(), value: l });
             } else {
-                return Err(FindError::new(&format!("Invalid value for option: {}", name)));
+                return Err(FindError::new(&format!("Invalid value for option {}: {}", name, value)));
             }
         } else {
             return Err(FindError::new(&format!("Invalid option: {}", name)));
