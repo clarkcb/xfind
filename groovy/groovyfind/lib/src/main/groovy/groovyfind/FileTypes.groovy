@@ -1,6 +1,7 @@
 package groovyfind
 
 import groovy.json.JsonSlurper
+import groovy.transform.CompileStatic
 
 import java.nio.file.Path
 
@@ -37,6 +38,7 @@ enum FileType {
     }
 }
 
+@CompileStatic
 class FileTypes {
     private static final String UNKNOWN = 'unknown'
     private static final String FILE_TYPES_JSON_PATH = '/filetypes.json'

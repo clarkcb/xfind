@@ -106,6 +106,7 @@ class FileResult {
     }
 }
 
+@CompileStatic
 class FileResultFormatter {
 
     private final FindSettings settings
@@ -194,6 +195,7 @@ class FileResultFormatter {
     }
 }
 
+@CompileStatic
 class FileResultSorter {
 
     private final FindSettings settings
