@@ -5,7 +5,7 @@ use std::path::Path;
 
 use serde::{Deserialize, Serialize};
 
-use crate::config::Config;
+use crate::findconfig::FindConfig;
 use crate::fileutil::FileUtil;
 use crate::finderror::FindError;
 
@@ -42,9 +42,8 @@ pub struct JsonFileTypes {
 }
 
 impl FileTypes {
-    pub fn new() -> Result<FileTypes, FindError> {
-        let config = Config::new();
-        let contents: String = match fs::read_to_string(config.file_types_path) {
+    pub fn new(config: &FindConfig) -> Result<FileTypes, FindError> {
+        let contents: String = match fs::read_to_string(&config.file_types_path) {
             Ok(contents) => contents,
             Err(error) => return Err(FindError::new(&error.to_string())),
         };
@@ -202,7 +201,8 @@ mod tests {
 
     #[test]
     fn get_file_type_archive_file() {
-        let file_types = FileTypes::new().ok().unwrap();
+        let config = FindConfig::new();
+        let file_types = FileTypes::new(&config).ok().unwrap();
         let file_name = "archive.zip";
         assert!(file_types.is_archive_file(file_name));
         assert_eq!(file_types.get_file_type(file_name), FileType::Archive);
@@ -222,7 +222,8 @@ mod tests {
 
     #[test]
     fn get_file_type_audio_file() {
-        let file_types = FileTypes::new().ok().unwrap();
+        let config = FindConfig::new();
+        let file_types = FileTypes::new(&config).ok().unwrap();
         let file_name = "music.mp3";
         assert!(file_types.is_audio_file(file_name));
         assert_eq!(file_types.get_file_type(file_name), FileType::Audio);
@@ -230,7 +231,8 @@ mod tests {
 
     #[test]
     fn get_file_type_binary_file() {
-        let file_types = FileTypes::new().ok().unwrap();
+        let config = FindConfig::new();
+        let file_types = FileTypes::new(&config).ok().unwrap();
         let file_name = "binary.exe";
         assert!(file_types.is_binary_file(file_name));
         assert_eq!(file_types.get_file_type(file_name), FileType::Binary);
@@ -247,7 +249,8 @@ mod tests {
 
     #[test]
     fn get_file_type_code_file() {
-        let file_types = FileTypes::new().ok().unwrap();
+        let config = FindConfig::new();
+        let file_types = FileTypes::new(&config).ok().unwrap();
         let file_name = "code.c";
         assert!(file_types.is_code_file(file_name));
         assert_eq!(file_types.get_file_type(file_name), FileType::Code);
@@ -264,7 +267,8 @@ mod tests {
 
     #[test]
     fn get_file_type_font_file() {
-        let file_types = FileTypes::new().ok().unwrap();
+        let config = FindConfig::new();
+        let file_types = FileTypes::new(&config).ok().unwrap();
         let file_name = "font.ttf";
         assert!(file_types.is_font_file(file_name));
         assert_eq!(file_types.get_file_type(file_name), FileType::Font);
@@ -272,7 +276,8 @@ mod tests {
 
     #[test]
     fn get_file_type_image_file() {
-        let file_types = FileTypes::new().ok().unwrap();
+        let config = FindConfig::new();
+        let file_types = FileTypes::new(&config).ok().unwrap();
         let file_name = "image.png";
         assert!(file_types.is_image_file(file_name));
         assert_eq!(file_types.get_file_type(file_name), FileType::Image);
@@ -280,7 +285,8 @@ mod tests {
 
     #[test]
     fn get_file_type_text_file() {
-        let file_types = FileTypes::new().ok().unwrap();
+        let config = FindConfig::new();
+        let file_types = FileTypes::new(&config).ok().unwrap();
         let file_name = "text.txt";
         assert!(file_types.is_text_file(file_name));
         assert_eq!(file_types.get_file_type(file_name), FileType::Text);
@@ -294,7 +300,8 @@ mod tests {
 
     #[test]
     fn get_file_type_video_file() {
-        let file_types = FileTypes::new().ok().unwrap();
+        let config = FindConfig::new();
+        let file_types = FileTypes::new(&config).ok().unwrap();
         let file_name = "movie.mp4";
         assert!(file_types.is_video_file(file_name));
         assert_eq!(file_types.get_file_type(file_name), FileType::Video);
@@ -302,7 +309,8 @@ mod tests {
 
     #[test]
     fn get_file_type_xml_file() {
-        let file_types = FileTypes::new().ok().unwrap();
+        let config = FindConfig::new();
+        let file_types = FileTypes::new(&config).ok().unwrap();
         let file_name = "markup.xml";
         assert!(file_types.is_xml_file(&file_name));
         assert_eq!(file_types.get_file_type(&file_name), FileType::Xml);
@@ -310,7 +318,8 @@ mod tests {
 
     #[test]
     fn get_file_type_unknown_file() {
-        let file_types = FileTypes::new().ok().unwrap();
+        let config = FindConfig::new();
+        let file_types = FileTypes::new(&config).ok().unwrap();
         let file_name = "unknown.xyz";
         assert!(file_types.is_unknown_file(file_name));
         assert_eq!(file_types.get_file_type(file_name), FileType::Unknown);

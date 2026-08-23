@@ -5,13 +5,14 @@ use std::process;
 use crate::common::{log, log_err, log_err_color};
 use crate::fileresultformatter::FileResultFormatter;
 use crate::finder::{print_matching_dirs, print_matching_files};
+use crate::findconfig::FindConfig;
 use crate::finderror::FindError;
 
 pub mod argtokenizer;
 pub mod consolecolor;
 pub mod color;
 pub mod common;
-pub mod config;
+pub mod findconfig;
 pub mod filetypes;
 pub mod fileutil;
 pub mod finder;
@@ -35,7 +36,8 @@ fn error_and_exit(error: FindError, colorize: bool, options: &findoptions::FindO
 }
 
 fn find(args: Iter<String>) {
-    let options = match findoptions::FindOptions::new() {
+    let config = FindConfig::new();
+    let options = match findoptions::FindOptions::new(config.clone()) {
         Ok(options) => options,
         Err(error) => {
             log_err(error.description.as_str());
@@ -59,7 +61,7 @@ fn find(args: Iter<String>) {
 
             let colorize = settings.colorize();
 
-            let finder = match finder::Finder::new(settings) {
+            let finder = match finder::Finder::new(config, settings) {
                 Ok(finder) => finder,
                 Err(error) => {
                     print_error(error, colorize, &options);

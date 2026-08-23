@@ -1,7 +1,7 @@
 use crate::argtokenizer::{ArgOption, ArgToken, ArgTokenType, ArgTokenizer};
 use crate::common::{log, timestamp_from_date_string};
-use crate::config::Config;
 use crate::filetypes::FileTypes;
+use crate::findconfig::FindConfig;
 use crate::finderror::FindError;
 use crate::findsettings::FindSettings;
 use crate::sortby::sort_by_from_name;
@@ -32,7 +32,7 @@ type IntAction = Box<dyn Fn(i32, &mut FindSettings) -> Result<(), FindError>>;
 type LongAction = Box<dyn Fn(u64, &mut FindSettings) -> Result<(), FindError>>;
 
 pub struct FindOptions {
-    pub config: Config,
+    pub config: FindConfig,
     pub find_options: Vec<FindOption>,
     pub bool_action_map: HashMap<String, BoolAction>,
     pub string_action_map: HashMap<String, StringAction>,
@@ -42,8 +42,7 @@ pub struct FindOptions {
 }
 
 impl FindOptions {
-    pub fn new() -> Result<FindOptions, FindError> {
-        let config = Config::new();
+    pub fn new(config: FindConfig) -> Result<FindOptions, FindError> {
         let contents: String = match fs::read_to_string(&config.find_options_path) {
             Ok(contents) => contents,
             Err(error) => return Err(FindError::new(&error.to_string())),
@@ -636,7 +635,8 @@ mod tests {
 
     #[test]
     fn test_settings_from_args() {
-        let options = match FindOptions::new() {
+        let config = FindConfig::new();
+        let options = match FindOptions::new(config) {
             Ok(options) => options,
             Err(error) => {
                 log(&error.to_string());
@@ -685,7 +685,8 @@ mod tests {
 
     #[test]
     fn test_settings_from_json() {
-        let options = match FindOptions::new() {
+        let config = FindConfig::new();
+        let options = match FindOptions::new(config) {
             Ok(options) => options,
             Err(error) => {
                 log(&error.to_string());
@@ -738,7 +739,8 @@ mod tests {
     // NOTE: this test is unreliable because the settings file can change, should probably deactivate
     #[test]
     fn test_settings_from_file() {
-        let options = match FindOptions::new() {
+        let config = FindConfig::new();
+        let options = match FindOptions::new(config) {
             Ok(options) => options,
             Err(error) => {
                 log(&error.to_string());
@@ -749,7 +751,7 @@ mod tests {
         assert!(!options.find_options.is_empty());
 
         // let config = Config::from_json_file(CONFIG_FILE_PATH.to_string());
-        let config = Config::new();
+        let config = FindConfig::new();
         let path = Path::new(config.shared_path.as_str()).join("settings.json");
         let settings_file = path.to_str().unwrap();
 

@@ -10,6 +10,7 @@ use crate::fileresultformatter::FileResultFormatter;
 use crate::fileresultsorter::FileResultSorter;
 use crate::filetypes::{FileType, FileTypes};
 use crate::fileutil::FileUtil;
+use crate::findconfig::FindConfig;
 use crate::finderror::FindError;
 use crate::findsettings::FindSettings;
 use regex::Regex;
@@ -278,8 +279,8 @@ fn validate_settings(settings: &FindSettings) -> Result<(), FindError> {
 
 impl Finder {
     /// Create a new Finder instance for the given settings, if valid
-    pub fn new(settings: FindSettings) -> Result<Finder, FindError> {
-        let file_types = match FileTypes::new() {
+    pub fn new(config: FindConfig, settings: FindSettings) -> Result<Finder, FindError> {
+        let file_types = match FileTypes::new(&config) {
             Ok(file_types) => file_types,
             Err(error) => return Err(error),
         };
@@ -504,7 +505,7 @@ mod tests {
     use std::path::Path;
 
     use super::*;
-    use crate::config::Config;
+    use crate::findconfig::FindConfig;
 
     fn get_default_test_settings() -> FindSettings {
         let mut settings = FindSettings::default();
@@ -571,11 +572,12 @@ mod tests {
 
     #[test]
     fn test_is_matching_file_path() {
+        let config = FindConfig::new();
         let mut settings = get_default_test_settings();
         settings.add_in_extension(String::from("js,ts"));
         settings.add_out_dir_pattern(String::from("temp"));
         settings.add_out_file_pattern(String::from("temp"));
-        let finder = Finder::new(settings).ok().unwrap();
+        let finder = Finder::new(config, settings).ok().unwrap();
 
         // js extension
         let file_path = Path::new("./codefile.js");
@@ -602,18 +604,20 @@ mod tests {
         assert!(finder.filter_file_path_to_file_result(&file_path).is_none());
 
         // archive file + include_archives
+        let config = FindConfig::new();
         let mut settings = get_default_test_settings();
         settings.set_include_archives(true);
-        let finder = Finder::new(settings).ok().unwrap();
+        let finder = Finder::new(config, settings).ok().unwrap();
         assert!(finder.filter_file_path_to_file_result(&file_path).is_some());
     }
 
     #[test]
     fn test_find_code_files() {
+        let config = FindConfig::new();
         let mut settings = FindSettings::default();
         settings.add_path(String::from("~/src/xfind/rust"));
         settings.add_in_extension(String::from("go,rs"));
-        let finder = Finder::new(settings).ok().unwrap();
+        let finder = Finder::new(config, settings).ok().unwrap();
 
         let file_results = finder.find();
         assert!(file_results.is_ok());
@@ -623,10 +627,11 @@ mod tests {
 
     #[test]
     fn test_find_binary_files() {
+        let config = FindConfig::new();
         let mut settings = FindSettings::default();
         settings.add_path(String::from("~/src/xfind/java"));
         settings.add_in_extension(String::from("class"));
-        let finder = Finder::new(settings).ok().unwrap();
+        let finder = Finder::new(config, settings).ok().unwrap();
 
         let file_results = finder.find();
         assert!(file_results.is_ok());
@@ -636,11 +641,12 @@ mod tests {
 
     #[test]
     fn test_find_jar_files() {
+        let config = FindConfig::new();
         let mut settings = FindSettings::default();
         settings.add_path(String::from("../../java/javafind"));
         settings.set_archives_only(true);
         settings.add_in_archive_extension(String::from("jar"));
-        let finder = Finder::new(settings).ok().unwrap();
+        let finder = Finder::new(config, settings).ok().unwrap();
 
         let file_results = finder.find();
         assert!(file_results.is_ok());
@@ -650,6 +656,7 @@ mod tests {
 
     #[test]
     fn test_find_zip_file() {
+        let config = FindConfig::new();
         let mut settings = FindSettings::default();
         let path = Path::new("../../shared/testFiles.zip");
         let path_string = if path.exists() {
@@ -659,7 +666,7 @@ mod tests {
         };
         settings.add_path(path_string);
         settings.set_include_archives(true);
-        let finder = Finder::new(settings).ok().unwrap();
+        let finder = Finder::new(config, settings).ok().unwrap();
 
         let file_results = finder.find();
         assert!(file_results.is_ok());
@@ -669,12 +676,12 @@ mod tests {
 
     #[test]
     fn test_follow_symlinks_default_settings() {
+        let config = FindConfig::new();
         let mut settings = FindSettings::default();
-        let config = Config::new();
         let bin_path = Path::new(config.xfind_path.as_str()).join("bin");
         settings.add_path(bin_path.to_str().unwrap().to_string());
 
-        let finder = Finder::new(settings).unwrap();
+        let finder = Finder::new(config, settings).unwrap();
         let file_results = finder.find();
         assert!(file_results.is_ok());
         let file_results = file_results.ok().unwrap();
@@ -684,13 +691,13 @@ mod tests {
 
     #[test]
     fn test_follow_symlinks_with_follow_symlinks() {
+        let config = FindConfig::new();
         let mut settings = FindSettings::default();
-        let config = Config::new();
         let bin_path = Path::new(config.xfind_path.as_str()).join("bin");
         settings.add_path(bin_path.to_str().unwrap().to_string());
         settings.set_follow_symlinks(true);
 
-        let finder = Finder::new(settings).unwrap();
+        let finder = Finder::new(config, settings).unwrap();
         let file_results = finder.find();
         assert!(file_results.is_ok());
         let file_results = file_results.ok().unwrap();
@@ -700,13 +707,13 @@ mod tests {
 
     #[test]
     fn test_follow_symlinks_no_follow_symlinks() {
+        let config = FindConfig::new();
         let mut settings = FindSettings::default();
-        let config = Config::new();
         let bin_path = Path::new(config.xfind_path.as_str()).join("bin");
         settings.add_path(bin_path.to_str().unwrap().to_string());
         settings.set_follow_symlinks(false);
 
-        let finder = Finder::new(settings).unwrap();
+        let finder = Finder::new(config, settings).unwrap();
         let file_results = finder.find();
         assert!(file_results.is_ok());
         let file_results = file_results.ok().unwrap();

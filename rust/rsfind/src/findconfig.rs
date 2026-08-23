@@ -3,8 +3,8 @@ use std::fs;
 
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug)]
-pub struct Config {
+#[derive(Clone, Debug)]
+pub struct FindConfig {
     pub xfind_path: String,
     pub shared_path: String,
     pub file_types_path: String,
@@ -21,17 +21,17 @@ pub struct JsonConfig {
 
 pub const VERSION: &str = "1.0.0";
 
-impl Config {
-    pub fn new() -> Config {
+impl FindConfig {
+    pub fn new() -> FindConfig {
         let xfind_path: String = env::var("XFIND_PATH")
             .unwrap_or_else(|_error| env::var("HOME").unwrap() + "/src/xfind");
         let version = String::from(VERSION);
-        Config::for_values(xfind_path, version)
+        FindConfig::for_values(xfind_path, version)
     }
 
-    pub fn for_values(xfind_path: String, version: String) -> Config {
+    pub fn for_values(xfind_path: String, version: String) -> FindConfig {
         let shared_path = xfind_path.clone() + "/shared";
-        Config {
+        FindConfig {
             xfind_path: xfind_path.clone(),
             shared_path: shared_path.clone(),
             file_types_path: shared_path.clone() + "/filetypes.json",
@@ -41,10 +41,10 @@ impl Config {
         }
     }
 
-    pub fn from_json_file(json_file_path: String) -> Config {
+    pub fn from_json_file(json_file_path: String) -> FindConfig {
         let contents = fs::read_to_string(json_file_path)
             .expect("Something went wrong reading the config file");
         let json_config: JsonConfig = serde_json::from_str(&contents).unwrap();
-        Config::for_values(json_config.xfindpath, json_config.version)
+        FindConfig::for_values(json_config.xfindpath, json_config.version)
     }
 }
