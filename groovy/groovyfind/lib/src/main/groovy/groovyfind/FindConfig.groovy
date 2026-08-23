@@ -2,9 +2,19 @@ package groovyfind
 
 import groovy.transform.CompileStatic
 
+import java.nio.file.Paths
+
 @CompileStatic
 class FindConfig {
-    private static final String HOME = System.getProperty("user.home");
-    public static final String XFINDPATH = System.getenv().getOrDefault("XFIND_PATH", HOME + "/src/xfind");
-    public static final String XFINDDB = XFINDPATH + "/shared/xfind.db";
+
+    final String fileTypesPath
+    final String findOptionsPath
+    final String defaultFindSettingsPath
+
+    FindConfig() {
+        this.fileTypesPath = "/filetypes.json"
+        this.findOptionsPath = "/findoptions.json"
+        String home = System.getProperty("user.home")
+        this.defaultFindSettingsPath = Paths.get(home, ".config", "xfind", "settings.json").toString()
+    }
 }

@@ -15,7 +15,7 @@ class FindOptionsTest {
     final void testSettingsFromMinimalArgs() {
         def args = new String[]{'.'}
         try {
-            def findOptions = new FindOptions()
+            def findOptions = new FindOptions(new FindConfig())
             def settings = findOptions.settingsFromArgs(args)
             assertFalse(settings.archivesOnly)
             assertFalse(settings.debug)
@@ -40,7 +40,7 @@ class FindOptionsTest {
     final void testSettingsFromValidArgs() {
         def args = new String[]{'-x', 'java,scala', '.'}
         try {
-            def findOptions = new FindOptions()
+            def findOptions = new FindOptions(new FindConfig())
             def settings = findOptions.settingsFromArgs(args)
             assertEquals(2, settings.inExtensions.size())
             assertTrue(settings.inExtensions.contains('java'))
@@ -68,7 +68,7 @@ class FindOptionsTest {
                 .append('  "includehidden": false\n')
                 .append('}')
         try {
-            def findOptions = new FindOptions()
+            def findOptions = new FindOptions(new FindConfig())
             def settings = new FindSettings()
             findOptions.updateSettingsFromJson(settings, json.toString())
 

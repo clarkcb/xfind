@@ -18,12 +18,12 @@ import static groovyfind.FindError.*
 @CompileStatic
 class Finder {
 
-    final private FindSettings settings
-    final private FileTypes fileTypes
+    private final FindSettings settings
+    private final FileTypes fileTypes
 
-    Finder(final FindSettings settings) {
+    Finder(final FindConfig config, final FindSettings settings) {
         this.settings = settings
-        this.fileTypes = new FileTypes()
+        this.fileTypes = new FileTypes(config)
     }
 
     final void validateSettings() throws FindException {

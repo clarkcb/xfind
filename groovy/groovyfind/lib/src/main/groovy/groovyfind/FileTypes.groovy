@@ -40,15 +40,17 @@ enum FileType {
 
 @CompileStatic
 class FileTypes {
-    private static final String UNKNOWN = 'unknown'
-    private static final String FILE_TYPES_JSON_PATH = '/filetypes.json'
-    private static final int fileTypeMapCapacity = 8
+    private static final int fileTypeMapCapacity = 10
     private final Map<String, Set<String>> fileTypeExtMap = new HashMap<String, Set<String>>(fileTypeMapCapacity)
     private final Map<String, Set<String>> fileTypeNameMap = new HashMap<String, Set<String>>(fileTypeMapCapacity)
 
-    private void setFileTypeMapsFromJson() {
+    FileTypes(final FindConfig config) {
+        loadFileTypeMapsFromJsonFile(config.getFileTypesPath())
+    }
+
+    private void loadFileTypeMapsFromJsonFile(final String fileTypesPath) {
         JsonSlurper jsonSlurper = new JsonSlurper()
-        InputStream fileTypesInputStream = getClass().getResourceAsStream(FILE_TYPES_JSON_PATH)
+        InputStream fileTypesInputStream = getClass().getResourceAsStream(fileTypesPath)
         assert fileTypesInputStream != null
 
         try {
@@ -80,10 +82,6 @@ class FileTypes {
         } catch (AssertionError e) {
             e.printStackTrace()
         }
-    }
-
-    FileTypes() {
-        setFileTypeMapsFromJson()
     }
 
     final FileType getFileType(final Path f) {

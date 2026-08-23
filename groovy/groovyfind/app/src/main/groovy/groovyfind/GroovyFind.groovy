@@ -16,7 +16,8 @@ class GroovyFind {
     static void main(final String[] args) {
         var colorize = true
         try {
-            FindOptions options = new FindOptions()
+            FindConfig config = new FindConfig()
+            FindOptions options = new FindOptions(config)
 
             try {
                 FindSettings settings = options.settingsFromArgs(args)
@@ -31,7 +32,7 @@ class GroovyFind {
                     options.usage(0)
                 }
 
-                Finder finder = new Finder(settings)
+                Finder finder = new Finder(config, settings)
                 finder.validateSettings()
                 List<FileResult> fileResults = finder.find()
                 var formatter = new FileResultFormatter(settings)

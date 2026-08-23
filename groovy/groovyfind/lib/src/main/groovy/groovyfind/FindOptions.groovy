@@ -59,11 +59,12 @@ class FindOption implements Option {
 
 @CompileStatic(TypeCheckingMode.SKIP)
 class FindOptions {
-    private static final String FIND_OPTIONS_JSON_PATH = '/findoptions.json'
+    private final FindConfig config
     private final List<FindOption> options
     private ArgTokenizer argTokenizer
 
-    FindOptions() throws IOException {
+    FindOptions(final FindConfig config) throws IOException {
+        this.config = config
         options = []
         setOptionsFromJson()
         argTokenizer = new ArgTokenizer(options as List<Option>)
@@ -147,7 +148,7 @@ class FindOptions {
 
     private void setOptionsFromJson() throws IOException {
         JsonSlurper jsonSlurper = new JsonSlurper()
-        InputStream findOptionsInputStream = getClass().getResourceAsStream(FIND_OPTIONS_JSON_PATH)
+        InputStream findOptionsInputStream = getClass().getResourceAsStream(this.config.findOptionsPath)
         assert findOptionsInputStream != null
 
         def jsonObj = jsonSlurper.parse(findOptionsInputStream)
@@ -258,9 +259,9 @@ class FindOptions {
     }
 
     final void updateSettingsFromDefaultFiles(FindSettings settings) throws FindException {
-        var defaultFindSettingsPath = Paths.get(System.getProperty("user.home"), ".config", "xfind", "settings.json")
-        if (Files.exists(defaultFindSettingsPath)) {
-            updateSettingsFromFilePath(settings, defaultFindSettingsPath.toString())
+        var defaultSettingsPath = Paths.get(config.defaultFindSettingsPath)
+        if (Files.exists(defaultSettingsPath)) {
+            updateSettingsFromFilePath(settings, defaultSettingsPath.toString())
         }
     }
 

@@ -11,7 +11,7 @@ class FileTypesTest {
     private final FileTypes fileTypes
 
     FileTypesTest() {
-        fileTypes = new FileTypes()
+        fileTypes = new FileTypes(new FindConfig())
     }
 
     @Test

@@ -10,6 +10,10 @@ class FinderTest {
 
     FinderTest() {}
 
+    private static FindConfig getConfig() {
+        return new FindConfig();
+    }
+
     private static FindSettings getSettings() {
         def settings = new FindSettings()
         settings.addPath('.')
@@ -29,78 +33,88 @@ class FinderTest {
      *************************************************************/
     @Test
     final void testIsMatchingDirPath_SingleDot_True() {
+        def config = getConfig()
         def settings = getSettings()
-        def finder = new Finder(settings)
+        def finder = new Finder(config, settings)
         assertTrue(finder.isMatchingDirPath(Paths.get('.')))
     }
 
     @Test
     final void testIsMatchingDirPath_DoubleDot_True() {
+        def config = getConfig()
         def settings = getSettings()
-        def finder = new Finder(settings)
+        def finder = new Finder(config, settings)
         assertTrue(finder.isMatchingDirPath(Paths.get('..')))
     }
 
     @Test
     final void testIsMatchingDirPath_IsHidden_False() {
+        def config = getConfig()
         def settings = getSettings()
-        def finder = new Finder(settings)
+        def finder = new Finder(config, settings)
         assertFalse(finder.isMatchingDirPath(Paths.get('.git')))
     }
 
     @Test
     final void testIsMatchingDirPath_IsHiddenIncludeHidden_True() {
+        def config = getConfig()
         def settings = getSettings()
         settings.setIncludeHidden(true)
-        def finder = new Finder(settings)
+        def finder = new Finder(config, settings)
         assertTrue(finder.isMatchingDirPath(Paths.get('.git')))
     }
 
     @Test
     final void testIsMatchingDirPath_NoPatterns_True() {
+        def config = getConfig()
         def settings = getSettings()
-        def finder = new Finder(settings)
+        def finder = new Finder(config, settings)
         assertTrue(finder.isMatchingDirPath(Paths.get('/Users')))
     }
 
     @Test
     final void testIsMatchingDirPath_MatchesInPattern_True() {
+        def config = getConfig()
         def settings = getSettings()
         settings.addInDirPattern('Find')
-        def finder = new Finder(settings)
+        def finder = new Finder(config, settings)
         assertTrue(finder.isMatchingDirPath(Paths.get('CsFind')))
     }
 
     @Test
     final void testIsMatchingDirPath_MatchesOutPattern_False() {
+        def config = getConfig()
         def settings = getSettings()
         settings.addOutDirPattern('Find')
-        def finder = new Finder(settings)
+        def finder = new Finder(config, settings)
         assertFalse(finder.isMatchingDirPath(Paths.get('CsFind')))
     }
 
     @Test
     final void testIsMatchingDirPath_DoesNotMatchInPattern_False() {
+        def config = getConfig()
         def settings = getSettings()
         settings.addInDirPattern('FindFiles')
-        def finder = new Finder(settings)
+        def finder = new Finder(config, settings)
         assertFalse(finder.isMatchingDirPath(Paths.get('CsFind')))
     }
 
     @Test
     final void testIsMatchingDirPath_DoesNotMatchOutPattern_True() {
+        def config = getConfig()
         def settings = getSettings()
         settings.addOutDirPattern('FindFiles')
-        def finder = new Finder(settings)
+        def finder = new Finder(config, settings)
         def dir = Paths.get('CsFind')
         assertTrue(finder.isMatchingDirPath(dir))
     }
 
     @Test
     final void testIsMatchingDirPath_DoesNotMatchOutPattern2_True() {
+        def config = getConfig()
         def settings = getSettings()
         settings.addOutDirPattern('FindFiles')
-        def finder = new Finder(settings)
+        def finder = new Finder(config, settings)
         def dir = Paths.get('/Users/cary/src/xfind/java/javafind/src/main/java/javafind')
         assertTrue(finder.isMatchingDirPath(dir))
     }
@@ -110,8 +124,9 @@ class FinderTest {
      *************************************************************/
     @Test
     final void testIsMatchingFile_NoExtensionsNoPatterns_True() {
+        def config = getConfig()
         def settings = getSettings()
-        def finder = new Finder(settings)
+        def finder = new Finder(config, settings)
         def path = Paths.get('./FileUtil.cs')
         def fileResult = new FileResult(path, FileType.CODE)
         assertTrue(finder.isMatchingFileResult(fileResult))
@@ -119,9 +134,10 @@ class FinderTest {
 
     @Test
     final void testIsMatchingFile_MatchesInExtension_True() {
+        def config = getConfig()
         def settings = getSettings()
         settings.addInExtension('cs')
-        def finder = new Finder(settings)
+        def finder = new Finder(config, settings)
         def path = Paths.get('./FileUtil.cs')
         def fileResult = new FileResult(path, FileType.CODE)
         assertTrue(finder.isMatchingFileResult(fileResult))
@@ -129,9 +145,10 @@ class FinderTest {
 
     @Test
     final void testIsMatchingFile_DoesNotMatchInExtension_False() {
+        def config = getConfig()
         def settings = getSettings()
         settings.addInExtension('java')
-        def finder = new Finder(settings)
+        def finder = new Finder(config, settings)
         def path = Paths.get('./FileUtil.cs')
         def fileResult = new FileResult(path, FileType.CODE)
         assertFalse(finder.isMatchingFileResult(fileResult))
@@ -140,9 +157,10 @@ class FinderTest {
 
     @Test
     final void testIsMatchingFile_MatchesOutExtension_False() {
+        def config = getConfig()
         def settings = getSettings()
         settings.addOutExtension('cs')
-        def finder = new Finder(settings)
+        def finder = new Finder(config, settings)
         def path = Paths.get('./FileUtil.cs')
         def fileResult = new FileResult(path, FileType.CODE)
         assertFalse(finder.isMatchingFileResult(fileResult))
@@ -150,9 +168,10 @@ class FinderTest {
 
     @Test
     final void testIsMatchingFile_DoesNotMatchOutExtension_True() {
+        def config = getConfig()
         def settings = getSettings()
         settings.addOutExtension('java')
-        def finder = new Finder(settings)
+        def finder = new Finder(config, settings)
         def path = Paths.get('./FileUtil.cs')
         def fileResult = new FileResult(path, FileType.CODE)
         assertTrue(finder.isMatchingFileResult(fileResult))
@@ -160,9 +179,10 @@ class FinderTest {
 
     @Test
     final void testIsMatchingFile_MatchesInPattern_True() {
+        def config = getConfig()
         def settings = getSettings()
         settings.addInFilePattern('Find')
-        def finder = new Finder(settings)
+        def finder = new Finder(config, settings)
         def path = Paths.get('./Finder.cs')
         def fileResult = new FileResult(path, FileType.CODE)
         assertTrue(finder.isMatchingFileResult(fileResult))
@@ -170,9 +190,10 @@ class FinderTest {
 
     @Test
     final void testIsMatchingFile_DoesNotMatchInPattern_False() {
+        def config = getConfig()
         def settings = getSettings()
         settings.addInFilePattern('Find')
-        def finder = new Finder(settings)
+        def finder = new Finder(config, settings)
         def path = Paths.get('./FileUtil.cs')
         def fileResult = new FileResult(path, FileType.CODE)
         assertFalse(finder.isMatchingFileResult(fileResult))
@@ -180,9 +201,10 @@ class FinderTest {
 
     @Test
     final void testIsMatchingFile_MatchesOutPattern_False() {
+        def config = getConfig()
         def settings = getSettings()
         settings.addOutFilePattern('Find')
-        def finder = new Finder(settings)
+        def finder = new Finder(config, settings)
         def path = Paths.get('./Finder.cs')
         def fileResult = new FileResult(path, FileType.CODE)
         assertFalse(finder.isMatchingFileResult(fileResult))
@@ -190,9 +212,10 @@ class FinderTest {
 
     @Test
     final void testIsMatchingFile_DoesNotMatchOutPattern_True() {
+        def config = getConfig()
         def settings = getSettings()
         settings.addOutFilePattern('Find')
-        def finder = new Finder(settings)
+        def finder = new Finder(config, settings)
         def path = Paths.get('./FileUtil.cs')
         def fileResult = new FileResult(path, FileType.CODE)
         assertTrue(finder.isMatchingFileResult(fileResult))
@@ -203,26 +226,29 @@ class FinderTest {
      *************************************************************/
     @Test
     final void testIsMatchingArchiveFile_NoExtensionsNoPatterns_True() {
+        def config = getConfig()
         def settings = getSettings()
-        def finder = new Finder(settings)
+        def finder = new Finder(config, settings)
         def path = Paths.get('archive.zip')
         assertTrue(finder.isMatchingArchiveFilePath(path))
     }
 
     @Test
     final void testIsMatchingArchiveFile_MatchesInExtension_True() {
+        def config = getConfig()
         def settings = getSettings()
         settings.addInArchiveExtension('zip')
-        def finder = new Finder(settings)
+        def finder = new Finder(config, settings)
         def path = Paths.get('archive.zip')
         assertTrue(finder.isMatchingArchiveFilePath(path))
     }
 
     @Test
     final void testIsMatchingArchiveFile_DoesNotMatchInExtension_False() {
+        def config = getConfig()
         def settings = getSettings()
         settings.addInArchiveExtension('gz')
-        def finder = new Finder(settings)
+        def finder = new Finder(config, settings)
         def path = Paths.get('archive.zip')
         assertFalse(finder.isMatchingArchiveFilePath(path))
     }
@@ -230,54 +256,60 @@ class FinderTest {
 
     @Test
     final void testIsMatchingArchiveFile_MatchesOutExtension_False() {
+        def config = getConfig()
         def settings = getSettings()
         settings.addOutArchiveExtension('zip')
-        def finder = new Finder(settings)
+        def finder = new Finder(config, settings)
         def path = Paths.get('archive.zip')
         assertFalse(finder.isMatchingArchiveFilePath(path))
     }
 
     @Test
     final void testIsMatchingArchiveFile_DoesNotMatchOutExtension_True() {
+        def config = getConfig()
         def settings = getSettings()
         settings.addOutArchiveExtension('gz')
-        def finder = new Finder(settings)
+        def finder = new Finder(config, settings)
         def path = Paths.get('archive.zip')
         assertTrue(finder.isMatchingArchiveFilePath(path))
     }
 
     @Test
     final void testIsMatchingArchiveFile_MatchesInPattern_True() {
+        def config = getConfig()
         def settings = getSettings()
         settings.addInArchiveFilePattern('arch')
-        def finder = new Finder(settings)
+        def finder = new Finder(config, settings)
         def path = Paths.get('archive.zip')
         assertTrue(finder.isMatchingArchiveFilePath(path))
     }
 
     @Test
     final void testIsMatchingArchiveFile_DoesNotMatchInPattern_False() {
+        def config = getConfig()
         def settings = getSettings()
         settings.addInArchiveFilePattern('archives')
-        def finder = new Finder(settings)
+        def finder = new Finder(config, settings)
         def path = Paths.get('archive.zip')
         assertFalse(finder.isMatchingArchiveFilePath(path))
     }
 
     @Test
     final void testIsMatchingArchiveFile_MatchesOutPattern_False() {
+        def config = getConfig()
         def settings = getSettings()
         settings.addOutArchiveFilePattern('arch')
-        def finder = new Finder(settings)
+        def finder = new Finder(config, settings)
         def path = Paths.get('archive.zip')
         assertFalse(finder.isMatchingArchiveFilePath(path))
     }
 
     @Test
     final void testIsMatchingArchiveFile_DoesNotMatchOutPattern_True() {
+        def config = getConfig()
         def settings = getSettings()
         settings.addOutArchiveFilePattern('archives')
-        def finder = new Finder(settings)
+        def finder = new Finder(config, settings)
         def path = Paths.get('archive.zip')
         assertTrue(finder.isMatchingArchiveFilePath(path))
     }
@@ -287,98 +319,109 @@ class FinderTest {
      *************************************************************/
     @Test
     final void testFilterToFileResult_IsHidden_Null() {
+        def config = getConfig()
         def settings = getSettings()
-        def finder = new Finder(settings)
+        def finder = new Finder(config, settings)
         def path = Paths.get('.gitignore')
         assertFalse(finder.filterToFileResult(path).isPresent())
     }
 
     @Test
     final void testFilterToFileResult_IsHiddenIncludeHidden_NotNull() {
+        def config = getConfig()
         def settings = getSettings()
         settings.setIncludeHidden(true)
-        def finder = new Finder(settings)
+        def finder = new Finder(config, settings)
         def path = Paths.get('.gitignore')
         assertTrue(finder.filterToFileResult(path).isPresent())
     }
 
     @Test
     final void testFilterToFileResult_ArchiveNoFindArchives_Null() {
+        def config = getConfig()
         def settings = getSettings()
-        def finder = new Finder(settings)
+        def finder = new Finder(config, settings)
         def path = Paths.get('archive.zip')
         assertFalse(finder.filterToFileResult(path).isPresent())
     }
 
     @Test
     final void testFilterToFileResult_ArchiveFindArchives_NotNull() {
+        def config = getConfig()
         def settings = getSettings()
         settings.setIncludeArchives(true)
-        def finder = new Finder(settings)
+        def finder = new Finder(config, settings)
         def path = Paths.get('archive.zip')
         assertTrue(finder.filterToFileResult(path).isPresent())
     }
 
     @Test
     final void testFilterToFileResult_IsMatchingArchiveFile_NotNull() {
+        def config = getConfig()
         def settings = getSettings()
         settings.setIncludeArchives(true)
         settings.addInArchiveExtension('zip')
-        def finder = new Finder(settings)
+        def finder = new Finder(config, settings)
         def path = Paths.get('archive.zip')
         assertTrue(finder.filterToFileResult(path).isPresent())
     }
 
     @Test
     final void testFilterToFileResult_NotIsMatchingArchiveFile_Null() {
+        def config = getConfig()
         def settings = getSettings()
         settings.setIncludeArchives(true)
         settings.addOutArchiveExtension('zip')
-        def finder = new Finder(settings)
+        def finder = new Finder(config, settings)
         def path = Paths.get('archive.zip')
         assertFalse(finder.filterToFileResult(path).isPresent())
     }
 
     @Test
     final void testFilterToFileResult_ArchiveFileArchivesOnly_NotNull() {
+        def config = getConfig()
         def settings = getSettings()
         settings.setArchivesOnly(true)
-        def finder = new Finder(settings)
+        def finder = new Finder(config, settings)
         def path = Paths.get('archive.zip')
         assertTrue(finder.filterToFileResult(path).isPresent())
     }
 
     @Test
     final void testFilterToFileResult_NoExtensionsNoPatterns_NotNull() {
+        def config = getConfig()
         def settings = getSettings()
-        def finder = new Finder(settings)
+        def finder = new Finder(config, settings)
         def path = Paths.get('FileUtil.cs')
         assertTrue(finder.filterToFileResult(path).isPresent())
     }
 
     @Test
     final void testFilterToFileResult_IsMatchingFile_NotNull() {
+        def config = getConfig()
         def settings = getSettings()
         settings.addInExtension('cs')
-        def finder = new Finder(settings)
+        def finder = new Finder(config, settings)
         def path = Paths.get('FileUtil.cs')
         assertTrue(finder.filterToFileResult(path).isPresent())
     }
 
     @Test
     final void testFilterToFileResult_NotIsMatchingFile_Null() {
+        def config = getConfig()
         def settings = getSettings()
         settings.addOutExtension('cs')
-        def finder = new Finder(settings)
+        def finder = new Finder(config, settings)
         def path = Paths.get('FileUtil.cs')
         assertFalse(finder.filterToFileResult(path).isPresent())
     }
 
     @Test
     final void testFilterToFileResult_NonArchiveFileArchivesOnly_Null() {
+        def config = getConfig()
         def settings = getSettings()
         settings.setArchivesOnly(true)
-        def finder = new Finder(settings)
+        def finder = new Finder(config, settings)
         def path = Paths.get('FileUtil.cs')
         assertFalse(finder.filterToFileResult(path).isPresent())
     }
@@ -388,9 +431,10 @@ class FinderTest {
      *************************************************************/
     @Test
     final void testFollowSymlinks_Default_Excluded() {
+        def config = getConfig()
         var settings = new FindSettings()
         settings.addPath(getBinPath())
-        var finder = new Finder(settings)
+        var finder = new Finder(config, settings)
         try {
             var fileResults = finder.find()
             assertTrue(fileResults.size() < 4)
@@ -401,10 +445,11 @@ class FinderTest {
 
     @Test
     final void testFollowSymlinks_FollowSymlinks_Included() {
+        def config = getConfig()
         var settings = new FindSettings()
         settings.addPath(getBinPath())
         settings.followSymlinks = true
-        var finder = new Finder(settings)
+        var finder = new Finder(config, settings)
         try {
             var fileResults = finder.find()
             assertTrue(fileResults.isEmpty() || fileResults.size() > 2)
@@ -415,10 +460,11 @@ class FinderTest {
 
     @Test
     final void testFollowSymlinks_NoFollowSymlinks_Excluded() {
+        def config = getConfig()
         var settings = new FindSettings()
         settings.addPath(getBinPath())
         settings.followSymlinks = false
-        var finder = new Finder(settings)
+        var finder = new Finder(config, settings)
         try {
             var fileResults = finder.find()
             assertTrue(fileResults.size() < 4)
