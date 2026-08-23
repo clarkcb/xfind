@@ -3,9 +3,12 @@ package gofind
 import "testing"
 
 func TestFindSettingsFromNoArgs(t *testing.T) {
-	findOptions := NewFindOptions()
+	findOptions, err := NewFindOptions(NewFindConfig())
+	if err != nil {
+		t.Errorf("NewFindOptions: err: %v", err)
+	}
 
-	args := []string{}
+	var args []string
 
 	settings, err := findOptions.FindSettingsFromArgs(args)
 	if err != nil {
@@ -28,7 +31,10 @@ func TestFindSettingsFromNoArgs(t *testing.T) {
 }
 
 func TestFindSettingsFromValidArgs(t *testing.T) {
-	findOptions := NewFindOptions()
+	findOptions, err := NewFindOptions(NewFindConfig())
+	if err != nil {
+		t.Errorf("NewFindOptions: err: %v", err)
+	}
 
 	args := []string{
 		"-x", "go", ".",
@@ -55,7 +61,10 @@ func TestFindSettingsFromValidArgs(t *testing.T) {
 }
 
 func TestFindSettingsFromJson(t *testing.T) {
-	findOptions := NewFindOptions()
+	findOptions, err := NewFindOptions(NewFindConfig())
+	if err != nil {
+		t.Errorf("NewFindOptions: err: %v", err)
+	}
 
 	jsonByteArray := []byte(`{
   "path": "~/src/xfind/",
@@ -69,7 +78,6 @@ func TestFindSettingsFromJson(t *testing.T) {
 	jsonSettings := string(jsonByteArray)
 
 	settings := GetDefaultFindSettings()
-	var err error
 	err = findOptions.UpdateSettingsFromJson(settings, jsonSettings)
 	if err != nil {
 		t.Errorf("TestFindSettingsFromJson: err: %v", err)

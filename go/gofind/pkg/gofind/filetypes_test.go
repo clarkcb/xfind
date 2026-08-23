@@ -17,7 +17,8 @@ func TestGetFileType(t *testing.T) {
 		"nonsense.zippitydooda": FileTypeUnknown,
 	}
 
-	fileTypes := NewFileTypes()
+	config := NewFindConfig()
+	fileTypes := NewFileTypes(config)
 
 	for k, v := range expected {
 		if ft := fileTypes.GetFileType(k); ft != v {

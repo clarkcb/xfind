@@ -21,8 +21,8 @@ type Finder struct {
 	errChan            chan error
 }
 
-func NewFinder(settings *FindSettings) (*Finder, error) {
-	fileTypes, err := FileTypesFromJson()
+func NewFinder(config *FindConfig, settings *FindSettings) (*Finder, error) {
+	fileTypes, err := FileTypesFromJson(config.FileTypesPath)
 	if err != nil {
 		return nil, err
 	}

@@ -19,7 +19,8 @@ func errorAndExit(err error, colorize bool, findOptions *gofind.FindOptions) {
 }
 
 func main() {
-	findOptions, err := gofind.FindOptionsFromJson()
+	config := gofind.NewFindConfig()
+	findOptions, err := gofind.NewFindOptions(config)
 	if err != nil {
 		errorAndExit(err, true, findOptions)
 	}
@@ -41,7 +42,7 @@ func main() {
 		fmt.Printf("settings: %s\n", settings.String())
 	}
 
-	finder, err := gofind.NewFinder(settings)
+	finder, err := gofind.NewFinder(config, settings)
 	if err != nil {
 		errorAndExit(err, colorize, findOptions)
 	}

@@ -13,7 +13,8 @@ func getSettings() *FindSettings {
 
 func getFinder(settings *FindSettings) *Finder {
 	// assumes no error with finder creation
-	finder, _ := NewFinder(settings)
+	config := NewFindConfig()
+	finder, _ := NewFinder(config, settings)
 	return finder
 }
 

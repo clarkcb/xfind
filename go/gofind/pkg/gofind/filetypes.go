@@ -53,13 +53,11 @@ type JsonFileTypes struct {
 	FileTypes []*JsonFileType
 }
 
-func FileTypesFromJson() (*FileTypes, error) {
-	config := NewFindConfig()
-
+func FileTypesFromJson(fileTypesPath string) (*FileTypes, error) {
 	var fileTypes FileTypes
 	fileTypes.fileTypeExtMap = make(map[string]set)
 	fileTypes.fileTypeNameMap = make(map[string]set)
-	data, err := os.ReadFile(config.FILETYPESPATH)
+	data, err := os.ReadFile(fileTypesPath)
 	if err != nil {
 		return nil, err
 	}
@@ -78,8 +76,8 @@ func FileTypesFromJson() (*FileTypes, error) {
 	return &fileTypes, nil
 }
 
-func NewFileTypes() *FileTypes {
-	fileTypes, err := FileTypesFromJson()
+func NewFileTypes(config *FindConfig) *FileTypes {
+	fileTypes, err := FileTypesFromJson(config.FileTypesPath)
 	if err != nil {
 		// do something
 	}

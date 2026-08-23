@@ -32,6 +32,7 @@ func (o FindOption) ArgType() ArgTokenType {
 }
 
 type FindOptions struct {
+	Config          *FindConfig
 	FindOptions     []*FindOption
 	BoolActionMap   map[string]boolAction
 	StringActionMap map[string]stringAction
@@ -211,9 +212,8 @@ type JsonFindOptions struct {
 	FindOptions []*FindOption
 }
 
-func FindOptionsFromJson() (*FindOptions, error) {
-	config := NewFindConfig()
-	data, err := os.ReadFile(config.FINDOPTIONSPATH)
+func NewFindOptions(config *FindConfig) (*FindOptions, error) {
+	data, err := os.ReadFile(config.FindOptionsPath)
 	if err != nil {
 		return &FindOptions{}, err
 	}
@@ -252,6 +252,7 @@ func FindOptionsFromJson() (*FindOptions, error) {
 	}
 
 	return &FindOptions{
+		config,
 		findOptions,
 		boolActionMap,
 		stringActionMap,
@@ -259,14 +260,6 @@ func FindOptionsFromJson() (*FindOptions, error) {
 		longActionMap,
 		NewArgTokenizer(argOptions),
 	}, nil
-}
-
-func NewFindOptions() *FindOptions {
-	findOptions, err := FindOptionsFromJson()
-	if err != nil {
-		// do something
-	}
-	return findOptions
 }
 
 func (fo *FindOptions) updateSettingsFromArgTokens(settings *FindSettings, argTokens []*ArgToken) error {
@@ -330,11 +323,10 @@ func (fo *FindOptions) UpdateSettingsFromFile(settings *FindSettings, filePath s
 }
 
 func (fo *FindOptions) updateSettingsFromDefaultFiles(settings *FindSettings) error {
-	config := NewFindConfig()
 	var err error
-	_, statErr := os.Stat(config.DEFAULTFINDSETTINGSPATH)
+	_, statErr := os.Stat(fo.Config.DefaultFindSettingsPath)
 	if statErr == nil {
-		err = fo.UpdateSettingsFromFile(settings, config.DEFAULTFINDSETTINGSPATH)
+		err = fo.UpdateSettingsFromFile(settings, fo.Config.DefaultFindSettingsPath)
 	}
 	return err
 }
@@ -391,7 +383,7 @@ func (fo *FindOptions) PrintUsage() {
 
 func (fo *FindOptions) PrintVersion() {
 	config := NewFindConfig()
-	Log(fmt.Sprintf("xfind version %s", config.VERSION))
+	Log(fmt.Sprintf("xfind version %s", config.Version))
 	os.Exit(0)
 }
 

@@ -7,7 +7,7 @@ import (
 )
 
 func Test_FileResult_AbsPath(t *testing.T) {
-	fileTypes := NewFileTypes()
+	fileTypes := NewFileTypes(NewFindConfig())
 	home := os.Getenv("HOME")
 	filePath := home + "/src/xfind/go/gofind/pkg/gofind/fileresults.go"
 	fileType := fileTypes.GetFileType(filePath)
@@ -18,7 +18,7 @@ func Test_FileResult_AbsPath(t *testing.T) {
 }
 
 func Test_FileResult_TildePath(t *testing.T) {
-	fileTypes := NewFileTypes()
+	fileTypes := NewFileTypes(NewFindConfig())
 	filePath := "~/src/xfind/go/gofind/pkg/gofind/fileresults.go"
 	fileType := fileTypes.GetFileType(filePath)
 	fileResult := NewFileResult(filePath, fileType, 0, time.Time{})
@@ -28,7 +28,7 @@ func Test_FileResult_TildePath(t *testing.T) {
 }
 
 func Test_FileResult_RelPath1(t *testing.T) {
-	fileTypes := NewFileTypes()
+	fileTypes := NewFileTypes(NewFindConfig())
 	filePath := "./fileresults.go"
 	fileType := fileTypes.GetFileType(filePath)
 	fileResult := NewFileResult(filePath, fileType, 0, time.Time{})
@@ -39,7 +39,7 @@ func Test_FileResult_RelPath1(t *testing.T) {
 }
 
 func Test_FileResult_RelPath2(t *testing.T) {
-	fileTypes := NewFileTypes()
+	fileTypes := NewFileTypes(NewFindConfig())
 	filePath := "./fileresults.go"
 	fileType := fileTypes.GetFileType(filePath)
 	fileResult := NewFileResult(filePath, fileType, 0, time.Time{})
