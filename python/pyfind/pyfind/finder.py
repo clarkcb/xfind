@@ -17,6 +17,7 @@ from .constants import *
 from .fileresult import FileResult, FileResultFormatter, FileResultSorter
 from .filetypes import FileType, FileTypes
 from .fileutil import FileUtil
+from .findconfig import FindConfig
 from .findexception import FindException
 from .findsettings import FindSettings, PatternSet
 
@@ -26,10 +27,10 @@ class Finder:
 
     __slots__ = ['settings', 'file_types', '_matching_dir_cache']
 
-    def __init__(self, settings: FindSettings):
+    def __init__(self, config: FindConfig, settings: FindSettings):
         """Create a new Finder instance."""
         self.settings = settings
-        self.file_types = FileTypes()
+        self.file_types = FileTypes(config)
         self._matching_dir_cache = set()
         self.__validate_settings()
 

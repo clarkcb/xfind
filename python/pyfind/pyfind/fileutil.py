@@ -10,7 +10,9 @@
 ###############################################################################
 """
 import os
+from importlib.resources.abc import Traversable
 from pathlib import Path
+from typing import Optional
 
 
 class FileUtil:
@@ -66,3 +68,17 @@ class FileUtil:
         if FileUtil.is_dot_dir_path(file_path):
             return False
         return any(FileUtil.is_hidden_name(p) for p in file_path.parts)
+
+    @staticmethod
+    def get_file_contents(file_path: str | Path | Traversable) -> Optional[str]:
+        """Returns contents of file_path if it exists else None"""
+        if file_path is None:
+            return None
+        if isinstance(file_path, Traversable):
+            return file_path.read_text()
+        if isinstance(file_path, str):
+            file_path = Path(file_path)
+        if isinstance(file_path, Path):
+            if file_path.exists():
+                return file_path.read_text()
+        return None

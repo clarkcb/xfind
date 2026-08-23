@@ -11,6 +11,7 @@
 """
 import sys
 
+from pyfind.findconfig import FindConfig
 from . import VERSION
 from .common import log, log_error
 from .fileresult import FileResultFormatter
@@ -24,7 +25,8 @@ async def main():
     if sys.version_info < (3, 9):
         sys.exit('Sorry, Python < 3.9 is not supported')
 
-    find_options = FindOptions()
+    config = FindConfig()
+    find_options = FindOptions(config)
 
     settings = None
     try:
@@ -46,7 +48,7 @@ async def main():
         sys.exit(0)
 
     try:
-        finder = Finder(settings)
+        finder = Finder(config, settings)
         file_results = await finder.find()
         formatter = FileResultFormatter(settings)
 

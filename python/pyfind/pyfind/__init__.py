@@ -4,7 +4,7 @@ from .argtokenizer import ArgToken, ArgTokenType, ArgTokenizer
 from .color import Color
 from .consolecolor import ConsoleColor
 from .common import log, log_error, parse_datetime_str, get_text, list_to_str
-from .config import XFIND_PATH, SHARED_PATH
+from .findconfig import FindConfig
 from .fileresult import FileResult, FileResultFormatter, FileResultSorter
 from .filetypes import FileType, FileTypes
 from .fileutil import FileUtil

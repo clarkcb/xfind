@@ -9,16 +9,17 @@
 #
 ###############################################################################
 """
-import importlib.resources
 import json
 import os
 import sys
 from datetime import datetime
 from io import StringIO
+from pathlib import Path
 from typing import Any
 
 from .argtokenizer import ArgToken, ArgTokenType, ArgTokenizer
-from .config import DEFAULT_FIND_SETTINGS_PATH
+from .fileutil import FileUtil
+from .findconfig import FindConfig
 from .findexception import FindException
 from .findoption import FindOption
 from .findsettings import FindSettings
@@ -27,10 +28,11 @@ from .findsettings import FindSettings
 class FindOptions:
     """class to provide usage info and parse command-line arguments into settings."""
 
-    def __init__(self):
+    def __init__(self, config: FindConfig):
+        self.config = config
         self.options = []
         self.__set_dicts()
-        self.__set_options_from_json()
+        self.__load_options_from_json_file(config.find_options_path)
         self.arg_tokenizer = ArgTokenizer(options=self.options)
 
     def __set_dicts(self):
@@ -193,9 +195,9 @@ class FindOptions:
                 settings.set_property('min_size', i),
         }
 
-    def __set_options_from_json(self):
-        data = importlib.resources.files('pyfind').joinpath('data')
-        find_options_json = data.joinpath('findoptions.json').read_text()
+    def __load_options_from_json_file(self, find_options_path: str | Path):
+        # TODO: try/except for file not found, json decode error, etc.
+        find_options_json = FileUtil.get_file_contents(find_options_path) or '{}'
         find_options_dict = json.loads(find_options_json)
         for find_option_obj in find_options_dict['findoptions']:
             long_arg = find_option_obj['long']
@@ -291,8 +293,8 @@ class FindOptions:
 
     def __update_settings_from_default_files(self, settings: FindSettings):
         """Update settings from default file(s)"""
-        if os.path.exists(DEFAULT_FIND_SETTINGS_PATH):
-            self.update_settings_from_file(settings, DEFAULT_FIND_SETTINGS_PATH)
+        if os.path.exists(self.config.default_find_settings_path):
+            self.update_settings_from_file(settings, self.config.default_find_settings_path)
 
     def update_settings_from_args(self, settings: FindSettings, args: list[str]):
         """Update settings from a given list of args"""

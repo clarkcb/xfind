@@ -8,12 +8,12 @@
 #
 ###############################################################################
 """
-import importlib.resources
 import json
 from enum import StrEnum
 from pathlib import Path
 
 from .fileutil import FileUtil
+from .findconfig import FindConfig
 
 
 class FileType(StrEnum):
@@ -53,10 +53,10 @@ class FileTypes:
 
     __slots__ = ['__file_type_exts', '__file_type_names']
 
-    def __init__(self):
+    def __init__(self, config: FindConfig):
         self.__file_type_exts = {}
         self.__file_type_names = {}
-        self.__populate_file_types_from_json()
+        self.__load_file_types_from_json_file(config.file_types_path)
 
     def get_file_type_for_path(self, file_path: Path) -> FileType:
         """Return file type for file_path"""
@@ -131,9 +131,9 @@ class FileTypes:
         """Return true if file is of an unknown file type"""
         return self.get_file_type_for_path(p) == FileType.UNKNOWN
 
-    def __populate_file_types_from_json(self):
-        data = importlib.resources.files('pyfind').joinpath('data')
-        file_types_json = data.joinpath('filetypes.json').read_text()
+    def __load_file_types_from_json_file(self, file_types_path: str | Path):
+        # TODO: try/except for file not found, json decode error, etc.
+        file_types_json = FileUtil.get_file_contents(file_types_path) or '{}'
         file_types_dict = json.loads(file_types_json)
         for file_type_obj in file_types_dict['filetypes']:
             typename = file_type_obj['type']
