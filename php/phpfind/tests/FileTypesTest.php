@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use phpfind\FindConfig;
 use PHPUnit\Framework\TestCase;
 
 use phpfind\FileType;
@@ -16,7 +17,7 @@ class FileTypesTest extends TestCase
 
     function setUp(): void
     {
-        $this->file_types = new FileTypes();
+        $this->file_types = new FileTypes(new FindConfig());
     }
 
     public function test_get_file_type_archive_file(): void

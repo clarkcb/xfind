@@ -9,9 +9,16 @@ require_once __DIR__ . '/../autoload.php';
 
 /**
  * Class FindOptions
+ *
+ * @property FindConfig $config
+ * @property FindOption[] $options
  */
 class FindOptions
 {
+    /**
+     * @var FindConfig $config
+     */
+    private FindConfig $config;
     /**
      * @var FindOption[] $options
      */
@@ -36,8 +43,9 @@ class FindOptions
     /**
      * @throws FindException
      */
-    public function __construct()
+    public function __construct(FindConfig $config)
     {
+        $this->config = $config;
         $this->options = [];
 
         $this->bool_action_map = [
@@ -99,16 +107,15 @@ class FindOptions
             'mindepth' => fn(int $i, FindSettings $fs) => $fs->min_depth = $i,
             'minsize' => fn(int $i, FindSettings $fs) => $fs->min_size = $i,
         ];
-        $this->set_options_from_json();
+        $this->load_options_from_json_file($this->config->find_options_path);
         $this->arg_tokenizer = new ArgTokenizer($this->options);
     }
 
     /**
      * @throws FindException
      */
-    private function set_options_from_json(): void
+    private function load_options_from_json_file(string $find_options_path): void
     {
-        $find_options_path = FileUtil::expand_path(Config::FIND_OPTIONS_PATH);
         if (file_exists($find_options_path)) {
             $contents = file_get_contents($find_options_path);
             if ($contents === false || trim($contents) === '') {
@@ -225,8 +232,8 @@ class FindOptions
      */
     private function update_settings_from_default_files(FindSettings $settings): void
     {
-        if (file_exists(Config::DEFAULT_FIND_SETTINGS_PATH)) {
-            $this->update_settings_from_file($settings, Config::DEFAULT_FIND_SETTINGS_PATH);
+        if (file_exists($this->config->default_find_settings_path)) {
+            $this->update_settings_from_file($settings, $this->config->default_find_settings_path);
         }
     }
 

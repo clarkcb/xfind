@@ -7,6 +7,7 @@ require_once __DIR__ . '/../src/autoload.php';
 
 use phpfind\FileResultFormatter;
 use phpfind\Logger;
+use phpfind\FindConfig;
 use phpfind\FindOptions;
 use phpfind\Finder;
 use phpfind\FindException;
@@ -14,7 +15,8 @@ use phpfind\FindException;
 function main($argv): void
 {
     $colorize = true;
-    $find_options = new FindOptions();
+    $config = new FindConfig();
+    $find_options = new FindOptions($config);
     try {
         $settings = $find_options->settings_from_args(array_slice($argv, 1));
         $colorize = $settings->colorize;
@@ -28,7 +30,7 @@ function main($argv): void
             $find_options->usage_and_exit(0);
         }
 
-        $finder = new Finder($settings);
+        $finder = new Finder($config, $settings);
         $file_results = $finder->find();
         $formatter = new FileResultFormatter($settings);
 

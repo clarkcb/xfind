@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace phpfind;
+use phpfind\FileUtil;
 
 $xfind_path = getenv('XFIND_PATH');
 $home = getenv('HOME');
@@ -27,7 +27,7 @@ define('Z_FILE_TYPES_PATH', $file_types_path);
 define('Z_FIND_OPTIONS_PATH', $find_options_path);
 define('Z_DEFAULT_FIND_SETTINGS_PATH', $default_find_settings_path);
 
-class Config
+class TestConfig
 {
     const string XFIND_PATH = Z_XFIND_PATH;
     const string XFIND_SHARED_PATH = Z_XFIND_SHARED_PATH;

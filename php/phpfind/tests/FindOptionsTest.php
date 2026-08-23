@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use PHPUnit\Framework\TestCase;
 
+use phpfind\FindConfig;
 use phpfind\FindException;
 use phpfind\FindOptions;
 use phpfind\FindSettings;
@@ -18,7 +19,7 @@ class FindOptionsTest extends TestCase
 
     function setUp(): void
     {
-        $this->find_options = new FindOptions();
+        $this->find_options = new FindOptions(new FindConfig());
     }
 
     public static function settings_equals_defaults(FindSettings $settings, bool $print_files = false): bool {

@@ -10,11 +10,16 @@ namespace phpfind;
  * Class FileTypes
  *
  * @package phpfind
+ * @property FindConfig $config
  * @property array<string, string[]> $file_type_ext_map
  * @property array<string, string[]> $file_type_name_map
  */
 class FileTypes
 {
+    /**
+     * @var FindConfig $config
+     */
+    private readonly FindConfig $config;
     /**
      * @var array<string, string[]> $file_type_ext_map
      */
@@ -27,9 +32,9 @@ class FileTypes
     /**
      * @throws FindException
      */
-    public function __construct()
+    public function __construct(FindConfig $config)
     {
-        $file_type_maps = $this->get_file_type_map_from_json();
+        $file_type_maps = $this->load_file_type_map_from_json_file($config->file_types_path);
         $this->file_type_ext_map = $file_type_maps[0];
         $this->file_type_name_map = $file_type_maps[1];
     }
@@ -38,11 +43,10 @@ class FileTypes
      * @return array<int, array<string, string[]>>
      * @throws FindException
      */
-    private function get_file_type_map_from_json(): array
+    private function load_file_type_map_from_json_file(string $file_types_path): array
     {
         $file_type_ext_map = array();
         $file_type_name_map = array();
-        $file_types_path = FileUtil::expand_path(Config::FILE_TYPES_PATH);
         if (file_exists($file_types_path)) {
             $contents = file_get_contents($file_types_path);
             if ($contents === false || trim($contents) === '') {

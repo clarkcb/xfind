@@ -16,13 +16,14 @@ class Finder
     private readonly FileTypes $file_types;
 
     /**
+     * @param FindConfig $config
      * @param FindSettings $settings
      * @throws FindException
      */
-    public function __construct(FindSettings $settings)
+    public function __construct(FindConfig $config, FindSettings $settings)
     {
         $this->settings = $settings;
-        $this->file_types = new FileTypes();
+        $this->file_types = new FileTypes($config);
         $this->validate_settings();
     }
 
