@@ -29,69 +29,78 @@ module RbFind
     # matching_dir_path? tests
     ################################################################################
     def test_matching_dir_path_no_patterns
+      config = FindConfig.new
       settings = get_settings
-      finder = Finder.new(settings)
+      finder = Finder.new(config, settings)
       dir = Pathname.new('plfind')
       assert(finder.matching_dir_path?(dir))
     end
 
     def test_matching_dir_path_matches_in_pattern
+      config = FindConfig.new
       settings = get_settings
       settings.add_pattern('plfind', settings.in_dir_patterns)
-      finder = Finder.new(settings)
+      finder = Finder.new(config, settings)
       dir = Pathname.new('plfind')
       assert(finder.matching_dir_path?(dir))
     end
 
     def test_matching_dir_path_no_match_in_pattern
+      config = FindConfig.new
       settings = get_settings
       settings.add_pattern('plfind', settings.in_dir_patterns)
-      finder = Finder.new(settings)
+      finder = Finder.new(config, settings)
       dir = Pathname.new('pyfind')
       assert(!finder.matching_dir_path?(dir))
     end
 
     def test_matching_dir_path_matches_out_pattern
+      config = FindConfig.new
       settings = get_settings
       settings.add_pattern('pyfind', settings.out_dir_patterns)
-      finder = Finder.new(settings)
+      finder = Finder.new(config, settings)
       dir = Pathname.new('pyfind')
       assert(!finder.matching_dir_path?(dir))
     end
 
     def test_matching_dir_path_no_match_out_pattern
+      config = FindConfig.new
       settings = get_settings
       settings.add_pattern('pyfind', settings.out_dir_patterns)
-      finder = Finder.new(settings)
+      finder = Finder.new(config, settings)
       dir = Pathname.new('plfind')
       assert(finder.matching_dir_path?(dir))
     end
 
     def test_matching_dir_path_single_dot
+      config = FindConfig.new
       settings = get_settings
-      finder = Finder.new(settings)
+      finder = Finder.new(config, settings)
       dir = Pathname.new('.')
       assert(finder.matching_dir_path?(dir))
     end
 
     def test_matching_dir_path_double_dot
+      config = FindConfig.new
       settings = get_settings
-      finder = Finder.new(settings)
+      finder = Finder.new(config, settings)
       dir = Pathname.new('..')
       assert(finder.matching_dir_path?(dir))
     end
 
     def test_matching_dir_path_hidden_dir
+      config = FindConfig.new
       settings = get_settings
-      finder = Finder.new(settings)
+      finder = Finder.new(config, settings)
       dir = Pathname.new('.git')
       assert(!finder.matching_dir_path?(dir))
     end
 
     def test_matching_dir_path_hidden_dir_include_hidden
+      config = FindConfig.new
       settings = get_settings
       settings.include_hidden = true
-      finder = Finder.new(settings)
+      finder = Finder.new(config, settings)
       dir = Pathname.new('.git')
       assert(finder.matching_dir_path?(dir))
     end
@@ -100,72 +109,81 @@ module RbFind
     # matching_file_path? tests
     ################################################################################
     def test_matching_file_path_matches_by_default
+      config = FindConfig.new
       settings = get_settings
-      finder = Finder.new(settings)
+      finder = Finder.new(config, settings)
       f = Pathname.new('fileutil.rb')
       assert(finder.matching_file_path?(f))
     end
 
     def test_matching_file_path_matches_in_extension
+      config = FindConfig.new
       settings = get_settings
       settings.add_exts('rb', settings.in_extensions)
-      finder = Finder.new(settings)
+      finder = Finder.new(config, settings)
       f = Pathname.new('fileutil.rb')
       assert(finder.matching_file_path?(f))
     end
 
     def test_matching_file_path_no_match_in_extension
+      config = FindConfig.new
       settings = get_settings
       settings.add_exts('py', settings.in_extensions)
-      finder = Finder.new(settings)
+      finder = Finder.new(config, settings)
       f = Pathname.new('fileutil.rb')
       assert(!finder.matching_file_path?(f))
     end
 
     def test_matching_file_path_matches_out_extension
+      config = FindConfig.new
       settings = get_settings
       settings.add_exts('rb', settings.out_extensions)
-      finder = Finder.new(settings)
+      finder = Finder.new(config, settings)
       f = Pathname.new('fileutil.rb')
       assert(!finder.matching_file_path?(f))
     end
 
     def test_matching_file_path_no_match_out_extension
+      config = FindConfig.new
       settings = get_settings
       settings.add_exts('py', settings.out_extensions)
-      finder = Finder.new(settings)
+      finder = Finder.new(config, settings)
       f = Pathname.new('fileutil.rb')
       assert(finder.matching_file_path?(f))
     end
 
     def test_matching_file_path_matches_in_pattern
+      config = FindConfig.new
       settings = get_settings
       settings.add_pattern('find', settings.in_file_patterns)
-      finder = Finder.new(settings)
+      finder = Finder.new(config, settings)
       f = Pathname.new('finder.rb')
       assert(finder.matching_file_path?(f))
     end
 
     def test_matching_file_path_no_match_in_pattern
+      config = FindConfig.new
       settings = get_settings
       settings.add_pattern('find', settings.in_file_patterns)
-      finder = Finder.new(settings)
+      finder = Finder.new(config, settings)
       f = Pathname.new('fileutil.rb')
       assert(!finder.matching_file_path?(f))
     end
 
     def test_matching_file_path_matches_out_pattern
+      config = FindConfig.new
       settings = get_settings
       settings.add_pattern('find', settings.out_file_patterns)
-      finder = Finder.new(settings)
+      finder = Finder.new(config, settings)
       f = Pathname.new('finder.rb')
       assert(!finder.matching_file_path?(f))
     end
 
     def test_matching_file_path_no_match_out_pattern
+      config = FindConfig.new
       settings = get_settings
       settings.add_pattern('find', settings.out_file_patterns)
-      finder = Finder.new(settings)
+      finder = Finder.new(config, settings)
       f = Pathname.new('fileutil.rb')
       assert(finder.matching_file_path?(f))
     end
@@ -174,72 +192,81 @@ module RbFind
     # matching_archive_file_path? tests
     ################################################################################
     def test_matching_archive_file_path_matches_by_default
+      config = FindConfig.new
       settings = get_settings
-      finder = Finder.new(settings)
+      finder = Finder.new(config, settings)
       f = Pathname.new('archive.zip')
       assert(finder.matching_archive_file_path?(f))
     end
 
     def test_matching_archive_file_path_matches_in_extension
+      config = FindConfig.new
       settings = get_settings
       settings.add_exts('zip', settings.in_archive_extensions)
-      finder = Finder.new(settings)
+      finder = Finder.new(config, settings)
       f = Pathname.new('archive.zip')
       assert(finder.matching_archive_file_path?(f))
     end
 
     def test_matching_archive_file_path_no_match_in_extension
+      config = FindConfig.new
       settings = get_settings
       settings.add_exts('gz', settings.in_archive_extensions)
-      finder = Finder.new(settings)
+      finder = Finder.new(config, settings)
       f = Pathname.new('archive.zip')
       assert(!finder.matching_archive_file_path?(f))
     end
 
     def test_matching_archive_file_path_matches_out_extension
+      config = FindConfig.new
       settings = get_settings
       settings.add_exts('zip', settings.out_archive_extensions)
-      finder = Finder.new(settings)
+      finder = Finder.new(config, settings)
       f = Pathname.new('archive.zip')
       assert(!finder.matching_archive_file_path?(f))
     end
 
     def test_matching_archive_file_path_no_match_out_extension
+      config = FindConfig.new
       settings = get_settings
       settings.add_exts('gz', settings.out_archive_extensions)
-      finder = Finder.new(settings)
+      finder = Finder.new(config, settings)
       f = Pathname.new('archive.zip')
       assert(finder.matching_archive_file_path?(f))
     end
 
     def test_matching_archive_file_path_matches_in_pattern
+      config = FindConfig.new
       settings = get_settings
       settings.add_pattern('arch', settings.in_archive_file_patterns)
-      finder = Finder.new(settings)
+      finder = Finder.new(config, settings)
       f = Pathname.new('archive.zip')
       assert(finder.matching_archive_file_path?(f))
     end
 
     def test_matching_archive_file_path_no_match_in_pattern
+      config = FindConfig.new
       settings = get_settings
       settings.add_pattern('archives', settings.in_archive_file_patterns)
-      finder = Finder.new(settings)
+      finder = Finder.new(config, settings)
       f = Pathname.new('archive.zip')
       assert(!finder.matching_archive_file_path?(f))
     end
 
     def test_matching_archive_file_path_matches_out_pattern
+      config = FindConfig.new
       settings = get_settings
       settings.add_pattern('arch', settings.out_archive_file_patterns)
-      finder = Finder.new(settings)
+      finder = Finder.new(config, settings)
       f = Pathname.new('archive.zip')
       assert(!finder.matching_archive_file_path?(f))
     end
 
     def test_matching_archive_file_path_no_match_out_pattern
+      config = FindConfig.new
       settings = get_settings
       settings.add_pattern('archives', settings.out_archive_file_patterns)
-      finder = Finder.new(settings)
+      finder = Finder.new(config, settings)
       f = Pathname.new('archive.zip')
       assert(finder.matching_archive_file_path?(f))
     end
@@ -248,72 +275,81 @@ module RbFind
     # filter_to_file_result tests
     ################################################################################
     def test_filter_to_file_result_matches_by_default
+      config = FindConfig.new
       settings = get_settings
-      finder = Finder.new(settings)
+      finder = Finder.new(config, settings)
       f = Pathname.new('fileutil.rb')
       assert(finder.filter_to_file_result(f) != nil)
     end
 
     def test_filter_to_file_result_is_find_file
+      config = FindConfig.new
       settings = get_settings
       settings.add_exts('rb', settings.in_extensions)
-      finder = Finder.new(settings)
+      finder = Finder.new(config, settings)
       f = Pathname.new('fileutil.rb')
       assert(finder.filter_to_file_result(f) != nil)
     end
 
     def test_filter_to_file_result_not_is_find_file
+      config = FindConfig.new
       settings = get_settings
       settings.add_exts('pl', settings.in_extensions)
-      finder = Finder.new(settings)
+      finder = Finder.new(config, settings)
       f = Pathname.new('fileutil.rb')
       assert(finder.filter_to_file_result(f) == nil)
     end
 
     def test_filter_to_file_result_is_hidden_file
+      config = FindConfig.new
       settings = get_settings
-      finder = Finder.new(settings)
+      finder = Finder.new(config, settings)
       f = Pathname.new('.gitignore')
       assert(finder.filter_to_file_result(f) == nil)
     end
 
     def test_filter_to_file_result_hidden_include_hidden
+      config = FindConfig.new
       settings = get_settings
       settings.include_hidden = true
-      finder = Finder.new(settings)
+      finder = Finder.new(config, settings)
       f = Pathname.new('.gitignore')
       assert(finder.filter_to_file_result(f) != nil)
     end
 
     def test_filter_to_file_result_archive_no_include_archives
+      config = FindConfig.new
       settings = get_settings
-      finder = Finder.new(settings)
+      finder = Finder.new(config, settings)
       f = Pathname.new('archive.zip')
       assert(finder.filter_to_file_result(f) == nil)
     end
 
     def test_filter_to_file_result_archive_include_archives
+      config = FindConfig.new
       settings = get_settings
       settings.include_archives = true
-      finder = Finder.new(settings)
+      finder = Finder.new(config, settings)
       f = Pathname.new('archive.zip')
       assert(finder.filter_to_file_result(f) != nil)
     end
 
     def test_filter_to_file_result_archive_archives_only
+      config = FindConfig.new
       settings = get_settings
       settings.archives_only = true
       settings.include_archives = true
-      finder = Finder.new(settings)
+      finder = Finder.new(config, settings)
       f = Pathname.new('archive.zip')
       assert(finder.filter_to_file_result(f) != nil)
     end
 
     def test_filter_to_file_result_nonarchive_archives_only
+      config = FindConfig.new
       settings = get_settings
       settings.archives_only = true
       settings.include_archives = true
-      finder = Finder.new(settings)
+      finder = Finder.new(config, settings)
       f = Pathname.new('fileutil.rb')
       assert(finder.filter_to_file_result(f) == nil)
     end
@@ -322,30 +358,33 @@ module RbFind
     # test filtering symlink files
     ################################################################################
     def test_default_no_symlinks
+      config = FindConfig.new
       settings = FindSettings.new
       bin_path = File.join(File.dirname(__FILE__), "../../../bin")
       settings.paths.add(Pathname.new(bin_path))
-      finder = Finder.new(settings)
+      finder = Finder.new(config, settings)
       file_results = finder.find
       assert(file_results.length == 0 || file_results.length < 4)
     end
 
     def test_follow_symlinks
+      config = FindConfig.new
       settings = FindSettings.new
       bin_path = File.join(File.dirname(__FILE__), "../../../bin")
       settings.paths.add(Pathname.new(bin_path))
       settings.follow_symlinks = true
-      finder = Finder.new(settings)
+      finder = Finder.new(config, settings)
       file_results = finder.find
       assert(file_results.length == 0 || file_results.length > 2)
     end
 
     def test_no_follow_symlinks
+      config = FindConfig.new
       settings = FindSettings.new
       bin_path = File.join(File.dirname(__FILE__), "../../../bin")
       settings.paths.add(Pathname.new(bin_path))
       settings.follow_symlinks = false
-      finder = Finder.new(settings)
+      finder = Finder.new(config, settings)
       file_results = finder.find
       assert(file_results.length == 0 || file_results.length < 4)
     end

@@ -13,7 +13,8 @@ module RbFind
 
   class FindOptionsTest < Test::Unit::TestCase
     def setup
-      @findoptions = RbFind::FindOptions.new
+      @config = RbFind::FindConfig.new
+      @findoptions = RbFind::FindOptions.new(@config)
     end
 
     def test_no_args

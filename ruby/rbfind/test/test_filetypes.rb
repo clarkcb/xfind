@@ -13,7 +13,8 @@ module RbFind
 
   class FileTypesTest < Test::Unit::TestCase
     def setup
-      @file_types = FileTypes.new
+      @config = FindConfig.new
+      @file_types = FileTypes.new(@config)
     end
 
     def test_get_file_type_archive_file
