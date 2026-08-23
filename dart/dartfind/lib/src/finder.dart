@@ -15,12 +15,14 @@ const String invalidRangeSize = 'Invalid range for minsize and maxsize';
 
 class Finder {
   final FindSettings settings;
-  final FileTypes _fileTypes = FileTypes();
+  final FileTypes fileTypes;
   // whether to allow invalid/malformed characters in encoding/decoding
   // setting to false means find will end once an attempt is made to read
   // a file in an incompatible encoding
   final bool allowInvalid = true;
-  Finder(this.settings) {
+
+  Finder(config, this.settings)
+      : fileTypes = FileTypes(config) {
     _validateSettings();
   }
 
@@ -311,7 +313,7 @@ class Finder {
       return null;
     }
 
-    var fileType = await _fileTypes.getFileType(fileName);
+    var fileType = await fileTypes.getFileType(fileName);
     if (fileType == FileType.archive) {
       return filterArchiveFileToFileResult(f);
     }
@@ -446,7 +448,7 @@ class Finder {
   }
 
   Future<List<FileResult>> find() async {
-    return Future.wait([_fileTypes.ready]).then((res) {
+    return Future.wait([fileTypes.ready]).then((res) {
       return _findFiles();
     });
   }

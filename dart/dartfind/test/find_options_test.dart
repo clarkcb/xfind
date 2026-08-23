@@ -1,9 +1,10 @@
-import 'package:dartfind/dartfind.dart' show FindOptions, FindSettings;
+import 'package:dartfind/dartfind.dart' show FindConfig, FindOptions, FindSettings;
 import 'package:test/test.dart';
 
 void main() {
   test('test get settings from minimal args', () async {
-    var options = FindOptions();
+    var config = FindConfig();
+    var options = FindOptions(config);
     var settings = await options.settingsFromArgs(['.']);
     expect(settings.archivesOnly, false);
     expect(settings.debug, false);
@@ -20,7 +21,8 @@ void main() {
   });
 
   test('test get settings from valid args', () async {
-    var options = FindOptions();
+    var config = FindConfig();
+    var options = FindOptions(config);
     var settings = await options.settingsFromArgs(['-x', 'dart,kt', '.']);
     expect(settings.inExtensions.length, 2);
     expect(settings.inExtensions.contains('dart'), true);
@@ -39,7 +41,8 @@ void main() {
         '"followsymlinks": true,'
         '"includehidden": false'
         '}';
-    var options = FindOptions();
+    var config = FindConfig();
+    var options = FindOptions(config);
     var settings = FindSettings();
     await options.updateSettingsFromJson(settings, json);
 

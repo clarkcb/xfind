@@ -9,9 +9,9 @@ void _handleError(err, bool colorize, FindOptions options) {
   exitCode = 1;
 }
 
-Future<void> find(FindSettings settings, FindOptions options) async {
+Future<void> find(FindConfig config, FindSettings settings, FindOptions options) async {
   try {
-    var finder = Finder(settings);
+    var finder = Finder(config, settings);
     await finder.find().then((fileResults) {
       var formatter = FileResultFormatter(settings);
       if (settings.printDirs) {
@@ -36,7 +36,8 @@ Future<void> main(List<String> arguments) async {
   // initialize as success
   exitCode = 0;
 
-  var options = FindOptions();
+  var config = FindConfig();
+  var options = FindOptions(config);
 
   await options.settingsFromArgs(arguments).then((settings) {
     if (settings.debug) logMsg('settings: $settings');
@@ -44,7 +45,7 @@ Future<void> main(List<String> arguments) async {
       logMsg('');
       options.usage();
     } else {
-      find(settings, options);
+      find(config, settings, options);
     }
   }).catchError((e) {
     _handleError(e, true, options);

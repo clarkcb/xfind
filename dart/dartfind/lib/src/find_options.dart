@@ -3,9 +3,8 @@ import 'dart:io';
 
 import 'package:dartfind/src/arg_tokenizer.dart';
 import 'package:dartfind/src/common.dart';
-import 'package:dartfind/src/config.dart'
-    show findOptionsPath, defaultFindSettingsPath;
 import 'package:dartfind/src/file_types.dart';
+import 'package:dartfind/src/find_config.dart';
 import 'package:dartfind/src/find_exception.dart';
 import 'package:dartfind/src/find_settings.dart';
 
@@ -47,6 +46,7 @@ class FindOption implements Option {
 }
 
 class FindOptions {
+  FindConfig? config;
   List<FindOption> findOptions = [];
   var boolActionMap = {};
   var stringActionMap = {};
@@ -54,13 +54,14 @@ class FindOptions {
   ArgTokenizer? argTokenizer;
   late Future ready;
 
-  FindOptions() {
+  FindOptions(FindConfig config) {
+    this.config = config;
     setActionMaps();
     ready = loadFindOptionsFromJson().then((f) => setArgTokenizer());
   }
 
   Future<void> loadFindOptionsFromJson() async {
-    var contents = await File(findOptionsPath).readAsString();
+    var contents = await File(this.config!.findOptionsPath).readAsString();
     Map soMap = json.decode(contents);
     if (soMap.containsKey('findoptions')) {
       var soList = soMap['findoptions']! as List;
@@ -215,9 +216,9 @@ class FindOptions {
   }
 
   Future<void> updateSettingsFromDefaultFiles(FindSettings settings) async {
-    if (FileSystemEntity.typeSync(defaultFindSettingsPath) ==
+    if (FileSystemEntity.typeSync(this.config!.defaultFindSettingsPath) ==
         FileSystemEntityType.file) {
-      await updateSettingsFromFile(settings, defaultFindSettingsPath);
+      await updateSettingsFromFile(settings, this.config!.defaultFindSettingsPath);
     }
   }
 

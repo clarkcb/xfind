@@ -1,9 +1,10 @@
-import 'package:dartfind/dartfind.dart' show FindOptions;
+import 'package:dartfind/dartfind.dart' show FindConfig, FindOptions;
 import 'package:test/test.dart';
 
 void main() {
   test('test get tokens from minimal args', () async {
-    var options = FindOptions();
+    var config = FindConfig();
+    var options = FindOptions(config);
     await options.ready;
     var tokens = options.argTokenizer!.tokenizeArgs(['.']);
     expect(tokens.length, 1);
@@ -12,7 +13,8 @@ void main() {
   });
 
   test('test get tokens from valid args', () async {
-    var options = FindOptions();
+    var config = FindConfig();
+    var options = FindOptions(config);
     await options.ready;
     var tokens = options.argTokenizer!.tokenizeArgs(['-x', 'dart,kt', '.']);
     expect(tokens.length, 2);
@@ -32,7 +34,8 @@ void main() {
         '"followsymlinks": true,'
         '"includehidden": false'
         '}';
-    var options = FindOptions();
+    var config = FindConfig();
+    var options = FindOptions(config);
     await options.ready;
     var tokens = options.argTokenizer!.tokenizeJson(json);
     expect(tokens.length, 12);

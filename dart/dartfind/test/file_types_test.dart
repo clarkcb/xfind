@@ -1,8 +1,8 @@
-import 'package:dartfind/dartfind.dart' show FileTypes, FileType;
+import 'package:dartfind/dartfind.dart' show FileTypes, FileType, FindConfig;
 import 'package:test/test.dart';
 
 void main() {
-  var fileTypes = FileTypes();
+  var fileTypes = FileTypes(FindConfig());
 
   test('test archive file', () async {
     var fileName = 'archive.zip';
