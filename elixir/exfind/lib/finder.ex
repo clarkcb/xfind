@@ -11,13 +11,11 @@ defmodule ExFind.Finder do
   alias ExFind.FindError
   alias ExFind.FindSettings
   alias ExFind.Logging
-  alias ExFind.StringUtil
 
-  defstruct [:file_types, :settings]
+  defstruct [:config, :file_types, :settings]
 
-  # def new(args), do: __struct__(args)
-  def new(settings) do
-    file_types = ExFind.FileTypes.new()
+  def new(config, settings) do
+    file_types = ExFind.FileTypes.new(config)
     __struct__([file_types: file_types, settings: settings])
   end
 

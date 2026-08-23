@@ -13,19 +13,17 @@ defmodule ExFind.FileTypesLoader do
   Documentation for `ExFind.FileTypesLoader`.
   """
 
-def load_file_types() do
+def load_file_types(config) do
     # Load the find options from the findoptions.json file.
-    file_types_path = ExFind.Config.file_types_path
-    IO.puts(file_types_path)
-    {:ok, json} = File.read(file_types_path)
+    {:ok, json} = File.read(config.file_types_path)
     file_types = JSON.decode!(json)
-    IO.puts("\nfile_types: #{inspect(file_types)}")
+    # IO.puts("\nfile_types: #{inspect(file_types)}")
 
     file_type_map = file_types["filetypes"]
                     |> Enum.map(fn t -> ExFind.FileType.new([type_name: String.to_atom(t["type"]), extensions: t["extensions"], names: t["names"]]) end)
                     |> Enum.map(fn t -> {t.type_name, t} end)
                     |> Map.new()
-    IO.puts("\nfile_type_map: #{inspect(file_type_map)}")
+    # IO.puts("\nfile_type_map: #{inspect(file_type_map)}")
     file_type_map
   end
 end
@@ -39,10 +37,11 @@ defmodule ExFind.FileTypes do
 
   @file_types [:unknown, :archive, :audio, :binary, :code, :font, :image, :text, :video, :xml]
 
-  defstruct file_types: MapSet.new(@file_types),
-            file_types_maps: ExFind.FileTypesLoader.load_file_types()
+  defstruct [:file_types, :file_types_maps]
 
-  def new(), do: __struct__()
+  def new(config) do
+    __struct__([file_types: MapSet.new(@file_types), file_types_maps: ExFind.FileTypesLoader.load_file_types(config)])
+  end
 
   def get_file_type_for_name(name) do
     file_types = @file_types

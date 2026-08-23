@@ -18,8 +18,6 @@ defmodule ExFind.ArgTokenizer do
   alias ExFind.FindError
   alias ExFind.StringUtil
 
-  require OptionParser
-
   @num_modifier_regex ~r/^\d+([ckmgtp])$/i
 
   defstruct options: [], bool_opts: [], str_opts: [], int_opts: []

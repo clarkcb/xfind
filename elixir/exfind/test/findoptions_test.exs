@@ -1,11 +1,13 @@
 defmodule ExFindTest.FindOptionsTest do
+  alias ExFind.FindConfig
   alias ExFind.FindOptions
   use ExUnit.Case
   doctest ExFind.FindOptions
 
   test "no args" do
-    find_options = FindOptions.new()
-    {:ok, settings} = FindOptions.get_settings_from_args([], find_options.options)
+    config = FindConfig.new()
+    find_options = FindOptions.new(config)
+    {:ok, settings} = FindOptions.get_settings_from_args(find_options, [])
     assert settings.archives_only == false
     assert settings.debug == false
     assert settings.follow_symlinks == false
@@ -42,8 +44,9 @@ defmodule ExFindTest.FindOptionsTest do
   end
 
   test "valid args" do
-    find_options = FindOptions.new()
-    {:ok, settings} = FindOptions.get_settings_from_args(["-x", "ex,exs", "src", "-f", "find"], find_options.options)
+    config = FindConfig.new()
+    find_options = FindOptions.new(config)
+    {:ok, settings} = FindOptions.get_settings_from_args(find_options, ["-x", "ex,exs", "src", "-f", "find"])
     assert settings.in_extensions == ["ex", "exs"]
     assert settings.paths == ["src"]
     # assert settings.in_file_patterns == [~r/find/]
@@ -52,15 +55,17 @@ defmodule ExFindTest.FindOptionsTest do
   end
 
   test "set archives_only" do
-    find_options = FindOptions.new()
-    {:ok, settings} = FindOptions.get_settings_from_args(["--archivesonly"], find_options.options)
+    config = FindConfig.new()
+    find_options = FindOptions.new(config)
+    {:ok, settings} = FindOptions.get_settings_from_args(find_options, ["--archivesonly"])
     assert settings.archives_only == true
     assert settings.include_archives == true
   end
 
   test "set debug" do
-    find_options = FindOptions.new()
-    {:ok, settings} = FindOptions.get_settings_from_args(["--debug"], find_options.options)
+    config = FindConfig.new()
+    find_options = FindOptions.new(config)
+    {:ok, settings} = FindOptions.get_settings_from_args(find_options, ["--debug"])
     assert settings.debug == true
     assert settings.verbose == true
   end
@@ -77,8 +82,9 @@ defmodule ExFindTest.FindOptionsTest do
       "includehidden": true
     }
     """
-    find_options = FindOptions.new()
-    {status, settings} = FindOptions.get_settings_from_json(json, find_options.options)
+    config = FindConfig.new()
+    find_options = FindOptions.new(config)
+    {status, settings} = FindOptions.get_settings_from_json(find_options, json)
     assert status == :ok
     assert settings.in_extensions == ["ex", "exs"]
     assert settings.paths == ["~/src/xfind/elixir/exfind"]
@@ -107,8 +113,9 @@ defmodule ExFindTest.FindOptionsTest do
       "includehidden": true,
     }
     """
-    find_options = FindOptions.new()
-    {status, _value} = FindOptions.get_settings_from_json(json, find_options.options)
+    config = FindConfig.new()
+    find_options = FindOptions.new(config)
+    {status, _value} = FindOptions.get_settings_from_json(find_options, json)
     assert status == :error
   end
 
@@ -123,8 +130,9 @@ defmodule ExFindTest.FindOptionsTest do
       "includehidden": true
     }
     """
-    find_options = FindOptions.new()
-    settings = FindOptions.get_settings_from_json!(json, find_options.options)
+    config = FindConfig.new()
+    find_options = FindOptions.new(config)
+    settings = FindOptions.get_settings_from_json!(find_options, json)
     assert settings.in_extensions == ["ex", "exs"]
     assert settings.paths == ["~/src/xfind/elixir/exfind"]
     # assert settings.out_dir_patterns == [~r/dep/]
@@ -150,16 +158,18 @@ defmodule ExFindTest.FindOptionsTest do
       "includehidden": true,
     }
     """
-    find_options = FindOptions.new()
+    config = FindConfig.new()
+    find_options = FindOptions.new(config)
     assert_raise ExFind.FindError, fn ->
-      _ = FindOptions.get_settings_from_json!(json, find_options.options)
+      _ = FindOptions.get_settings_from_json!(find_options, json)
     end
   end
 
   test "settings from non-existent file" do
     json_file = "/non/existent/file.json"
-    find_options = FindOptions.new()
-    {status, _value} = FindOptions.get_settings_from_file(json_file, find_options.options)
+    config = FindConfig.new()
+    find_options = FindOptions.new(config)
+    {status, _value} = FindOptions.get_settings_from_file(find_options, json_file)
     assert status == :error
   end
 end
