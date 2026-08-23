@@ -14,14 +14,28 @@ use warnings;
 # use Data::Dumper;
 use JSON::PP qw(decode_json);
 use plfind::common;
-use plfind::config;
+use plfind::FindConfig;
 use plfind::FileType;
 use plfind::FileUtil;
 
-sub get_json_file_type_hashes {
+sub new {
+    my $class = shift;
+    my $config = shift;
+    my $hashes = load_file_type_map_from_json_file($config->{file_types_path});
+    my $self = {
+        file_type_exts => $hashes->[0],
+        file_type_names => $hashes->[1],
+    };
+    bless $self, $class;
+    return $self;
+}
+
+sub load_file_type_map_from_json_file {
+    # $file_types_path is an instance of Path::Class::File
+    my $file_types_path = shift;
     my $file_type_ext_hash = {};
     my $file_type_name_hash = {};
-    my $contents = $FILE_TYPES_PATH->slurp;
+    my $contents = $file_types_path->slurp;
     my $json_file_type_hash = decode_json $contents;
     foreach my $file_type (@{$json_file_type_hash->{filetypes}}) {
         $file_type_ext_hash->{$file_type->{type}} = $file_type->{extensions};
@@ -38,17 +52,6 @@ sub get_json_file_type_hashes {
     push (@$hashes, $file_type_name_hash);
 
     return $hashes;
-}
-
-sub new {
-    my $class = shift;
-    my $hashes = get_json_file_type_hashes();
-    my $self = {
-        file_type_exts => $hashes->[0],
-        file_type_names => $hashes->[1],
-    };
-    bless $self, $class;
-    return $self;
 }
 
 sub get_file_type {

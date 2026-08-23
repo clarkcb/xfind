@@ -21,7 +21,8 @@ use Test::Simple tests => 48;
 
 use plfind::FindOptions;
 
-my $find_options = plfind::FindOptions->new();
+my $config = plfind::FindConfig->new();
+my $find_options = plfind::FindOptions->new($config);
 
 sub test_no_args {
     my $args = [];
@@ -85,12 +86,8 @@ sub test_last_mod_as_datetime_string_args {
     my $args = ['--maxlastmod', '2025-12-31', '--minlastmod', '2010-01-01'];
     my ($settings, $errs) = $find_options->settings_from_args($args);
     my $expected_max_last_mod = 1767139200;
-    print("expected max_last_mod: $expected_max_last_mod\n");
-    print("  actual max_last_mod: " . $settings->{max_last_mod}->epoch . "\n");
     ok($settings->{max_last_mod}->epoch == $expected_max_last_mod, "max_last_mod matches expected");
     my $expected_min_last_mod = 1262304000;
-    print("expected min_last_mod: $expected_min_last_mod\n");
-    print("  actual max_last_mod: " . $settings->{min_last_mod}->epoch . "\n");
     ok($settings->{min_last_mod}->epoch == $expected_min_last_mod, "min_last_mod matches expected");
 }
 
@@ -98,12 +95,8 @@ sub test_last_mod_as_epoch_args {
     my $args = ['--maxlastmod', 1767139200, '--minlastmod', 1262304000];
     my ($settings, $errs) = $find_options->settings_from_args($args);
     my $expected_max_last_mod = 1767139200;
-    print("expected max_last_mod: $expected_max_last_mod\n");
-    print("  actual max_last_mod: " . $settings->{max_last_mod}->epoch . "\n");
     ok($settings->{max_last_mod}->epoch == $expected_max_last_mod, "max_last_mod matches expected");
     my $expected_min_last_mod = 1262304000;
-    print("expected min_last_mod: $expected_min_last_mod\n");
-    print("  actual max_last_mod: " . $settings->{min_last_mod}->epoch . "\n");
     ok($settings->{min_last_mod}->epoch == $expected_min_last_mod, "min_last_mod matches expected");
 }
 

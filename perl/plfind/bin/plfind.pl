@@ -17,7 +17,7 @@ BEGIN {
 }
 
 use plfind::common;
-use plfind::config;
+use plfind::FindConfig;
 use plfind::FileResultFormatter;
 use plfind::Finder;
 use plfind::FindOptions;
@@ -33,7 +33,8 @@ sub handle_err {
 }
 
 sub main {
-    my $find_options = plfind::FindOptions->new();
+    my $config = plfind::FindConfig->new();
+    my $find_options = plfind::FindOptions->new($config);
     my ($settings, $errs) = $find_options->settings_from_args(\@ARGV);
 
     if (scalar @$errs) {
@@ -51,7 +52,8 @@ sub main {
         exit;
     }
 
-    my ($finder, $errs2) = plfind::Finder->new($settings);
+    my ($finder, $errs2) = plfind::Finder->new($config, $settings);
+
     if (scalar @$errs2) {
         handle_err($errs2->[0], $find_options, $settings->{colorize});
     }

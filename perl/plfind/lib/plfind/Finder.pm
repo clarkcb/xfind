@@ -24,9 +24,11 @@ use plfind::FindError;
 
 sub new {
     my $class = shift;
+    my $config = shift;
+    my $settings = shift;
     my $self = {
-        settings => shift,
-        file_types => plfind::FileTypes->new(),
+        settings => $settings,
+        file_types => plfind::FileTypes->new($config),
         results => [],
     };
     bless $self, $class;
