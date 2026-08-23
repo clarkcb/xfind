@@ -13,9 +13,11 @@ module RbFind
 
   # FindOptions - parses CLI args into settings, generates usage string
   class FindOptions
+    attr_reader :config
     attr_reader :options
 
-    def initialize
+    def initialize(config)
+      @config = config
       @options = []
       @bool_action_dict = {}
       @str_action_dict = {}
@@ -142,8 +144,7 @@ module RbFind
     end
 
     def set_options_from_json
-      find_options_json_path = File.join(File.dirname(__FILE__), "../../data/findoptions.json")
-      f = File.open(find_options_json_path, mode: 'r')
+      f = File.open(@config.find_options_path, mode: 'r')
       json = f.read
       json_hash = JSON.parse(json)
       json_hash['findoptions'].each do |so|
@@ -167,7 +168,7 @@ module RbFind
         @options.push(FindOption.new(short, long, desc, arg_type))
       end
     rescue StandardError => e
-      raise FindError, "#{e} (file: #{find_options_json_path})"
+      raise FindError, "#{e} (file: #{@config.find_options_path})"
     ensure
       f&.close
     end
@@ -211,7 +212,7 @@ module RbFind
     end
 
     def update_settings_from_default_files(settings)
-      default_find_settings_path = Pathname.new(Dir.home).join('.config', 'xfind', 'settings.json')
+      default_find_settings_path = Pathname.new(@config.default_find_settings_path)
       if default_find_settings_path.exist?
         update_settings_from_file(settings, default_find_settings_path.to_s)
       end

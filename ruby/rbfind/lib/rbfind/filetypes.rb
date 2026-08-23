@@ -43,15 +43,14 @@ module RbFind
   # FileTypes - provides basic file type information
   class FileTypes
 
-    def initialize
-      set_file_type_maps_from_json
-    end
-
-    def set_file_type_maps_from_json
+    def initialize(config)
       @file_type_ext_map = {}
       @file_type_name_map = {}
-      filetypes_json_path = File.join(File.dirname(__FILE__), "../../data/filetypes.json")
-      f = File.open(filetypes_json_path, mode: 'r')
+      load_file_type_maps_from_json_file(config.file_types_path)
+    end
+
+    def load_file_type_maps_from_json_file(file_types_path)
+      f = File.open(file_types_path, mode: 'r')
       json = f.read
       json_hash = JSON.parse(json)
       json_hash['filetypes'].each do |ft|

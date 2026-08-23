@@ -15,10 +15,11 @@ module RbFind
   # Finder - finds files according to settings
   class Finder
     attr_reader :settings
+    attr_reader :file_types
 
-    def initialize(settings)
+    def initialize(config, settings)
       @settings = settings
-      @file_types = FileTypes.new
+      @file_types = FileTypes.new(config)
       validate_settings
     end
 

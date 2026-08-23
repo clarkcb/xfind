@@ -17,13 +17,15 @@ require_relative 'rbfind/fileresultformatter'
 require_relative 'rbfind/fileresultsorter'
 require_relative 'rbfind/filetypes'
 require_relative 'rbfind/fileutil'
+require_relative 'rbfind/findconfig'
 require_relative 'rbfind/finder'
 require_relative 'rbfind/findoption'
 require_relative 'rbfind/findoptions'
 require_relative 'rbfind/findsettings'
 
 def find_main
-  options = RbFind::FindOptions.new
+  config = RbFind::FindConfig.new
+  options = RbFind::FindOptions.new(config)
 
   settings =
     begin
@@ -44,7 +46,7 @@ def find_main
     abort
   end
 
-  find(options, settings)
+  find(config, options, settings)
 end
 
 def handle_find_error(err, colorize, options)
@@ -53,10 +55,10 @@ def handle_find_error(err, colorize, options)
   options.usage
 end
 
-def find(options, settings)
+def find(config, options, settings)
   finder =
     begin
-      RbFind::Finder.new(settings)
+      RbFind::Finder.new(config, settings)
     rescue RbFind::FindError => e
       handle_find_error(e, settings.colorize, options)
     rescue => e

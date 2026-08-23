@@ -3,5 +3,5 @@ class Object
 
   def handle_find_error: (StandardError err, bool colorize, RbFind::FindOptions options) -> void
 
-  def find: (RbFind::FindOptions options, RbFind::FindSettings settings) -> void
+  def find: (RbFind::FindConfig config, RbFind::FindOptions options, RbFind::FindSettings settings) -> void
 end

@@ -1,0 +1,10 @@
+module RbFind
+  # FindConfig - basic config info
+  class FindConfig
+    attr_reader file_types_path: String
+    attr_reader find_options_path: String
+    attr_reader default_find_settings_path: String
+
+    def initialize: () -> void
+  end
+end

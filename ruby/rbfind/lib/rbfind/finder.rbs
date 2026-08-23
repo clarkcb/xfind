@@ -5,8 +5,9 @@ module RbFind
     @file_types: FileTypes
 
     attr_reader settings: FindSettings
+    attr_reader file_types: FileTypes
 
-    def initialize: (FindSettings settings) -> void
+    def initialize: (FindConfig config, FindSettings settings) -> void
 
     def matching_path_by_symlink?: (Pathname path) -> bool
 

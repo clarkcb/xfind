@@ -27,9 +27,11 @@ module RbFind
     @file_type_ext_map: Hash[Symbol, Set[String]]
     @file_type_name_map: Hash[Symbol, Set[String]]
 
-    def initialize: () -> void
+    attr_reader config: FindConfig
 
-    def set_file_type_maps_from_json: () -> void
+    def initialize: (FindConfig config) -> void
+
+    def load_file_type_maps_from_json_file: (String file_types_path) -> void
 
     def get_file_type: (Pathname file_path) -> FileType
 
