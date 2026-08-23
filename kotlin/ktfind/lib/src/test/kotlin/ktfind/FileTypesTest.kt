@@ -11,7 +11,7 @@ import kotlin.test.assertTrue
  * @author cary on 7/30/16.
  */
 class FileTypesTest {
-    private val fileTypes = FileTypes()
+    private val fileTypes = FileTypes(FindConfig())
 
     @Test
     fun archiveFileTest() {

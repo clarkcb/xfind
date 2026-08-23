@@ -15,11 +15,16 @@ import kotlin.io.path.name
 /**
  * @author cary on 7/23/16.
  */
-class Finder(val settings: FindSettings) {
-    private val fileTypes: FileTypes = FileTypes()
+class Finder(config: FindConfig, val settings: FindSettings) {
+    private val fileTypes: FileTypes
+    private val extTests: MutableSet<(String) -> Boolean> = mutableSetOf()
+    private val fileNameTests: MutableSet<(String) -> Boolean> = mutableSetOf()
+    private val fileTypeTests: MutableSet<(FileType) -> Boolean> = mutableSetOf()
 
     init {
         validateSettings(settings)
+        fileTypes = FileTypes(config)
+        //setTests()
     }
 
     private fun validateSettings(settings: FindSettings) {

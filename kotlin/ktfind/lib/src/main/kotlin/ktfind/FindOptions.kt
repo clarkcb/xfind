@@ -25,8 +25,7 @@ data class FindOption(override val shortArg: String?, override val longArg: Stri
         }
 }
 
-class FindOptions {
-    private val findOptionsJsonPath = "/findoptions.json"
+class FindOptions(val config: FindConfig) {
     private val findOptions: List<FindOption>
     // We add path manually since it's not an option in findoptions.json
     private var longArgs = mutableSetOf<String>("path")
@@ -114,7 +113,7 @@ class FindOptions {
     )
 
     private fun loadFindOptionsFromJson(): List<FindOption> {
-        val findOptionsInputStream = javaClass.getResourceAsStream(findOptionsJsonPath)
+        val findOptionsInputStream = javaClass.getResourceAsStream(config.findOptionsPath)
         val jsonObj = JSONObject(JSONTokener(findOptionsInputStream))
         val findOptionsArray = jsonObj.getJSONArray("findoptions").iterator()
         val options: MutableList<FindOption> = mutableListOf()
@@ -230,9 +229,9 @@ class FindOptions {
     }
 
     fun updateSettingsFromDefaultFiles(settings: FindSettings): FindSettings {
-        val defaultFindSettingsPath = Paths.get(System.getProperty("user.home"), ".config", "xfind", "settings.json")
-        if (Files.exists(defaultFindSettingsPath)) {
-            return updateSettingsFromFile(settings, defaultFindSettingsPath.toString())
+        val defaultSettingsPath = Paths.get(config.defaultFindSettingsPath)
+        if (Files.exists(defaultSettingsPath)) {
+            return updateSettingsFromFile(settings, defaultSettingsPath.toString())
         }
         return settings
     }

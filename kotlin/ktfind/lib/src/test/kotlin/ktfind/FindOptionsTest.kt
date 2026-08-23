@@ -14,7 +14,8 @@ class FindOptionsTest {
     @Test
     fun testSettingsFromMinimalArgs() {
         val args = arrayOf(".")
-        val findOptions = FindOptions()
+        val config = FindConfig()
+        val findOptions = FindOptions(config)
         val settings = findOptions.settingsFromArgs(args)
         assertFalse(settings.archivesOnly)
         assertFalse(settings.debug)
@@ -33,7 +34,8 @@ class FindOptionsTest {
     @Test
     fun testSettingsFromValidArgs() {
         val args = arrayOf("-x", "java,scala", ".")
-        val findOptions = FindOptions()
+        val config = FindConfig()
+        val findOptions = FindOptions(config)
         val settings = findOptions.settingsFromArgs(args)
         assertEquals(2, settings.inExtensions.size)
         assertTrue(settings.inExtensions.contains("java"))
@@ -53,7 +55,8 @@ class FindOptionsTest {
                  |  "followsymlinks": true,
                  |  "includehidden": false
                  |}""".trimMargin()
-        val findOptions = FindOptions()
+        val config = FindConfig()
+        val findOptions = FindOptions(config)
         val settings = findOptions.updateSettingsFromJson(getDefaultSettings(), json)
 
         assertEquals(1, settings.paths.size)

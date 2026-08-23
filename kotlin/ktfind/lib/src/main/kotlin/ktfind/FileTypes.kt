@@ -40,20 +40,18 @@ enum class FileType(val value: String) {
     }
 }
 
-private const val fileTypesJsonPath = "/filetypes.json"
-
-class FileTypes {
+class FileTypes(config: FindConfig) {
 
     private val fileTypeExtMap: MutableMap<String, Set<String>> = mutableMapOf()
     private val fileTypeNameMap: MutableMap<String, Set<String>> = mutableMapOf()
 
     init {
-        setFileTypeMapsFromJson()
+        loadFileTypeMapsFromJsonFile(config.fileTypesPath)
     }
 
-    private fun setFileTypeMapsFromJson() {
+    private fun loadFileTypeMapsFromJsonFile(fileTypesPath: String) {
         try {
-            val fileTypesInputStream = javaClass.getResourceAsStream(fileTypesJsonPath)
+            val fileTypesInputStream = javaClass.getResourceAsStream(fileTypesPath)
             val jsonObj = JSONObject(JSONTokener(fileTypesInputStream!!))
             val fileTypesArray = jsonObj.getJSONArray("filetypes")!!.iterator()
             while (fileTypesArray.hasNext()) {

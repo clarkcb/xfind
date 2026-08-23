@@ -11,8 +11,8 @@ fun printErrorWithUsage(err: String, colorize: Boolean, findOptions: FindOptions
     findOptions.usage()
 }
 
-fun find(settings: FindSettings) {
-    val finder = Finder(settings)
+fun find(config: FindConfig, settings: FindSettings) {
+    val finder = Finder(config, settings)
     val fileResults: List<FileResult> = finder.find()
 
     if (settings.printDirs || settings.printFiles) {
@@ -28,14 +28,15 @@ fun find(settings: FindSettings) {
 }
 
 fun main(args: Array<String>) {
-    val findOptions = FindOptions()
+    val config = FindConfig()
+    val findOptions = FindOptions(config)
     var colorize = true
     try {
         val settings = findOptions.settingsFromArgs(args)
         colorize = settings.colorize
         if (settings.debug) log("settings: $settings")
         if (settings.printUsage) printUsage(findOptions)
-        else find(settings)
+        else find(config, settings)
     } catch (e: FindException) {
         printErrorWithUsage(e.message ?: "Unknown error", colorize, findOptions)
     }
