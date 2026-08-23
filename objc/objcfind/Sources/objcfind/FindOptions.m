@@ -6,6 +6,7 @@
 
 @interface FindOptions ()
 // private properties
+@property FindConfig *config;
 @property NSArray<FindOption*> *findOptions;
 @property NSDictionary<NSString*,NSString*> *longArgDict;
 @property NSDictionary *boolActionDict;
@@ -17,39 +18,42 @@
 
 @implementation FindOptions
 
-- (instancetype) init {
+- (instancetype) initWithConfig:(FindConfig*)config error:(NSError**)error {
     self = [super init];
     if (self) {
+        self.config = config;
         self.longArgDict = [self getLongArgDict];
         self.boolActionDict = [self getBoolActionDict];
         self.stringActionDict = [self getStringActionDict];
         self.integerActionDict = [self getIntegerActionDict];
-        self.findOptions = [self findOptionsFromJson];
+        self.findOptions = [self loadFindOptionsFromJsonFile:config.findOptionsPath error:error];
+        if (*error) {
+            return nil;
+        }
         self.argTokenizer = [[ArgTokenizer alloc] initWithOptions:self.findOptions];
     }
     return self;
 }
 
-- (NSArray<FindOption*>*) findOptionsFromJson {
-    NSMutableString *findOptionsJsonPath = [NSMutableString stringWithString:getXfindSharedPath()];
-    [findOptionsJsonPath appendString:@"/findoptions.json"];
-    
-    if (![[NSFileManager defaultManager] fileExistsAtPath:findOptionsJsonPath]) {
+- (NSArray<FindOption*>*) loadFindOptionsFromJsonFile:(NSString*)findOptionsPath error:(NSError**)error {
+    if (![[NSFileManager defaultManager] fileExistsAtPath:findOptionsPath]) {
+        setError(error, [NSString stringWithFormat:@"File not found: %@", findOptionsPath]);
         return nil;
     }
-    
+
     NSMutableArray *findOptions = [[NSMutableArray alloc] initWithCapacity:44];
 
-    NSData *data = [NSData dataWithContentsOfFile:findOptionsJsonPath];
-    
+    NSData *data = [NSData dataWithContentsOfFile:findOptionsPath];
+
     if (NSClassFromString(@"NSJSONSerialization")) {
-        NSError *error = nil;
         id jsonObject = [NSJSONSerialization
                          JSONObjectWithData:data
                          options:0
-                         error:&error];
+                         error:error];
         
-        if (error) { /* JSON was malformed, act appropriately here */ }
+        if (*error) {
+            return nil;
+        }
         
         if ([jsonObject isKindOfClass:[NSDictionary class]]) {
             NSArray *findOptionObjects = jsonObject[@"findoptions"];
@@ -292,9 +296,8 @@ typedef void (^IntegerActionBlockType)(NSInteger, FindSettings*);
 
 // this is intended to be private, so not including in the header file
 - (void) updateSettingsFromDefaultFiles:(FindSettings *)settings error:(NSError **)error {
-    NSString *defaultSettingsPath = getXfindDefaultSettingsPath();
-    if ([FileUtil exists:defaultSettingsPath]) {
-        [self updateSettingsFromFile:settings filePath:defaultSettingsPath error:error];
+    if ([FileUtil exists:self.config.defaultFindSettingsPath]) {
+        [self updateSettingsFromFile:settings filePath:self.config.defaultFindSettingsPath error:error];
     }
 }
 

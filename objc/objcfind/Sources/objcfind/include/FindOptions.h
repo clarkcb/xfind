@@ -7,7 +7,8 @@
 
 @interface FindOptions : NSObject
 
-- (NSArray<FindOption*>*) findOptionsFromJson;
+- (instancetype) initWithConfig:(FindConfig*)config error:(NSError**)error;
+- (NSArray<FindOption*>*) loadFindOptionsFromJsonFile:(NSString*)findOptionsPath error:(NSError**)error;
 - (FindSettings*) settingsFromArgs:(NSArray*)args error:(NSError**)error;
 - (void) updateSettingsFromArgs:(FindSettings*)settings args:(NSArray *)args error:(NSError **)error;
 - (FindSettings*) settingsFromData:(NSData*)data error:(NSError **)error;

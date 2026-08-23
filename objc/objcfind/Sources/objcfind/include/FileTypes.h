@@ -3,10 +3,12 @@
 
 #import <Foundation/Foundation.h>
 #import "common.h"
+#import "FindConfig.h"
 
 @interface FileTypes : NSObject
 
-- (NSArray*) fileTypesFromJson;
+- (instancetype) initWithConfig:(FindConfig*)config error:(NSError**)error;
+- (NSArray*) loadFileTypesFromJsonFile:(NSString*)fileTypesPath error:(NSError**)error;
 + (FileType) fromName:(NSString*)typeName;
 + (NSString*) toName:(FileType)fileType;
 - (FileType) getFileType:(NSString*)fileName;

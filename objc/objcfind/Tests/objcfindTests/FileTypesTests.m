@@ -9,7 +9,9 @@
 
 - (void)setUp {
     [super setUp];
-    self.fileTypes = [[FileTypes alloc] init];
+    NSError *error = nil;
+    FindConfig *config = [[FindConfig alloc] init];
+    self.fileTypes = [[FileTypes alloc] initWithConfig:config error:&error];
 }
 
 - (void)tearDown {

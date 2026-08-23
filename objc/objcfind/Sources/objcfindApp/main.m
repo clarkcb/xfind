@@ -24,7 +24,8 @@ int main(int argc, const char * argv[]) {
     @autoreleasepool {
         NSError *error = nil;
 
-        FindOptions *options = [[FindOptions alloc] init];
+        FindConfig *config = [[FindConfig alloc] init];
+        FindOptions *options = [[FindOptions alloc] initWithConfig:config error:&error];
 
         NSArray *args = argvToNSArray(argc, argv);
 
@@ -42,7 +43,7 @@ int main(int argc, const char * argv[]) {
             [options usage:0];
         }
 
-        Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
+        Finder *finder = [[Finder alloc] initWithConfig:config settings:settings error:&error];
 
         if (error) {
             handleError(error, settings.colorize, options);

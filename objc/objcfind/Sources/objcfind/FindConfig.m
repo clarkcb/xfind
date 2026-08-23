@@ -1,25 +1,21 @@
 #import "FindConfig.h"
 
-NSString* getXfindPath() {
-    NSString *xfindPath = [[[NSProcessInfo processInfo] environment] objectForKey:@"XFIND_PATH"];
-    if (xfindPath == nil) {
-        xfindPath = [[[[NSProcessInfo processInfo] environment] objectForKey:@"HOME"]
-                     stringByAppendingString:@"/src/xfind"];
+@implementation FindConfig
+
+- (instancetype) init {
+    self = [super init];
+    if (self) {
+        NSString *homePath = [[[NSProcessInfo processInfo] environment] objectForKey:@"HOME"];
+        NSString *xfindPath = [[[NSProcessInfo processInfo] environment] objectForKey:@"XFIND_PATH"];
+        if (xfindPath == nil) {
+            xfindPath = [NSString pathWithComponents:@[homePath, @"src", @"xfind"]];
+        }
+        self.xfindPath = xfindPath;
+        self.fileTypesPath = [NSString pathWithComponents:@[xfindPath, @"shared", @"filetypes.json"]];
+        self.findOptionsPath = [NSString pathWithComponents:@[xfindPath, @"shared", @"findoptions.json"]];
+        self.defaultFindSettingsPath = [NSString pathWithComponents:@[homePath, @".config", @"xfind", @"settings.json"]];
     }
-    return xfindPath;
+    return self;
 }
 
-NSString* getXfindSharedPath() {
-    NSString *xfindPath = getXfindPath();
-    return [xfindPath stringByAppendingPathComponent:@"shared"];
-}
-
-NSString* getXfindBinPath() {
-    NSString *xfindPath = getXfindPath();
-    return [xfindPath stringByAppendingPathComponent:@"bin"];
-}
-
-NSString* getXfindDefaultSettingsPath() {
-    NSString *xfindDefaultSettingsPath = [[[[NSProcessInfo processInfo] environment] objectForKey:@"HOME"] stringByAppendingString:@"/.config/xfind/settings.json"];
-    return xfindDefaultSettingsPath;
-}
+@end

@@ -24,7 +24,7 @@
 
 @implementation FileTypes
 
-- (instancetype) init {
+- (instancetype) initWithConfig:(FindConfig*)config error:(NSError**)error {
     self = [super init];
     if (self) {
         self.archive = [NSString stringWithUTF8String:T_ARCHIVE];
@@ -37,34 +37,36 @@
         self.unknown = [NSString stringWithUTF8String:T_UNKNOWN];
         self.video = [NSString stringWithUTF8String:T_VIDEO];
         self.xml = [NSString stringWithUTF8String:T_XML];
-        NSArray<NSDictionary<NSString*,NSSet<NSString*>*>*> *ftArr = [self fileTypesFromJson];
+        NSArray<NSDictionary<NSString*,NSSet<NSString*>*>*> *ftArr = [self loadFileTypesFromJsonFile:config.fileTypesPath error:error];
+        if (*error) {
+            return nil;
+        }
         self.fileTypeExtDict = ftArr[0];
         self.fileTypeNameDict = ftArr[1];
     }
     return self;
 }
 
-- (NSArray<NSDictionary<NSString*,NSSet<NSString*>*>*>*) fileTypesFromJson {
-    NSMutableString *fileTypesJsonPath = [NSMutableString stringWithString:getXfindSharedPath()];
-    [fileTypesJsonPath appendString:@"/filetypes.json"];
-
+- (NSArray<NSDictionary<NSString*,NSSet<NSString*>*>*>*) loadFileTypesFromJsonFile:(NSString*)fileTypesPath error:(NSError**)error {
     NSMutableDictionary *fileTypeExtDict = [[NSMutableDictionary alloc] init];
     NSMutableDictionary *fileTypeNameDict = [[NSMutableDictionary alloc] init];
 
-    if (![[NSFileManager defaultManager] fileExistsAtPath:fileTypesJsonPath]) {
+    if (![[NSFileManager defaultManager] fileExistsAtPath:fileTypesPath]) {
+        setError(error, [NSString stringWithFormat:@"File not found: %@", fileTypesPath]);
         return nil;
     }
 
-    NSData *data = [NSData dataWithContentsOfFile:fileTypesJsonPath];
+    NSData *data = [NSData dataWithContentsOfFile:fileTypesPath];
 
     if (NSClassFromString(@"NSJSONSerialization")) {
-        NSError *error = nil;
         id jsonObject = [NSJSONSerialization
                          JSONObjectWithData:data
                          options:0
-                         error:&error];
+                         error:error];
 
-        if (error) { /* JSON was malformed, act appropriately here */ }
+        if (*error) {
+            return nil;
+        }
 
         if ([jsonObject isKindOfClass:[NSDictionary class]]) {
             NSArray *fileTypes = jsonObject[@"filetypes"];

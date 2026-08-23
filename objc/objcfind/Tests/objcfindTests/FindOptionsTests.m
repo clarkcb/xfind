@@ -25,9 +25,10 @@
 }
 
 - (void)testSettingsFromMinimalArgs {
-    FindOptions *options = [[FindOptions alloc] init];
-    NSArray *args =[NSArray arrayWithObjects:@"objfind",@".",nil];
     NSError *error = nil;
+    FindConfig *config = [[FindConfig alloc] init];
+    FindOptions *options = [[FindOptions alloc] initWithConfig:config error:&error];
+    NSArray *args =[NSArray arrayWithObjects:@"objfind",@".",nil];
     FindSettings *settings = [options settingsFromArgs:args error:&error];
     XCTAssert(![settings archivesOnly]);
     XCTAssert(![settings debug]);
@@ -45,9 +46,10 @@
 }
 
 - (void)testSettingsFromValidArgs {
-    FindOptions *options = [[FindOptions alloc] init];
-    NSArray *args =[NSArray arrayWithObjects:@"objfind",@"-x",@"java,scala",@".",nil];
     NSError *error = nil;
+    FindConfig *config = [[FindConfig alloc] init];
+    FindOptions *options = [[FindOptions alloc] initWithConfig:config error:&error];
+    NSArray *args =[NSArray arrayWithObjects:@"objfind",@"-x",@"java,scala",@".",nil];
     FindSettings *settings = [options settingsFromArgs:args error:&error];
     
     XCTAssert([[settings inExtensions] count] == 2);
@@ -71,8 +73,9 @@
 
     NSData *data = [json dataUsingEncoding:NSUTF8StringEncoding];
 
-    FindOptions *options = [[FindOptions alloc] init];
     NSError *error = nil;
+    FindConfig *config = [[FindConfig alloc] init];
+    FindOptions *options = [[FindOptions alloc] initWithConfig:config error:&error];
     FindSettings *settings = [options settingsFromData:data error:&error];
 
     XCTAssert([[settings inExtensions] count] == 2);

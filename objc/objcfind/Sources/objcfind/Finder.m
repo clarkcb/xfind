@@ -5,10 +5,14 @@
 
 @implementation Finder
 
-- (instancetype) initWithSettings:(FindSettings*)settings error:(NSError**)error {
+- (instancetype) initWithConfig:(FindConfig*)config settings:(FindSettings*)settings error:(NSError**)error {
     self = [super init];
     if (self) {
-        self.fileTypes = [[FileTypes alloc] init];
+        self.fileTypes = [[FileTypes alloc] initWithConfig:config error:error];
+        if (*error) {
+            return nil;
+        }
+
         self.settings = settings;
         if (![self validateSettings:settings error:error]) {
             return self;

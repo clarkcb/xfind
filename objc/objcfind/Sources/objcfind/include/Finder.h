@@ -21,7 +21,7 @@
 @property FindSettings *settings;
 @property NSStringEncoding textFileEncoding;
 
-- (instancetype) initWithSettings:(FindSettings*)settings error:(NSError**)error;
+- (instancetype) initWithConfig:(FindConfig*)config settings:(FindSettings*)settings error:(NSError**)error;
 - (NSArray<FileResult*>*) find:(NSError**)error;
 - (void) printMatchingDirs:(NSArray<FileResult*>*)fileResults formatter:(FileResultFormatter*)formatter;
 - (void) printMatchingFiles:(NSArray<FileResult*>*)fileResults formatter:(FileResultFormatter*)formatter;
