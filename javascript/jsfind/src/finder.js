@@ -31,9 +31,9 @@ class Finder {
   settings;
   fileTypes;
 
-  constructor(settings) {
+  constructor(config, settings) {
     this.settings = settings;
-    this.fileTypes = new FileTypes();
+    this.fileTypes = new FileTypes(config);
     this.validateSettings();
   }
 

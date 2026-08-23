@@ -4,12 +4,13 @@
  * Some tests of findoptions.js
  */
 
+const { FindConfig } = require('../src/findconfig');
 const FindOptions = require('../src/findoptions').FindOptions;
 const FindSettings = require('../src/findsettings').FindSettings;
 
 describe('testing findoptions', () => {
   it('testNoArgs', () => {
-    const findOptions = new FindOptions();
+    const findOptions = new FindOptions(new FindConfig());
     findOptions.settingsFromArgs([], (err, settings) => {
       if (err) {
         console.log('There was an error calling settingsFromArgs: ' + err);
@@ -31,7 +32,7 @@ describe('testing findoptions', () => {
   });
 
   it('testValidArgs', () => {
-    const findOptions = new FindOptions();
+    const findOptions = new FindOptions(new FindConfig());
     const args = ['-x', 'js,java', '.'];
     findOptions.settingsFromArgs(args, (err, settings) => {
       if (err) {
@@ -45,7 +46,7 @@ describe('testing findoptions', () => {
   });
 
   it('testArchivesOnly', () => {
-    const findOptions = new FindOptions();
+    const findOptions = new FindOptions(new FindConfig());
     const args = ['--archivesonly'];
     findOptions.settingsFromArgs(args, (err, settings) => {
       if (err) {
@@ -58,7 +59,7 @@ describe('testing findoptions', () => {
   });
 
   it('testDebug', () => {
-    const findOptions = new FindOptions();
+    const findOptions = new FindOptions(new FindConfig());
     const args = ['--debug'];
     findOptions.settingsFromArgs(args, (err, settings) => {
       if (err) {
@@ -71,7 +72,7 @@ describe('testing findoptions', () => {
   });
 
   it('testMissingArg', () => {
-    const findOptions = new FindOptions();
+    const findOptions = new FindOptions(new FindConfig());
     const args = ['-x'];
     findOptions.settingsFromArgs(args, (err) => {
       if (err) {
@@ -85,7 +86,7 @@ describe('testing findoptions', () => {
   });
 
   it('testIvalidArg', () => {
-    const findOptions = new FindOptions();
+    const findOptions = new FindOptions(new FindConfig());
     const args = ['-Q'];
     findOptions.settingsFromArgs(args, (err) => {
       if (err) {
@@ -99,7 +100,7 @@ describe('testing findoptions', () => {
   });
 
   it('testSettingsFromJson', () => {
-    const findOptions = new FindOptions();
+    const findOptions = new FindOptions(new FindConfig());
     const settings = new FindSettings();
     const json =
       '{\n' +

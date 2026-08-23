@@ -6,10 +6,11 @@
 
 const { FileType } = require('../src/filetype');
 const { FileTypes } = require('../src/filetypes');
+const { FindConfig } = require('../src/findconfig');
 
 describe('testing filetypes', () => {
   it('testFileTypesArchiveFile', () => {
-    const fileTypes = new FileTypes();
+    const fileTypes = new FileTypes(new FindConfig());
     const filename = 'archive.zip';
     const res = fileTypes.isArchiveFile(filename);
     expect(res).toBeTruthy();
@@ -31,7 +32,7 @@ describe('testing filetypes', () => {
   });
 
   it('testFileTypesAudioFile', () => {
-    const fileTypes = new FileTypes();
+    const fileTypes = new FileTypes(new FindConfig());
     const filename = 'music.mp3';
     const res = fileTypes.isAudioFile(filename);
     expect(res).toBeTruthy();
@@ -40,7 +41,7 @@ describe('testing filetypes', () => {
   });
 
   it('testFileTypesBinaryFile', () => {
-    const fileTypes = new FileTypes();
+    const fileTypes = new FileTypes(new FindConfig());
     const filename = 'binary.exe';
     const res = fileTypes.isBinaryFile(filename);
     expect(res).toBeTruthy();
@@ -49,7 +50,7 @@ describe('testing filetypes', () => {
   });
 
   it('testFileTypesCodeFile', () => {
-    const fileTypes = new FileTypes();
+    const fileTypes = new FileTypes(new FindConfig());
     const filename = 'code.js';
     const res = fileTypes.isCodeFile(filename);
     expect(res).toBeTruthy();
@@ -58,7 +59,7 @@ describe('testing filetypes', () => {
   });
 
   it('testFileTypesFontFile', () => {
-    const fileTypes = new FileTypes();
+    const fileTypes = new FileTypes(new FindConfig());
     const filename = 'font.ttf';
     const res = fileTypes.isFontFile(filename);
     expect(res).toBeTruthy();
@@ -67,7 +68,7 @@ describe('testing filetypes', () => {
   });
 
   it('testFileTypesImageFile', () => {
-    const fileTypes = new FileTypes();
+    const fileTypes = new FileTypes(new FindConfig());
     const filename = 'image.png';
     const res = fileTypes.isImageFile(filename);
     expect(res).toBeTruthy();
@@ -76,7 +77,7 @@ describe('testing filetypes', () => {
   });
 
   it('testFileTypesTextFile', () => {
-    const fileTypes = new FileTypes();
+    const fileTypes = new FileTypes(new FindConfig());
     const filename = 'text.txt';
     const res = fileTypes.isTextFile(filename);
     expect(res).toBeTruthy();
@@ -85,7 +86,7 @@ describe('testing filetypes', () => {
   });
 
   it('testFileTypesVideoFile', () => {
-    const fileTypes = new FileTypes();
+    const fileTypes = new FileTypes(new FindConfig());
     const filename = 'movie.mp4';
     const res = fileTypes.isVideoFile(filename);
     expect(res).toBeTruthy();
@@ -94,7 +95,7 @@ describe('testing filetypes', () => {
   });
 
   it('testFileTypesXmlFile', () => {
-    const fileTypes = new FileTypes();
+    const fileTypes = new FileTypes(new FindConfig());
     const filename = 'markup.xml';
     const res = fileTypes.isXmlFile(filename);
     expect(res).toBeTruthy();
@@ -103,7 +104,7 @@ describe('testing filetypes', () => {
   });
 
   it('testFileTypesUnknownFile', () => {
-    const fileTypes = new FileTypes();
+    const fileTypes = new FileTypes(new FindConfig());
     const filename = 'unknown.xyz';
     const res = fileTypes.isUnknownFile(filename);
     expect(res).toBeTruthy();

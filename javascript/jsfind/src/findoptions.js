@@ -4,7 +4,6 @@
  * defines the set of find options and provides functionality to define find settings from them
  */
 
-const config = require('./config');
 const { ArgTokenizer } = require('./argtokenizer');
 const { ArgTokenType } = require('./argtokentype');
 const { FileUtil } = require('./fileutil');
@@ -15,7 +14,8 @@ const { nameToSortBy } = require('./sortby');
 const fs = require('fs');
 
 class FindOptions {
-  constructor() {
+  constructor(config) {
+    this.config = config;
     this.boolActionMap = {
       archivesonly: (b, settings) => {
         settings.archivesOnly = b;
@@ -163,7 +163,7 @@ class FindOptions {
 
     // populate options from JSON file
     (() => {
-      let json = FileUtil.getFileContentsSync(config.FIND_OPTIONS_JSON_PATH, 'utf-8');
+      let json = FileUtil.getFileContentsSync(this.config.findOptionsPath, 'utf-8');
       let obj = JSON.parse(json);
       if (
         Object.prototype.hasOwnProperty.call(obj, 'findoptions') &&
@@ -254,8 +254,8 @@ class FindOptions {
 
   updateSettingsFromDefaultFiles(settings) {
     let err;
-    if (fs.existsSync(config.DEFAULT_FIND_SETTINGS_PATH)) {
-      err = this.updateSettingsFromFile(settings, config.DEFAULT_FIND_SETTINGS_PATH);
+    if (fs.existsSync(this.config.defaultFindSettingsPath)) {
+      err = this.updateSettingsFromFile(settings, this.config.defaultFindSettingsPath);
     }
     return err;
   }

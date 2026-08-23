@@ -9,6 +9,7 @@
 
 const common = require('./common');
 const { FileResultFormatter } = require('./fileresultformatter');
+const { FindConfig } = require('./findconfig');
 const { Finder } = require('./finder');
 const { FindOptions } = require('./findoptions');
 
@@ -19,7 +20,8 @@ function handleError(err, colorize, findOptions) {
 }
 
 const findMain = async () => {
-  const findOptions = new FindOptions();
+  const config = new FindConfig();
+  const findOptions = new FindOptions(config);
   const args = process.argv.slice(2);
 
   findOptions.settingsFromArgs(args, async (err, settings) => {
@@ -40,7 +42,7 @@ const findMain = async () => {
     }
 
     try {
-      const finder = new Finder(settings);
+      const finder = new Finder(config, settings);
       let fileResults = await finder.find();
       const formatter = new FileResultFormatter(settings);
 

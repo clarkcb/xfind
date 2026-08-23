@@ -5,16 +5,15 @@
  */
 
 const common = require('./common');
-const config = require('./config');
 const { FileType } = require('./filetype');
 const { FileUtil } = require('./fileutil');
 
 class FileTypes {
-  constructor() {
+  constructor(config) {
     this.fileTypeExtMap = {};
     this.fileTypeNameMap = {};
 
-    const json = FileUtil.getFileContentsSync(config.FILE_TYPES_JSON_PATH, 'utf-8');
+    const json = FileUtil.getFileContentsSync(config.fileTypesPath, 'utf-8');
     let obj = JSON.parse(json);
     if (Object.prototype.hasOwnProperty.call(obj, 'filetypes') && Array.isArray(obj.filetypes)) {
       obj.filetypes.forEach((ft) => {
