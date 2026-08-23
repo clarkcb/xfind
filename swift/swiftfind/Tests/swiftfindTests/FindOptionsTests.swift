@@ -11,7 +11,7 @@ import XCTest
 import swiftfind
 
 class FindOptionsTests: XCTestCase {
-    let options = FindOptions()
+    let options = FindOptions(config: FindConfig())
     let startPath: String = "."
     var requiredArgs: [String] = []
 

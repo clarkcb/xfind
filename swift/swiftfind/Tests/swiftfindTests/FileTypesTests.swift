@@ -11,7 +11,7 @@ import XCTest
 import swiftfind
 
 class FileTypesTests: XCTestCase {
-    let fileTypes = FileTypes()
+    let fileTypes = FileTypes(config: FindConfig())
 
 //    override func setUp() {
 //        super.setUp()

@@ -29,10 +29,11 @@ public let STARTPATH_NOT_READABLE = "Startpath not readable"
 public let STARTPATH_NOT_MATCH_FIND_SETTINGS = "Startpath does not match find settings"
 
 public class Finder {
-    let fileTypes = FileTypes()
+    let fileTypes: FileTypes
     let settings: FindSettings
 
-    public init(settings: FindSettings) throws {
+    public init(config: FindConfig, settings: FindSettings) throws {
+        self.fileTypes = FileTypes(config: config)
         self.settings = settings
         try validateSettings()
     }

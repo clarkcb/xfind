@@ -3,7 +3,11 @@ import XCTest
 import swiftfind
 
 class FinderTests: XCTestCase {
-    let fileTypes = FileTypes()
+    let fileTypes = FileTypes(config: FindConfig())
+
+    func getConfig() -> FindConfig {
+        return FindConfig()
+    }
 
     func getSettings() -> FindSettings {
         let settings = FindSettings()
@@ -28,62 +32,71 @@ class FinderTests: XCTestCase {
      * isMatchingDir tests
      ========================================================================= */
     func testIsMatchingDir_SingleDot_True() {
+        let config = getConfig()
         let settings = getSettings()
-        let finder = try! Finder(settings: settings)
+        let finder = try! Finder(config: config, settings: settings)
         XCTAssertTrue(finder.isMatchingDirPath("."))
     }
 
     func testIsMatchingDir_DoubleDot_True() {
+        let config = getConfig()
         let settings = getSettings()
-        let finder = try! Finder(settings: settings)
+        let finder = try! Finder(config: config, settings: settings)
         XCTAssertTrue(finder.isMatchingDirPath(".."))
     }
 
     func testIsMatchingDir_IsHidden_False() {
+        let config = getConfig()
         let settings = getSettings()
-        let finder = try! Finder(settings: settings)
+        let finder = try! Finder(config: config, settings: settings)
         XCTAssertFalse(finder.isMatchingDirPath(".git"))
     }
 
     func testIsMatchingDir_IsHiddenIncludeHidden_True() {
+        let config = getConfig()
         let settings = getSettings()
         settings.includeHidden = true
-        let finder = try! Finder(settings: settings)
+        let finder = try! Finder(config: config, settings: settings)
         XCTAssertTrue(finder.isMatchingDirPath(".git"))
     }
 
     func testIsMatchingDir_NoPatterns_True() {
+        let config = getConfig()
         let settings = getSettings()
         settings.includeHidden = false
-        let finder = try! Finder(settings: settings)
+        let finder = try! Finder(config: config, settings: settings)
         XCTAssertTrue(finder.isMatchingDirPath("/Users"))
     }
 
     func testIsMatchingDir_MatchesInPattern_True() {
+        let config = getConfig()
         let settings = getSettings()
         settings.addInDirPattern("Find")
-        let finder = try! Finder(settings: settings)
+        let finder = try! Finder(config: config, settings: settings)
         XCTAssertTrue(finder.isMatchingDirPath("CsFind"))
     }
 
     func testIsMatchingDir_DoesNotMatchInPattern_False() {
+        let config = getConfig()
         let settings = getSettings()
         settings.addInDirPattern("FindFiles")
-        let finder = try! Finder(settings: settings)
+        let finder = try! Finder(config: config, settings: settings)
         XCTAssertFalse(finder.isMatchingDirPath("CsFind"))
     }
 
     func testIsMatchingDir_MatchesOutPattern_False() {
+        let config = getConfig()
         let settings = getSettings()
         settings.addOutDirPattern("Find")
-        let finder = try! Finder(settings: settings)
+        let finder = try! Finder(config: config, settings: settings)
         XCTAssertFalse(finder.isMatchingDirPath("CsFind"))
     }
 
     func testIsMatchingDir_DoesNotMatchOutPattern_True() {
+        let config = getConfig()
         let settings = getSettings()
         settings.addOutDirPattern("FindFiles")
-        let finder = try! Finder(settings: settings)
+        let finder = try! Finder(config: config, settings: settings)
         XCTAssertTrue(finder.isMatchingDirPath("CsFind"))
     }
 
@@ -91,64 +104,73 @@ class FinderTests: XCTestCase {
      * isMatchingFile tests
      ========================================================================= */
     func testIsMatchingFile_NoExtensionsNoPatterns_True() {
+        let config = getConfig()
         let settings = getSettings()
-        let finder = try! Finder(settings: settings)
+        let finder = try! Finder(config: config, settings: settings)
         XCTAssertTrue(finder.isMatchingFilePath("FileUtil.cs"))
     }
 
     func testIsMatchingFile_MatchesInExtension_True() {
+        let config = getConfig()
         let settings = getSettings()
         settings.addInExtension("cs")
-        let finder = try! Finder(settings: settings)
+        let finder = try! Finder(config: config, settings: settings)
         XCTAssertTrue(finder.isMatchingFilePath("FileUtil.cs"))
     }
 
     func testIsMatchingFile_DoesNotMatchInExtension_False() {
+        let config = getConfig()
         let settings = getSettings()
         settings.addInExtension("java")
-        let finder = try! Finder(settings: settings)
+        let finder = try! Finder(config: config, settings: settings)
         XCTAssertFalse(finder.isMatchingFilePath("FileUtil.cs"))
     }
 
     func testIsMatchingFile_MatchesOutExtension_False() {
+        let config = getConfig()
         let settings = getSettings()
         settings.addOutExtension("cs")
-        let finder = try! Finder(settings: settings)
+        let finder = try! Finder(config: config, settings: settings)
         XCTAssertFalse(finder.isMatchingFilePath("FileUtil.cs"))
     }
 
     func testIsMatchingFile_DoesNotMatchOutExtension_True() {
+        let config = getConfig()
         let settings = getSettings()
         settings.addOutExtension("java")
-        let finder = try! Finder(settings: settings)
+        let finder = try! Finder(config: config, settings: settings)
         XCTAssertTrue(finder.isMatchingFilePath("FileUtil.cs"))
     }
 
     func testIsMatchingFile_MatchesInFilePattern_True() {
+        let config = getConfig()
         let settings = getSettings()
         settings.addInFilePattern("Find")
-        let finder = try! Finder(settings: settings)
+        let finder = try! Finder(config: config, settings: settings)
         XCTAssertTrue(finder.isMatchingFilePath("Finder.cs"))
     }
 
     func testIsMatchingFile_DoesNotMatchInFilePattern_False() {
+        let config = getConfig()
         let settings = getSettings()
         settings.addInFilePattern("Find")
-        let finder = try! Finder(settings: settings)
+        let finder = try! Finder(config: config, settings: settings)
         XCTAssertFalse(finder.isMatchingFilePath("FileUtil.cs"))
     }
 
     func testIsMatchingFile_MatchesOutFilePattern_False() {
+        let config = getConfig()
         let settings = getSettings()
         settings.addOutFilePattern("Find")
-        let finder = try! Finder(settings: settings)
+        let finder = try! Finder(config: config, settings: settings)
         XCTAssertFalse(finder.isMatchingFilePath("Finder.cs"))
     }
 
     func testIsMatchingFile_DoesNotMatchOutFilePattern_True() {
+        let config = getConfig()
         let settings = getSettings()
         settings.addOutFilePattern("Find")
-        let finder = try! Finder(settings: settings)
+        let finder = try! Finder(config: config, settings: settings)
         XCTAssertTrue(finder.isMatchingFilePath("FileUtil.cs"))
     }
 
@@ -156,64 +178,73 @@ class FinderTests: XCTestCase {
      * isMatchingArchiveFile tests
      ========================================================================= */
     func testIsMatchingArchiveFile_NoExtensionsNoPatterns_True() {
+        let config = getConfig()
         let settings = getSettings()
-        let finder = try! Finder(settings: settings)
+        let finder = try! Finder(config: config, settings: settings)
         XCTAssertTrue(finder.isMatchingArchiveFilePath("archive.zip"))
     }
 
     func testIsMatchingArchiveFile_MatchesInExtension_True() {
+        let config = getConfig()
         let settings = getSettings()
         settings.addInArchiveExtension("zip")
-        let finder = try! Finder(settings: settings)
+        let finder = try! Finder(config: config, settings: settings)
         XCTAssertTrue(finder.isMatchingArchiveFilePath("archive.zip"))
     }
 
     func testIsMatchingArchiveFile_DoesNotMatchInExtension_False() {
+        let config = getConfig()
         let settings = getSettings()
         settings.addInArchiveExtension("gz")
-        let finder = try! Finder(settings: settings)
+        let finder = try! Finder(config: config, settings: settings)
         XCTAssertFalse(finder.isMatchingArchiveFilePath("archive.zip"))
     }
 
     func testIsMatchingArchiveFile_MatchesOutExtension_False() {
+        let config = getConfig()
         let settings = getSettings()
         settings.addOutArchiveExtension("zip")
-        let finder = try! Finder(settings: settings)
+        let finder = try! Finder(config: config, settings: settings)
         XCTAssertFalse(finder.isMatchingArchiveFilePath("archive.zip"))
     }
 
     func testIsMatchingArchiveFile_DoesNotMatchOutExtension_True() {
+        let config = getConfig()
         let settings = getSettings()
         settings.addOutArchiveExtension("gz")
-        let finder = try! Finder(settings: settings)
+        let finder = try! Finder(config: config, settings: settings)
         XCTAssertTrue(finder.isMatchingArchiveFilePath("archive.zip"))
     }
 
     func testIsMatchingArchiveFile_MatchesInArchiveFilePattern_True() {
+        let config = getConfig()
         let settings = getSettings()
         settings.addInArchiveFilePattern("arch")
-        let finder = try! Finder(settings: settings)
+        let finder = try! Finder(config: config, settings: settings)
         XCTAssertTrue(finder.isMatchingArchiveFilePath("archive.zip"))
     }
 
     func testIsMatchingArchiveFile_DoesNotMatchInArchiveFilePattern_False() {
+        let config = getConfig()
         let settings = getSettings()
         settings.addInArchiveFilePattern("archives")
-        let finder = try! Finder(settings: settings)
+        let finder = try! Finder(config: config, settings: settings)
         XCTAssertFalse(finder.isMatchingArchiveFilePath("archive.zip"))
     }
 
     func testIsMatchingArchiveFile_MatchesOutArchiveFilePattern_False() {
+        let config = getConfig()
         let settings = getSettings()
         settings.addOutArchiveFilePattern("arch")
-        let finder = try! Finder(settings: settings)
+        let finder = try! Finder(config: config, settings: settings)
         XCTAssertFalse(finder.isMatchingArchiveFilePath("archive.zip"))
     }
 
     func testIsMatchingArchiveFile_DoesNotMatchOutArchiveFilePattern_True() {
+        let config = getConfig()
         let settings = getSettings()
         settings.addOutArchiveFilePattern("archives")
-        let finder = try! Finder(settings: settings)
+        let finder = try! Finder(config: config, settings: settings)
         XCTAssertTrue(finder.isMatchingArchiveFilePath("archive.zip"))
     }
 
@@ -221,78 +252,89 @@ class FinderTests: XCTestCase {
      * filterToFileResult tests
      ========================================================================= */
     func testFilterToFileResult_IsHidden_False() {
+        let config = getConfig()
         let settings = getSettings()
-        let finder = try! Finder(settings: settings)
+        let finder = try! Finder(config: config, settings: settings)
         XCTAssert(finder.filterToFileResult(".gitignore") == nil)
     }
 
     func testFilterToFileResult_IsHiddenIncludeHidden_True() {
+        let config = getConfig()
         let settings = getSettings()
         settings.includeHidden = true
-        let finder = try! Finder(settings: settings)
+        let finder = try! Finder(config: config, settings: settings)
         XCTAssert(finder.filterToFileResult(".hidden.txt") != nil)
     }
 
     func testFilterToFileResult_ArchiveNoIncludeArchives_False() {
+        let config = getConfig()
         let settings = getSettings()
-        let finder = try! Finder(settings: settings)
+        let finder = try! Finder(config: config, settings: settings)
         XCTAssert(finder.filterToFileResult("archive.zip") == nil)
     }
 
     func testFilterToFileResult_ArchiveIncludeArchives_True() {
+        let config = getConfig()
         let settings = getSettings()
         settings.includeArchives = true
-        let finder = try! Finder(settings: settings)
+        let finder = try! Finder(config: config, settings: settings)
         XCTAssert(finder.filterToFileResult("archive.zip") != nil)
     }
 
     func testFilterToFileResult_IsArchiveFindFile_True() {
+        let config = getConfig()
         let settings = getSettings()
         settings.includeArchives = true
         settings.addInArchiveExtension("zip")
-        let finder = try! Finder(settings: settings)
+        let finder = try! Finder(config: config, settings: settings)
         XCTAssert(finder.filterToFileResult("archive.zip") != nil)
     }
 
     func testFilterToFileResult_NotIsArchiveFindFile_False() {
+        let config = getConfig()
         let settings = getSettings()
         settings.includeArchives = true
         settings.addOutArchiveExtension("zip")
-        let finder = try! Finder(settings: settings)
+        let finder = try! Finder(config: config, settings: settings)
         XCTAssert(finder.filterToFileResult("archive.zip") == nil)
     }
 
     func testFilterToFileResult_ArchiveFileArchivesOnly_True() {
+        let config = getConfig()
         let settings = getSettings()
         settings.archivesOnly = true
-        let finder = try! Finder(settings: settings)
+        let finder = try! Finder(config: config, settings: settings)
         XCTAssert(finder.filterToFileResult("archive.zip") != nil)
     }
 
     func testFilterToFileResult_NoExtensionsNoPatterns_True() {
+        let config = getConfig()
         let settings = getSettings()
-        let finder = try! Finder(settings: settings)
+        let finder = try! Finder(config: config, settings: settings)
         XCTAssert(finder.filterToFileResult("FileUtil.cs") != nil)
     }
 
     func testFilterToFileResult_IsFindFile_True() {
+        let config = getConfig()
         let settings = getSettings()
         settings.addInExtension("cs")
-        let finder = try! Finder(settings: settings)
+        let finder = try! Finder(config: config, settings: settings)
         XCTAssert(finder.filterToFileResult("FileUtil.cs") != nil)
     }
 
     func testFilterToFileResult_NotIsFindFile_False() {
+        let config = getConfig()
         let settings = getSettings()
         settings.addOutExtension("cs")
-        let finder = try! Finder(settings: settings)
+        let finder = try! Finder(config: config, settings: settings)
         XCTAssert(finder.filterToFileResult("FileUtil.cs") == nil)
     }
 
     func testFilterToFileResult_NonArchiveFileArchivesOnly_False() {
+        let config = getConfig()
         let settings = getSettings()
         settings.archivesOnly = true
-        let finder = try! Finder(settings: settings)
+        let finder = try! Finder(config: config, settings: settings)
         XCTAssert(finder.filterToFileResult("FileUtil.cs") == nil)
     }
 
@@ -300,27 +342,30 @@ class FinderTests: XCTestCase {
      * followSymlinks tests
      ========================================================================= */
     func testFollowSymlinks_DefaultSettings_Excluded() {
+        let config = getConfig()
         let settings = FindSettings()
         settings.addPath(getBinPath())
-        let finder = try! Finder(settings: settings)
+        let finder = try! Finder(config: config, settings: settings)
         let fileResults = try! finder.find()
         XCTAssert(fileResults.count < 4)
     }
 
     func testFollowSymlinks_FollowSymlinks_Included() {
+        let config = getConfig()
         let settings = FindSettings()
         settings.addPath(getBinPath())
         settings.followSymlinks = true
-        let finder = try! Finder(settings: settings)
+        let finder = try! Finder(config: config, settings: settings)
         let fileResults = try! finder.find()
         XCTAssert(fileResults.count == 0 || fileResults.count > 2)
     }
 
     func testFollowSymlinks_NoFollowSymlinks_Excluded() {
+        let config = getConfig()
         let settings = FindSettings()
         settings.addPath(getBinPath())
         settings.followSymlinks = false
-        let finder = try! Finder(settings: settings)
+        let finder = try! Finder(config: config, settings: settings)
         let fileResults = try! finder.find()
         XCTAssert(fileResults.count < 4)
     }

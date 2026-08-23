@@ -17,7 +17,8 @@ func handleError(_ error: FindError, _ colorize: Bool, _ options: FindOptions) {
 
 func main() {
     var colorize = true
-    let options = FindOptions()
+    let config = FindConfig()
+    let options = FindOptions(config: config)
 
     let args: [String] = [] + CommandLine.arguments.dropFirst()
 
@@ -33,7 +34,7 @@ func main() {
             options.usage()
         }
 
-        let finder = try Finder(settings: settings)
+        let finder = try Finder(config: config, settings: settings)
 
         let fileResults = try finder.find()
         let formatter = FileResultFormatter(settings: settings)

@@ -24,18 +24,16 @@ public class FileTypes {
     fileprivate static let fileTypeVideoName = "video"
     fileprivate static let fileTypeXmlName = "xml"
 
-    private var config: FindConfig
     private var fileTypeExtDict = [String: Set<String>]()
     private var fileTypeNameDict = [String: Set<String>]()
 
-    public init() {
-        config = FindConfig()
-        setFileTypesFromJson()
+    public init(config: FindConfig) {
+        loadFileTypesFromJsonFile(config.fileTypesPath)
     }
 
-    private func setFileTypesFromJson() {
+    private func loadFileTypesFromJsonFile(_ fileTypesPath: String) {
         do {
-            let fileUrl = URL(fileURLWithPath: config.fileTypesPath)
+            let fileUrl = URL(fileURLWithPath: fileTypesPath)
             let data = try Data(contentsOf: fileUrl, options: .mappedIfSafe)
             if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
                 if let filetypes = json["filetypes"] as? [[String: Any]] {

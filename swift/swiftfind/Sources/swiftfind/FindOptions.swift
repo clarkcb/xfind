@@ -30,19 +30,19 @@ struct FindOption: Option {
 }
 
 public class FindOptions {
-    private var config: FindConfig
+    private let config: FindConfig
     private var findOptions = [FindOption]()
     private var argTokenizer: ArgTokenizer?
 
-    public init() {
-        config = FindConfig()
-        setFindOptionsFromJson()
+    public init(config: FindConfig) {
+        self.config = config
+        loadFindOptionsFromJsonFile(config.findOptionsPath)
         argTokenizer = ArgTokenizer(findOptions)
     }
 
-    private func setFindOptionsFromJson() {
+    private func loadFindOptionsFromJsonFile(_ findOptionsPath: String) {
         do {
-            let findOptionsUrl = URL(fileURLWithPath: config.findOptionsPath)
+            let findOptionsUrl = URL(fileURLWithPath: findOptionsPath)
             let data = try Data(contentsOf: findOptionsUrl, options: .mappedIfSafe)
             if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
                 if let options = json["findoptions"] as? [[String: Any]] {
@@ -282,8 +282,8 @@ public class FindOptions {
     }
 
     private func updateSettingsFromDefaultFiles(_ settings: FindSettings) throws {
-        if FileUtil.exists(config.defaultFindSettingsPath) {
-            try updateSettingsFromFile(settings, filePath: config.defaultFindSettingsPath)
+        if FileUtil.exists(self.config.defaultFindSettingsPath) {
+            try updateSettingsFromFile(settings, filePath: self.config.defaultFindSettingsPath)
         }
     }
 
