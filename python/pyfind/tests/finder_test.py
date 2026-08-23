@@ -16,7 +16,7 @@ import unittest
 
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)[:-6]))
 
-from pyfind import Finder, FindSettings, XFIND_PATH, SHARED_PATH
+from pyfind import FindConfig, Finder, FindSettings
 
 
 class FinderTest(unittest.TestCase):
@@ -26,83 +26,94 @@ class FinderTest(unittest.TestCase):
         settings.debug = True
         return settings
 
-    def ensure_archive(self):
-        archive_path = Path(SHARED_PATH, 'testFiles/archive.zip')
-        if not os.path.exists(archive_path):
-            Path(archive_path).touch()
+    # def ensure_archive(self):
+    #     archive_path = Path(__file__).parent.parent.parent.parent / 'shared/testFiles/archive.zip'
+    #     if not os.path.exists(archive_path):
+    #         Path(archive_path).touch()
 
 ################################################################################
 # is_included_dir_path tests
 ################################################################################
     def test_is_included_dir_path_no_patterns(self):
+        config = FindConfig()
         settings = self.get_settings()
-        finder = Finder(settings)
+        finder = Finder(config, settings)
         d = Path('plfind')
         self.assertTrue(finder.is_matching_dir_path(d))
 
     def test_is_included_dir_path_matches_in_pattern(self):
+        config = FindConfig()
         settings = self.get_settings()
         settings.add_patterns('plfind', 'in_dir_patterns')
-        finder = Finder(settings)
+        finder = Finder(config, settings)
         d = Path('plfind')
         self.assertTrue(finder.is_matching_dir_path(d))
 
     def test_is_included_dir_path_no_match_in_pattern(self):
+        config = FindConfig()
         settings = self.get_settings()
         settings.add_patterns('plfind', 'in_dir_patterns')
-        finder = Finder(settings)
+        finder = Finder(config, settings)
         d = Path('pyfind')
         self.assertFalse(finder.is_matching_dir_path(d))
 
     def test_is_included_dir_path_matches_out_pattern(self):
+        config = FindConfig()
         settings = self.get_settings()
         settings.add_patterns('pyfind', 'out_dir_patterns')
-        finder = Finder(settings)
+        finder = Finder(config, settings)
         d = Path('pyfind')
         self.assertFalse(finder.is_matching_dir_path(d))
 
     def test_is_included_dir_path_no_match_out_pattern(self):
+        config = FindConfig()
         settings = self.get_settings()
         settings.add_patterns('pyfind', 'out_dir_patterns')
-        finder = Finder(settings)
+        finder = Finder(config, settings)
         d = Path('plfind')
         self.assertTrue(finder.is_matching_dir_path(d))
 
     def test_is_included_dir_path_single_dot(self):
         settings = self.get_settings()
-        finder = Finder(settings)
+        config = FindConfig()
+        finder = Finder(config, settings)
         d = Path('.')
         self.assertTrue(finder.is_matching_dir_path(d))
 
     def test_is_included_dir_path_double_dot(self):
+        config = FindConfig()
         settings = self.get_settings()
-        finder = Finder(settings)
+        finder = Finder(config, settings)
         d = Path('..')
         self.assertTrue(finder.is_matching_dir_path(d))
 
     def test_is_included_dir_path_hidden_dir_path(self):
+        config = FindConfig()
         settings = self.get_settings()
-        finder = Finder(settings)
+        finder = Finder(config, settings)
         d = Path('.git')
         self.assertFalse(finder.is_matching_dir_path(d))
 
     def test_is_included_dir_path_hidden_dir_path_include_hidden(self):
+        config = FindConfig()
         settings = self.get_settings()
         settings.include_hidden = True
-        finder = Finder(settings)
+        finder = Finder(config, settings)
         d = Path('.git')
         self.assertTrue(finder.is_matching_dir_path(d))
 
     def test_is_traversable_dir_path_ignores_in_patterns(self):
+        config = FindConfig()
         settings = self.get_settings()
         settings.add_patterns('keep', 'in_dir_patterns')
-        finder = Finder(settings)
+        finder = Finder(config, settings)
         self.assertTrue(finder.is_traversable_dir_path(Path('other')))
 
     def test_is_included_dir_path_applies_in_patterns(self):
+        config = FindConfig()
         settings = self.get_settings()
         settings.add_patterns('keep', 'in_dir_patterns')
-        finder = Finder(settings)
+        finder = Finder(config, settings)
         self.assertFalse(finder.is_matching_dir_path(Path('other')))
 
     def test_find_files_traverses_through_nonmatching_ancestor_dir(self):
@@ -112,10 +123,11 @@ class FinderTest(unittest.TestCase):
             target_file.parent.mkdir(parents=True)
             target_file.touch()
 
+            config = FindConfig()
             settings = FindSettings()
             settings.add_path(root)
             settings.add_patterns('keep', 'in_dir_patterns')
-            finder = Finder(settings)
+            finder = Finder(config, settings)
 
             file_results = finder.find_files()
             result_paths = {fr.path for fr in file_results}
@@ -128,17 +140,19 @@ class FinderTest(unittest.TestCase):
             pruned_file.parent.mkdir(parents=True)
             pruned_file.touch()
 
+            config = FindConfig()
             settings = FindSettings()
             settings.add_path(root)
             settings.add_patterns('keep', 'in_dir_patterns')
             settings.add_patterns('skip', 'out_dir_patterns')
-            finder = Finder(settings)
+            finder = Finder(config, settings)
 
             file_results = finder.find_files()
             result_paths = {fr.path for fr in file_results}
             self.assertNotIn(pruned_file, result_paths)
 
     def test_find_files_hidden_dir_phased_include_hidden(self):
+        config = FindConfig()
         with tempfile.TemporaryDirectory() as tmpdir:
             root = Path(tmpdir)
             target_file = root / '.hidden' / 'keep' / 'target.txt'
@@ -149,7 +163,7 @@ class FinderTest(unittest.TestCase):
             hidden_off_settings.add_path(root)
             hidden_off_settings.add_patterns('keep', 'in_dir_patterns')
             hidden_off_settings.include_hidden = False
-            hidden_off_finder = Finder(hidden_off_settings)
+            hidden_off_finder = Finder(config, hidden_off_settings)
             hidden_off_results = {fr.path for fr in hidden_off_finder.find_files()}
             self.assertNotIn(target_file, hidden_off_results)
 
@@ -157,7 +171,7 @@ class FinderTest(unittest.TestCase):
             hidden_on_settings.add_path(root)
             hidden_on_settings.add_patterns('keep', 'in_dir_patterns')
             hidden_on_settings.include_hidden = True
-            hidden_on_finder = Finder(hidden_on_settings)
+            hidden_on_finder = Finder(config, hidden_on_settings)
             hidden_on_results = {fr.path for fr in hidden_on_finder.find_files()}
             self.assertIn(target_file, hidden_on_results)
 
@@ -167,162 +181,180 @@ class FinderTest(unittest.TestCase):
 # NOTE: the filepaths are required to be existing for these tests to work
 ################################################################################
     def test_filter_to_file_result_matches_by_default(self):
+        config = FindConfig()
         settings = self.get_settings()
-        finder = Finder(settings)
-        file_path = Path(XFIND_PATH, 'python/pyfind/pyfind/fileutil.py')
+        finder = Finder(config, settings)
+        file_path = Path('./python/pyfind/pyfind/fileutil.py')
         file_result = finder.filter_to_file_result(file_path)
         self.assertIsNotNone(file_result)
 
     def test_filter_to_file_result_is_find_file(self):
+        config = FindConfig()
         settings = self.get_settings()
         settings.add_strs_to_set('py', 'in_extensions')
-        finder = Finder(settings)
-        file_path = Path(XFIND_PATH, 'python/pyfind/pyfind/fileutil.py')
+        finder = Finder(config, settings)
+        file_path = Path('./python/pyfind/pyfind/fileutil.py')
         file_result = finder.filter_to_file_result(file_path)
         self.assertIsNotNone(file_result)
 
     def test_filter_to_file_result_not_is_find_file(self):
+        config = FindConfig()
         settings = self.get_settings()
         settings.add_strs_to_set('pl', 'in_extensions')
-        finder = Finder(settings)
-        file_path = Path(XFIND_PATH, 'python/pyfind/pyfind/fileutil.py')
+        finder = Finder(config, settings)
+        file_path = Path('./python/pyfind/pyfind/fileutil.py')
         file_result = finder.filter_to_file_result(file_path)
         self.assertIsNone(file_result)
 
     def test_filter_to_file_result_is_hidden_file(self):
+        config = FindConfig()
         settings = self.get_settings()
-        finder = Finder(settings)
-        file_path = Path(XFIND_PATH, 'python/pyfind/.gitignore')
+        finder = Finder(config, settings)
+        file_path = Path('./python/pyfind/.gitignore')
         file_result = finder.filter_to_file_result(file_path)
         self.assertIsNone(file_result)
 
     def test_filter_to_file_result_hidden_include_hidden(self):
+        config = FindConfig()
         settings = self.get_settings()
         settings.include_hidden = True
-        finder = Finder(settings)
-        file_path = Path(XFIND_PATH, 'python/pyfind/.gitignore')
+        finder = Finder(config, settings)
+        file_path = Path('./python/pyfind/.gitignore')
         file_result = finder.filter_to_file_result(file_path)
         self.assertIsNotNone(file_result)
 
     def test_filter_to_file_result_archive_no_match_by_default(self):
-        self.ensure_archive()
+        # self.ensure_archive()
+        config = FindConfig()
         settings = self.get_settings()
-        finder = Finder(settings)
-        archive_path = Path(SHARED_PATH, 'testFiles/archive.zip')
+        finder = Finder(config, settings)
+        archive_path = Path('./testFiles/archive.zip')
         file_result = finder.filter_to_file_result(archive_path)
         self.assertIsNone(file_result)
 
     def test_filter_to_file_result_archive_no_include_archives(self):
-        self.ensure_archive()
+        # self.ensure_archive()
+        config = FindConfig()
         settings = self.get_settings()
-        finder = Finder(settings)
+        finder = Finder(config, settings)
         archive_path = Path('./archive.zip')
         file_result = finder.filter_to_file_result(archive_path)
         self.assertIsNone(file_result)
 
     def test_filter_to_file_result_archive_include_archives(self):
-        self.ensure_archive()
+        # self.ensure_archive()
+        config = FindConfig()
         settings = self.get_settings()
         settings.include_archives = True
-        finder = Finder(settings)
-        archive_path = Path(SHARED_PATH, 'testFiles/archive.zip')
+        finder = Finder(config, settings)
+        archive_path = Path('./testFiles/archive.zip')
         file_result = finder.filter_to_file_result(archive_path)
         self.assertIsNotNone(file_result)
 
     def test_filter_to_file_result_archive_matches_in_extension(self):
-        self.ensure_archive()
+        # self.ensure_archive()
+        config = FindConfig()
         settings = self.get_settings()
         settings.include_archives = True
         settings.add_strs_to_set('zip', 'in_archive_extensions')
-        finder = Finder(settings)
-        archive_path = Path(SHARED_PATH, 'testFiles/archive.zip')
+        finder = Finder(config, settings)
+        archive_path = Path('./testFiles/archive.zip')
         file_result = finder.filter_to_file_result(archive_path)
         self.assertIsNotNone(file_result)
 
     def test_filter_to_file_result_archive_no_match_in_extension(self):
-        self.ensure_archive()
+        # self.ensure_archive()
+        config = FindConfig()
         settings = self.get_settings()
         settings.include_archives = True
         settings.add_strs_to_set('gz', 'in_archive_extensions')
-        finder = Finder(settings)
-        archive_path = Path(SHARED_PATH, 'testFiles/archive.zip')
+        finder = Finder(config, settings)
+        archive_path = Path('./testFiles/archive.zip')
         file_result = finder.filter_to_file_result(archive_path)
         self.assertIsNone(file_result)
 
     def test_filter_to_file_result_archive_matches_out_extension(self):
-        self.ensure_archive()
+        # self.ensure_archive()
+        config = FindConfig()
         settings = self.get_settings()
         settings.include_archives = True
         settings.add_strs_to_set('zip', 'out_archive_extensions')
-        finder = Finder(settings)
-        archive_path = Path(SHARED_PATH, 'testFiles/archive.zip')
+        finder = Finder(config, settings)
+        archive_path = Path('./testFiles/archive.zip')
         file_result = finder.filter_to_file_result(archive_path)
         self.assertIsNone(file_result)
 
     def test_filter_to_file_result_archive_no_match_out_extension(self):
-        self.ensure_archive()
+        # self.ensure_archive()
+        config = FindConfig()
         settings = self.get_settings()
         settings.include_archives = True
         settings.add_strs_to_set('gz', 'out_archive_extensions')
-        finder = Finder(settings)
-        archive_path = Path(SHARED_PATH, 'testFiles/archive.zip')
+        finder = Finder(config, settings)
+        archive_path = Path('./testFiles/archive.zip')
         file_result = finder.filter_to_file_result(archive_path)
         self.assertIsNotNone(file_result)
 
     def test_filter_to_file_result_archive_matches_in_pattern(self):
-        self.ensure_archive()
+        # self.ensure_archive()
+        config = FindConfig()
         settings = self.get_settings()
         settings.include_archives = True
         settings.add_patterns('arch', 'in_archive_file_patterns')
-        finder = Finder(settings)
-        archive_path = Path(SHARED_PATH, 'testFiles/archive.zip')
+        finder = Finder(config, settings)
+        archive_path = Path('./testFiles/archive.zip')
         file_result = finder.filter_to_file_result(archive_path)
         self.assertIsNotNone(file_result)
 
     def test_filter_to_file_result_archive_no_match_in_pattern(self):
-        self.ensure_archive()
+        # self.ensure_archive()
+        config = FindConfig()
         settings = self.get_settings()
         settings.include_archives = True
         settings.add_patterns('archives', 'in_archive_file_patterns')
-        finder = Finder(settings)
-        archive_path = Path(SHARED_PATH, 'testFiles/archive.zip')
+        finder = Finder(config, settings)
+        archive_path = Path('./testFiles/archive.zip')
         file_result = finder.filter_to_file_result(archive_path)
         self.assertIsNone(file_result)
 
     def test_filter_to_file_result_archive_matches_out_pattern(self):
-        self.ensure_archive()
+        # self.ensure_archive()
+        config = FindConfig()
         settings = self.get_settings()
         settings.include_archives = True
         settings.add_patterns('arch', 'out_archive_file_patterns')
-        finder = Finder(settings)
-        archive_path = Path(SHARED_PATH, 'testFiles/archive.zip')
+        finder = Finder(config, settings)
+        archive_path = Path('./testFiles/archive.zip')
         file_result = finder.filter_to_file_result(archive_path)
         self.assertIsNone(file_result)
 
     def test_filter_to_file_result_archive_no_match_out_pattern(self):
-        self.ensure_archive()
+        # self.ensure_archive()
+        config = FindConfig()
         settings = self.get_settings()
         settings.include_archives = True
         settings.add_patterns('archives', 'out_archive_file_patterns')
-        finder = Finder(settings)
-        archive_path = Path(SHARED_PATH, 'testFiles/archive.zip')
+        finder = Finder(config, settings)
+        archive_path = Path('./testFiles/archive.zip')
         file_result = finder.filter_to_file_result(archive_path)
         self.assertIsNotNone(file_result)
 
     def test_filter_to_file_result_archive_archives_only(self):
-        self.ensure_archive()
+        # self.ensure_archive()
+        config = FindConfig()
         settings = self.get_settings()
         settings.set_property('archives_only', True)
-        finder = Finder(settings)
-        archive_path = Path(SHARED_PATH, 'testFiles/archive.zip')
+        finder = Finder(config, settings)
+        archive_path = Path('./testFiles/archive.zip')
         file_result = finder.filter_to_file_result(archive_path)
         self.assertIsNotNone(file_result)
 
     def test_filter_to_file_result_nonarchive_archives_only(self):
+        config = FindConfig()
         settings = self.get_settings()
         settings.set_property('archives_only', True)
-        finder = Finder(settings)
-        file_path = Path(XFIND_PATH, 'python/pyfind/pyfind/fileutil.py')
+        finder = Finder(config, settings)
+        file_path = Path('./python/pyfind/pyfind/fileutil.py')
         file_result = finder.filter_to_file_result(file_path)
         self.assertIsNone(file_result)
 
@@ -330,25 +362,28 @@ class FinderTest(unittest.TestCase):
 # test filtering symlink files
 ################################################################################
     def test_default_no_symlinks(self):
+        config = FindConfig()
         settings = FindSettings()
-        settings.add_path(Path(XFIND_PATH, 'bin'))
-        finder = Finder(settings)
+        settings.add_path(Path('./bin'))
+        finder = Finder(config, settings)
         file_results = finder.find_files()
         self.assertTrue(len(file_results) < 4)
 
     def test_follow_symlinks(self):
+        config = FindConfig()
         settings = FindSettings()
-        settings.add_path(Path(XFIND_PATH, 'bin'))
+        settings.add_path(Path('./bin'))
         settings.follow_symlinks = True
-        finder = Finder(settings)
+        finder = Finder(config, settings)
         file_results = finder.find_files()
         self.assertTrue(len(file_results) == 0 or len(file_results) > 2)
 
     def test_no_follow_symlinks(self):
+        config = FindConfig()
         settings = FindSettings()
-        settings.add_path(Path(XFIND_PATH, 'bin'))
+        settings.add_path(Path('./bin'))
         settings.follow_symlinks = False
-        finder = Finder(settings)
+        finder = Finder(config, settings)
         file_results = finder.find_files()
         self.assertTrue(len(file_results) < 4)
 

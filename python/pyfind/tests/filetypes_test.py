@@ -15,13 +15,14 @@ import unittest
 
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)[:-6]))
 
-from pyfind import FileType, FileTypes
+from pyfind import FileType, FileTypes, FindConfig
 
 
 class FileTypesTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.file_types = FileTypes()
+        cls.config = FindConfig()
+        cls.file_types = FileTypes(cls.config)
 
     def test_get_file_type_archive_file(self):
         file_path = Path('archive.zip')

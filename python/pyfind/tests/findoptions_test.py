@@ -15,13 +15,14 @@ import unittest
 
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)[:-6]))
 
-from pyfind import FindException, FindOptions, FindSettings
+from pyfind import FindConfig, FindException, FindOptions, FindSettings
 
 
 class FindOptionsTest(unittest.TestCase):
     @classmethod
     def setUpClass(self):
-        self.find_options = FindOptions()
+        self.config = FindConfig()
+        self.find_options = FindOptions(self.config)
 
     def test_no_args(self):
         # test the props
