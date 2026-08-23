@@ -6,17 +6,16 @@
 
 'use strict';
 
-import * as config from './config';
 import { ArgToken } from './argtoken';
 import { ArgTokenizer } from './argtokenizer';
 import { ArgTokenType } from './argtokentype';
 import { FileUtil } from './fileutil';
+import { FindConfig } from './findconfig';
 import { FindError } from './finderror';
 import { FindOption } from './findoption';
 import { FindSettings } from './findsettings';
 import { SortUtil } from './sortutil';
 import fs from 'fs';
-import { DEFAULT_FIND_SETTINGS_PATH } from './config';
 
 type BoolAction = (b: boolean, settings: FindSettings) => void;
 type NumAction = (n: number, settings: FindSettings) => void;
@@ -28,13 +27,15 @@ export interface SettingsResult {
 }
 
 export class FindOptions {
+  config: FindConfig;
   options: FindOption[];
   boolActionMap: { [key: string]: BoolAction };
   stringActionMap: { [key: string]: StringAction };
   intActionMap: { [key: string]: NumAction };
   argTokenizer: ArgTokenizer;
 
-  constructor() {
+  constructor(config: FindConfig) {
+    this.config = config;
     this.options = [];
 
     this.boolActionMap = {
@@ -187,7 +188,7 @@ export class FindOptions {
 
   // setOptionsFromJsonFile
   private setOptionsFromJsonFile(): void {
-    const json = FileUtil.getFileContentsSync(config.FIND_OPTIONS_JSON_PATH);
+    const json = FileUtil.getFileContentsSync(this.config.findOptionsPath);
     const obj = JSON.parse(json);
     if (
       Object.prototype.hasOwnProperty.call(obj, 'findoptions') &&
@@ -210,7 +211,7 @@ export class FindOptions {
         }
         this.options.push(new FindOption(shortArg, longArg, desc, argType));
       });
-    } else throw new Error(`Invalid findoptions file: ${config.FIND_OPTIONS_JSON_PATH}`);
+    } else throw new Error(`Invalid findoptions file: ${this.config.findOptionsPath}`);
   }
 
   private updateSettingsFromArgTokens(
@@ -279,8 +280,8 @@ export class FindOptions {
 
   public updateSettingsFromDefaultFiles(settings: FindSettings): Error | undefined {
     let err: Error | undefined;
-    if (fs.existsSync(config.DEFAULT_FIND_SETTINGS_PATH)) {
-      err = this.updateSettingsFromFile(settings, config.DEFAULT_FIND_SETTINGS_PATH);
+    if (fs.existsSync(this.config.defaultFindSettingsPath)) {
+      err = this.updateSettingsFromFile(settings, this.config.defaultFindSettingsPath);
     }
     return err;
   }

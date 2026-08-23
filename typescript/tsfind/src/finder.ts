@@ -20,6 +20,7 @@ import { FileUtil, ENOENT, EACCES } from './fileutil';
 import { FindError } from './finderror';
 import { FindSettings } from './findsettings';
 import * as common from './common';
+import { FindConfig } from './findconfig';
 
 const startPathNotDefined = 'Startpath not defined';
 const invalidRangeForMinDepthAndMaxDepth = 'Invalid range for mindepth and maxdepth';
@@ -31,9 +32,11 @@ const startPathDoesNotMatchFindSettings = 'Startpath does not match find setting
 
 export class Finder {
   _settings: FindSettings;
+  _fileTypes: FileTypes;
 
-  constructor(settings: FindSettings) {
+  constructor(config: FindConfig, settings: FindSettings) {
     this._settings = settings;
+    this._fileTypes = new FileTypes(config);
     this.validateSettings();
   }
 
@@ -330,7 +333,7 @@ export class Finder {
       return null;
     }
 
-    const fileType = FileTypes.getFileType(path.basename(filePath));
+    const fileType = this._fileTypes.getFileType(path.basename(filePath));
     if (fileType === FileType.Archive) {
       return this.filterArchiveFilePathToFileResult(filePath);
     }

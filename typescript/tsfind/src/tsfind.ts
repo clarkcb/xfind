@@ -7,6 +7,7 @@
 'use strict';
 
 import * as common from './common';
+import { FindConfig } from "./findconfig";
 import { FindOptions } from './findoptions';
 import { FindSettings } from './findsettings';
 import { Finder } from './finder';
@@ -19,7 +20,8 @@ function handleError(err: Error | any, colorize: boolean, findOptions: FindOptio
 }
 
 function findMain() {
-  const findOptions = new FindOptions();
+  const config = new FindConfig();
+  const findOptions = new FindOptions(config);
   const args = process.argv.slice(2);
 
   findOptions.settingsFromArgs(args, async (err: Error | void, settings: FindSettings) => {
@@ -40,7 +42,7 @@ function findMain() {
     }
 
     try {
-      const finder: Finder = new Finder(settings);
+      const finder: Finder = new Finder(config, settings);
       const fileResults = await finder.find();
       const formatter = new FileResultFormatter(settings);
 

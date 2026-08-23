@@ -10,7 +10,7 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 
-import * as config from './config';
+import * as config from './findconfig';
 import { StringUtil } from './stringutil';
 
 export const ENOENT = 'ENOENT';

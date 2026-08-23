@@ -6,10 +6,11 @@
 
 import { FindOptions } from '../src/findoptions';
 import { FindSettings } from '../src/findsettings';
+import { FindConfig } from '../src/findconfig';
 
 describe('testing findoptions', () => {
   it('testNoArgs', () => {
-    const findOptions: FindOptions = new FindOptions();
+    const findOptions: FindOptions = new FindOptions(new FindConfig());
     findOptions.settingsFromArgs([], function (err: Error | void, settings: FindSettings) {
       if (err) {
         console.log('There was an error calling settingsFromArgs: ' + err);
@@ -31,7 +32,7 @@ describe('testing findoptions', () => {
   });
 
   it('testValidArgs', () => {
-    const findOptions: FindOptions = new FindOptions();
+    const findOptions: FindOptions = new FindOptions(new FindConfig());
     const args: string[] = ['-x', 'js,java', '.'];
     findOptions.settingsFromArgs(args, function (err: Error | void, settings: FindSettings) {
       if (err) {
@@ -47,7 +48,7 @@ describe('testing findoptions', () => {
   });
 
   it('testInvalidArg', () => {
-    const findOptions: FindOptions = new FindOptions();
+    const findOptions: FindOptions = new FindOptions(new FindConfig());
     const args: string[] = ['-Q'];
     findOptions.settingsFromArgs(args, function (err: Error | void) {
       if (err) {
@@ -60,7 +61,7 @@ describe('testing findoptions', () => {
   });
 
   it('testSettingsFromJson', () => {
-    const findOptions: FindOptions = new FindOptions();
+    const findOptions: FindOptions = new FindOptions(new FindConfig());
     const settings: FindSettings = new FindSettings();
     const json: string =
       '{\n' +
