@@ -20,11 +20,12 @@ import java.nio.file.Paths;
 import java.util.*;
 
 public class FindOptions {
-    private static final String FIND_OPTIONS_JSON_PATH = "/findoptions.json";
+    private final FindConfig config;
     private final List<FindOption> options;
     private final ArgTokenizer argTokenizer;
 
-    public FindOptions() throws IOException {
+    public FindOptions(FindConfig config) throws IOException {
+        this.config = config;
         options = new ArrayList<>();
         setOptionsFromJson();
         argTokenizer = new ArgTokenizer(options);
@@ -119,7 +120,7 @@ public class FindOptions {
     };
 
     private void setOptionsFromJson() {
-        var findOptionsInputStream = getClass().getResourceAsStream(FIND_OPTIONS_JSON_PATH);
+        var findOptionsInputStream = getClass().getResourceAsStream(config.getFindOptionsPath());
         assert findOptionsInputStream != null;
         var jsonObj = new JSONObject(new JSONTokener(findOptionsInputStream));
         var findOptionsArray = jsonObj.getJSONArray("findoptions");
@@ -234,9 +235,9 @@ public class FindOptions {
     }
 
     private void updateSettingsFromDefaultFiles(FindSettings settings) throws FindException {
-        var defaultFindSettingsPath = Paths.get(System.getProperty("user.home"), ".config", "xfind", "settings.json");
-        if (Files.exists(defaultFindSettingsPath)) {
-            updateSettingsFromFilePath(settings, defaultFindSettingsPath.toString());
+        var defaultSettingsPath = Paths.get(this.config.getDefaultFindSettingsPath());
+        if (Files.exists(defaultSettingsPath)) {
+            updateSettingsFromFilePath(settings, defaultSettingsPath.toString());
         }
     }
 

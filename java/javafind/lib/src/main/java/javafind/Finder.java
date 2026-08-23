@@ -28,12 +28,12 @@ import static javafind.Logger.log;
 
 public class Finder {
 
-    final private FindSettings settings;
-    final private FileTypes fileTypes;
+    private final FindSettings settings;
+    private final FileTypes fileTypes;
 
-    public Finder(final FindSettings settings) {
+    public Finder(final FindConfig config, final FindSettings settings) {
         this.settings = settings;
-        this.fileTypes = new FileTypes();
+        this.fileTypes = new FileTypes(config);
     }
 
     public final void validateSettings() throws FindException {

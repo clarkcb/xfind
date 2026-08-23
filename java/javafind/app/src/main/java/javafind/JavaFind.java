@@ -31,7 +31,8 @@ public class JavaFind {
     public static void main(final String[] args) {
         var colorize = true;
         try {
-            var options = new FindOptions();
+            var config = new FindConfig();
+            var options = new FindOptions(config);
 
             try {
                 var settings = options.settingsFromArgs(args);
@@ -46,7 +47,7 @@ public class JavaFind {
                     options.usage(0);
                 }
 
-                var finder = new Finder(settings);
+                var finder = new Finder(config, settings);
                 finder.validateSettings();
                 var fileResults = finder.find();
 

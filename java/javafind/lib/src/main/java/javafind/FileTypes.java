@@ -10,13 +10,16 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class FileTypes {
-    private static final String FILE_TYPES_JSON_PATH = "/filetypes.json";
-    private static final int fileTypeMapCapacity = 8;
+    private static final int fileTypeMapCapacity = 10;
     private final Map<String, Set<String>> fileTypeExtMap = new HashMap<>(fileTypeMapCapacity);
     private final Map<String, Set<String>> fileTypeNameMap = new HashMap<>(fileTypeMapCapacity);
 
-    private void setFileTypeMapsFromJson() {
-        var fileTypesInputStream = getClass().getResourceAsStream(FILE_TYPES_JSON_PATH);
+    public FileTypes(final FindConfig config) {
+        loadFileTypeMapsFromJsonFile(config.getFileTypesPath());
+    }
+
+    private void loadFileTypeMapsFromJsonFile(final String fileTypesPath) {
+        var fileTypesInputStream = getClass().getResourceAsStream(fileTypesPath);
 
         try {
             assert fileTypesInputStream != null;
@@ -41,10 +44,6 @@ public class FileTypes {
         } catch (AssertionError e) {
             e.printStackTrace();
         }
-    }
-
-    public FileTypes() {
-        setFileTypeMapsFromJson();
     }
 
     final FileType getFileType(final Path f) {

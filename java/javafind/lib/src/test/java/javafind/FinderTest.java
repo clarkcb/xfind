@@ -12,6 +12,10 @@ public class FinderTest {
 
     public FinderTest() {}
 
+    private static FindConfig getConfig() {
+        return new FindConfig();
+    }
+
     private static FindSettings getSettings() {
         var settings = new FindSettings();
         settings.addPath(".");
@@ -31,78 +35,88 @@ public class FinderTest {
      *************************************************************/
     @Test
     public final void testIsMatchingDirPath_SingleDot_True() {
+        var config = getConfig();
         var settings = getSettings();
-        var finder = new Finder(settings);
+        var finder = new Finder(config, settings);
         assertTrue(finder.isMatchingDirPath(Paths.get(".")));
     }
 
     @Test
     public final void testIsMatchingDirPath_DoubleDot_True() {
+        var config = getConfig();
         var settings = getSettings();
-        var finder = new Finder(settings);
+        var finder = new Finder(config, settings);
         assertTrue(finder.isMatchingDirPath(Paths.get("..")));
     }
 
     @Test
     public final void testIsMatchingDirPath_IsHidden_False() {
+        var config = getConfig();
         var settings = getSettings();
-        var finder = new Finder(settings);
+        var finder = new Finder(config, settings);
         assertFalse(finder.isMatchingDirPath(Paths.get(".git")));
     }
 
     @Test
     public final void testIsMatchingDirPath_IsHiddenIncludeHidden_True() {
+        var config = getConfig();
         var settings = getSettings();
         settings.setIncludeHidden(true);
-        var finder = new Finder(settings);
+        var finder = new Finder(config, settings);
         assertTrue(finder.isMatchingDirPath(Paths.get(".git")));
     }
 
     @Test
     public final void testIsMatchingDirPath_NoPatterns_True() {
+        var config = getConfig();
         var settings = getSettings();
-        var finder = new Finder(settings);
+        var finder = new Finder(config, settings);
         assertTrue(finder.isMatchingDirPath(Paths.get("/Users")));
     }
 
     @Test
     public final void testIsMatchingDirPath_MatchesInPattern_True() {
+        var config = getConfig();
         var settings = getSettings();
         settings.addInDirPattern("Find");
-        var finder = new Finder(settings);
+        var finder = new Finder(config, settings);
         assertTrue(finder.isMatchingDirPath(Paths.get("CsFind")));
     }
 
     @Test
     public final void testIsMatchingDirPath_MatchesOutPattern_False() {
+        var config = getConfig();
         var settings = getSettings();
         settings.addOutDirPattern("Find");
-        var finder = new Finder(settings);
+        var finder = new Finder(config, settings);
         assertFalse(finder.isMatchingDirPath(Paths.get("CsFind")));
     }
 
     @Test
     public final void testIsMatchingDirPath_DoesNotMatchInPattern_False() {
+        var config = getConfig();
         var settings = getSettings();
         settings.addInDirPattern("FindFiles");
-        var finder = new Finder(settings);
+        var finder = new Finder(config, settings);
         assertFalse(finder.isMatchingDirPath(Paths.get("CsFind")));
     }
 
     @Test
     public final void testIsMatchingDirPath_DoesNotMatchOutPattern_True() {
+        var config = getConfig();
         var settings = getSettings();
         settings.addOutDirPattern("FindFiles");
-        var finder = new Finder(settings);
+        var finder = new Finder(config, settings);
         var dir = Paths.get("CsFind");
         assertTrue(finder.isMatchingDirPath(dir));
     }
 
     @Test
     public final void testIsMatchingDirPath_DoesNotMatchOutPattern2_True() {
+        var config = getConfig();
         var settings = getSettings();
         settings.addOutDirPattern("FindFiles");
-        var finder = new Finder(settings);
+        var finder = new Finder(config, settings);
         var dir = Paths.get("/Users/cary/src/xfind/java/javafind/ssrc/main/java/javafind");
         assertTrue(finder.isMatchingDirPath(dir));
     }
@@ -112,8 +126,9 @@ public class FinderTest {
      *************************************************************/
     @Test
     public final void testIsMatchingFileResult_NoExtensionsNoPatterns_True() {
+        var config = getConfig();
         var settings = getSettings();
-        var finder = new Finder(settings);
+        var finder = new Finder(config, settings);
         var path = Paths.get("./FileUtil.cs");
         var fileResult = new FileResult(path, FileType.CODE);
         assertTrue(finder.isMatchingFileResult(fileResult));
@@ -121,9 +136,10 @@ public class FinderTest {
 
     @Test
     public final void testIsMatchingFileResult_MatchesInExtension_True() {
+        var config = getConfig();
         var settings = getSettings();
         settings.addInExtension("cs");
-        var finder = new Finder(settings);
+        var finder = new Finder(config, settings);
         var path = Paths.get("./FileUtil.cs");
         var fileResult = new FileResult(path, FileType.CODE);
         assertTrue(finder.isMatchingFileResult(fileResult));
@@ -131,9 +147,10 @@ public class FinderTest {
 
     @Test
     public final void testIsMatchingFileResult_DoesNotMatchInExtension_False() {
+        var config = getConfig();
         var settings = getSettings();
         settings.addInExtension("java");
-        var finder = new Finder(settings);
+        var finder = new Finder(config, settings);
         var path = Paths.get("./FileUtil.cs");
         var fileResult = new FileResult(path, FileType.CODE);
         assertFalse(finder.isMatchingFileResult(fileResult));
@@ -142,9 +159,10 @@ public class FinderTest {
 
     @Test
     public final void testIsMatchingFileResult_MatchesOutExtension_False() {
+        var config = getConfig();
         var settings = getSettings();
         settings.addOutExtension("cs");
-        var finder = new Finder(settings);
+        var finder = new Finder(config, settings);
         var path = Paths.get("./FileUtil.cs");
         var fileResult = new FileResult(path, FileType.CODE);
         assertFalse(finder.isMatchingFileResult(fileResult));
@@ -152,9 +170,10 @@ public class FinderTest {
 
     @Test
     public final void testIsMatchingFileResult_DoesNotMatchOutExtension_True() {
+        var config = getConfig();
         var settings = getSettings();
         settings.addOutExtension("java");
-        var finder = new Finder(settings);
+        var finder = new Finder(config, settings);
         var path = Paths.get("./FileUtil.cs");
         var fileResult = new FileResult(path, FileType.CODE);
         assertTrue(finder.isMatchingFileResult(fileResult));
@@ -162,9 +181,10 @@ public class FinderTest {
 
     @Test
     public final void testIsMatchingFileResult_MatchesInPattern_True() {
+        var config = getConfig();
         var settings = getSettings();
         settings.addInFilePattern("Find");
-        var finder = new Finder(settings);
+        var finder = new Finder(config, settings);
         var path = Paths.get("./Finder.cs");
         var fileResult = new FileResult(path, FileType.CODE);
         assertTrue(finder.isMatchingFileResult(fileResult));
@@ -172,9 +192,10 @@ public class FinderTest {
 
     @Test
     public final void testIsMatchingFileResult_DoesNotMatchInPattern_False() {
+        var config = getConfig();
         var settings = getSettings();
         settings.addInFilePattern("Find");
-        var finder = new Finder(settings);
+        var finder = new Finder(config, settings);
         var path = Paths.get("./FileUtil.cs");
         var fileResult = new FileResult(path, FileType.CODE);
         assertFalse(finder.isMatchingFileResult(fileResult));
@@ -182,9 +203,10 @@ public class FinderTest {
 
     @Test
     public final void testIsMatchingFileResult_MatchesOutPattern_False() {
+        var config = getConfig();
         var settings = getSettings();
         settings.addOutFilePattern("Find");
-        var finder = new Finder(settings);
+        var finder = new Finder(config, settings);
         var path = Paths.get("./Finder.cs");
         var fileResult = new FileResult(path, FileType.CODE);
         assertFalse(finder.isMatchingFileResult(fileResult));
@@ -192,9 +214,10 @@ public class FinderTest {
 
     @Test
     public final void testIsMatchingFileResult_DoesNotMatchOutPattern_True() {
+        var config = getConfig();
         var settings = getSettings();
         settings.addOutFilePattern("Find");
-        var finder = new Finder(settings);
+        var finder = new Finder(config, settings);
         var path = Paths.get("./FileUtil.cs");
         var fileResult = new FileResult(path, FileType.CODE);
         assertTrue(finder.isMatchingFileResult(fileResult));
@@ -205,26 +228,29 @@ public class FinderTest {
      *************************************************************/
     @Test
     public final void testIsMatchingArchiveFilePath_NoExtensionsNoPatterns_True() {
+        var config = getConfig();
         var settings = getSettings();
-        var finder = new Finder(settings);
+        var finder = new Finder(config, settings);
         var path = Paths.get("archive.zip");
         assertTrue(finder.isMatchingArchiveFilePath(path));
     }
 
     @Test
     public final void testIsMatchingArchiveFilePath_MatchesInExtension_True() {
+        var config = getConfig();
         var settings = getSettings();
         settings.addInArchiveExtension("zip");
-        var finder = new Finder(settings);
+        var finder = new Finder(config, settings);
         var path = Paths.get("archive.zip");
         assertTrue(finder.isMatchingArchiveFilePath(path));
     }
 
     @Test
     public final void testIsMatchingArchiveFilePath_DoesNotMatchInExtension_False() {
+        var config = getConfig();
         var settings = getSettings();
         settings.addInArchiveExtension("gz");
-        var finder = new Finder(settings);
+        var finder = new Finder(config, settings);
         var path = Paths.get("archive.zip");
         assertFalse(finder.isMatchingArchiveFilePath(path));
     }
@@ -232,54 +258,60 @@ public class FinderTest {
 
     @Test
     public final void testIsMatchingArchiveFilePath_MatchesOutExtension_False() {
+        var config = getConfig();
         var settings = getSettings();
         settings.addOutArchiveExtension("zip");
-        var finder = new Finder(settings);
+        var finder = new Finder(config, settings);
         var path = Paths.get("archive.zip");
         assertFalse(finder.isMatchingArchiveFilePath(path));
     }
 
     @Test
     public final void testIsMatchingArchiveFilePath_DoesNotMatchOutExtension_True() {
+        var config = getConfig();
         var settings = getSettings();
         settings.addOutArchiveExtension("gz");
-        var finder = new Finder(settings);
+        var finder = new Finder(config, settings);
         var path = Paths.get("archive.zip");
         assertTrue(finder.isMatchingArchiveFilePath(path));
     }
 
     @Test
     public final void testIsMatchingArchiveFilePath_MatchesInPattern_True() {
+        var config = getConfig();
         var settings = getSettings();
         settings.addInArchiveFilePattern("arch");
-        var finder = new Finder(settings);
+        var finder = new Finder(config, settings);
         var path = Paths.get("archive.zip");
         assertTrue(finder.isMatchingArchiveFilePath(path));
     }
 
     @Test
     public final void testIsMatchingArchiveFilePath_DoesNotMatchInPattern_False() {
+        var config = getConfig();
         var settings = getSettings();
         settings.addInArchiveFilePattern("archives");
-        var finder = new Finder(settings);
+        var finder = new Finder(config, settings);
         var path = Paths.get("archive.zip");
         assertFalse(finder.isMatchingArchiveFilePath(path));
     }
 
     @Test
     public final void testIsMatchingArchiveFilePath_MatchesOutPattern_False() {
+        var config = getConfig();
         var settings = getSettings();
         settings.addOutArchiveFilePattern("arch");
-        var finder = new Finder(settings);
+        var finder = new Finder(config, settings);
         var path = Paths.get("archive.zip");
         assertFalse(finder.isMatchingArchiveFilePath(path));
     }
 
     @Test
     public final void testIsMatchingArchiveFilePath_DoesNotMatchOutPattern_True() {
+        var config = getConfig();
         var settings = getSettings();
         settings.addOutArchiveFilePattern("archives");
-        var finder = new Finder(settings);
+        var finder = new Finder(config, settings);
         var path = Paths.get("archive.zip");
         assertTrue(finder.isMatchingArchiveFilePath(path));
     }
@@ -289,98 +321,109 @@ public class FinderTest {
      *************************************************************/
     @Test
     public final void testFilterToFileResult_IsHidden_Null() {
+        var config = getConfig();
         var settings = getSettings();
-        var finder = new Finder(settings);
+        var finder = new Finder(config, settings);
         var path = Paths.get(".gitignore");
         assertFalse(finder.filterToFileResult(path).isPresent());
     }
 
     @Test
     public final void testFilterToFileResult_IsHiddenIncludeHidden_NotNull() {
+        var config = getConfig();
         var settings = getSettings();
         settings.setIncludeHidden(true);
-        var finder = new Finder(settings);
+        var finder = new Finder(config, settings);
         var path = Paths.get(".gitignore");
         assertTrue(finder.filterToFileResult(path).isPresent());
     }
 
     @Test
     public final void testFilterToFileResult_ArchiveNoFindArchives_Null() {
+        var config = getConfig();
         var settings = getSettings();
-        var finder = new Finder(settings);
+        var finder = new Finder(config, settings);
         var path = Paths.get("archive.zip");
         assertFalse(finder.filterToFileResult(path).isPresent());
     }
 
     @Test
     public final void testFilterToFileResult_ArchiveFindArchives_NotNull() {
+        var config = getConfig();
         var settings = getSettings();
         settings.setIncludeArchives(true);
-        var finder = new Finder(settings);
+        var finder = new Finder(config, settings);
         var path = Paths.get("archive.zip");
         assertTrue(finder.filterToFileResult(path).isPresent());
     }
 
     @Test
     public final void testFilterToFileResult_IsMatchingArchiveFilePath_NotNull() {
+        var config = getConfig();
         var settings = getSettings();
         settings.setIncludeArchives(true);
         settings.addInArchiveExtension("zip");
-        var finder = new Finder(settings);
+        var finder = new Finder(config, settings);
         var path = Paths.get("archive.zip");
         assertTrue(finder.filterToFileResult(path).isPresent());
     }
 
     @Test
     public final void testFilterToFileResult_NotIsMatchingArchiveFilePath_Null() {
+        var config = getConfig();
         var settings = getSettings();
         settings.setIncludeArchives(true);
         settings.addOutArchiveExtension("zip");
-        var finder = new Finder(settings);
+        var finder = new Finder(config, settings);
         var path = Paths.get("archive.zip");
         assertFalse(finder.filterToFileResult(path).isPresent());
     }
 
     @Test
     public final void testFilterToFileResult_ArchiveFileArchivesOnly_NotNull() {
+        var config = getConfig();
         var settings = getSettings();
         settings.setArchivesOnly(true);
-        var finder = new Finder(settings);
+        var finder = new Finder(config, settings);
         var path = Paths.get("archive.zip");
         assertTrue(finder.filterToFileResult(path).isPresent());
     }
 
     @Test
     public final void testFilterToFileResult_NoExtensionsNoPatterns_NotNull() {
+        var config = getConfig();
         var settings = getSettings();
-        var finder = new Finder(settings);
+        var finder = new Finder(config, settings);
         var path = Paths.get("FileUtil.cs");
         assertTrue(finder.filterToFileResult(path).isPresent());
     }
 
     @Test
     public final void testFilterToFileResult_IsMatchingFile_NotNull() {
+        var config = getConfig();
         var settings = getSettings();
         settings.addInExtension("cs");
-        var finder = new Finder(settings);
+        var finder = new Finder(config, settings);
         var path = Paths.get("FileUtil.cs");
         assertTrue(finder.filterToFileResult(path).isPresent());
     }
 
     @Test
     public final void testFilterToFileResult_NotIsMatchingFile_Null() {
+        var config = getConfig();
         var settings = getSettings();
         settings.addOutExtension("cs");
-        var finder = new Finder(settings);
+        var finder = new Finder(config, settings);
         var path = Paths.get("FileUtil.cs");
         assertFalse(finder.filterToFileResult(path).isPresent());
     }
 
     @Test
     public final void testFilterToFileResult_NonArchiveFileArchivesOnly_Null() {
+        var config = getConfig();
         var settings = getSettings();
         settings.setArchivesOnly(true);
-        var finder = new Finder(settings);
+        var finder = new Finder(config, settings);
         var path = Paths.get("FileUtil.cs");
         assertFalse(finder.filterToFileResult(path).isPresent());
     }
@@ -390,9 +433,10 @@ public class FinderTest {
      *************************************************************/
     @Test
     public final void testFollowSymlinks_Default_Excluded() {
+        var config = getConfig();
         var settings = new FindSettings();
         settings.addPath(getBinPath());
-        var finder = new Finder(settings);
+        var finder = new Finder(config, settings);
         try {
             var fileResults = finder.find();
             assertTrue(fileResults.size() < 4);
@@ -403,10 +447,11 @@ public class FinderTest {
 
     @Test
     public final void testFollowSymlinks_FollowSymlinks_Included() {
+        var config = getConfig();
         var settings = new FindSettings();
         settings.addPath(getBinPath());
         settings.setFollowSymlinks(true);
-        var finder = new Finder(settings);
+        var finder = new Finder(config, settings);
         try {
             var fileResults = finder.find();
             assertTrue(fileResults.isEmpty() || fileResults.size() > 2);
@@ -417,10 +462,11 @@ public class FinderTest {
 
     @Test
     public final void testFollowSymlinks_NoFollowSymlinks_Excluded() {
+        var config = getConfig();
         var settings = new FindSettings();
         settings.addPath(getBinPath());
         settings.setFollowSymlinks(false);
-        var finder = new Finder(settings);
+        var finder = new Finder(config, settings);
         try {
             var fileResults = finder.find();
             assertTrue(fileResults.size() < 4);
@@ -434,33 +480,37 @@ public class FinderTest {
      *************************************************************/
     @Test
     public final void testIsMatchingLastMod_MinOnly_BeforeMin_False() {
+        var config = getConfig();
         var settings = getSettings();
         settings.setMinLastMod(LocalDateTime.parse("2024-01-01T00:00:00"));
-        var finder = new Finder(settings);
+        var finder = new Finder(config, settings);
         assertFalse(finder.isMatchingLastMod(Instant.parse("2023-12-31T23:59:59Z")));
     }
 
     @Test
     public final void testIsMatchingLastMod_MinOnly_AtOrAfterMin_True() {
+        var config = getConfig();
         var settings = getSettings();
         settings.setMinLastMod(LocalDateTime.parse("2024-01-01T00:00:00"));
-        var finder = new Finder(settings);
+        var finder = new Finder(config, settings);
         assertTrue(finder.isMatchingLastMod(Instant.parse("2024-01-01T00:00:00Z")));
     }
 
     @Test
     public final void testIsMatchingLastMod_MaxOnly_AfterMax_False() {
+        var config = getConfig();
         var settings = getSettings();
         settings.setMaxLastMod(LocalDateTime.parse("2024-01-01T00:00:00"));
-        var finder = new Finder(settings);
+        var finder = new Finder(config, settings);
         assertFalse(finder.isMatchingLastMod(Instant.parse("2024-01-01T00:00:01Z")));
     }
 
     @Test
     public final void testIsMatchingLastMod_MaxOnly_AtOrBeforeMax_True() {
+        var config = getConfig();
         var settings = getSettings();
         settings.setMaxLastMod(LocalDateTime.parse("2024-01-01T00:00:00"));
-        var finder = new Finder(settings);
+        var finder = new Finder(config, settings);
         assertTrue(finder.isMatchingLastMod(Instant.parse("2024-01-01T00:00:00Z")));
     }
 }

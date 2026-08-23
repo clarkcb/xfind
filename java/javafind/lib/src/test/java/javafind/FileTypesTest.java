@@ -10,7 +10,7 @@ public class FileTypesTest {
     private final FileTypes fileTypes;
 
     public FileTypesTest() {
-        fileTypes = new FileTypes();
+        fileTypes = new FileTypes(new FindConfig());
     }
 
     @Test

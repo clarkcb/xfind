@@ -17,7 +17,7 @@ public class FindOptionsTest {
     public final void testSettingsFromMinimalArgs() {
         var args = new String[]{"."};
         try {
-            var findOptions = new FindOptions();
+            var findOptions = new FindOptions(new FindConfig());
             var settings = findOptions.settingsFromArgs(args);
             assertFalse(settings.getArchivesOnly());
             assertFalse(settings.getDebug());
@@ -42,7 +42,7 @@ public class FindOptionsTest {
     public final void testSettingsFromValidArgs() {
         var args = new String[]{"-x", "java,scala", "."};
         try {
-            var findOptions = new FindOptions();
+            var findOptions = new FindOptions(new FindConfig());
             var settings = findOptions.settingsFromArgs(args);
             assertEquals(2, settings.getInExtensions().size());
             assertTrue(settings.getInExtensions().contains("java"));
@@ -72,7 +72,7 @@ public class FindOptionsTest {
 }
 """;
         try {
-            var findOptions = new FindOptions();
+            var findOptions = new FindOptions(new FindConfig());
             var settings = findOptions.settingsFromJson(json);
 
             assertEquals(1, settings.getPaths().size());
