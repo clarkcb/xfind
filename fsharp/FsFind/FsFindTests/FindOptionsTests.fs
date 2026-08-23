@@ -6,6 +6,9 @@ open FsFindLib
 [<TestFixture>]
 type FindOptionsTests () =
 
+    member this.Config = FindConfig()
+    member this.FindOptions = FindOptions(this.Config)
+
     [<SetUp>]
     member this.Setup () =
         ()
@@ -13,7 +16,7 @@ type FindOptionsTests () =
     [<Test>]
     member this.SettingsFromArgs_NoArgs_HasDefaultValues () =
         let args : string[] = [||]
-        match FindOptions.SettingsFromArgs(args) with
+        match this.FindOptions.SettingsFromArgs(args) with
         | Ok settings ->
             Assert.That(settings.ArchivesOnly, Is.False)
             Assert.That(settings.Debug, Is.False)
@@ -37,7 +40,7 @@ type FindOptionsTests () =
     [<Test>]
     member this.SettingsFromArgs_ValidArgs_HasArgValues () =
         let args = [| "-x"; "cs"; "." |]
-        match FindOptions.SettingsFromArgs(args) with
+        match this.FindOptions.SettingsFromArgs(args) with
         | Ok settings ->
             Assert.That(settings.InExtensions.Length, Is.EqualTo(1))
             Assert.That(settings.InExtensions |> List.exists (fun e -> e = ".cs"))
@@ -50,7 +53,7 @@ type FindOptionsTests () =
     [<Test>]
     member this.SettingsFromArgs_InValidArgs_ThrowsFindException () =
         let args = [| "-x"; "cs"; "."; "-Q" |]
-        match FindOptions.SettingsFromArgs(args) with
+        match this.FindOptions.SettingsFromArgs(args) with
         | Ok _ ->
             Assert.That(true, Is.False)
         | Error e ->
@@ -70,7 +73,7 @@ type FindOptionsTests () =
             "\"includehidden\": true"
             "}"
         ]
-        match FindOptions.SettingsFromJson(json) with
+        match this.FindOptions.SettingsFromJson(json) with
         | Ok settings ->
             Assert.That(settings.Paths.Length, Is.EqualTo(1))
             Assert.That(settings.Paths.Head.ToString(), Is.EqualTo("~/src/xfind/"))

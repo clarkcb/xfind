@@ -8,8 +8,6 @@ open FsFindLib
 [<TestFixture>]
 type FileUtilTests () =
 
-    member this.FileTypes = FileTypes()
-
     [<SetUp>]
     member this.Setup () =
         ()

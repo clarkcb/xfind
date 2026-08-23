@@ -6,7 +6,8 @@ open FsFindLib
 [<TestFixture>]
 type FileTypesTests () =
 
-    member this.FileTypes = FileTypes()
+    member this.Config = FindConfig() 
+    member this.FileTypes = FileTypes(this.Config)
 
     [<SetUp>]
     member this.Setup () =

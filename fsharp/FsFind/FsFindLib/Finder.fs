@@ -4,8 +4,8 @@ open System
 open System.IO
 open System.Text.RegularExpressions
 
-type Finder (settings : FindSettings) =
-    let _fileTypes = FileTypes()
+type Finder (config : FindConfig, settings : FindSettings) =
+    let _fileTypes = FileTypes(config)
     let _enumerationOptions = EnumerationOptions()
 
     // member methods

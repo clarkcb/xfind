@@ -6,11 +6,13 @@ open System.IO
 open System.Text.Json
 open FsFindLib
 
-module FindOptions =
+type FindOption = Option
 
-    type FindOption = Option
+type FindOptionsDictionary = Dictionary<string, List<Dictionary<string,string>>>
 
-    let boolActionMap : Map<string, bool -> FindSettings -> Unit> =
+type FindOptions(config : FindConfig) =
+
+    static let boolActionMap : Map<string, bool -> FindSettings -> Unit> =
         [
             ("archivesonly", (fun (b : bool) (settings : FindSettings) -> settings.ArchivesOnly <- b));
             ("colorize", (fun (b : bool) (settings : FindSettings) -> settings.Colorize <- b));
@@ -39,7 +41,7 @@ module FindOptions =
             ("version", (fun (b : bool) (settings : FindSettings) -> settings.PrintVersion <- b));
         ] |> Map.ofList;
 
-    let stringActionMap : Map<string, string -> FindSettings -> Unit> =
+    static let stringActionMap : Map<string, string -> FindSettings -> Unit> =
         [
             ("in-archiveext", (fun (s : string) (settings : FindSettings) -> settings.InArchiveExtensions <- settings.AddExtensions s settings.InArchiveExtensions));
             ("in-archivefilepattern", (fun (s : string) (settings : FindSettings) -> settings.InArchiveFilePatterns <- settings.AddPattern s settings.InArchiveFilePatterns));
@@ -59,21 +61,19 @@ module FindOptions =
             ("sort-by", (fun (s : string) (settings : FindSettings) -> settings.SortBy <- SortUtil.SortByFromName s));
         ] |> Map.ofList
 
-    let intActionMap : Map<string, int -> FindSettings -> Unit> =
+    static let intActionMap : Map<string, int -> FindSettings -> Unit> =
         [
             ("maxdepth", (fun (i : int) (settings : FindSettings) -> settings.MaxDepth <- i));
             ("mindepth", (fun (i : int) (settings : FindSettings) -> settings.MinDepth <- i));
         ] |> Map.ofList
 
-    let longActionMap : Map<string, int64 -> FindSettings -> Unit> =
+    static let longActionMap : Map<string, int64 -> FindSettings -> Unit> =
         [
             ("maxsize", (fun (i : int64) (settings : FindSettings) -> settings.MaxSize <- i));
             ("minsize", (fun (i : int64) (settings : FindSettings) -> settings.MinSize <- i));
         ] |> Map.ofList
 
-    type FindOptionsDictionary = Dictionary<string, List<Dictionary<string,string>>>
-
-    let OptionsFromJson (jsonString : string) : FindOption list =
+    let LoadOptionsFromJson (jsonString : string) : FindOption list =
         let findOptionsDict = JsonSerializer.Deserialize<FindOptionsDictionary>(jsonString)
         let optionDicts = findOptionsDict["findoptions"]
         [ for optionDict in optionDicts do
@@ -88,33 +88,22 @@ module FindOptions =
                 else ArgTokenType.Unknown
             yield { ShortArg=shortArg; LongArg=longArg; Description=desc; ArgType=argType } ]
 
-    let _findOptionsResource = EmbeddedResource.GetResourceFileContents("FsFindLib.Resources.findoptions.json");
-    let options = OptionsFromJson(_findOptionsResource)
+    let _findOptionsResource = EmbeddedResource.GetResourceFileContents(config.FindOptionsPath);
+    let options = LoadOptionsFromJson(_findOptionsResource)
 
-    let GetOptionNameMap : Map<string, string> =
-        let shortArgs = seq { for opt in options do if opt.ShortArg <> "" then yield (opt.ShortArg, opt.LongArg) }
-        let longArgs =  seq { for opt in options do yield (opt.LongArg, opt.LongArg) }
-        let longArgsWithPath = Seq.append longArgs [("path", "path"); ("settings-file", "settings-file")]
-        Seq.append shortArgs longArgsWithPath
-        |> Map.ofSeq
-
-    let optionNameMap = GetOptionNameMap
-    
     let argTokenizer : ArgTokenizer =
         ArgTokenizer(options)
 
-    // These are required to do a "forward declaration" of the UpdateSettingsFromDefaultFiles
-    let dummyUpdateSettingsFromDefaultFiles: FindSettings -> Result<FindSettings, string> = (fun (_: FindSettings) -> Error "not implemented")
-    let mutable forwardUpdateSettingsFromDefaultFiles = ref dummyUpdateSettingsFromDefaultFiles
+    member this.Options = options
     
-    let rec ApplyArgTokenToSettings (argToken : ArgToken) (settings : FindSettings) : Result<FindSettings, string> =
+    member this.ApplyArgTokenToSettings (argToken : ArgToken) (settings : FindSettings) : Result<FindSettings, string> =
         if argToken.Type = ArgTokenType.Bool then
             if boolActionMap.ContainsKey(argToken.Name) then
                 match argToken.Value with
                 | :? Boolean as b ->
                     boolActionMap[argToken.Name] b settings
                     if argToken.Name = "defaultfiles" then
-                        forwardUpdateSettingsFromDefaultFiles.Value settings
+                        this.UpdateSettingsFromDefaultFiles settings
                     else
                         Ok settings
                 | _ -> Error $"Invalid value for option: {argToken.Name}"
@@ -150,12 +139,12 @@ module FindOptions =
         else
             Error $"Invalid option: {argToken.Name}"
 
-    let UpdateSettingsFromArgTokens (settings : FindSettings) (argTokens : ArgToken list) : Result<FindSettings, string> =
+    member this.UpdateSettingsFromArgTokens (settings : FindSettings) (argTokens : ArgToken list) : Result<FindSettings, string> =
         let rec recSettingsFromArgTokens (tokens : ArgToken list) (settings : FindSettings) : Result<FindSettings, string> =
             match tokens with
             | [] -> Ok settings
             | token :: tail ->
-                match ApplyArgTokenToSettings token settings with
+                match this.ApplyArgTokenToSettings token settings with
                 | Ok settings ->
                     if token.Name = "help" then
                         Ok settings
@@ -164,64 +153,60 @@ module FindOptions =
                 | Error e -> Error e
         recSettingsFromArgTokens argTokens settings
 
-    let UpdateSettingsFromDictionary (settings : FindSettings) (dict : Dictionary<string, obj>) : Result<FindSettings, string> =
+    member this.UpdateSettingsFromDictionary (settings : FindSettings) (dict : Dictionary<string, obj>) : Result<FindSettings, string> =
         match argTokenizer.TokenizeDictionary(dict) with
-        | Ok argTokens -> UpdateSettingsFromArgTokens settings argTokens
+        | Ok argTokens -> this.UpdateSettingsFromArgTokens settings argTokens
         | Error e -> Error e
 
-    let UpdateSettingsFromJson (settings : FindSettings) (jsonString : string) : Result<FindSettings, string> =
+    member this.UpdateSettingsFromJson (settings : FindSettings) (jsonString : string) : Result<FindSettings, string> =
         match argTokenizer.TokenizeJson(jsonString) with
-        | Ok argTokens -> UpdateSettingsFromArgTokens settings argTokens
+        | Ok argTokens -> this.UpdateSettingsFromArgTokens settings argTokens
         | Error e -> Error e
 
-    let SettingsFromJson (jsonString : string) : Result<FindSettings, string> =
+    member this.SettingsFromJson (jsonString : string) : Result<FindSettings, string> =
         let settings = FindSettings()
-        UpdateSettingsFromJson settings jsonString
+        this.UpdateSettingsFromJson settings jsonString
 
-    let UpdateSettingsFromFile (settings : FindSettings) (filePath : string) : Result<FindSettings, string> =
+    member this.UpdateSettingsFromFile (settings : FindSettings) (filePath : string) : Result<FindSettings, string> =
         match argTokenizer.TokenizeFile(filePath) with
-        | Ok argTokens -> UpdateSettingsFromArgTokens settings argTokens
+        | Ok argTokens -> this.UpdateSettingsFromArgTokens settings argTokens
         | Error e -> Error e
 
-    let SettingsFromFile (filePath : string) : Result<FindSettings, string> =
+    member this.SettingsFromFile (filePath : string) : Result<FindSettings, string> =
         let settings = FindSettings()
-        UpdateSettingsFromFile settings filePath
+        this.UpdateSettingsFromFile settings filePath
 
-    let UpdateSettingsFromDefaultFiles (settings : FindSettings) : Result<FindSettings, string> =
-        let homePath = FileUtil.GetHomePath()
-        let defaultFindSettingsPath = Path.Join(homePath, ".config", "xfind", "settings.json")
-        if Path.Exists(defaultFindSettingsPath) then
-            UpdateSettingsFromFile settings defaultFindSettingsPath
+    member this.UpdateSettingsFromDefaultFiles (settings : FindSettings) : Result<FindSettings, string> =
+        if Path.Exists(config.DefaultFindSettingsPath) then
+            this.UpdateSettingsFromFile settings config.DefaultFindSettingsPath
         else
             Ok settings
 
-    forwardUpdateSettingsFromDefaultFiles.Value <- UpdateSettingsFromDefaultFiles
-
-    let UpdateSettingsFromArgs (settings : FindSettings) (args : string[]) : Result<FindSettings, string> =
+    member this.UpdateSettingsFromArgs (settings : FindSettings) (args : string[]) : Result<FindSettings, string> =
         match argTokenizer.TokenizeArgs(args) with
-        | Ok argTokens -> UpdateSettingsFromArgTokens settings argTokens
+        | Ok argTokens -> this.UpdateSettingsFromArgTokens settings argTokens
         | Error e -> Error e
 
-    let SettingsFromArgs (args : string[]) : Result<FindSettings, string> =
+    member this.SettingsFromArgs (args : string[]) : Result<FindSettings, string> =
         let settings = FindSettings()
         settings.PrintFiles <- true
         // if a defaultfiles option isn't included, go ahead and apply default files now
         if not (Array.contains "--defaultfiles" args) && not (Array.contains "--nodefaultfiles" args) then
-            match UpdateSettingsFromDefaultFiles(settings) with
+            match this.UpdateSettingsFromDefaultFiles(settings) with
             | Ok settings ->
-                UpdateSettingsFromArgs settings args
+                this.UpdateSettingsFromArgs settings args
             | Error e -> Error e
         else
-            UpdateSettingsFromArgs settings args
+            this.UpdateSettingsFromArgs settings args
 
-    let SortOption (o1 : FindOption) (o2 : FindOption) : int =
+    member this.SortOption (o1 : FindOption) (o2 : FindOption) : int =
         let os1 = if o1.ShortArg <> "" then o1.ShortArg + "@" + o1.LongArg else o1.LongArg
         let os2 = if o2.ShortArg <> "" then o2.ShortArg + "@" + o2.LongArg else o2.LongArg
         String.Compare(os1, os2, StringComparison.OrdinalIgnoreCase)
 
-    let GetUsageString () : string =
+    member this.GetUsageString () : string =
         let sortedOptions = options
-                            |> List.sortWith SortOption
+                            |> List.sortWith this.SortOption
         let optStringMap =
             [ for opt in sortedOptions do
                 let shortString : string = 
@@ -258,7 +243,7 @@ module FindOptions =
             |> String.concat "\n"
         usageString
 
-    let Usage (exitCode : int) : unit =
-        let usageString = GetUsageString()
+    member this.Usage (exitCode : int) : unit =
+        let usageString = this.GetUsageString()
         printfn $"%s{usageString}\n"
         Environment.Exit(exitCode)

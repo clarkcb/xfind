@@ -20,7 +20,7 @@ type FileType =
 
 type FileTypesDictionary = Dictionary<string, List<Dictionary<string,Object>>>
 
-type FileTypes() =
+type FileTypes(config : FindConfig) =
     static let archive = "archive"
     static let audio = "audio"
     static let binary = "binary"
@@ -31,8 +31,9 @@ type FileTypes() =
     static let video = "video"
     static let xml = "xml"
     static let unknown = "unknown"
+    static let fileTypeNames = [unknown; archive; audio; binary; code; font; image; text; video; xml]
 
-    let PopulateFileTypesFromJson (jsonString : string) =
+    let LoadFileTypesFromJson (jsonString : string) =
         let fileTypeExtDictionary = Dictionary<string, ISet<string>>()
         let fileTypeNameDictionary = Dictionary<string, ISet<string>>()
         let filetypesDict = JsonSerializer.Deserialize<FileTypesDictionary>(jsonString)
@@ -59,38 +60,14 @@ type FileTypes() =
             fileTypeNameDictionary.Add(text, allTextNames)
         (fileTypeExtDictionary, fileTypeNameDictionary)
 
-    let _fileTypesResource = EmbeddedResource.GetResourceFileContents("FsFindLib.Resources.filetypes.json")
-    let _fileTypeExtDictionary, _fileTypeNameDictionary = PopulateFileTypesFromJson(_fileTypesResource)
+    let _fileTypesResource = EmbeddedResource.GetResourceFileContents(config.FileTypesPath)
+    let _fileTypeExtDictionary, _fileTypeNameDictionary = LoadFileTypesFromJson(_fileTypesResource)
 
     // read-only member properties
     member this.FileTypeExtDictionary = _fileTypeExtDictionary
     member this.FileTypeNameDictionary = _fileTypeNameDictionary
-
-    static member FromName (name : string) : FileType =
-        let lname = name.ToLowerInvariant()
-        if lname.Equals(archive) then FileType.Archive
-        else if lname.Equals(audio) then FileType.Audio
-        else if lname.Equals(binary) then FileType.Binary
-        else if lname.Equals(code) then FileType.Code
-        else if lname.Equals(font) then FileType.Font
-        else if lname.Equals(image) then FileType.Image
-        else if lname.Equals(text) then FileType.Text
-        else if lname.Equals(video) then FileType.Video
-        else if lname.Equals(xml) then FileType.Xml
-        else FileType.Unknown
-
-    static member ToName (fileType : FileType) : string =
-        match fileType with
-        | FileType.Archive -> archive
-        | FileType.Audio -> audio
-        | FileType.Binary -> binary
-        | FileType.Code -> code
-        | FileType.Font -> font
-        | FileType.Image -> image
-        | FileType.Text -> text
-        | FileType.Video -> video
-        | FileType.Xml -> xml
-        | _ -> unknown
+    
+    static member FileTypeNames = fileTypeNames
 
     member this.GetFileTypeForFilePath (filePath: string) : FileType =
         // most specific first
@@ -143,12 +120,29 @@ type FileTypes() =
         this.IsFilePathForType(filePath, xml)
 
 module FileTypesUtil =
+    let FromName (name : string) : FileType =
+        let lname = name.ToLowerInvariant()
+        match List.findIndex (fun x -> x = lname) FileTypes.FileTypeNames with
+        | 1 -> FileType.Archive
+        | 2 -> FileType.Audio
+        | 3 -> FileType.Binary
+        | 4 -> FileType.Code
+        | 5 -> FileType.Font
+        | 6 -> FileType.Image
+        | 7 -> FileType.Text
+        | 8 -> FileType.Video
+        | 9 -> FileType.Xml
+        | _ -> FileType.Unknown
+
+    let ToName (fileType : FileType) : string =
+        FileTypes.FileTypeNames.[int fileType]
+
     let FileTypesListToString (lst : FileType list) : string = 
         let rec recListToString (acc : string) (lst : FileType list) =
             match lst with
             | []     -> acc.Trim()
-            | [a]    -> (recListToString (acc + " " + (FileTypes.ToName a)) [])
-            | h :: t -> (recListToString (acc + " " + (FileTypes.ToName h) + ",") t) in
+            | [a]    -> (recListToString (acc + " " + (ToName a)) [])
+            | h :: t -> (recListToString (acc + " " + (ToName h) + ",") t) in
         sprintf "[%s]" (recListToString "" lst)
 
     let FileTypesListFromString (fts : string) : FileType list =
@@ -156,5 +150,5 @@ module FileTypesUtil =
         nonWord.Split(fts)
         |> Array.toList
         |> List.filter (fun (x : string) -> String.IsNullOrEmpty(x) = false)
-        |> List.map (fun (x : string) -> FileTypes.FromName x)
+        |> List.map (fun (x : string) -> FromName x)
     ;;
