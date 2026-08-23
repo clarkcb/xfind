@@ -10,7 +10,8 @@ static class Program
 		FindOptions? options =  null;
 		try
 		{
-			options = new FindOptions();
+			var config = new FindConfig();
+			options = new FindOptions(config);
 			var settings = options.SettingsFromArgs(args);
 			colorize = settings.Colorize;
 
@@ -24,7 +25,7 @@ static class Program
 				options.Usage();
 			}
 
-			var finder = new Finder(settings);
+			var finder = new Finder(config, settings);
 			var fileResults = finder.Find();
 			var formatter = new FileResultFormatter(settings);
 

@@ -10,8 +10,6 @@ namespace CsFindLib;
 
 public class FindOptions
 {
-	private readonly string _findOptionsResource;
-
 	private static readonly Dictionary<string, Action<bool, FindSettings>> BoolActionDictionary =
 		new()
 		{
@@ -83,21 +81,23 @@ public class FindOptions
 			{ "minsize", (lng, settings) => settings.MinSize = lng },
 		};
 
+	public FindConfig Config { get; }
 	public List<IOption> Options { get; }
 	private ArgTokenizer ArgTokenizer { get; }
 
 
-	public FindOptions()
+	public FindOptions(FindConfig config)
 	{
-		_findOptionsResource = EmbeddedResource.GetResourceFileContents("CsFindLib.Resources.findoptions.json");
+		Config = config;
 		Options = [];
-		SetOptionsFromJson();
+		LoadOptionsFromJson(config.FindOptionsPath);
 		ArgTokenizer = new ArgTokenizer(Options);
 	}
 
-	private void SetOptionsFromJson()
+	private void LoadOptionsFromJson(string findOptionsPath)
 	{
-		var findOptionsDict = JsonSerializer.Deserialize<FindOptionsDictionary>(_findOptionsResource);
+		var findOptionsResource = EmbeddedResource.GetResourceFileContents(findOptionsPath);
+		var findOptionsDict = JsonSerializer.Deserialize<FindOptionsDictionary>(findOptionsResource);
 		if (findOptionsDict == null
 		    || !findOptionsDict.TryGetValue("findoptions", out List<Dictionary<string, string>>? optionDicts))
 		{
@@ -324,11 +324,9 @@ public class FindOptions
 
 	private void UpdateSettingsFromDefaultFiles(FindSettings settings)
 	{
-		var homePath = FileUtil.GetHomePath();
-		var defaultFindSettingsPath = Path.Join(homePath, ".config", "xfind", "settings.json");
-		if (Path.Exists(defaultFindSettingsPath))
+		if (Path.Exists(Config.DefaultFindSettingsPath))
 		{
-			UpdateSettingsFromFile(settings, defaultFindSettingsPath);
+			UpdateSettingsFromFile(settings, Config.DefaultFindSettingsPath);
 		}
 	}
 

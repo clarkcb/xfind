@@ -9,7 +9,7 @@ namespace CsFindTests;
 [TestFixture]
 public class FindOptionsTests
 {
-	private readonly FindOptions _findOptions = new();
+	private readonly FindOptions _findOptions = new(new FindConfig());
 
 	[Test]
 	public void SettingsFromArgs_NoArgs_HasDefaultValues()
@@ -61,7 +61,7 @@ public class FindOptionsTests
   ""followsymlinks"": true,
   ""includehidden"": true
 }";
-		var options = new FindOptions();
+		var options = new FindOptions(new FindConfig());
 		var settings = options.SettingsFromJson(json);
 
 		Assert.That(settings.Paths.Count, Is.EqualTo(1));

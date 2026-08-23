@@ -31,21 +31,20 @@ public class FileTypes
 	private const string Video = "video";
 	private const string Xml = "xml";
 
-	private readonly string _fileTypesResource;
 	private readonly IDictionary<string, ISet<string>> _fileTypeExtDictionary;
 	private readonly IDictionary<string, ISet<string>> _fileTypeNameDictionary;
 
-	public FileTypes()
+	public FileTypes(FindConfig config)
 	{
-		_fileTypesResource = EmbeddedResource.GetResourceFileContents("CsFindLib.Resources.filetypes.json");
 		_fileTypeExtDictionary = new Dictionary<string, ISet<string>>();
 		_fileTypeNameDictionary = new Dictionary<string, ISet<string>>();
-		PopulateFileTypesFromJson();
+		LoadFileTypesFromJson(config.FileTypesPath);
 	}
 
-	private void PopulateFileTypesFromJson()
+	private void LoadFileTypesFromJson(string fileTypesPath)
 	{
-		var filetypesDict = JsonSerializer.Deserialize<FileTypesDictionary>(_fileTypesResource);
+		var fileTypesResource = EmbeddedResource.GetResourceFileContents(fileTypesPath);
+		var filetypesDict = JsonSerializer.Deserialize<FileTypesDictionary>(fileTypesResource);
 		if (filetypesDict!.ContainsKey("filetypes"))
 		{
 			var filetypeDicts = filetypesDict["filetypes"];

@@ -6,7 +6,7 @@ namespace CsFindTests;
 [TestFixture]
 public class FileTypesTests
 {
-	private readonly FileTypes _fileTypes = new FileTypes();
+	private readonly FileTypes _fileTypes = new(new FindConfig());
 
 	[Test]
 	public void GetFileType_ArchiveFile_FileTypeArchive()
