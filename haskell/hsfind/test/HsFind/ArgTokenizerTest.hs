@@ -4,6 +4,7 @@ module HsFind.ArgTokenizerTest
   ) where
 
 import HsFind.ArgTokenizer
+import HsFind.FindConfig (getFindConfig)
 import HsFind.FindOptions
 
 import Test.Framework
@@ -12,7 +13,8 @@ import Test.HUnit hiding (Test)
 
 getTokenizeArgsNoArgsTests :: IO [Test]
 getTokenizeArgsNoArgsTests = do
-  findOptionsEither <- getFindOptions
+  config <- getFindConfig
+  findOptionsEither <- getFindOptions config
   case findOptionsEither of
     Left _ -> return [testCase "getTokenizeArgsNoArgsTests" (True @?= False)]
     Right findOptions -> do
@@ -24,7 +26,8 @@ getTokenizeArgsNoArgsTests = do
 getTokenizeArgsWithArgsTests :: IO [Test]
 getTokenizeArgsWithArgsTests = do
   let args = ["--debug","-x","hs","-X","hi,o","."]
-  findOptionsEither <- getFindOptions
+  config <- getFindConfig
+  findOptionsEither <- getFindOptions config
   case findOptionsEither of
     Left _ -> return [testCase "getTokenizeArgsWithArgsTests" (True @?= False)]
     Right findOptions -> do

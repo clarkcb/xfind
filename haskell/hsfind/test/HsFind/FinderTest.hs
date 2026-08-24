@@ -10,8 +10,8 @@ module HsFind.FinderTest
   , getFollowSymlinksFalseTests
   ) where
 
-import HsFind.Config (getXfindPath)
 import HsFind.FileTypes
+import HsFind.FindConfig
 import HsFind.FindSettings
 import HsFind.Finder
 
@@ -23,14 +23,15 @@ import Test.HUnit hiding (Test)
 
 getIsMatchingDirPathTests :: IO [Test]
 getIsMatchingDirPathTests = do
+  config <- getFindConfig
   let settings = defaultFindSettings
-  let finder = getFinder settings
+  let finder = getFinder config settings
   let settingsInDirPattern = settings { inDirPatterns = ["hs"] }
-  let finderSettingsInDirPattern = getFinder settingsInDirPattern
+  let finderSettingsInDirPattern = getFinder config settingsInDirPattern
   let settingsOutDirPattern = settings { outDirPatterns = ["cs"] }
-  let finderSettingsOutDirPattern = getFinder settingsOutDirPattern
+  let finderSettingsOutDirPattern = getFinder config settingsOutDirPattern
   let settingsIncludeHidden = settings { includeHidden = True }
-  let finderSettingsIncludeHidden = getFinder settingsIncludeHidden
+  let finderSettingsIncludeHidden = getFinder config settingsIncludeHidden
   let hsFindDir = "hsfind"
   let csFindDir = "csfind"
   return [ testCase "isMatchingDirPath hsfind default settings" (isMatchingDirPath finder hsFindDir @?= True)
@@ -46,18 +47,19 @@ getIsMatchingDirPathTests = do
 
 getIsMatchingFilePathTests :: IO [Test]
 getIsMatchingFilePathTests = do
+  config <- getFindConfig
   let settings = defaultFindSettings
-  let finder = getFinder settings
+  let finder = getFinder config settings
   let settingsInExtension = settings { inExtensions = [".hs"] }
-  let finderSettingsInExtension = getFinder settingsInExtension
+  let finderSettingsInExtension = getFinder config settingsInExtension
   let settingsOutExtension = settings { outExtensions = [".cs"] }
-  let finderSettingsOutExtension = getFinder settingsOutExtension
+  let finderSettingsOutExtension = getFinder config settingsOutExtension
   let settingsInFilePattern = settings { inFilePatterns = ["Find"] }
-  let finderSettingsInFilePattern = getFinder settingsInFilePattern
+  let finderSettingsInFilePattern = getFinder config settingsInFilePattern
   let settingsOutFilePattern = settings { outFilePatterns = ["Main"] }
-  let finderSettingsOutFilePattern = getFinder settingsOutFilePattern
+  let finderSettingsOutFilePattern = getFinder config settingsOutFilePattern
   let settingsIncludeHidden = settings { includeHidden = True }
-  let finderSettingsIncludeHidden = getFinder settingsIncludeHidden
+  let finderSettingsIncludeHidden = getFinder config settingsIncludeHidden
   let finderHsFile = "Finder.hs"
   let finderCsFile = "Finder.cs"
   let mainHsFile = "Main.hs"
@@ -77,18 +79,19 @@ getIsMatchingFilePathTests = do
 
 getIsMatchingArchiveFilePathTests :: IO [Test]
 getIsMatchingArchiveFilePathTests = do
+  config <- getFindConfig
   let settings = defaultFindSettings
-  let finder = getFinder settings
+  let finder = getFinder config settings
   let settingsInArchiveExtension = settings { inArchiveExtensions = [".zip"] }
-  let finderSettingsInArchiveExtension = getFinder settingsInArchiveExtension
+  let finderSettingsInArchiveExtension = getFinder config settingsInArchiveExtension
   let settingsOutArchiveExtension = settings { outArchiveExtensions = [".gz"] }
-  let finderSettingsOutArchiveExtension = getFinder settingsOutArchiveExtension
+  let finderSettingsOutArchiveExtension = getFinder config settingsOutArchiveExtension
   let settingsInArchiveFilePattern = settings { inArchiveFilePatterns = ["arch"] }
-  let finderSettingsInArchiveFilePattern = getFinder settingsInArchiveFilePattern
+  let finderSettingsInArchiveFilePattern = getFinder config settingsInArchiveFilePattern
   let settingsOutArchiveFilePattern = settings { outArchiveFilePatterns = ["comp"] }
-  let finderSettingsOutArchiveFilePattern = getFinder settingsOutArchiveFilePattern
+  let finderSettingsOutArchiveFilePattern = getFinder config settingsOutArchiveFilePattern
   let settingsIncludeHidden = settings { includeHidden = True }
-  let finderSettingsIncludeHidden = getFinder settingsIncludeHidden
+  let finderSettingsIncludeHidden = getFinder config settingsIncludeHidden
   let archiveZipFile = "archive.zip"
   let archiveTarGzFile = "archive.tar.gz"
   let compressedZipFile = "compressed.zip"
@@ -108,19 +111,19 @@ getIsMatchingArchiveFilePathTests = do
 
 getFilterToFileResultTests :: IO [Test]
 getFilterToFileResultTests = do
+  config <- getFindConfig
   let settings = defaultFindSettings
-  -- jsonFileTypes <- getJsonFileTypes
-  let finder = getFinder settings
+  let finder = getFinder config settings
   let settingsInExtension = settings { inExtensions = [".hs"] }
-  let finderSettingsInExtension = getFinder settingsInExtension
+  let finderSettingsInExtension = getFinder config settingsInExtension
   let settingsOutExtension = settings { outExtensions = [".hs"] }
-  let finderSettingsOutExtension = getFinder settingsOutExtension
+  let finderSettingsOutExtension = getFinder config settingsOutExtension
   let settingsIncludeHidden = settings { includeHidden = True }
-  let finderSettingsIncludeHidden = getFinder settingsIncludeHidden
+  let finderSettingsIncludeHidden = getFinder config settingsIncludeHidden
   let settingsIncludeArchives = settings { includeArchives = True }
-  let finderSettingsIncludeArchives = getFinder settingsIncludeArchives
+  let finderSettingsIncludeArchives = getFinder config settingsIncludeArchives
   let settingsArchivesOnly = settingsIncludeArchives { archivesOnly = True }
-  let finderSettingsArchivesOnly = getFinder settingsArchivesOnly
+  let finderSettingsArchivesOnly = getFinder config settingsArchivesOnly
   let finderHsFile = ("Finder.hs", Code)
   let gitignoreFile = (".gitignore", Text)
   let archiveZipFile = ("archive.zip", Archive)
@@ -138,13 +141,14 @@ getFilterToFileResultTests = do
 -- hsfind -D build -D cmake -D node_modules -D vendor -D venv -t audio /Users/cary/src/xfind/python --debug
 getFindPythonFileResultTests :: IO [Test]
 getFindPythonFileResultTests = do
+  config <- getFindConfig
   let settings = defaultFindSettings {
     debug = True,
     inFileTypes = [Audio],
     outFilePatterns = ["build", "cmake", "node_modules", "pycache", "vendor", "venv"],
     paths = ["/Users/cary/src/xfind/python"]
   }
-  let finder = getFinder settings
+  let finder = getFinder config settings
   fileResultsEither <- doFind finder
   case fileResultsEither of
     Left _ -> return [ testCase "getFindPythonFileResultTests" (True @?= False)]
@@ -155,13 +159,14 @@ getFindPythonFileResultTests = do
 -- hsfind -D build -D cmake -D node_modules -D vendor -D venv -t audio /Users/cary/src/xfind/ruby --debug
 getFindRubyFileResultTests :: IO [Test]
 getFindRubyFileResultTests = do
+  config <- getFindConfig
   let settings = defaultFindSettings {
     debug = True,
     inFileTypes = [Audio],
     outFilePatterns = ["build", "cmake", "node_modules", "pycache", "vendor", "venv"],
     paths = ["/Users/cary/src/xfind/ruby"]
   }
-  let finder = getFinder settings
+  let finder = getFinder config settings
   fileResultsEither <- doFind finder
   case fileResultsEither of
     Left _ -> return [ testCase "getFindRubyFileResultTests" (True @?= False)]
@@ -171,11 +176,11 @@ getFindRubyFileResultTests = do
 
 getFollowSymlinksDefaultTests :: IO [Test]
 getFollowSymlinksDefaultTests = do
-  xfindPath <- getXfindPath
+  config <- getFindConfig
   let settings = defaultFindSettings {
-    paths = [xfindPath ++ "/bin"]
+    paths = [xfindPath config ++ "/bin"]
   }
-  let finder = getFinder settings
+  let finder = getFinder config settings
   fileResultsEither <- doFind finder
   case fileResultsEither of
     Left _ -> return [ testCase "getFollowSymlinksTests defaultSettings" (True @?= False)]
@@ -185,12 +190,12 @@ getFollowSymlinksDefaultTests = do
 
 getFollowSymlinksTrueTests :: IO [Test]
 getFollowSymlinksTrueTests = do
-  xfindPath <- getXfindPath
+  config <- getFindConfig
   let settings = defaultFindSettings {
-    paths = [xfindPath ++ "/bin"],
+    paths = [xfindPath config ++ "/bin"],
     followSymlinks = True
   }
-  let finder = getFinder settings
+  let finder = getFinder config settings
   fileResultsEither <- doFind finder
   case fileResultsEither of
     Left _ -> return [ testCase "getFollowSymlinksTests followSymlinks" (True @?= False)]
@@ -200,12 +205,12 @@ getFollowSymlinksTrueTests = do
 
 getFollowSymlinksFalseTests :: IO [Test]
 getFollowSymlinksFalseTests = do
-  xfindPath <- getXfindPath
+  config <- getFindConfig
   let settings = defaultFindSettings {
-    paths = [xfindPath ++ "/bin"],
+    paths = [xfindPath config ++ "/bin"],
     followSymlinks = False
   }
-  let finder = getFinder settings
+  let finder = getFinder config settings
   fileResultsEither <- doFind finder
   case fileResultsEither of
     Left _ -> return [ testCase "getFollowSymlinksTests noFollowSymlinks" (True @?= False)]

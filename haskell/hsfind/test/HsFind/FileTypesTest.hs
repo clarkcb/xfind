@@ -5,6 +5,7 @@ module HsFind.FileTypesTest
   ) where
 
 import HsFind.FileTypes
+import HsFind.FindConfig (FindConfig(..), getFindConfig)
 
 import Test.Framework (Test)
 import Test.Framework.Providers.HUnit (testCase)
@@ -22,7 +23,8 @@ getFileTypeTests = do
   let videoFile = "movie.mp4"
   let xmlFile = "markup.xml"
   let unknownFile = "unknown.xyz"
-  jsonFileTypes <- getJsonFileTypes
+  config <- getFindConfig
+  jsonFileTypes <- getJsonFileTypes $ fileTypesPath config
   let archiveFileType = getFileTypeFromJsonFileTypes jsonFileTypes archiveFile
   let audioFileType = getFileTypeFromJsonFileTypes jsonFileTypes audioFile
   let binaryFileType = getFileTypeFromJsonFileTypes jsonFileTypes binaryFile

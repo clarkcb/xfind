@@ -2,8 +2,6 @@
 module HsFind.FileTypes
   ( FileType(..)
   , JsonFileType(..)
-  , getFileType
-  , getFileTypes
   , getFileTypeForName
   , getFileTypeFromJsonFileTypes
   , getFileTypesFromJsonFileTypes
@@ -90,12 +88,8 @@ newtype JsonFileTypes
 
 instance FromJSON JsonFileTypes
 
-fileTypesJsonFile :: FilePath
-fileTypesJsonFile = "filetypes.json"
-
-getJsonFileTypes :: IO [JsonFileType]
-getJsonFileTypes = do
-  fileTypesJsonPath <- getDataFileName fileTypesJsonFile
+getJsonFileTypes :: FilePath -> IO [JsonFileType]
+getJsonFileTypes fileTypesJsonPath = do
   fileTypesJsonString <- getFileString fileTypesJsonPath
   case fileTypesJsonString of
     (Left _) -> return []
@@ -105,20 +99,8 @@ getJsonFileTypes = do
         (Right jsonFileTypes) -> return (map normalizeType (filetypes jsonFileTypes))
   where normalizeType :: JsonFileType -> JsonFileType
         normalizeType ft = JsonFileType { fileType = fileType ft,
-                                          extensions = map normalizeExtension (extensions ft) ,
+                                          extensions = map normalizeExtension (extensions ft),
                                           names = names ft }
-
-getFileType :: FilePath -> IO FileType
-getFileType f = do
-  fileTypes <- getFileTypes [f]
-  case fileTypes of
-    [] -> return Unknown
-    _  -> return $ head fileTypes
-
-getFileTypes :: [FilePath] -> IO [FileType]
-getFileTypes files = do
-  jsonFileTypes <- getJsonFileTypes
-  return $ map (fileTypeFromJsonFileTypes jsonFileTypes) files
 
 getFileTypeFromJsonFileTypes :: [JsonFileType] -> FilePath -> FileType
 getFileTypeFromJsonFileTypes = fileTypeFromJsonFileTypes

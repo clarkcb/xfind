@@ -36,18 +36,16 @@ import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as BC
 import Data.Char (toLower)
 import Data.List (elemIndices, isPrefixOf)
-import System.Directory (doesDirectoryExist, doesFileExist, listDirectory, getFileSize, getModificationTime, pathIsSymbolicLink)
+import System.Directory (doesDirectoryExist, doesFileExist, listDirectory, getFileSize, getHomeDirectory, getModificationTime, pathIsSymbolicLink)
 import System.FilePath ((</>), dropFileName, splitDirectories, takeFileName)
 import System.IO (hSetNewlineMode, IOMode(..), universalNewlineMode, withFile)
 import Data.Time (UTCTime)
-
-import HsFind.Config (getHome)
 
 expandPath :: FilePath -> IO FilePath
 expandPath filePath = do
   if "~" `isPrefixOf` filePath
     then do
-      userPath <- getHome
+      userPath <- getHomeDirectory
       let homePath = getParentPath userPath
       case filePath of
         "~" -> return userPath

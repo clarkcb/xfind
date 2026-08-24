@@ -5,6 +5,7 @@ module HsFind.FindOptionsTest
   , getSettingsFromNoArgsTests
   ) where
 
+import HsFind.FindConfig (getFindConfig)
 import HsFind.FindOptions
 import HsFind.FindSettings
 
@@ -14,7 +15,8 @@ import Test.HUnit hiding (Test)
 
 getSettingsFromNoArgsTests :: IO [Test]
 getSettingsFromNoArgsTests = do
-  findOptionsEither <- getFindOptions
+  config' <- getFindConfig
+  findOptionsEither <- getFindOptions config'
   case findOptionsEither of
     Left _ -> return [testCase "getSettingsFromNoArgsTests" (True @?= False)]
     Right findOptions -> do
@@ -38,7 +40,8 @@ getSettingsFromNoArgsTests = do
 getSettingsFromArgsTests :: IO [Test]
 getSettingsFromArgsTests = do
   let args = ["-x","hs","-X","hi,o","."]
-  findOptionsEither <- getFindOptions
+  config' <- getFindConfig
+  findOptionsEither <- getFindOptions config'
   case findOptionsEither of
     Left _ -> return [testCase "getSettingsFromArgsTests" (True @?= False)]
     Right findOptions -> do
@@ -54,7 +57,8 @@ getSettingsFromArgsTests = do
 getArchivesOnlyTests :: IO [Test]
 getArchivesOnlyTests = do
   let args = ["--archivesonly"]
-  findOptionsEither <- getFindOptions
+  config' <- getFindConfig
+  findOptionsEither <- getFindOptions config'
   case findOptionsEither of
     Left _ -> return [testCase "getArchivesOnlyTests" (True @?= False)]
     Right findOptions -> do
@@ -69,7 +73,8 @@ getArchivesOnlyTests = do
 getDebugTests :: IO [Test]
 getDebugTests = do
   let args = ["--debug"]
-  findOptionsEither <- getFindOptions
+  config' <- getFindConfig
+  findOptionsEither <- getFindOptions config'
   case findOptionsEither of
     Left _ -> return [testCase "getDebugTests" (True @?= False)]
     Right findOptions -> do

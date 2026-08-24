@@ -26,17 +26,20 @@ import HsFind.FileResult
     (FileResult(..), formatDirectory, formatFileResult, newFileResult, newFileResultWithSizeAndLastMod,
      sortFileResults)
 import HsFind.FilterTests (FilterTests(..), getFilterTests)
+import HsFind.FindConfig
 import HsFind.FindSettings
 
 
 data Finder = Finder
-  { settings :: FindSettings
+  { config:: FindConfig
+  , settings :: FindSettings
   , filterTests :: FilterTests
   }
 
-getFinder :: FindSettings -> Finder
-getFinder settings = Finder
-  { settings = settings
+getFinder :: FindConfig -> FindSettings -> Finder
+getFinder config settings = Finder
+  { config = config
+  , settings = settings
   , filterTests = getFilterTests settings
   }
 
@@ -171,7 +174,7 @@ getFileResults finder = do
     pathLists <- forM pathDirs $ \path ->
       getRecursiveFilePaths finder path
     let allPaths = concat pathLists ++ pathFiles
-    jsonFileTypes <- getJsonFileTypes
+    jsonFileTypes <- getJsonFileTypes $ fileTypesPath $ config finder
     let allFileTypes = getFileTypesFromJsonFileTypes jsonFileTypes allPaths
     let allPathsAndTypes = zip allPaths allFileTypes
     let fileTypesFilter = matchesFileTypeTests $ fileTypeTests $ filterTests finder

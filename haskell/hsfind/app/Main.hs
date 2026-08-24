@@ -4,6 +4,7 @@ import System.Environment (getArgs)
 import System.IO (hPutStr, stderr)
 
 import HsFind.ConsoleColor (boldRed, consoleReset)
+import HsFind.FindConfig (getFindConfig)
 import HsFind.FindOptions (getFindOptions, getUsage, settingsFromArgs)
 import HsFind.Finder (doFind, formatMatchingDirs, formatMatchingFiles, getFinder, ioValidateFindSettings)
 import HsFind.FindSettings (FindSettings(..), findSettingsToString)
@@ -24,7 +25,8 @@ logErrColor s colorize =
 main :: IO ()
 main = do
   args <- getArgs
-  findOptionsEither <- getFindOptions
+  config' <- getFindConfig
+  findOptionsEither <- getFindOptions config'
   case findOptionsEither of
     Left errMsg -> do
       logMsg "\n"
@@ -50,7 +52,7 @@ main = do
               if printUsage settings
                 then logMsg $ "\n" ++ getUsage findOptions ++ "\n"
                 else do
-                  findResultsEither <- doFind $ getFinder settings
+                  findResultsEither <- doFind $ getFinder config' settings
                   case findResultsEither of
                     Left errMsg -> do
                       logMsg "\n"

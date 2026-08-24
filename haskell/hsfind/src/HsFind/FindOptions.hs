@@ -19,7 +19,7 @@ import GHC.Generics
 
 import HsFind.Paths_hsfind (getDataFileName)
 import HsFind.ArgTokenizer
-import HsFind.Config (getDefaultFindSettingsPath)
+import HsFind.FindConfig (FindConfig(..), getDefaultFindSettingsPath)
 import HsFind.FileTypes (getFileTypeForName)
 import HsFind.FileUtil (getFileString, pathExists)
 import HsFind.FindSettings
@@ -41,7 +41,8 @@ newtype JsonFindOptions
 instance FromJSON JsonFindOptions
 
 data FindOptions = FindOptions
-  { options :: [FindOption]
+  { config :: FindConfig
+  , options :: [FindOption]
   , argTokenizer :: ArgTokenizer
   } deriving (Show, Eq, Generic)
 
@@ -78,16 +79,16 @@ getArgTokenizer jsonOpts =
     isIntOption :: FindOption -> Bool
     isIntOption o = long o `elem` map fst integerActions
 
-getFindOptions :: IO (Either String FindOptions)
-getFindOptions = do
-  findOptionsPath <- getDataFileName findOptionsFile
-  findOptionsJsonString <- getFileString findOptionsPath
+getFindOptions :: FindConfig -> IO (Either String FindOptions)
+getFindOptions config = do
+  findOptionsJsonString <- getFileString $ findOptionsPath config
   case findOptionsJsonString of
     Left e -> return $ Left e
     Right jsonString ->
       case (eitherDecode (BC.pack jsonString) :: Either String JsonFindOptions) of
         Left e -> return $ Left e
-        Right jsonFindOptions -> return $ Right FindOptions { options = findoptions jsonFindOptions,
+        Right jsonFindOptions -> return $ Right FindOptions { config = config,
+                                                              options = findoptions jsonFindOptions,
                                                               argTokenizer = getArgTokenizer (findoptions jsonFindOptions) }
 
 getUsage :: FindOptions -> String
@@ -194,8 +195,8 @@ integerActions = [ ("maxdepth", \ss i -> ss {maxDepth = i})
                  , ("minsize", \ss i -> ss {minSize = i})
                  ]
 
-updateSettingsFromTokens :: FindSettings -> FindOptions -> [ArgToken] -> IO (Either String FindSettings)
-updateSettingsFromTokens settings findOptions tokens = do
+updateSettingsFromTokens :: FindOptions -> FindSettings -> [ArgToken] -> IO (Either String FindSettings)
+updateSettingsFromTokens findOptions settings tokens = do
   case tokens of
     [] -> return $ Right settings
     t:ts ->
@@ -205,26 +206,26 @@ updateSettingsFromTokens settings findOptions tokens = do
             TypeA b ->
               if name t == "defaultfiles"
               then do
-                settingsEither <- updateSettingsFromDefaultFiles settings findOptions
+                settingsEither <- updateSettingsFromDefaultFiles findOptions settings
                 case settingsEither of
                   Left e -> return $ Left e
-                  Right settings' -> updateSettingsFromTokens settings' findOptions ts
-              else updateSettingsFromTokens (getBoolAction (name t) settings b) findOptions ts
+                  Right settings' -> updateSettingsFromTokens findOptions settings' ts
+              else updateSettingsFromTokens findOptions (getBoolAction (name t) settings b) ts
             _ -> return $ Left $ "Invalid boolean value for option: " ++ name t
         StringActionType ->
           case value t of
             TypeB s ->
               if name t == "settings-file"
               then do
-                settingsEither <- updateSettingsFromFile settings findOptions s
+                settingsEither <- updateSettingsFromFile findOptions settings s
                 case settingsEither of
                   Left e -> return $ Left e
-                  Right settings' -> updateSettingsFromTokens settings' findOptions ts
-              else updateSettingsFromTokens (getStringAction (name t) settings s) findOptions ts
+                  Right settings' -> updateSettingsFromTokens findOptions settings' ts
+              else updateSettingsFromTokens findOptions (getStringAction (name t) settings s) ts
             _ -> return $ Left $ "Invalid string value for option: " ++ name t
         IntegerActionType ->
           case value t of
-            TypeC i -> updateSettingsFromTokens (getIntegerAction (name t) settings (toInteger i)) findOptions ts
+            TypeC i -> updateSettingsFromTokens findOptions (getIntegerAction (name t) settings (toInteger i)) ts
             _ -> return $ Left $ "Invalid integer value for option: " ++ name t
         UnknownActionType -> return $ Left $ "Invalid option from updateSettingsFromTokens: " ++ name t
   where
@@ -248,46 +249,46 @@ updateSettingsFromTokens settings findOptions tokens = do
     isIntegerAction :: String -> Bool
     isIntegerAction a = isJust $ lookup a integerActions
 
-updateSettingsFromJson :: FindSettings -> FindOptions -> String -> IO (Either String FindSettings)
-updateSettingsFromJson settings findOptions jsonStr = do
+updateSettingsFromJson :: FindOptions -> FindSettings -> String -> IO (Either String FindSettings)
+updateSettingsFromJson findOptions settings jsonStr = do
   let eitherTokens = tokenizeJson (argTokenizer findOptions) jsonStr
   case eitherTokens of
     Left e -> return $ Left e
-    Right tokens -> updateSettingsFromTokens settings findOptions tokens
+    Right tokens -> updateSettingsFromTokens findOptions settings tokens
 
 settingsFromJson :: FindOptions -> String -> IO (Either String FindSettings)
-settingsFromJson = updateSettingsFromJson defaultFindSettings
+settingsFromJson findOptions jsonStr = updateSettingsFromJson findOptions defaultFindSettings jsonStr
 
-updateSettingsFromFile :: FindSettings -> FindOptions -> FilePath -> IO (Either String FindSettings)
-updateSettingsFromFile settings findOptions filePath = do
+updateSettingsFromFile :: FindOptions -> FindSettings -> FilePath -> IO (Either String FindSettings)
+updateSettingsFromFile findOptions settings filePath = do
   eitherTokens <- tokenizeFile (argTokenizer findOptions) filePath
   case eitherTokens of
     Left e -> return $ Left e
-    Right tokens -> updateSettingsFromTokens settings findOptions tokens
+    Right tokens -> updateSettingsFromTokens findOptions settings tokens
 
 settingsFromFile :: FindOptions -> FilePath -> IO (Either String FindSettings)
-settingsFromFile = updateSettingsFromFile defaultFindSettings
+settingsFromFile findOptions filePath = updateSettingsFromFile findOptions defaultFindSettings filePath
 
-updateSettingsFromDefaultFiles :: FindSettings -> FindOptions -> IO (Either String FindSettings)
-updateSettingsFromDefaultFiles settings findOptions = do
-  defaultFindSettingsPath <- getDefaultFindSettingsPath
-  defaultFindSettingsPathExists <- pathExists defaultFindSettingsPath
+updateSettingsFromDefaultFiles :: FindOptions -> FindSettings -> IO (Either String FindSettings)
+updateSettingsFromDefaultFiles findOptions settings = do
+  let defaultFindSettingsPath' = defaultFindSettingsPath $ config findOptions
+  defaultFindSettingsPathExists <- pathExists defaultFindSettingsPath'
   if defaultFindSettingsPathExists
-  then updateSettingsFromFile settings findOptions defaultFindSettingsPath
+  then updateSettingsFromFile findOptions settings defaultFindSettingsPath'
   else return $ Right settings
 
-updateSettingsFromArgs :: FindSettings -> FindOptions -> [String] -> IO (Either String FindSettings)
-updateSettingsFromArgs settings findOptions arguments = do
+updateSettingsFromArgs :: FindOptions -> FindSettings -> [String] -> IO (Either String FindSettings)
+updateSettingsFromArgs findOptions settings arguments = do
   case tokenizeArgs (argTokenizer findOptions) arguments of
     Left e -> return $ Left e
-    Right tokens -> updateSettingsFromTokens settings findOptions tokens
+    Right tokens -> updateSettingsFromTokens findOptions settings tokens
 
 settingsFromArgs :: FindOptions -> [String] -> IO (Either String FindSettings)
 settingsFromArgs findOptions arguments = do
   if "--defaultfiles" `elem` arguments || "--nodefaultfiles" `elem` arguments
-  then updateSettingsFromArgs defaultFindSettings{printFiles=True} findOptions arguments
+    then updateSettingsFromArgs findOptions defaultFindSettings{printFiles=True} arguments
   else do
-    settingsWithDefaultsEither <- updateSettingsFromDefaultFiles defaultFindSettings{printFiles=True} findOptions
+    settingsWithDefaultsEither <- updateSettingsFromDefaultFiles findOptions defaultFindSettings{printFiles=True}
     case settingsWithDefaultsEither of
       Left e -> return $ Left e
-      Right settingsWithDefaults -> updateSettingsFromArgs settingsWithDefaults findOptions arguments
+      Right settingsWithDefaults -> updateSettingsFromArgs findOptions settingsWithDefaults arguments

@@ -1,7 +1,7 @@
 module HsFind.Paths_hsfind where
 
 import System.FilePath ((</>))
-import HsFind.Config (getDataPath)
+import HsFind.FindConfig (getDataPath)
 
 -- NOTE: this path is only used for testing/development, after cabal install
 -- the path will be overridden by the data-files setting in the cabal file

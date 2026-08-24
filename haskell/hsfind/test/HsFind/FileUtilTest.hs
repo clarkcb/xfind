@@ -1,6 +1,7 @@
 module HsFind.FileUtilTest (getFileUtilTests) where
 
-import HsFind.Config (getHome)
+import System.Directory (getHomeDirectory)
+
 import HsFind.FileUtil
 
 import Test.Framework (Test)
@@ -9,7 +10,7 @@ import Test.HUnit hiding (Test)
 
 getFileUtilTests :: IO [Test]
 getFileUtilTests = do
-  userPath <- getHome
+  userPath <- getHomeDirectory
   expandedTilde <- expandPath "~"
   expandedTildeSlash <- expandPath "~/"
   expandedTildePath <- expandPath "~/src/xfind"
