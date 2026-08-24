@@ -3,6 +3,7 @@
 
 #include <filesystem>
 #include <unordered_set>
+#include "FindConfig.h"
 
 #define FILE_TYPE_NAME_ARCHIVE "archive"
 #define FILE_TYPE_NAME_AUDIO "audio"
@@ -21,7 +22,7 @@ namespace cppfind {
 
     class FileTypes {
     public:
-        FileTypes();
+        explicit FileTypes(const FindConfig& config);
         ~FileTypes() = default;
         static FileType from_name(std::string_view name);
         static std::string to_name(const FileType& file_type);
@@ -56,7 +57,7 @@ namespace cppfind {
         std::unordered_set<std::string> m_video_names;
         std::unordered_set<std::string> m_xml_extensions;
         std::unordered_set<std::string> m_xml_names;
-        void load_file_types();
+        void load_file_types_from_json_file(std::string_view file_types_file_path);
     };
 }
 

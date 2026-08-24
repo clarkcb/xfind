@@ -15,12 +15,12 @@
 #include "FindOptions.h"
 
 namespace cppfind {
-    FindOptions::FindOptions() : m_options(load_options()), m_arg_tokenizer(m_options) {
+    FindOptions::FindOptions(const FindConfig& config) : m_config(config), m_options(load_options()), m_arg_tokenizer(m_options) {
     }
 
     std::vector<std::unique_ptr<Option>> FindOptions::load_options() {
         std::vector<std::unique_ptr<Option>> options;
-        auto find_options_path = std::filesystem::path(xfindpath()) / FIND_OPTIONS_REL_PATH;
+        auto find_options_path = m_config.find_options_path;
 
         if (!std::filesystem::exists(find_options_path)) {
             std::string msg{"Findoptions file not found: "};
@@ -30,7 +30,7 @@ namespace cppfind {
 
         const uint64_t file_size = std::filesystem::file_size(find_options_path);
         // current size is 5457, make sure it's not dramatically bigger than that
-        if (file_size > 5500) {
+        if (file_size > 5600) {
             throw FindException("Invalid findoptions file");
         }
 
@@ -147,7 +147,7 @@ namespace cppfind {
     }
 
     void FindOptions::update_settings_from_default_files(FindSettings& settings) {
-        if (const auto default_settings_path = default_find_settings_path();
+        if (const auto default_settings_path = m_config.default_find_settings_path;
             std::filesystem::exists(default_settings_path)) {
             update_settings_from_file(settings, default_settings_path);
         }

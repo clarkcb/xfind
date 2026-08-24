@@ -57,6 +57,19 @@
 
 namespace cppfind {
 
+    // FindConfig.h
+    struct FindConfig {
+        std::string xfind_path;
+        std::string file_types_path;
+        std::string find_options_path;
+        std::string default_find_settings_path;
+    };
+
+    FindConfig get_find_config();
+
+    std::string xfindpath();
+    std::string default_find_settings_path();
+
     // FileTypes.h
 #define FILE_TYPE_NAME_ARCHIVE "archive"
 #define FILE_TYPE_NAME_AUDIO "audio"
@@ -74,7 +87,7 @@ namespace cppfind {
 
     class FileTypes {
     public:
-        FileTypes();
+        explicit FileTypes(const FindConfig& config);
         ~FileTypes() = default;
         static FileType from_name(std::string_view name);
         static std::string to_name(const FileType& file_type);
@@ -101,9 +114,6 @@ namespace cppfind {
         static bool is_hidden(std::string_view file_name);
         static bool is_hidden_path(const std::filesystem::path& file_path);
     };
-
-    // FindConfig.h
-    std::string xfindpath();
 
     // FindException.h
 #define INVALID_RANGE_MINDEPTH_MAXDEPTH "Invalid range for mindepth and maxdepth"
@@ -447,7 +457,7 @@ namespace cppfind {
     // FindOptions.h
     class FindOptions {
     public:
-        FindOptions();
+        explicit FindOptions(const FindConfig& config);
         FindSettings settings_from_args(int argc, char **argv);
         void update_settings_from_args(FindSettings& settings, int argc, char **argv);
         void update_settings_from_file(FindSettings& settings, const std::filesystem::path& file_path);
@@ -460,8 +470,8 @@ namespace cppfind {
     class Finder {
     public:
         // Finder() noexcept;
-        explicit Finder(const FindSettings& settings);
-        explicit Finder(const std::unique_ptr<FindSettings>& settings_ptr);
+        explicit Finder(const FindConfig& config, const FindSettings& settings);
+        explicit Finder(const FindConfig& config, const std::unique_ptr<FindSettings>& settings_ptr);
         Finder(Finder& other) = delete;
         Finder(Finder&& other) = delete;
         [[nodiscard]] std::optional<FileResult> filter_archive_file_path_to_file_result(const std::filesystem::path& file_path, FileType file_type) const;

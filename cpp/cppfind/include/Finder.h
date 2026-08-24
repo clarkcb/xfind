@@ -4,14 +4,15 @@
 #include <filesystem>
 #include "FileResult.h"
 #include "FileResultFormatter.h"
+#include "FindConfig.h"
 #include "FindSettings.h"
 
 namespace cppfind {
     class Finder {
     public:
         // Finder() noexcept;
-        explicit Finder(const FindSettings& settings);
-        explicit Finder(const std::unique_ptr<FindSettings>& settings_ptr);
+        explicit Finder(const FindConfig& config, const FindSettings& settings);
+        explicit Finder(const FindConfig& config, const std::unique_ptr<FindSettings>& settings_ptr);
         Finder(Finder& other) = delete;
         Finder(Finder&& other) = delete;
         [[nodiscard]] std::optional<FileResult> filter_archive_file_path_to_file_result(const std::filesystem::path& file_path, FileType file_type) const;

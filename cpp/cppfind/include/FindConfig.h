@@ -9,6 +9,15 @@
 
 
 namespace cppfind {
+    struct FindConfig {
+        std::string xfind_path;
+        std::string file_types_path;
+        std::string find_options_path;
+        std::string default_find_settings_path;
+    };
+
+    FindConfig get_find_config();
+
     std::string xfindpath();
     std::string default_find_settings_path();
 }

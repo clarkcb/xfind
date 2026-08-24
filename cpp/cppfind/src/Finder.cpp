@@ -141,11 +141,11 @@ namespace cppfind {
         return include_hidden || !FileUtil::is_hidden(file_name);
     }
 
-    Finder::Finder(const FindSettings& settings) : m_settings{settings} {
+    Finder::Finder(const FindConfig& config, const FindSettings& settings) : m_file_types{config}, m_settings{settings} {
         validate_settings(settings, m_file_types);
     }
 
-    Finder::Finder(const std::unique_ptr<FindSettings>& settings_ptr) : m_settings{*settings_ptr} {
+    Finder::Finder(const FindConfig& config, const std::unique_ptr<FindSettings>& settings_ptr) : m_file_types{config}, m_settings{*settings_ptr} {
         validate_settings(m_settings, m_file_types);
     }
 

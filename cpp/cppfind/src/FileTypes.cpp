@@ -4,7 +4,6 @@
 #include "rapidjson/document.h"
 #include "rapidjson/filereadstream.h"
 
-#include "FindConfig.h"
 #include "FileTypes.h"
 #include "FileUtil.h"
 #include "FindException.h"
@@ -12,12 +11,12 @@
 
 
 namespace cppfind {
-    FileTypes::FileTypes() {
-        load_file_types();
+    FileTypes::FileTypes(const FindConfig& config) {
+        load_file_types_from_json_file(config.file_types_path);
     }
 
-    void FileTypes::load_file_types() {
-        const auto file_types_path = std::filesystem::path(xfindpath()) / FILE_TYPES_REL_PATH;
+    void FileTypes::load_file_types_from_json_file(std::string_view file_types_file_path) {
+        const auto file_types_path = std::filesystem::path(file_types_file_path);
 
         if (!std::filesystem::exists(file_types_path)) {
             throw FindException("Filetypes file not found: " + file_types_path.string());

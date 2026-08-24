@@ -10,13 +10,14 @@
 
 #include "ArgTokenizer.h"
 #include "Option.h"
+#include "FindConfig.h"
 #include "FindSettings.h"
 #include "StringUtil.h"
 
 namespace cppfind {
     class FindOptions {
     public:
-        FindOptions();
+        explicit FindOptions(const FindConfig& config);
         FindSettings settings_from_args(int argc, char **argv);
         void update_settings_from_args(FindSettings& settings, int argc, char **argv);
         void update_settings_from_file(FindSettings& settings, const std::filesystem::path& file_path);
@@ -87,6 +88,7 @@ namespace cppfind {
             {"path", "path"},
         };
 
+        FindConfig m_config;
         std::vector<std::unique_ptr<Option>> m_options;
         ArgTokenizer m_arg_tokenizer;
         std::vector<std::unique_ptr<Option>> load_options();

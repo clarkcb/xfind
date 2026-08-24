@@ -1,5 +1,6 @@
 #include "common.h"
 #include "FileResultFormatter.h"
+#include "FindConfig.h"
 #include "FindException.h"
 #include "FindOptions.h"
 #include "Finder.h"
@@ -10,8 +11,10 @@ int main(int argc, char *argv[]) {
     std::unique_ptr<FindOptions> options_ptr;
     std::unique_ptr<FindSettings> settings_ptr;
 
+    auto config = get_find_config();
+
     try {
-        options_ptr = std::make_unique<FindOptions>();
+        options_ptr = std::make_unique<FindOptions>(config);
     } catch (const FindException& e) {
         log_msg("");
         log_error(e.what());
@@ -31,7 +34,7 @@ int main(int argc, char *argv[]) {
 
         settings_ptr = std::make_unique<FindSettings>(settings);
 
-        const auto finder = Finder(settings_ptr);
+        const auto finder = Finder(config, settings_ptr);
 
         const std::vector<FileResult> file_results = finder.find();
 

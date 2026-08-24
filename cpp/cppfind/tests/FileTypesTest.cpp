@@ -2,7 +2,8 @@
 #include "FileTypes.h"
 
 TEST_CASE("Verify that files are the expected type", "[FileType]") {
-    auto* file_types = new cppfind::FileTypes();
+    auto config = cppfind::get_find_config();
+    auto* file_types = new cppfind::FileTypes(config);
     REQUIRE(file_types->is_archive_path("archive.zip"));
     REQUIRE(file_types->is_audio_path("music.mp3"));
     REQUIRE(file_types->is_binary_path("binary.exe"));
@@ -16,7 +17,8 @@ TEST_CASE("Verify that files are the expected type", "[FileType]") {
 }
 
 TEST_CASE("Verify that get_filetype returns the expected type", "[FileType]") {
-    auto* file_types = new cppfind::FileTypes();
+    auto config = cppfind::get_find_config();
+    auto* file_types = new cppfind::FileTypes(config);
     REQUIRE(file_types->get_path_type("archive.zip") == cppfind::FileType::ARCHIVE);
     REQUIRE(file_types->get_path_type("music.mp3") == cppfind::FileType::AUDIO);
     REQUIRE(file_types->get_path_type("binary.exe") == cppfind::FileType::BINARY);
