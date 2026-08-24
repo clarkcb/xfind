@@ -17,7 +17,8 @@ function Main {
     )
 
     $colorize = $true
-    $options = [FindOptions]::new()
+    $config = [FindConfig]::new()
+    $options = [FindOptions]::new($config)
 
     try {
         $settings = $options.SettingsFromArgs($_args)
@@ -33,7 +34,7 @@ function Main {
             exit
         }
 
-        $finder = [Finder]::new($settings)
+        $finder = [Finder]::new($config, $settings)
         $files = $finder.Find()
 
         if ($settings.PrintDirs -or $settings.PrintFiles) {

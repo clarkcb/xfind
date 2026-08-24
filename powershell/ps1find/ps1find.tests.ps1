@@ -7,7 +7,8 @@ using module 'Ps1FindModule'
 Describe -tag "FileTypes" -name "test_is_archive_file" {
     It "file is archive file" {
         $filePath = 'archive.zip'
-        $fileTypes = [FileTypes]::new()
+        $config = [FindConfig]::new()
+        $fileTypes = [FileTypes]::new($config)
         $fileTypes.IsArchiveFilePath($filePath) | Should -BeTrue
     }
 }
@@ -15,7 +16,8 @@ Describe -tag "FileTypes" -name "test_is_archive_file" {
 Describe -tag "FileTypes" -name "test_getfiletype_archive_file" {
     It "fileType is archive file" {
         $filePath = 'archive.zip'
-        $fileTypes = [FileTypes]::new()
+        $config = [FindConfig]::new()
+        $fileTypes = [FileTypes]::new($config)
         $fileType = $fileTypes.GetFileTypeForFilePath($filePath)
         $fileType | Should -Be Archive
         $fileTypes.IsArchiveFilePath($filePath) | Should -BeTrue
@@ -25,7 +27,8 @@ Describe -tag "FileTypes" -name "test_getfiletype_archive_file" {
 Describe -tag "FileTypes" -name "test_getfiletype_audio_file" {
     It "fileType is audio file" {
         $filePath = 'music.mp3'
-        $fileTypes = [FileTypes]::new()
+        $config = [FindConfig]::new()
+        $fileTypes = [FileTypes]::new($config)
         $fileType = $fileTypes.GetFileTypeForFilePath($filePath)
         $fileType | Should -Be Audio
         $fileTypes.IsAudioFilePath($filePath) | Should -BeTrue
@@ -35,7 +38,8 @@ Describe -tag "FileTypes" -name "test_getfiletype_audio_file" {
 Describe -tag "FileTypes" -name "test_is_binary_file" {
     It "file is binary file" {
         $filePath = 'binary.exe'
-        $fileTypes = [FileTypes]::new()
+        $config = [FindConfig]::new()
+        $fileTypes = [FileTypes]::new($config)
         $fileType = $fileTypes.GetFileTypeForFilePath($filePath)
         $fileType | Should -Be Binary
         $fileTypes.IsBinaryFilePath($filePath) | Should -BeTrue
@@ -45,7 +49,8 @@ Describe -tag "FileTypes" -name "test_is_binary_file" {
 Describe -tag "FileTypes" -name "test_is_code_file" {
     It "file is code file" {
         $filePath = 'script.ps1'
-        $fileTypes = [FileTypes]::new()
+        $config = [FindConfig]::new()
+        $fileTypes = [FileTypes]::new($config)
         $fileType = $fileTypes.GetFileTypeForFilePath($filePath)
         $fileType | Should -Be Code
         $fileTypes.IsCodeFilePath($filePath) | Should -BeTrue
@@ -55,7 +60,8 @@ Describe -tag "FileTypes" -name "test_is_code_file" {
 Describe -tag "FileTypes" -name "test_is_font_file" {
     It "file is font file" {
         $filePath = 'font.ttf'
-        $fileTypes = [FileTypes]::new()
+        $config = [FindConfig]::new()
+        $fileTypes = [FileTypes]::new($config)
         $fileType = $fileTypes.GetFileTypeForFilePath($filePath)
         $fileType | Should -Be Font
         $fileTypes.IsFontFilePath($filePath) | Should -BeTrue
@@ -65,7 +71,8 @@ Describe -tag "FileTypes" -name "test_is_font_file" {
 Describe -tag "FileTypes" -name "test_is_image_file" {
     It "file is image file" {
         $filePath = 'image.png'
-        $fileTypes = [FileTypes]::new()
+        $config = [FindConfig]::new()
+        $fileTypes = [FileTypes]::new($config)
         $fileType = $fileTypes.GetFileTypeForFilePath($filePath)
         $fileType | Should -Be Image
         $fileTypes.IsImageFilePath($filePath) | Should -BeTrue
@@ -75,7 +82,8 @@ Describe -tag "FileTypes" -name "test_is_image_file" {
 Describe -tag "FileTypes" -name "test_is_text_file" {
     It "file is text file" {
         $filePath = 'text.txt'
-        $fileTypes = [FileTypes]::new()
+        $config = [FindConfig]::new()
+        $fileTypes = [FileTypes]::new($config)
         $fileType = $fileTypes.GetFileTypeForFilePath($filePath)
         $fileType | Should -Be Text
         $fileTypes.IsTextFilePath($filePath) | Should -BeTrue
@@ -85,7 +93,8 @@ Describe -tag "FileTypes" -name "test_is_text_file" {
 Describe -tag "FileTypes" -name "test_is_video_file" {
     It "file is video file" {
         $filePath = 'movie.mp4'
-        $fileTypes = [FileTypes]::new()
+        $config = [FindConfig]::new()
+        $fileTypes = [FileTypes]::new($config)
         $fileType = $fileTypes.GetFileTypeForFilePath($filePath)
         $fileType | Should -Be Video
         $fileTypes.IsVideoFilePath($filePath) | Should -BeTrue
@@ -95,7 +104,8 @@ Describe -tag "FileTypes" -name "test_is_video_file" {
 Describe -tag "FileTypes" -name "test_is_xml_file" {
     It "file is xml file" {
         $filePath = 'content.xml'
-        $fileTypes = [FileTypes]::new()
+        $config = [FindConfig]::new()
+        $fileTypes = [FileTypes]::new($config)
         $fileType = $fileTypes.GetFileTypeForFilePath($filePath)
         $fileType | Should -Be Xml
         $fileTypes.IsXmlFilePath($filePath) | Should -BeTrue
@@ -299,7 +309,8 @@ Describe -tag "FileResult" -name "test_file_result_abs_path" {
 #region ArgTokenizer
 Describe -tag "ArgTokenizer" -name "test_tokenize_args_no_args" {
     It "equals no tokens" {
-        $options = [FindOptions]::new()
+        $config = [FindConfig]::new()
+        $options = [FindOptions]::new($config)
         $_args = @()
         $tokens = $options.ArgTokenizer.TokenizeArgs($_args)
 
@@ -309,7 +320,8 @@ Describe -tag "ArgTokenizer" -name "test_tokenize_args_no_args" {
 
 Describe -tag "ArgTokenizer" -name "test_tokenize_args_valid_args" {
     It "has valid tokens" {
-        $options = [FindOptions]::new()
+        $config = [FindConfig]::new()
+        $options = [FindOptions]::new($config)
         $_args = @('--debug', '-x', 'php,py', '.')
         $tokens = $options.ArgTokenizer.TokenizeArgs($_args)
 
@@ -331,7 +343,8 @@ Describe -tag "ArgTokenizer" -name "test_tokenize_args_valid_args" {
 #region FindOptions
 Describe -tag "FindOptions" -name "test_settings_from_args_no_args" {
     It "equals default settings" {
-        $options = [FindOptions]::new()
+        $config = [FindConfig]::new()
+        $options = [FindOptions]::new($config)
         $_args = @()
         $settings = $options.SettingsFromArgs($_args)
 
@@ -349,7 +362,8 @@ Describe -tag "FindOptions" -name "test_settings_from_args_no_args" {
 
 Describe -tag "FindOptions" -name "test_settings_from_args_valid_args" {
     It "has valid settings" {
-        $options = [FindOptions]::new()
+        $config = [FindConfig]::new()
+        $options = [FindOptions]::new($config)
         $_args = @('-x', 'php,py', '.')
         $settings = $options.SettingsFromArgs($_args)
 
@@ -370,9 +384,10 @@ Describe -tag "FindOptions" -name "test_settings_from_args_valid_args" {
 #region Finder
 Describe -tag "Finder" -name "test_is_matching_dir_no_patterns" {
     It "matches by default" {
+        $config = [FindConfig]::new()
         $settings = [FindSettings]::new()
         $settings.Paths += @('.')
-        $finder = [Finder]::new($settings)
+        $finder = [Finder]::new($config, $settings)
         $dirPath = '.'
         $finder.IsMatchingDirPath($dirPath) | Should -BeTrue
     }
@@ -380,11 +395,12 @@ Describe -tag "Finder" -name "test_is_matching_dir_no_patterns" {
 
 Describe -tag "Finder" -name "test_is_matching_dir_matches_in_pattern" {
     It "matches by pattern" {
+        $config = [FindConfig]::new()
         $settings = [FindSettings]::new()
         $settings.Paths += @('.')
         $settings.InDirPatterns += @([regex]'find')
         $settings.IncludeHidden = $true
-        $finder = [Finder]::new($settings)
+        $finder = [Finder]::new($config, $settings)
         $dirPath = './ps1find'
         $finder.IsMatchingDirPath($dirPath) | Should -BeTrue
     }
@@ -392,9 +408,10 @@ Describe -tag "Finder" -name "test_is_matching_dir_matches_in_pattern" {
 
 Describe -tag "Finder" -name "test_is_matching_file_matches_by_default" {
     It "matches by default" {
+        $config = [FindConfig]::new()
         $settings = [FindSettings]::new()
         $settings.Paths += @('.')
-        $finder = [Finder]::new($settings)
+        $finder = [Finder]::new($config, $settings)
         $file = 'ps1find.ps1'
         $fileResult = [FileResult]::new($file, [FileType]::Code);
         $finder.IsMatchingFileResult($fileResult) | Should -BeTrue
@@ -403,10 +420,11 @@ Describe -tag "Finder" -name "test_is_matching_file_matches_by_default" {
 
 Describe -tag "Finder" -name "test_is_matching_file_matches_in_extension" {
     It "matches by extension" {
+        $config = [FindConfig]::new()
         $settings = [FindSettings]::new()
         $settings.Paths += @('.')
         $settings.InExtensions += @('.ps1')
-        $finder = [Finder]::new($settings)
+        $finder = [Finder]::new($config, $settings)
         $file = 'ps1find.ps1'
         $fileResult = [FileResult]::new($file, [FileType]::Code);
         $finder.IsMatchingFileResult($fileResult) | Should -BeTrue
@@ -415,9 +433,10 @@ Describe -tag "Finder" -name "test_is_matching_file_matches_in_extension" {
 
 Describe -tag "Finder" -name "test_is_matching_archive_file_matches_by_default" {
     It "matches by default" {
+        $config = [FindConfig]::new()
         $settings = [FindSettings]::new()
         $settings.Paths += @('.')
-        $finder = [Finder]::new($settings)
+        $finder = [Finder]::new($config, $settings)
         $file = 'archive.zip'
         $fileResult = [FileResult]::new($file, [FileType]::Archive);
         $finder.IsMatchingArchiveFileResult($fileResult) | Should -BeTrue
@@ -426,10 +445,11 @@ Describe -tag "Finder" -name "test_is_matching_archive_file_matches_by_default" 
 
 Describe -tag "Finder" -name "test_is_matching_archive_file_matches_in_extension" {
     It "matches by extension" {
+        $config = [FindConfig]::new()
         $settings = [FindSettings]::new()
         $settings.Paths += @('.')
         $settings.InArchiveExtensions += @('.zip')
-        $finder = [Finder]::new($settings)
+        $finder = [Finder]::new($config, $settings)
         $file = 'archive.zip'
         $fileResult = [FileResult]::new($file, [FileType]::Archive);
         $finder.IsMatchingArchiveFileResult($fileResult) | Should -BeTrue
@@ -438,10 +458,11 @@ Describe -tag "Finder" -name "test_is_matching_archive_file_matches_in_extension
 
 Describe -tag "Finder" -name "test_filter_to_file_result_matches_by_default" {
     It "matches by default" {
+        $config = [FindConfig]::new()
         $settings = [FindSettings]::new()
         $settings.Paths += @('.')
         $settings.IncludeHidden = $true
-        $finder = [Finder]::new($settings)
+        $finder = [Finder]::new($config, $settings)
         $file = 'ps1find.ps1'
         $fileResult = $finder.FilterFilePathToFileResult($file)
         $fileResult | Should -Not -BeNullOrEmpty
@@ -450,11 +471,12 @@ Describe -tag "Finder" -name "test_filter_to_file_result_matches_by_default" {
 
 Describe -tag "Finder" -name "test_filter_to_file_result_is_matching_file" {
     It "matches by extension" {
+        $config = [FindConfig]::new()
         $settings = [FindSettings]::new()
         $settings.Paths += @('.')
         $settings.IncludeHidden = $true
         $settings.InExtensions += $settings.GetExtensions('ps1')
-        $finder = [Finder]::new($settings)
+        $finder = [Finder]::new($config, $settings)
         $file = 'ps1find.ps1'
         $fileResult = $finder.FilterFilePathToFileResult($file)
         $fileResult | Should -Not -BeNullOrEmpty
@@ -463,10 +485,11 @@ Describe -tag "Finder" -name "test_filter_to_file_result_is_matching_file" {
 
 Describe -tag "Finder" -name "test_filter_to_file_result_not_is_matching_file" {
     It "does not match by extension" {
+        $config = [FindConfig]::new()
         $settings = [FindSettings]::new()
         $settings.Paths += @('.')
         $settings.InExtensions += @('.php')
-        $finder = [Finder]::new($settings)
+        $finder = [Finder]::new($config, $settings)
         $file = 'ps1find.ps1'
         $fileResult = $finder.FilterFilePathToFileResult($file)
         $fileResult | Should -BeNullOrEmpty
@@ -475,9 +498,10 @@ Describe -tag "Finder" -name "test_filter_to_file_result_not_is_matching_file" {
 
 Describe -tag "Finder" -name "test_filter_to_file_result_is_hidden_file" {
     It "does not match because hidden" {
+        $config = [FindConfig]::new()
         $settings = [FindSettings]::new()
         $settings.Paths += @('.')
-        $finder = [Finder]::new($settings)
+        $finder = [Finder]::new($config, $settings)
         $file = '.gitignore'
         $fileResult = $finder.FilterFilePathToFileResult($file)
         $fileResult | Should -BeNullOrEmpty
@@ -486,10 +510,11 @@ Describe -tag "Finder" -name "test_filter_to_file_result_is_hidden_file" {
 
 Describe -tag "Finder" -name "test_filter_to_file_result_hidden_include_hidden" {
     It "matches because includehidden" {
+        $config = [FindConfig]::new()
         $settings = [FindSettings]::new()
         $settings.Paths += @('.')
         $settings.IncludeHidden = $true
-        $finder = [Finder]::new($settings)
+        $finder = [Finder]::new($config, $settings)
         $file = '.gitignore'
         $fileResult = $finder.FilterFilePathToFileResult($file)
         $fileResult | Should -Not -BeNullOrEmpty
@@ -498,9 +523,10 @@ Describe -tag "Finder" -name "test_filter_to_file_result_hidden_include_hidden" 
 
 Describe -tag "Finder" -name "test_filter_to_file_result_archive_no_include_archives" {
     It "does not match because archive" {
+        $config = [FindConfig]::new()
         $settings = [FindSettings]::new()
         $settings.Paths += @('.')
-        $finder = [Finder]::new($settings)
+        $finder = [Finder]::new($config, $settings)
         $file = 'archive.zip'
         $fileResult = $finder.FilterFilePathToFileResult($file)
         $fileResult | Should -BeNullOrEmpty
@@ -509,11 +535,12 @@ Describe -tag "Finder" -name "test_filter_to_file_result_archive_no_include_arch
 
 Describe -tag "Finder" -name "test_filter_to_file_result_archive_include_archives" {
     It "matches because include_hidden" {
+        $config = [FindConfig]::new()
         $settings = [FindSettings]::new()
         $settings.Paths += @('.')
         $settings.IncludeArchives = $true
         $settings.IncludeHidden = $true
-        $finder = [Finder]::new($settings)
+        $finder = [Finder]::new($config, $settings)
         $file = 'archive.zip'
         $fileResult = $finder.FilterFilePathToFileResult($file)
         $fileResult | Should -Not -BeNullOrEmpty
@@ -522,11 +549,12 @@ Describe -tag "Finder" -name "test_filter_to_file_result_archive_include_archive
 
 Describe -tag "Finder" -name "test_filter_to_file_result_archive_archives_only" {
     It "matches because archive + set_archives_only" {
+        $config = [FindConfig]::new()
         $settings = [FindSettings]::new()
         $settings.Paths += @('.')
         $settings.IncludeHidden = $true
         $settings.SetArchivesOnly($true)
-        $finder = [Finder]::new($settings)
+        $finder = [Finder]::new($config, $settings)
         $file = 'archive.zip'
         $fileResult = $finder.FilterFilePathToFileResult($file)
         $fileResult | Should -Not -BeNullOrEmpty
@@ -535,10 +563,11 @@ Describe -tag "Finder" -name "test_filter_to_file_result_archive_archives_only" 
 
 Describe -tag "Finder" -name "test_filter_to_file_result_nonarchive_archives_only" {
     It "does not match because non-archive + set_archives_only" {
+        $config = [FindConfig]::new()
         $settings = [FindSettings]::new()
         $settings.Paths += @('.')
         $settings.SetArchivesOnly($true)
-        $finder = [Finder]::new($settings)
+        $finder = [Finder]::new($config, $settings)
         $file = 'ps1find.ps1'
         $fileResult = $finder.FilterFilePathToFileResult($file)
         $fileResult | Should -BeNullOrEmpty
@@ -547,10 +576,11 @@ Describe -tag "Finder" -name "test_filter_to_file_result_nonarchive_archives_onl
 
 Describe -tag "Finder" -name "test_follow_symlinks_default_settings" {
     It "excludes symlinks by default" {
+        $config = [FindConfig]::new()
         $settings = [FindSettings]::new()
         $binPath = Join-Path -Path "$env:XFIND_PATH" -ChildPath 'bin'
         $settings.Paths += @($binPath)
-        $finder = [Finder]::new($settings)
+        $finder = [Finder]::new($config, $settings)
         $fileResults = $finder.Find()
         if ($fileResults.Count -gt 0) {
             $fileResults.Count | Should -BeLessThan 4
@@ -560,11 +590,12 @@ Describe -tag "Finder" -name "test_follow_symlinks_default_settings" {
 
 Describe -tag "Finder" -name "test_follow_symlinks_follow_symlinks" {
     It "includes symlinks with followsymlinks" {
+        $config = [FindConfig]::new()
         $settings = [FindSettings]::new()
         $binPath = Join-Path -Path $env:XFIND_PATH -ChildPath 'bin'
         $settings.Paths += @($binPath)
         $settings.FollowSymlinks = $true
-        $finder = [Finder]::new($settings)
+        $finder = [Finder]::new($config, $settings)
         $fileResults = $finder.Find()
         if ($fileResults.Count -gt 0) {
             $fileResults.Count | Should -BeGreaterThan 2
@@ -574,11 +605,12 @@ Describe -tag "Finder" -name "test_follow_symlinks_follow_symlinks" {
 
 Describe -tag "Finder" -name "test_follow_symlinks_no_follow_symlinks" {
     It "excludes symlinks with nofollowsymlinks" {
+        $config = [FindConfig]::new()
         $settings = [FindSettings]::new()
         $binPath = Join-Path -Path $env:XFIND_PATH -ChildPath 'bin'
         $settings.Paths += @($binPath)
         $settings.FollowSymlinks = $false
-        $finder = [Finder]::new($settings)
+        $finder = [Finder]::new($config, $settings)
         $fileResults = $finder.Find()
         if ($fileResults.Count -gt 0) {
             $fileResults.Count | Should -BeLessThan 4

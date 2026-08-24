@@ -23,6 +23,26 @@ $defaultFindSettingsPath = Join-Path $HOME '.config' 'xfind' 'settings.json'
 #endregion
 
 
+#region FindConfig
+########################################
+# FindConfig
+########################################
+class FindConfig
+{
+    $FileTypesPath = '' # path to filetypes.json
+    $FindOptionsPath = '' # path to findoptions.json
+    $DefaultFindSettingsPath = '' # path to default settings.json
+
+    FindConfig()
+    {
+        $this.FileTypesPath = $script:fileTypesPath
+        $this.FindOptionsPath = $script:findOptionsPath
+        $this.DefaultFindSettingsPath = $script:defaultFindSettingsPath
+    }
+}
+#endregion
+
+
 #region ConsoleColor
 ########################################
 # ConsoleColor
@@ -251,12 +271,12 @@ class FileTypes {
     $FileTypeExtMap = @{}
     $FileTypeNameMap = @{}
 
-    FileTypes() {
-        $this.LoadFileTypesFromJson()
+    FileTypes([FindConfig]$config) {
+        $this.LoadFileTypesFromJsonFile($config.FileTypesPath)
     }
 
-    [void]LoadFileTypesFromJson() {
-        $fileTypesHash = Get-Content $script:fileTypesPath | ConvertFrom-Json -AsHashtable
+    [void]LoadFileTypesFromJsonFile([string]$fileTypesPath) {
+        $fileTypesHash = Get-Content $fileTypesPath | ConvertFrom-Json -AsHashtable
         if ($fileTypesHash.ContainsKey('filetypes')) {
             foreach ($fileTypeObj in $fileTypesHash['filetypes']) {
                 $fileType = $fileTypeObj['type']
@@ -834,6 +854,7 @@ class FindOption : Option {
 }
 
 class FindOptions {
+    [FindConfig]$Config
     [FindOption[]]$FindOptions = @()
     [ArgTokenizer]$ArgTokenizer
     # instantiate this way to get case sensitivity of keys
@@ -1030,13 +1051,14 @@ class FindOptions {
         }
     }
 
-    FindOptions() {
-        $this.FindOptions = $this.LoadOptionsFromJson()
+    FindOptions([FindConfig]$config) {
+        $this.Config = $config
+        $this.FindOptions = $this.LoadOptionsFromJsonFile($config.FindOptionsPath)
         $this.ArgTokenizer = [ArgTokenizer]::new($this.FindOptions)
     }
 
-    [FindOption[]]LoadOptionsFromJson() {
-        $optionsHash = Get-Content $script:findOptionsPath | ConvertFrom-Json -AsHashtable
+    [FindOption[]]LoadOptionsFromJsonFile([string]$findOptionsPath) {
+        $optionsHash = Get-Content $findOptionsPath | ConvertFrom-Json -AsHashtable
         if (-not $optionsHash.ContainsKey('findoptions')) {
             throw "Missing findoptions in JSON"
         }
@@ -1124,8 +1146,8 @@ class FindOptions {
     }
 
     [void]UpdateSettingsFromDefaultFiles([FindSettings]$settings) {
-        if (Test-Path $script:defaultFindSettingsPath) {
-            $this.UpdateSettingsFromFilePath($settings, $script:defaultFindSettingsPath)
+        if (Test-Path $this.Config.DefaultFindSettingsPath) {
+            $this.UpdateSettingsFromFilePath($settings, $this.Config.DefaultFindSettingsPath)
         }
     }
 
@@ -1423,9 +1445,9 @@ class Finder {
     [Scriptblock[]]$MatchingLastModTests
     [Scriptblock[]]$MatchingFileResultTests
 
-    Finder([FindSettings]$settings) {
+    Finder([FindConfig]$config, [FindSettings]$settings) {
         $this.Settings = $settings
-        $this.FileTypes = [FileTypes]::new()
+        $this.FileTypes = [FileTypes]::new($config)
         $this.ValidateSettings()
         $this.MatchingDirPathByHiddenTests = $this.GetIsMatchingDirPathByHiddenTests()
         $this.MatchingDirPathByInPatternsTests = $this.GetIsMatchingDirPathByInPatternsTests()
