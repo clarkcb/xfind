@@ -7,6 +7,7 @@ import java.nio.file.Paths
 @CompileStatic
 class FindConfig {
 
+    final String defaultXFindConfigDir = Paths.get(System.getProperty("user.home"), ".config", "xfind").toString()
     final String fileTypesPath
     final String findOptionsPath
     final String defaultFindSettingsPath
@@ -14,7 +15,10 @@ class FindConfig {
     FindConfig() {
         this.fileTypesPath = "/filetypes.json"
         this.findOptionsPath = "/findoptions.json"
-        String home = System.getProperty("user.home")
-        this.defaultFindSettingsPath = Paths.get(home, ".config", "xfind", "settings.json").toString()
+        var xfindConfigDir = System.getenv("XFIND_CONFIG_DIR")
+        if (xfindConfigDir == null || xfindConfigDir.isEmpty()) {
+            xfindConfigDir = defaultXFindConfigDir
+        }
+        this.defaultFindSettingsPath = Paths.get(xfindConfigDir, "settings.json").toString()
     }
 }
