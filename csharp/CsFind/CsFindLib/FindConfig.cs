@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 
 namespace CsFindLib;
@@ -12,7 +13,15 @@ public class FindConfig
     {
         FileTypesPath = "CsFindLib.Resources.filetypes.json";
         FindOptionsPath = "CsFindLib.Resources.findoptions.json";
-		var homePath = FileUtil.GetHomePath();
-        DefaultFindSettingsPath = Path.Join(homePath, ".config", "xfind", "settings.json");
+
+        var homePath = FileUtil.GetHomePath();
+        var defaultXFindConfigDir = Path.Join(homePath, ".config", "xfind");
+        var xFindConfigDir = Environment.GetEnvironmentVariable("XFIND_CONFIG_DIR");
+        if (string.IsNullOrEmpty(xFindConfigDir))
+        {
+            xFindConfigDir = defaultXFindConfigDir;
+        }
+
+        DefaultFindSettingsPath = Path.Join(xFindConfigDir, "settings.json");
     }
 }
