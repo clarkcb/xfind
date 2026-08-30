@@ -12,6 +12,10 @@
 ########################################
 # Config
 ########################################
+if (-not (Test-Path env:XFIND_CONFIG_DIR)) {
+    $env:XFIND_CONFIG_DIR = Join-Path -Path $HOME -ChildPath '.config' -AdditionalChildPath 'xfind'
+}
+$xFindConfigDir = $env:XFIND_CONFIG_DIR
 if (-not (Test-Path env:XFIND_PATH)) {
     $env:XFIND_PATH = Join-Path -Path $HOME -ChildPath 'src' -AdditionalChildPath 'xfind'
 }
@@ -19,7 +23,7 @@ $xfindPath = $env:XFIND_PATH
 $sharedPath = Join-Path -Path $xfindPath -ChildPath 'shared'
 $fileTypesPath = Join-Path -Path $sharedPath -ChildPath 'filetypes.json'
 $findOptionsPath = Join-Path -Path $sharedPath -ChildPath 'findoptions.json'
-$defaultFindSettingsPath = Join-Path $HOME '.config' 'xfind' 'settings.json'
+$defaultFindSettingsPath = Join-Path $xFindConfigDir 'settings.json'
 #endregion
 
 
