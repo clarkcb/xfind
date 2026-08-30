@@ -34,13 +34,31 @@ getFindConfig = do
 concatPath :: FilePath -> FilePath -> FilePath
 concatPath fp1 fp2 = fp1 </> fp2
 
+defaultXfindConfigDir :: IO FilePath
+defaultXfindConfigDir = do
+  home <- getHomeDirectory
+  return $ foldl concatPath home [".config", "xfind"]
+
+getXfindConfigDir :: IO FilePath
+getXfindConfigDir = do
+  home <- getHomeDirectory
+  maybeXfindConfigDir <- lookupEnv "XFIND_CONFIG_DIR"
+  case maybeXfindConfigDir of
+    Just xfindConfigDir -> return xfindConfigDir
+    Nothing -> defaultXfindConfigDir
+
+defaultXfindPath :: IO FilePath
+defaultXfindPath = do
+  home <- getHomeDirectory
+  return $ foldl concatPath home ["src", "xfind"]
+
 getXfindPath :: IO FilePath
 getXfindPath = do
   home <- getHomeDirectory
   maybeXfindPath <- lookupEnv "XFIND_PATH"
   case maybeXfindPath of
     Just xfindPath -> return xfindPath
-    Nothing -> return $ foldl concatPath home ["src", "xfind"]
+    Nothing -> defaultXfindPath
 
 getDataPath :: IO FilePath
 getDataPath = do
@@ -50,6 +68,6 @@ getDataPath = do
 
 getDefaultFindSettingsPath :: IO FilePath
 getDefaultFindSettingsPath = do
-  home <- getHomeDirectory
-  let elems = [".config", "xfind", "settings.json"]
-  return $ foldl concatPath home elems
+  xfindConfigDir <- getXfindConfigDir
+  let elems = ["settings.json"]
+  return $ foldl concatPath xfindConfigDir elems
