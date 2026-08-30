@@ -14,7 +14,8 @@
   (:require [clojure.data.json :as json])
   (:use [clojure.set :only (union)]
         [clojure.string :only (join lower-case)]
-        [cljfind.fileutil :only (get-ext get-name)]))
+        [cljfind.fileutil :only (get-ext get-name)]
+        [cljfind.findconfig :only (FILE-TYPES-NAME)]))
 
 (def ^:const ^String ARCHIVE "archive")
 (def ^:const ^String AUDIO "audio")
@@ -27,7 +28,7 @@
 (def ^:const ^String XML "xml")
 
 (defn get-file-type-maps-from-json []
-  (let [contents (slurp (io/resource "filetypes.json"))
+  (let [contents (slurp (io/resource FILE-TYPES-NAME))
         file-types-objs (:filetypes (json/read-str contents :key-fn keyword))
         typenames (map :type file-types-objs)
         extension-sets (map #(set %) (map :extensions file-types-objs))
