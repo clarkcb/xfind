@@ -16,14 +16,22 @@ public struct FindConfig {
     public let defaultFindSettingsPath: String
 
     public init() {
-        if let xfindEnvPath = ProcessInfo.processInfo.environment["XFIND_PATH"] {
-            xfindPath = xfindEnvPath
+        var defaultXFindConfigDir = "\(NSHomeDirectory())/.config/xfind"
+        var xFindConfigDir: String
+        if let xFindEnvConfigDir = ProcessInfo.processInfo.environment["XFIND_CONFIG_DIR"] {
+            xFindConfigDir = xFindEnvConfigDir
         } else {
-            xfindPath = "\(NSHomeDirectory())/src/xfind"
+            xFindConfigDir = defaultXFindConfigDir
+        }
+        var defaultXFindPath = "\(NSHomeDirectory())/src/xfind"
+        if let xFindEnvPath = ProcessInfo.processInfo.environment["XFIND_PATH"] {
+            xfindPath = xFindEnvPath
+        } else {
+            xfindPath = defaultXFindPath
         }
         sharedPath = "\(xfindPath)/shared"
         fileTypesPath = "\(sharedPath)/filetypes.json"
         findOptionsPath = "\(sharedPath)/findoptions.json"
-        defaultFindSettingsPath = "\(NSHomeDirectory())/.config/xfind/settings.json"
+        defaultFindSettingsPath = "\(xFindConfigDir)/settings.json"
     }
 }
