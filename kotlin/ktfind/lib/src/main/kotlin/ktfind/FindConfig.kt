@@ -3,6 +3,7 @@ package ktfind
 import java.nio.file.Paths
 
 class FindConfig {
+    val defaultXFindConfigDir = Paths.get(System.getProperty("user.home"), ".config", "xfind").toString()
     val fileTypesPath: String
     val findOptionsPath: String
     val defaultFindSettingsPath: String
@@ -10,7 +11,7 @@ class FindConfig {
     init {
         fileTypesPath = "/filetypes.json"
         findOptionsPath = "/findoptions.json"
-        val defaultSettingsPath = Paths.get(System.getProperty("user.home"), ".config", "xfind", "settings.json")
-        defaultFindSettingsPath = defaultSettingsPath.toString()
+        val xFindConfigDir = System.getenv("XFIND_CONFIG_DIR") ?: defaultXFindConfigDir
+        defaultFindSettingsPath = Paths.get(xFindConfigDir, "settings.json").toString()
     }
 }
