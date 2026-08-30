@@ -15,6 +15,11 @@
 #
 ################################################################################
 
+if [ -z "$XFIND_CONFIG_DIR" ]
+then
+    XFIND_CONFIG_DIR="$HOME/.config/xfind"
+fi
+
 if [ -z "$XFIND_PATH" ]
 then
     XFIND_PATH="$HOME/src/xfind"
@@ -24,7 +29,7 @@ BASHFIND_PATH="$XFIND_PATH/bash/bashfind"
 SHARED_PATH="$XFIND_PATH/shared"
 FILE_TYPES_PATH="$XFIND_PATH/shared/filetypes.json"
 FIND_OPTIONS_PATH="$XFIND_PATH/shared/findoptions.json"
-DEFAULT_FIND_SETTINGS_PATH="$HOME/.config/xfind/settings.json"
+DEFAULT_FIND_SETTINGS_PATH="$XFIND_CONFIG_DIR/settings.json"
 
 # this will be contain the contents of FIND_OPTIONS_PATH if needed
 FIND_OPTIONS_JSON=
