@@ -29,13 +29,11 @@ object FileType extends Enumeration {
   }
 }
 
-object FileTypes {
-  private val _fileTypesJsonPath = "/filetypes.json"
-
-  private val fileTypeMaps: (Map[String, Set[String]], Map[String, Set[String]]) = {
+class FileTypes (val config: FindConfig) {
+  private def loadFileTypesFromJson(fileTypesPath: String): (Map[String, Set[String]], Map[String, Set[String]]) = {
     val _fileTypeExtMap = mutable.Map.empty[String, Set[String]]
     val _fileTypeNameMap = mutable.Map.empty[String, Set[String]]
-    val fileTypesInputStream = getClass.getResourceAsStream(_fileTypesJsonPath)
+    val fileTypesInputStream = getClass.getResourceAsStream(fileTypesPath)
     try {
       val jsonObj = new JSONObject(new JSONTokener(fileTypesInputStream))
       val fileTypesArray = jsonObj.getJSONArray("filetypes").iterator()
@@ -56,6 +54,7 @@ object FileTypes {
       _fileTypeNameMap(FileType.Xml.toString)
     (Map.empty[String, Set[String]] ++ _fileTypeExtMap, Map.empty[String, Set[String]] ++ _fileTypeNameMap)
   }
+  private val fileTypeMaps: (Map[String, Set[String]], Map[String, Set[String]]) = loadFileTypesFromJson(config.fileTypesPath)
   private val fileTypeExtMap: Map[String, Set[String]] = fileTypeMaps._1
   private val fileTypeNameMap: Map[String, Set[String]] = fileTypeMaps._2
 

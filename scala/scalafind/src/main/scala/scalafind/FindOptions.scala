@@ -22,63 +22,7 @@ case class FindOption(shortArg: Option[String], longArg: String, desc: String, a
   }
 }
 
-object FindOptions {
-  // TODO: move to config file
-  private val _findOptionsJsonPath = "/findoptions.json"
-  private val _findOptions = mutable.ListBuffer.empty[FindOption]
-
-  private def findOptions: List[FindOption] = {
-    if (_findOptions.isEmpty) {
-      loadFindOptionsFromJson()
-    }
-    List.empty[FindOption] ++ _findOptions
-  }
-
-  private var _longArgMap = Map.empty[String, String]
-
-  private def longArgMap: Map[String, String] = {
-    if (_longArgMap.isEmpty) {
-      val longOpts: Map[String, String] = findOptions.map { o => (o.longArg, o.longArg)}.toMap
-      val shortOpts = findOptions.filter(_.shortArg.nonEmpty).map { o => (o.shortArg.get, o.longArg)}.toMap
-      _longArgMap = longOpts ++ shortOpts ++ Map("path" -> "path")
-    }
-    _longArgMap
-  }
-
-  private def loadFindOptionsFromJson(): Unit = {
-    try {
-      val findOptionsInputStream = getClass.getResourceAsStream(_findOptionsJsonPath)
-      val jsonObj = new JSONObject(new JSONTokener(new InputStreamReader(findOptionsInputStream)))
-      val findOptionsArray = jsonObj.getJSONArray("findoptions").iterator()
-      while (findOptionsArray.hasNext) {
-        val findOptionObj = findOptionsArray.next().asInstanceOf[JSONObject]
-        val longArg = findOptionObj.getString("long")
-        val shortArg =
-          if (findOptionObj.has("short")) {
-            Some(findOptionObj.getString("short"))
-          } else {
-            None
-          }
-        val desc = findOptionObj.getString("desc")
-        val argType =
-          if (boolActionMap.contains(longArg)) {
-            ArgTokenType.Bool
-          } else if (stringActionMap.contains(longArg)) {
-            ArgTokenType.Str
-          } else if (intActionMap.contains(longArg)) {
-            ArgTokenType.Int
-          } else if (longActionMap.contains(longArg)) {
-            ArgTokenType.Long
-          } else {
-            throw new FindException("Invalid option in findoptions.json: " + longArg)
-          }
-        _findOptions += FindOption(shortArg, longArg, desc, argType)
-      }
-    } catch {
-      case e: IOException =>
-        print(e.getMessage)
-    }
-  }
+class FindOptions (val config: FindConfig) {
 
   private type BoolAction = (Boolean, FindSettings) => FindSettings
 
@@ -164,6 +108,45 @@ object FindOptions {
     "minsize" -> ((l, ss) => ss.copy(minSize = l)),
   )
 
+  private def loadFindOptionsFromJson(findOptionsPath: String): List[FindOption] = {
+    val findOptions = mutable.ListBuffer.empty[FindOption]
+    try {
+      val findOptionsInputStream = getClass.getResourceAsStream(findOptionsPath)
+      val jsonObj = new JSONObject(new JSONTokener(new InputStreamReader(findOptionsInputStream)))
+      val findOptionsArray = jsonObj.getJSONArray("findoptions").iterator()
+      while (findOptionsArray.hasNext) {
+        val findOptionObj = findOptionsArray.next().asInstanceOf[JSONObject]
+        val longArg = findOptionObj.getString("long")
+        val shortArg =
+          if (findOptionObj.has("short")) {
+            Some(findOptionObj.getString("short"))
+          } else {
+            None
+          }
+        val desc = findOptionObj.getString("desc")
+        val argType =
+          if (boolActionMap.contains(longArg)) {
+            ArgTokenType.Bool
+          } else if (stringActionMap.contains(longArg)) {
+            ArgTokenType.Str
+          } else if (intActionMap.contains(longArg)) {
+            ArgTokenType.Int
+          } else if (longActionMap.contains(longArg)) {
+            ArgTokenType.Long
+          } else {
+            throw new FindException("Invalid option in findoptions.json: " + longArg)
+          }
+        findOptions += FindOption(shortArg, longArg, desc, argType)
+      }
+    } catch {
+      case e: IOException =>
+        print(e.getMessage)
+    }
+    List.empty[FindOption] ++ findOptions
+  }
+
+  val findOptions: List[FindOption] = loadFindOptionsFromJson(config.findOptionsPath)
+
   @tailrec
   private def applySettings(arg: String, lst: List[Any], ss: FindSettings): FindSettings = lst match {
     case Nil => ss
@@ -171,7 +154,7 @@ object FindOptions {
   }
 
   private def applySetting(arg: String, obj: Any, ss: FindSettings): FindSettings = {
-    if (this.boolActionMap.contains(arg)) {
+    if (boolActionMap.contains(arg)) {
       obj match
         case b: Boolean =>
           if (arg == "defaultfiles") {
@@ -181,7 +164,7 @@ object FindOptions {
           }
         case _ =>
           throw new FindException("Invalid value for option: " + arg)
-    } else if (this.stringActionMap.contains(arg)) {
+    } else if (stringActionMap.contains(arg)) {
       obj match
         case s: String =>
           stringActionMap(arg)(s, ss)
@@ -191,7 +174,7 @@ object FindOptions {
           applySettings(arg, a.toList.asScala.toList, ss)
         case _ =>
           throw new FindException("Invalid value for option: " + arg)
-    } else if (this.intActionMap.contains(arg)) {
+    } else if (intActionMap.contains(arg)) {
       obj match
         case i: Int =>
           intActionMap(arg)(i, ss)
@@ -199,7 +182,7 @@ object FindOptions {
           intActionMap(arg)(l.toInt, ss)
         case _ =>
           throw new FindException("Invalid value for option: " + arg)
-    } else if (this.longActionMap.contains(arg)) {
+    } else if (longActionMap.contains(arg)) {
       obj match
         case i: Int =>
           longActionMap(arg)(i.toLong, ss)
@@ -246,7 +229,8 @@ object FindOptions {
   }
 
   private def updateSettingsFromDefaultFiles(settings: FindSettings): FindSettings = {
-    val defaultFindSettingsPath = Paths.get(System.getProperty("user.home"), ".config", "xfind", "settings.json")
+//    val defaultFindSettingsPath = Paths.get(System.getProperty("user.home"), ".config", "xfind", "settings.json")
+    val defaultFindSettingsPath = Paths.get(config.defaultFindSettingsPath)
     if (Files.exists(defaultFindSettingsPath)) {
       updateSettingsFromFile(settings, defaultFindSettingsPath.toString)
     } else {

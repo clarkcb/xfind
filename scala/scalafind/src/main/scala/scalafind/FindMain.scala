@@ -4,8 +4,12 @@ object FindMain {
 
   def main(args: Array[String]): Unit = {
     var colorize = true
+    var findOptions: Option[FindOptions] = None
+
     try {
-      val settings = FindOptions.settingsFromArgs(args)
+      val config = new FindConfig()
+      findOptions = Some(new FindOptions(config))
+      val settings = findOptions.get.settingsFromArgs(args)
       colorize = settings.colorize
 
       if (settings.debug) {
@@ -14,10 +18,10 @@ object FindMain {
 
       if (settings.printUsage) {
         Common.log("")
-        FindOptions.usage(0)
+        findOptions.foreach(_.usage(0))
       }
 
-      val finder = new Finder(settings)
+      val finder = new Finder(config, settings)
       val fileResults = finder.find()
       val formatter = new FileResultFormatter(settings)
 
@@ -28,7 +32,7 @@ object FindMain {
       case e: FindException =>
         Common.log("")
         Common.logError(e.getMessage + "\n", colorize)
-        FindOptions.usage(1)
+        findOptions.foreach(_.usage(1))
     }
   }
 }

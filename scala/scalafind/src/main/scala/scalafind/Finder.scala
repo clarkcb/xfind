@@ -13,8 +13,10 @@ import java.time.{Instant, LocalDateTime, ZoneOffset}
 import scala.collection.mutable
 import scala.util.matching.Regex
 
-class Finder (settings: FindSettings) {
+class Finder (val config: FindConfig, val settings: FindSettings) {
   import Finder.*
+
+  private val fileTypes = new FileTypes(config)
 
   private def validateSettings(): Unit = {
     if (settings.paths.isEmpty) {
@@ -249,7 +251,7 @@ class Finder (settings: FindSettings) {
       || !isMatchingFileNameByHidden(filePath.getFileName.toString)) {
       None
     } else {
-      val fileType = FileTypes.getFileType(filePath)
+      val fileType = fileTypes.getFileType(filePath)
       if (fileType == FileType.Archive) {
         filterArchiveFilePathToFileResult(filePath, fileType)
       } else {
