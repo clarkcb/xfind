@@ -28,6 +28,7 @@ class Scenario:
     """Class to define a test scenario"""
     name: str
     args: list
+    env_vars: list[str] | None = None
     replace_exe_name: bool = False
     case_insensitive_cmp: bool = False
     ignore_error_line: bool = False
@@ -368,8 +369,11 @@ class Benchmarker(object):
                 # print(f'args: {args}')
                 if 'common_args' in s:
                     for ca in s['common_args']:
-                        args.extend(scenarios_dict['ref'][ca]) 
-                scenario = Scenario(s['name'], args)
+                        args.extend(scenarios_dict['ref'][ca])
+                env_vars = []
+                if 'env_vars' in s:
+                    env_vars = s['env_vars']
+                scenario = Scenario(s['name'], args, env_vars)
                 if 'replace_exe_name' in s:
                     scenario.replace_exe_name = s['replace_exe_name']
                 if 'ignore_error_line' in s:
@@ -669,10 +673,17 @@ class Benchmarker(object):
         exe_times = {}
         lang_results = []
         for x in self.exe_names:
-            fullargs = ['time', x] + s.args
-            print(' '.join(fullargs[1:]))
+            printargs = [x] + s.args
+            fullargs = ['time'] + printargs
+            env_map = os.environ.copy()
+            for e in s.env_vars:
+                printargs.insert(0, e)
+                if '=' in e:
+                    k, v = e.split('=', 1)
+                    env_map[k] = v
+            print(' '.join(printargs))
             exe_procs[x] = subprocess.Popen(fullargs, bufsize=-1, stdout=subprocess.PIPE,
-                                                stderr=subprocess.PIPE)
+                                                stderr=subprocess.PIPE, env=env_map)
             exe_starts[x] = time.time()
 
         for x in self.exe_names:
@@ -766,10 +777,17 @@ class Benchmarker(object):
         xsearch_times = {}
         lang_results = []
         for x in self.exe_names:
-            fullargs = ['time', x] + s.args
-            print(' '.join(fullargs[1:]))
+            printargs = [x] + s.args
+            fullargs = ['time'] + printargs
+            env_map = os.environ.copy()
+            for e in s.env_vars:
+                printargs.insert(0, e)
+                if '=' in e:
+                    k, v = e.split('=', 1)
+                    env_map[k] = v
+            print(' '.join(printargs))
             p = subprocess.Popen(fullargs, bufsize=-1, stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE)
+                stderr=subprocess.PIPE, env=env_map)
             # print('process opened')
             output_lines = []
             time_lines = []
