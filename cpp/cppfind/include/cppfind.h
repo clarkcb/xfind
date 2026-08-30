@@ -67,7 +67,8 @@ namespace cppfind {
 
     FindConfig get_find_config();
 
-    std::string xfindpath();
+    std::string xfind_config_dir();
+    std::string xfind_path();
     std::string default_find_settings_path();
 
     // FileTypes.h
