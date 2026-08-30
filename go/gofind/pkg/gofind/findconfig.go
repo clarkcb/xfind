@@ -14,12 +14,18 @@ type FindConfig struct {
 
 func NewFindConfig() *FindConfig {
 	home := os.Getenv("HOME")
+	defaultXFindConfigDir := filepath.Join(home, ".config", "xfind")
+	xFindConfigDir := os.Getenv("XFIND_CONFIG_DIR")
+	if xFindConfigDir == "" {
+		xFindConfigDir = defaultXFindConfigDir
+	}
+	defaultXFindPath := filepath.Join(home, "src", "xfind")
 	xFindPath := os.Getenv("XFIND_PATH")
 	if xFindPath == "" {
-		xFindPath = filepath.Join(home, "src/xfind")
+		xFindPath = defaultXFindPath
 	}
 	sharedPath := filepath.Join(xFindPath, "shared")
-	defaultFindSettingsPath := filepath.Join(home, ".config/xfind/settings.json")
+	defaultFindSettingsPath := filepath.Join(xFindConfigDir, "settings.json")
 
 	return &FindConfig{
 		filepath.Join(sharedPath, "filetypes.json"),
