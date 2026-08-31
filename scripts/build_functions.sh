@@ -1550,6 +1550,9 @@ build_perl_version () {
 
     log "perl version: $PERL_VERSION"
 
+    log "@INC:"
+    perl -e "print join(\"\n\", @INC), qq{\n};"
+
     # # ensure carton is installed
     # if [ -z "$(which carton)" ]
     # then
@@ -2392,6 +2395,9 @@ build_typescript_version () {
 
     log "cd $ts_version_path"
     cd "$ts_version_path"
+
+    TSC_VERSION=$(npx tsc --version)
+    log "tsc version: $TSC_VERSION"
 
     # run npm install and build
     log "npm install"

@@ -11,7 +11,7 @@ lazy val scalaFind = (project in file("."))
     scalaVersion := scala3Version,
 
     libraryDependencies ++= Seq(
-      "org.json" % "json" % "20260522",
+      "org.json" % "json" % "20260814",
       "org.apache.commons" % "commons-compress" % "1.28.0",
       "org.scalactic" %% "scalactic" % "3.2.20",
       "org.scalatest" %% "scalatest" % "3.2.20" % Test,
