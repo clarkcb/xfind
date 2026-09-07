@@ -2,7 +2,7 @@ package ktfind
 
 import java.nio.file.Paths
 
-class FindConfig {
+open class FindConfig {
     val defaultXFindConfigDir = Paths.get(System.getProperty("user.home"), ".config", "xfind").toString()
     val fileTypesPath: String
     val findOptionsPath: String
