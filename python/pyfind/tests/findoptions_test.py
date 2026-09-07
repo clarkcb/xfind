@@ -25,8 +25,8 @@ class FindOptionsTest(unittest.TestCase):
         self.find_options = FindOptions(self.config)
 
     def test_no_args(self):
-        # test the props
-        settings = self.find_options.find_settings_from_args([])
+        # test the props (nodefaultfiles is needed to avoid loading the default file patterns)
+        settings = self.find_options.find_settings_from_args(['--nodefaultfiles'])
         self.assertFalse(settings.archives_only)
         self.assertFalse(settings.debug)
         self.assertFalse(settings.follow_symlinks)
@@ -45,7 +45,7 @@ class FindOptionsTest(unittest.TestCase):
         self.assertFalse(settings.in_file_patterns)
         self.assertFalse(settings.out_archive_extensions)
         self.assertFalse(settings.out_archive_file_patterns)
-        # self.assertFalse(settings.out_dir_patterns)
+        self.assertFalse(settings.out_dir_patterns)
         self.assertFalse(settings.out_file_patterns)
 
     def test_valid_args(self):

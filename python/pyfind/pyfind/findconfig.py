@@ -12,6 +12,13 @@ import importlib.resources
 import os
 
 
+def get_xfind_config_dir() -> str:
+    _home = os.getenv('HOME', '')
+    _default_find_config_dir = os.path.join(_home, '.config', 'xfind')
+    _xfind_config_dir = os.getenv('XFIND_CONFIG_DIR', _default_find_config_dir)
+    return _xfind_config_dir
+
+
 class FindConfig:
     """FindConfig holds basic configuration."""
 
@@ -25,9 +32,7 @@ class FindConfig:
         _file_types_path = _data.joinpath('filetypes.json')
         _find_options_path = _data.joinpath('findoptions.json')
 
-        _home = os.getenv('HOME', '')
-        _default_find_config_dir = os.path.join(_home, '.config', 'xfind')
-        _xfind_config_dir = os.getenv('XFIND_CONFIG_DIR', _default_find_config_dir)
+        _xfind_config_dir = get_xfind_config_dir()
         _default_settings_path = os.path.join(_xfind_config_dir, 'settings.json')
 
         self.file_types_path = _file_types_path
