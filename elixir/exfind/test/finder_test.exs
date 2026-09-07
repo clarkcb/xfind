@@ -206,7 +206,7 @@ defmodule ExFindTest.FinderTest do
     config = FindConfig.new()
     settings = FindSettings.new([paths: ["."]])
     finder = Finder.new(config, settings)
-    file_path = Path.join([config.shared_path, "testFiles", "archive.zip"])
+    file_path = Path.join([config.xfind_path, "shared", "testFiles", "archive.zip"])
     results = Finder.filter_to_file_results(finder, file_path)
     assert results == []
   end
@@ -215,7 +215,7 @@ defmodule ExFindTest.FinderTest do
     config = FindConfig.new()
     settings = FindSettings.new([paths: ["."], include_archives: true])
     finder = Finder.new(config, settings)
-    file_path = Path.join([config.shared_path, "testFiles", "archive.zip"])
+    file_path = Path.join([config.xfind_path, "shared", "testFiles", "archive.zip"])
     results = Finder.filter_to_file_results(finder, file_path)
     assert length(results) == 1
   end
@@ -224,7 +224,7 @@ defmodule ExFindTest.FinderTest do
     config = FindConfig.new()
     settings = FindSettings.new([paths: ["."]]) |> FindSettings.set_archives_only(true)
     finder = Finder.new(config, settings)
-    file_path = Path.join([config.shared_path, "testFiles", "archive.zip"])
+    file_path = Path.join([config.xfind_path, "shared", "testFiles", "archive.zip"])
     results = Finder.filter_to_file_results(finder, file_path)
     assert length(results) == 1
   end
@@ -233,7 +233,7 @@ defmodule ExFindTest.FinderTest do
     config = FindConfig.new()
     settings = FindSettings.new([paths: ["."], include_archives: true, in_archive_extensions: ["zip"]])
     finder = Finder.new(config, settings)
-    file_path = Path.join([config.shared_path, "testFiles", "archive.zip"])
+    file_path = Path.join([config.xfind_path, "shared", "testFiles", "archive.zip"])
     results = Finder.filter_to_file_results(finder, file_path)
     assert length(results) == 1
   end
@@ -242,7 +242,7 @@ defmodule ExFindTest.FinderTest do
     config = FindConfig.new()
     settings = FindSettings.new([paths: ["."], include_archives: true, in_archive_extensions: ["gz"]])
     finder = Finder.new(config, settings)
-    file_path = Path.join([config.shared_path, "testFiles", "archive.zip"])
+    file_path = Path.join([config.xfind_path, "shared", "testFiles", "archive.zip"])
     results = Finder.filter_to_file_results(finder, file_path)
     assert results == []
   end
@@ -251,7 +251,7 @@ defmodule ExFindTest.FinderTest do
     config = FindConfig.new()
     settings = FindSettings.new([paths: ["."], include_archives: true, in_archive_file_patterns: [~r/arch/]])
     finder = Finder.new(config, settings)
-    file_path = Path.join([config.shared_path, "testFiles", "archive.zip"])
+    file_path = Path.join([config.xfind_path, "shared", "testFiles", "archive.zip"])
     results = Finder.filter_to_file_results(finder, file_path)
     assert length(results) == 1
   end
@@ -260,7 +260,7 @@ defmodule ExFindTest.FinderTest do
     config = FindConfig.new()
     settings = FindSettings.new([paths: ["."], include_archives: true, in_archive_file_patterns: [~r/comp/]])
     finder = Finder.new(config, settings)
-    file_path = Path.join([config.shared_path, "testFiles", "archive.zip"])
+    file_path = Path.join([config.xfind_path, "shared", "testFiles", "archive.zip"])
     results = Finder.filter_to_file_results(finder, file_path)
     assert results == []
   end
@@ -269,7 +269,7 @@ defmodule ExFindTest.FinderTest do
     config = FindConfig.new()
     settings = FindSettings.new([paths: ["."], include_archives: true, out_archive_file_patterns: [~r/arch/]])
     finder = Finder.new(config, settings)
-    file_path = Path.join([config.shared_path, "testFiles", "archive.zip"])
+    file_path = Path.join([config.xfind_path, "shared", "testFiles", "archive.zip"])
     results = Finder.filter_to_file_results(finder, file_path)
     assert results == []
   end
@@ -278,7 +278,7 @@ defmodule ExFindTest.FinderTest do
     config = FindConfig.new()
     settings = FindSettings.new([paths: ["."], include_archives: true, out_archive_file_patterns: [~r/comp/]])
     finder = Finder.new(config, settings)
-    file_path = Path.join([config.shared_path, "testFiles", "archive.zip"])
+    file_path = Path.join([config.xfind_path, "shared", "testFiles", "archive.zip"])
     results = Finder.filter_to_file_results(finder, file_path)
     assert length(results) == 1
   end

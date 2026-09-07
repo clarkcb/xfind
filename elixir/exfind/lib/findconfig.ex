@@ -8,6 +8,7 @@ defmodule ExFind.FindConfig do
   @shared_name "shared"
   @file_types_name "filetypes.json"
   @find_options_name "findoptions.json"
+  @version "0.1.0"
 
   def get_xfind_config_dir() do
     System.get_env("XFIND_CONFIG_DIR") || @default_xfind_config_dir
@@ -34,13 +35,15 @@ defmodule ExFind.FindConfig do
     Path.join([shared_path, @find_options_name])
   end
 
-  defstruct file_types_path: "", find_options_path: "", default_find_settings_path: ""
+  defstruct [:xfind_path, :file_types_path, :find_options_path, :default_find_settings_path, :version]
 
   def new() do
     __struct__([
+      xfind_path: get_xfind_path(),
       file_types_path: get_file_types_path(),
       find_options_path: get_find_options_path(),
-      default_find_settings_path: get_default_find_settings_path()
+      default_find_settings_path: get_default_find_settings_path(),
+      version: @version
     ])
   end
 end
