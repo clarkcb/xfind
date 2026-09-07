@@ -12,14 +12,14 @@
 ########################################
 # Config
 ########################################
-if (-not (Test-Path env:XFIND_CONFIG_DIR)) {
-    $env:XFIND_CONFIG_DIR = Join-Path -Path $HOME -ChildPath '.config' -AdditionalChildPath 'xfind'
+$xFindConfigDir =Join-Path -Path $HOME -ChildPath '.config' -AdditionalChildPath 'xfind'
+if (Test-Path env:XFIND_CONFIG_DIR) {
+    $xFindConfigDir = $env:XFIND_CONFIG_DIR
 }
-$xFindConfigDir = $env:XFIND_CONFIG_DIR
-if (-not (Test-Path env:XFIND_PATH)) {
-    $env:XFIND_PATH = Join-Path -Path $HOME -ChildPath 'src' -AdditionalChildPath 'xfind'
+$xfindPath = Join-Path -Path $HOME -ChildPath 'src' -AdditionalChildPath 'xfind'
+if (Test-Path env:XFIND_PATH) {
+    $xfindPath = $env:XFIND_PATH
 }
-$xfindPath = $env:XFIND_PATH
 $sharedPath = Join-Path -Path $xfindPath -ChildPath 'shared'
 $fileTypesPath = Join-Path -Path $sharedPath -ChildPath 'filetypes.json'
 $findOptionsPath = Join-Path -Path $sharedPath -ChildPath 'findoptions.json'
@@ -31,14 +31,12 @@ $defaultFindSettingsPath = Join-Path $xFindConfigDir 'settings.json'
 ########################################
 # FindConfig
 ########################################
-class FindConfig
-{
+class FindConfig {
     $FileTypesPath = '' # path to filetypes.json
     $FindOptionsPath = '' # path to findoptions.json
     $DefaultFindSettingsPath = '' # path to default settings.json
 
-    FindConfig()
-    {
+    FindConfig() {
         $this.FileTypesPath = $script:fileTypesPath
         $this.FindOptionsPath = $script:findOptionsPath
         $this.DefaultFindSettingsPath = $script:defaultFindSettingsPath
