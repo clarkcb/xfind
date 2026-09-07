@@ -16,7 +16,7 @@ import scala.util.matching.Regex
 class Finder (val config: FindConfig, val settings: FindSettings) {
   import Finder.*
 
-  private val fileTypes = new FileTypes(config)
+  val fileTypes = new FileTypes(config)
 
   private def validateSettings(): Unit = {
     if (settings.paths.isEmpty) {
