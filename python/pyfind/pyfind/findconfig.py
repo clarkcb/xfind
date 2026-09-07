@@ -22,18 +22,14 @@ class FindConfig:
 
         # pyfind data package resources
         _data = importlib.resources.files('pyfind').joinpath('data')
+        _file_types_path = _data.joinpath('filetypes.json')
+        _find_options_path = _data.joinpath('findoptions.json')
 
-        # FILETYPES_PATH = os.path.join(data_path, 'filetypes.json')
-        FILE_TYPES_PATH = _data.joinpath('filetypes.json')
+        _home = os.getenv('HOME', '')
+        _default_find_config_dir = os.path.join(_home, '.config', 'xfind')
+        _xfind_config_dir = os.getenv('XFIND_CONFIG_DIR', _default_find_config_dir)
+        _default_settings_path = os.path.join(_xfind_config_dir, 'settings.json')
 
-        # FINDOPTIONS_PATH = os.path.join(data_path, 'findoptions.json')
-        FIND_OPTIONS_PATH = _data.joinpath('findoptions.json')
-
-        HOME = os.getenv('HOME', '')
-        DEFAULT_FIND_CONFIG_DIR = os.path.join(HOME, '.config', 'xfind')
-        XFIND_CONFIG_DIR = os.getenv('XFIND_CONFIG_DIR', DEFAULT_FIND_CONFIG_DIR)
-        DEFAULT_SETTINGS_PATH = os.path.join(XFIND_CONFIG_DIR, 'settings.json')
-
-        self.file_types_path = FILE_TYPES_PATH
-        self.find_options_path = FIND_OPTIONS_PATH
-        self.default_find_settings_path = DEFAULT_SETTINGS_PATH
+        self.file_types_path = _file_types_path
+        self.find_options_path = _find_options_path
+        self.default_find_settings_path = _default_settings_path

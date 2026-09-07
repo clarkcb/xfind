@@ -365,6 +365,7 @@ class FinderTest(unittest.TestCase):
         config = FindConfig()
         settings = FindSettings()
         settings.add_path(Path('./bin'))
+        settings.add_file_types('code', 'in_file_types')
         finder = Finder(config, settings)
         file_results = finder.find_files()
         self.assertTrue(len(file_results) < 4)
@@ -382,6 +383,7 @@ class FinderTest(unittest.TestCase):
         config = FindConfig()
         settings = FindSettings()
         settings.add_path(Path('./bin'))
+        settings.add_file_types('code', 'in_file_types')
         settings.follow_symlinks = False
         finder = Finder(config, settings)
         file_results = finder.find_files()
