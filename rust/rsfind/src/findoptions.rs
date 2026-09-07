@@ -648,7 +648,7 @@ mod tests {
 
         let args: Vec<String> = vec![
             "-x", "php,rs", "-D", "debug", "-f", "find", "-t",
-            "code", "--debug", ".",
+            "code", "--debug", ".", "--nodefaultfiles",
         ]
         .into_iter()
         .map(|a| a.to_string())
@@ -665,11 +665,11 @@ mod tests {
         assert_eq!(settings.in_extensions().len(), 2);
         assert_eq!(settings.in_extensions()[0], String::from("php"));
         assert_eq!(settings.in_extensions()[1], String::from("rs"));
-        // assert_eq!(settings.out_dir_patterns().len(), 1);
-        // assert_eq!(
-        //     settings.out_dir_patterns()[0].to_string(),
-        //     String::from("debug")
-        // );
+        assert_eq!(settings.out_dir_patterns().len(), 1);
+        assert_eq!(
+            settings.out_dir_patterns()[0].to_string(),
+            String::from("debug")
+        );
         assert_eq!(settings.in_file_patterns().len(), 1);
         assert_eq!(
             settings.in_file_patterns()[0].to_string(),
@@ -750,7 +750,6 @@ mod tests {
         };
         assert!(!options.find_options.is_empty());
 
-        // let config = Config::from_json_file(CONFIG_FILE_PATH.to_string());
         let config = FindConfig::new();
         let path = Path::new(config.shared_path.as_str()).join("settings.json");
         let settings_file = path.to_str().unwrap();

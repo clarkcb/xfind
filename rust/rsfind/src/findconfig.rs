@@ -14,7 +14,7 @@ pub struct FindConfig {
 }
 
 #[derive(Serialize, Deserialize)]
-pub struct JsonConfig {
+pub struct JsonFindConfig {
     xfindconfigdir: String,
     xfindpath: String,
     version: String,
@@ -49,7 +49,7 @@ impl FindConfig {
     pub fn from_json_file(json_file_path: String) -> FindConfig {
         let contents = fs::read_to_string(json_file_path)
             .expect("Something went wrong reading the config file");
-        let json_config: JsonConfig = serde_json::from_str(&contents).unwrap();
+        let json_config: JsonFindConfig = serde_json::from_str(&contents).unwrap();
         FindConfig::for_values(json_config.xfindconfigdir, json_config.xfindpath, json_config.version)
     }
 }
