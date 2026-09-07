@@ -8,6 +8,7 @@
 #
 ###############################################################################
 """
+import asyncio
 import os
 from pathlib import Path
 from typing import Optional
@@ -305,6 +306,10 @@ class Finder:
         else:
             raise FindException(START_PATH_DOES_NOT_MATCH_FIND_SETTINGS)
 
+    async def get_file_results_for_path_async(self, path: Path) -> list[FileResult]:
+        """Get file results for given path."""
+        return self.get_file_results_for_path(path)
+
     def find_files(self) -> list[FileResult]:
         """Get the list of all files matching find settings."""
         file_results = []
@@ -312,9 +317,19 @@ class Finder:
             file_results.extend(self.get_file_results_for_path(p))
         return file_results
 
+    async def find_files_async(self) -> list[FileResult]:
+        """Get the list of all files matching find settings."""
+        file_results = []
+        async with asyncio.TaskGroup() as tg:
+            tasks = [tg.create_task(self.get_file_results_for_path_async(p)) for p in self.settings.paths]
+            for task in tasks:
+                file_results.extend(await task)
+        return file_results
+
     async def find(self) -> list[FileResult]:
         """Find matching files under paths."""
-        file_results = self.find_files()
+        # file_results = self.find_files()
+        file_results = await self.find_files_async()
         file_result_sorter = FileResultSorter(self.settings)
         return file_result_sorter.sort(file_results)
 

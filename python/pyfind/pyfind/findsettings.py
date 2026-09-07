@@ -9,10 +9,11 @@
 ###############################################################################
 """
 import re
+from collections.abc import Collection
 from datetime import datetime
 from io import StringIO
 from pathlib import Path
-from typing import Any, Optional, Pattern
+from typing import Any, Pattern
 
 from .common import list_to_str
 from .color import Color
@@ -21,6 +22,10 @@ from .findexception import FindException
 from .sortby import SortBy
 
 PatternSet = set[Pattern]
+StringOrStringColl = str | Collection[str]
+PatternOrPatternColl = Pattern | Collection[Pattern]
+FileTypeOrFileTypeColl = FileType | Collection[FileType]
+PathOrPathColl = Path | Collection[Path]
 
 
 class FindSettings:
@@ -46,27 +51,27 @@ class FindSettings:
                  ext_color: Color = Color.YELLOW,
                  file_color: Color = Color.MAGENTA,
                  follow_symlinks: bool = False,
-                 in_archive_extensions: list[str] | set[str] | str = None,
-                 in_archive_file_patterns: list | set | str | Pattern = None,
-                 in_dir_patterns: list | set | str | Pattern = None,
-                 in_extensions: list[str] | set[str] | str = None,
-                 in_file_patterns: list | set | str | Pattern = None,
-                 in_file_types: list | set | str | FileType = None,
+                 in_archive_extensions: StringOrStringColl | None = None,
+                 in_archive_file_patterns: PatternOrPatternColl | None = None,
+                 in_dir_patterns: PatternOrPatternColl | None = None,
+                 in_extensions: StringOrStringColl | None = None,
+                 in_file_patterns: PatternOrPatternColl | None = None,
+                 in_file_types: FileTypeOrFileTypeColl | None = None,
                  include_archives: bool = False,
                  include_hidden: bool = False,
                  max_depth: int = -1,
-                 max_last_mod: Optional[datetime] = None,
+                 max_last_mod: datetime | None = None,
                  max_size: int = 0,
                  min_depth: int = -1,
-                 min_last_mod: Optional[datetime] = None,
+                 min_last_mod: datetime | None = None,
                  min_size: int = 0,
-                 out_archive_extensions: list[str] | set[str] | str = None,
-                 out_archive_file_patterns: list | set | str | Pattern = None,
-                 out_dir_patterns: list | set | str | Pattern = None,
-                 out_extensions: list[str] | set[str] | str = None,
-                 out_file_patterns: list | set | str | Pattern = None,
-                 out_file_types: list | set | str | FileType = None,
-                 paths: list[Path] | set[Path] | list[str] | set[str] | str = None,
+                 out_archive_extensions: StringOrStringColl | None = None,
+                 out_archive_file_patterns: PatternOrPatternColl | None = None,
+                 out_dir_patterns: PatternOrPatternColl | None = None,
+                 out_extensions: StringOrStringColl | None = None,
+                 out_file_patterns: PatternOrPatternColl | None = None,
+                 out_file_types: FileTypeOrFileTypeColl | None = None,
+                 paths: PathOrPathColl | StringOrStringColl | None = None,
                  print_dirs: bool = False,
                  print_files: bool = False,
                  print_usage: bool = False,
@@ -141,7 +146,7 @@ class FindSettings:
         self.sort_descending = sort_descending
         self.verbose = verbose
 
-    def add_strs_to_set(self, strs: list[str] | set[str] | frozenset[str] | str, set_name: str):
+    def add_strs_to_set(self, strs: StringOrStringColl, set_name: str):
         """Add one or more comma-separated strs to set"""
         if isinstance(strs, str):
             strs = {strs}
@@ -153,32 +158,32 @@ class FindSettings:
         else:
             raise FindException('strs is an unknown type')
 
-    def add_patterns(self, patterns: list | set | str | Pattern, pattern_set_name: str, compile_flag=re.S | re.U):
+    def add_patterns(self, patterns: PatternOrPatternColl | StringOrStringColl, pattern_set_name: str, compile_flag=re.S | re.U):
         """Add patterns to patternset"""
-        if isinstance(patterns, (list, set)):
+        if isinstance(patterns, Pattern):
+            pattern_set = getattr(self, pattern_set_name)
+            pattern_set.add(patterns)
+        elif isinstance(patterns, str):
+            pattern_set = getattr(self, pattern_set_name)
+            pattern_set.add(re.compile(patterns, compile_flag))
+        elif isinstance(patterns, Collection):
             pattern_set = getattr(self, pattern_set_name)
             if all(isinstance(p, Pattern) for p in patterns):
                 pattern_set.update(patterns)
             else:  # assume all strings
                 pattern_set.update({re.compile(p, compile_flag) for p in patterns})
-        elif isinstance(patterns, str):
-            pattern_set = getattr(self, pattern_set_name)
-            pattern_set.add(re.compile(patterns, compile_flag))
-        elif isinstance(patterns, Pattern):
-            pattern_set = getattr(self, pattern_set_name)
-            pattern_set.add(patterns)
         else:
             raise FindException('patterns is an unknown type')
 
-    def add_paths(self, paths: list | set | Path | str):
+    def add_paths(self, paths: PathOrPathColl | StringOrStringColl):
         """Add one or more paths"""
-        if isinstance(paths, (list, set)):
-            for p in paths:
-                self.add_paths(p)
-        elif isinstance(paths, Path):
+        if isinstance(paths, Path):
             self.paths.add(paths)
         elif isinstance(paths, str):
             self.paths.add(Path(paths))
+        elif isinstance(paths, Collection):
+            for p in paths:
+                self.add_paths(p)
         else:
             raise FindException('paths is an unknown type')
 
@@ -186,17 +191,17 @@ class FindSettings:
         """Add a single path"""
         self.add_paths(path)
 
-    def add_file_types(self, file_types: list | set | str | FileType, file_type_set_name: str):
+    def add_file_types(self, file_types: FileTypeOrFileTypeColl | StringOrStringColl, file_type_set_name: str):
         """Add one or more filetypes"""
-        if isinstance(file_types, (list, set)):
+        if isinstance(file_types, FileType):
+            new_file_type_set = {file_types}
+        elif isinstance(file_types, str):
+            new_file_type_set = {FileType.from_name(ft) for ft in file_types.split(',') if ft}
+        elif isinstance(file_types, Collection):
             if all(isinstance(ft, FileType) for ft in file_types):
                 new_file_type_set = set(file_types)
             else:  # assume all strings
                 new_file_type_set = {FileType.from_name(ft) for ft in file_types}
-        elif isinstance(file_types, str):
-            new_file_type_set = {FileType.from_name(ft) for ft in file_types.split(',') if ft}
-        elif isinstance(file_types, FileType):
-            new_file_type_set = {file_types}
         else:
             raise FindException('file_types is an unknown type')
         file_type_set = getattr(self, file_type_set_name)
@@ -204,7 +209,8 @@ class FindSettings:
 
     def need_last_mod(self) -> bool:
         return self.sort_by == SortBy.LASTMOD or \
-               self.max_last_mod or self.min_last_mod
+               self.max_last_mod is not None or \
+               self.min_last_mod is not None
 
     def need_size(self) -> bool:
         return self.sort_by == SortBy.FILESIZE or \
@@ -254,7 +260,7 @@ class FindSettings:
                     sio.write(f'"{val}"')
                 else:
                     sio.write('""')
-            elif isinstance(val, Optional[datetime]):
+            elif isinstance(val, datetime | None):
                 if val:
                     sio.write(f'"{val}"')
                 else:
