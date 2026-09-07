@@ -40,8 +40,8 @@ main = do
           logMsg $ "\n" ++ getUsage findOptions ++ "\n"
         Right settings -> do
           logMsg $ if debug settings
-                  then findSettingsToString settings ++ "\n"
-                  else ""
+                   then findSettingsToString settings ++ "\n"
+                   else ""
           maybeErrMsg <- ioValidateFindSettings settings
           case maybeErrMsg of
             Just errMsg -> do
@@ -50,19 +50,19 @@ main = do
               logMsg $ "\n" ++ getUsage findOptions ++ "\n"
             Nothing -> do
               if printUsage settings
-                then logMsg $ "\n" ++ getUsage findOptions ++ "\n"
-                else do
-                  findResultsEither <- doFind $ getFinder config' settings
-                  case findResultsEither of
-                    Left errMsg -> do
-                      logMsg "\n"
-                      logErrColor errMsg $ colorize settings
-                      logMsg $ "\n" ++ getUsage findOptions ++ "\n"
-                    Right fileResults -> do
-                      logMsg $ if printDirs settings
-                                then formatMatchingDirs settings fileResults
-                                else ""
-                      logMsg $ if printFiles settings
-                                then formatMatchingFiles settings fileResults
-                                else ""
-                      logMsg ""
+              then logMsg $ "\n" ++ getUsage findOptions ++ "\n"
+              else do
+                findResultsEither <- doFind $ getFinder config' settings
+                case findResultsEither of
+                  Left errMsg -> do
+                    logMsg "\n"
+                    logErrColor errMsg $ colorize settings
+                    logMsg $ "\n" ++ getUsage findOptions ++ "\n"
+                  Right fileResults -> do
+                    logMsg $ if printDirs settings
+                             then formatMatchingDirs settings fileResults
+                             else ""
+                    logMsg $ if printFiles settings
+                             then formatMatchingFiles settings fileResults
+                             else ""
+                    logMsg ""

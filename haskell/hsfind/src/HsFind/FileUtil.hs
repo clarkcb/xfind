@@ -1,7 +1,8 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 
 module HsFind.FileUtil
-  ( expandPath
+  ( concatPath
+  , expandPath
   , filterDirectories
   , filterFiles
   , filterOutSymlinks
@@ -40,6 +41,9 @@ import System.Directory (doesDirectoryExist, doesFileExist, listDirectory, getFi
 import System.FilePath ((</>), dropFileName, splitDirectories, takeFileName)
 import System.IO (hSetNewlineMode, IOMode(..), universalNewlineMode, withFile)
 import Data.Time (UTCTime)
+
+concatPath :: FilePath -> FilePath -> FilePath
+concatPath fp1 fp2 = fp1 </> fp2
 
 expandPath :: FilePath -> IO FilePath
 expandPath filePath = do

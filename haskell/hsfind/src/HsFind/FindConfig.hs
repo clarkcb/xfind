@@ -2,13 +2,14 @@ module HsFind.FindConfig
   ( FindConfig(..)
   , getFindConfig
   , getXfindPath
-  , getDataPath
+  , getFindDataPath
   , getDefaultFindSettingsPath
   ) where
 
 import System.Directory (getHomeDirectory)
 import System.Environment (lookupEnv)
-import System.FilePath ((</>))
+
+import HsFind.FileUtil (concatPath)
 
 data FindConfig = FindConfig {
     xfindPath :: FilePath
@@ -20,7 +21,7 @@ data FindConfig = FindConfig {
 getFindConfig :: IO FindConfig
 getFindConfig = do
   xfindPath <- getXfindPath
-  dataPath <- getDataPath
+  dataPath <- getFindDataPath
   let fileTypesPath = concatPath dataPath "filetypes.json"
   let findOptionsPath = concatPath dataPath "findoptions.json"
   defaultFindSettingsPath <- getDefaultFindSettingsPath
@@ -30,9 +31,6 @@ getFindConfig = do
   , findOptionsPath=findOptionsPath
   , defaultFindSettingsPath=defaultFindSettingsPath
   }
-
-concatPath :: FilePath -> FilePath -> FilePath
-concatPath fp1 fp2 = fp1 </> fp2
 
 defaultXfindConfigDir :: IO FilePath
 defaultXfindConfigDir = do
@@ -60,8 +58,8 @@ getXfindPath = do
     Just xfindPath -> return xfindPath
     Nothing -> defaultXfindPath
 
-getDataPath :: IO FilePath
-getDataPath = do
+getFindDataPath :: IO FilePath
+getFindDataPath = do
   xfindPath <- getXfindPath
   let elems = ["haskell", "hsfind", "data"]
   return $ foldl concatPath xfindPath elems

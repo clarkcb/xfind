@@ -48,13 +48,13 @@ validateFindSettings settings =
   if printUsage settings
   then Nothing
   else
-    recValidateSettings settings validators []
-  where recValidateSettings :: FindSettings -> [FindSettings -> [String]] -> [String] -> Maybe String
-        recValidateSettings settings' validators' errs = do
+    recValidateFindSettings settings validators []
+  where recValidateFindSettings :: FindSettings -> [FindSettings -> [String]] -> [String] -> Maybe String
+        recValidateFindSettings settings' validators' errs = do
           case errs of
             [] -> case validators' of
                     [] -> Nothing
-                    (v:vs) -> recValidateSettings settings' vs (v settings')
+                    (v:vs) -> recValidateFindSettings settings' vs (v settings')
             _ -> Just $ head errs
         validators = [ \s -> ["Startpath not defined" | null (paths s)]
                      , \s -> ["Invalid range for mindepth and maxdepth" | maxDepth s > 0 && maxDepth s < minDepth s]
@@ -68,15 +68,15 @@ ioValidateFindSettings :: FindSettings -> IO (Maybe String)
 ioValidateFindSettings settings =
   case validateFindSettings settings of
     Just err -> return $ Just err
-    Nothing -> recIoValidateSettings settings validators []
-  where recIoValidateSettings :: FindSettings -> [FindSettings -> IO [String]] -> [String] -> IO (Maybe String)
-        recIoValidateSettings settings' validators' errs = do
+    Nothing -> recIoValidateFindSettings settings validators []
+  where recIoValidateFindSettings :: FindSettings -> [FindSettings -> IO [String]] -> [String] -> IO (Maybe String)
+        recIoValidateFindSettings settings' validators' errs = do
           case errs of
             [] -> case validators' of
                     [] -> return Nothing
                     (v:vs) -> do
                       newErrs <- v settings'
-                      recIoValidateSettings settings' vs newErrs
+                      recIoValidateFindSettings settings' vs newErrs
             _ -> return $ Just $ head errs
         validators = [ \s -> do
                              exist <- pathsExist (paths s)
