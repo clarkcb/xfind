@@ -10,6 +10,7 @@ export { FileResultSorter } from './fileresultsorter';
 export { FileType } from './filetype';
 export { FileTypes } from './filetypes';
 export { FileUtil } from './fileutil';
+export { FindConfig } from './findconfig';
 export { FindOption, Option } from './findoption';
 export { FindOptions } from './findoptions';
 export { FindSettings } from './findsettings';
