@@ -19,6 +19,7 @@ const { FileResultSorter } = require('./fileresultsorter');
 const { FileType } = require('./filetype');
 const { FileTypes } = require('./filetypes');
 const { FileUtil } = require('./fileutil');
+const { FindConfig } = require('./findconfig');
 const { FindOptions } = require('./findoptions');
 const { FindSettings } = require('./findsettings');
 const { Finder } = require('./finder');
@@ -43,6 +44,7 @@ module.exports = {
   FileType,
   FileTypes,
   FileUtil,
+  FindConfig,
   Finder,
   FindError,
   FindOptions,
