@@ -991,6 +991,11 @@ function CleanPythonVersion
         CleanJsonResources($resourcesPath)
     }
 
+    $pycachePath = Join-Path $pyVersionPath $pyVersionName '__pycache__'
+    if (Test-Path $pycachePath) {
+        Remove-Item -Path $pycachePath -Recurse -Force
+    }
+
     $binPath = Join-Path $basePath 'bin'
     RemoveFromBin $binPath $pyVersionName
 }

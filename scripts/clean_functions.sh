@@ -848,6 +848,12 @@ clean_python_version () {
     then
         clean_json_resources "$py_version_path/$py_version_name/data"
     fi
+
+    if [ -d "$py_version_path/$py_version_name/__pycache__" ]
+    then
+        log "rm -rf $py_version_path/$py_version_name/__pycache__"
+        rm -rf "$py_version_path/$py_version_name/__pycache__"
+    fi
 }
 
 clean_ruby_version () {

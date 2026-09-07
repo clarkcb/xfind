@@ -2266,6 +2266,9 @@ function BuildTypescriptVersion
     Log('npm install')
     npm install
 
+    $tscVersion = npx tsc --version
+    Log("tsc version: $tscVersion")
+
     Log('npm run build')
     npm run build
 

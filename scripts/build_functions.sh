@@ -2396,12 +2396,12 @@ build_typescript_version () {
     log "cd $ts_version_path"
     cd "$ts_version_path"
 
-    TSC_VERSION=$(npx tsc --version)
-    log "tsc version: $TSC_VERSION"
-
     # run npm install and build
     log "npm install"
     npm install
+
+    TSC_VERSION=$(npx tsc --version)
+    log "tsc version: $TSC_VERSION"
 
     log "npm run build"
     npm run build
