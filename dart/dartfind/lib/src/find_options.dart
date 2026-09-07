@@ -46,7 +46,7 @@ class FindOption implements Option {
 }
 
 class FindOptions {
-  FindConfig? config;
+  final FindConfig config;
   List<FindOption> findOptions = [];
   var boolActionMap = {};
   var stringActionMap = {};
@@ -54,14 +54,13 @@ class FindOptions {
   ArgTokenizer? argTokenizer;
   late Future ready;
 
-  FindOptions(FindConfig config) {
-    this.config = config;
+  FindOptions(this.config) {
     setActionMaps();
     ready = loadFindOptionsFromJson().then((f) => setArgTokenizer());
   }
 
   Future<void> loadFindOptionsFromJson() async {
-    var contents = await File(this.config!.findOptionsPath).readAsString();
+    var contents = await File(this.config.findOptionsPath).readAsString();
     Map soMap = json.decode(contents);
     if (soMap.containsKey('findoptions')) {
       var soList = soMap['findoptions']! as List;
@@ -216,9 +215,9 @@ class FindOptions {
   }
 
   Future<void> updateSettingsFromDefaultFiles(FindSettings settings) async {
-    if (FileSystemEntity.typeSync(this.config!.defaultFindSettingsPath) ==
+    if (FileSystemEntity.typeSync(this.config.defaultFindSettingsPath) ==
         FileSystemEntityType.file) {
-      await updateSettingsFromFile(settings, this.config!.defaultFindSettingsPath);
+      await updateSettingsFromFile(settings, this.config.defaultFindSettingsPath);
     }
   }
 
