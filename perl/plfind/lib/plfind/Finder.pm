@@ -26,9 +26,10 @@ sub new {
     my $class = shift;
     my $config = shift;
     my $settings = shift;
+    my $file_types = plfind::FileTypes->new($config);
     my $self = {
         settings => $settings,
-        file_types => plfind::FileTypes->new($config),
+        file_types => $file_types,
         results => [],
     };
     bless $self, $class;

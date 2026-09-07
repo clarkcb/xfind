@@ -39,6 +39,7 @@ sub new {
     my $default_find_settings_path = file($xfind_config_dir, 'settings.json');
 
     my $self = {
+        xfind_path => $xfind_path,
         file_types_path => $file_types_path,
         find_options_path => $find_options_path,
         default_find_settings_path => $default_find_settings_path,
