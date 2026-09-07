@@ -2,23 +2,23 @@
   (:use [clojure.java.io :only (file reader)])
   (:require [clojure.test :refer :all])
   (:use [clojure.string :as str :only (join)]
-        [cljfind.config :only (XFINDPATH SHAREDPATH)]
         [cljfind.fileresult :only (new-file-result)]
         [cljfind.filetypes :only (get-file-type)]
         [cljfind.fileutil :only (to-path)]
+        [cljfind.findconfig :only (get-xfind-path get-shared-path)]
         [cljfind.finder :only
          (filter-to-file-result find-files matching-archive-file-result? matching-dir-path? matching-file-result?)]
         [cljfind.findsettings :only
          (DEFAULT-FIND-SETTINGS add-extension add-path add-pattern set-archives-only)]))
 
 (def TESTFILE
-  (str/join java.io.File/separator [SHAREDPATH "testFiles" "testFile2.txt"]))
+  (str/join java.io.File/separator [(get-shared-path) "testFiles" "testFile2.txt"]))
 
 (defn get-settings []
   (add-pattern DEFAULT-FIND-SETTINGS "Finder" :findpatterns))
 
 (def ^:const ^String BINPATH
-  (str/join java.io.File/separator [XFINDPATH "bin"]))
+  (str/join java.io.File/separator [(get-xfind-path) "bin"]))
 
 ;; *****************************************************************************
 ;; is-matching-dir? tests

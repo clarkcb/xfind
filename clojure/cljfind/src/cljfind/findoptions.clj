@@ -190,8 +190,7 @@
           (update-settings-from-tokens settings [] [(str "Unknown token type: " name arg-type)]))))))
 
 (defn settings-from-tokens [tokens]
-  (let [arg-tokenizer (get-arg-tokenizer-for-options FIND-OPTIONS)]
-    (update-settings-from-tokens DEFAULT-FIND-SETTINGS tokens)))
+  (update-settings-from-tokens DEFAULT-FIND-SETTINGS tokens))
 
 (defn update-settings-from-arg-map [^FindSettings settings arg-map]
   (let [[tokens errs] (tokenize-arg-map ARG-TOKENIZER arg-map)]
@@ -200,8 +199,7 @@
       (update-settings-from-tokens settings tokens))))
 
 (defn settings-from-arg-map [arg-map]
-  (let [arg-tokenizer (get-arg-tokenizer-for-options FIND-OPTIONS)]
-    (update-settings-from-arg-map DEFAULT-FIND-SETTINGS arg-map)))
+  (update-settings-from-arg-map DEFAULT-FIND-SETTINGS arg-map))
 
 (defn update-settings-from-json [^FindSettings settings ^String json]
   (let [[tokens errs] (tokenize-json ARG-TOKENIZER json)]
@@ -210,8 +208,7 @@
       (update-settings-from-tokens settings tokens))))
 
 (defn settings-from-json [^String json]
-  (let [arg-tokenizer (get-arg-tokenizer-for-options FIND-OPTIONS)]
-    (update-settings-from-json DEFAULT-FIND-SETTINGS json)))
+  (update-settings-from-json DEFAULT-FIND-SETTINGS json))
 
 (defn update-settings-from-file [^FindSettings settings f]
   (let [[tokens errs] (tokenize-file ARG-TOKENIZER f)]
@@ -220,8 +217,7 @@
       (update-settings-from-tokens settings tokens))))
 
 (defn settings-from-file [f]
-  (let [arg-tokenizer (get-arg-tokenizer-for-options FIND-OPTIONS)]
-    (update-settings-from-file DEFAULT-FIND-SETTINGS f)))
+  (update-settings-from-file DEFAULT-FIND-SETTINGS f))
 
 (defn update-settings-from-default-files [^FindSettings settings]
   (let [default-find-settings-path (get-default-find-settings-path)]
@@ -236,8 +232,7 @@
       (update-settings-from-tokens settings tokens))))
 
 (defn settings-from-args [args]
-  (let [settings (assoc DEFAULT-FIND-SETTINGS :print-files true)
-        arg-tokenizer (get-arg-tokenizer-for-options FIND-OPTIONS)]
+  (let [settings (assoc DEFAULT-FIND-SETTINGS :print-files true)]
     ;; if args contains a defaultfiles option, process the args with the rest,
     ;; otherwise go ahead and update from default files now
     (if (some #(str/ends-with? (str %) "defaultfiles") args)
