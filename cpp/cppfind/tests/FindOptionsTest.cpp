@@ -3,7 +3,7 @@
 #include "RegexPattern.h"
 
 TEST_CASE("Get FindSettings from minimal args", "[FindOptions]") {
-    auto config = cppfind::get_find_config();
+    const auto config = cppfind::FindConfig();
     auto options = cppfind::FindOptions(config);
     char arg0[] = "cppfind";
     char arg1[] = ".";
@@ -37,7 +37,7 @@ TEST_CASE("Get FindSettings from minimal args", "[FindOptions]") {
 }
 
 TEST_CASE("Get FindSettings from valid args", "[FindOptions]") {
-    auto config = cppfind::get_find_config();
+    const auto config = cppfind::FindConfig();
     auto options = cppfind::FindOptions(config);
     char arg0[] = "cppfind";
     char arg1[] = "-x";
@@ -94,7 +94,7 @@ TEST_CASE("Get FindSettings from JSON", "[FindOptions]") {
 }
 )";
 
-    auto config = cppfind::get_find_config();
+    const auto config = cppfind::FindConfig();
     auto options = cppfind::FindOptions(config);
     auto settings = cppfind::FindSettings();
     options.update_settings_from_json(settings, json_str);

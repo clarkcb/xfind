@@ -11,8 +11,8 @@ namespace cppfind {
     public:
         explicit FileResultFormatter(const FindSettings& settings);
         explicit FileResultFormatter(const std::unique_ptr<FindSettings>& settings_ptr);
-        FileResultFormatter(FileResultFormatter& other) = delete;
-        FileResultFormatter(FileResultFormatter&& other) = delete;
+        // FileResultFormatter(FileResultFormatter& other) = delete;
+        // FileResultFormatter(FileResultFormatter&& other) = delete;
         [[nodiscard]] FindSettings settings() const;
         static std::string colorize(const std::string& s, unsigned long match_start_idx, unsigned long match_end_idx,
             Color color);

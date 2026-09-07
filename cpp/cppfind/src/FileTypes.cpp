@@ -12,7 +12,7 @@
 
 namespace cppfind {
     FileTypes::FileTypes(const FindConfig& config) {
-        load_file_types_from_json_file(config.file_types_path);
+        load_file_types_from_json_file(config.file_types_path());
     }
 
     void FileTypes::load_file_types_from_json_file(std::string_view file_types_file_path) {

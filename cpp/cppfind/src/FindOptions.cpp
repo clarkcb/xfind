@@ -20,7 +20,7 @@ namespace cppfind {
 
     std::vector<std::unique_ptr<Option>> FindOptions::load_options() {
         std::vector<std::unique_ptr<Option>> options;
-        auto find_options_path = m_config.find_options_path;
+        auto find_options_path = m_config.find_options_path();
 
         if (!std::filesystem::exists(find_options_path)) {
             std::string msg{"Findoptions file not found: "};
@@ -147,7 +147,7 @@ namespace cppfind {
     }
 
     void FindOptions::update_settings_from_default_files(FindSettings& settings) {
-        if (const auto default_settings_path = m_config.default_find_settings_path;
+        if (const auto default_settings_path = m_config.default_find_settings_path();
             std::filesystem::exists(default_settings_path)) {
             update_settings_from_file(settings, default_settings_path);
         }

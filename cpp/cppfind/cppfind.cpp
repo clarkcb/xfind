@@ -11,7 +11,7 @@ int main(int argc, char *argv[]) {
     std::unique_ptr<FindOptions> options_ptr;
     std::unique_ptr<FindSettings> settings_ptr;
 
-    auto config = get_find_config();
+    auto config = FindConfig();
 
     try {
         options_ptr = std::make_unique<FindOptions>(config);

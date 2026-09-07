@@ -4,10 +4,10 @@
 #include "Finder.h"
 
 cppfind::FindConfig get_config() {
-    return cppfind::get_find_config();
+    return cppfind::FindConfig();
 }
 
-cppfind::FindSettings get_settings(std::string_view path) {
+cppfind::FindSettings get_settings(const std::string_view path) {
     auto settings = cppfind::FindSettings();
     settings.add_path(path);
     return settings;
@@ -509,7 +509,7 @@ TEST_CASE("Test is_matching_archive_file_result does not match out-pattern shoul
 TEST_CASE("Test follow_symlinks with default settings should exclude symlinks", "[Finder]") {
     const auto config = get_config();
     auto settings = cppfind::FindSettings();
-    const auto bin_path = cppfind::xfind_path() + "/bin";
+    const auto bin_path = config.xfind_path() + "/bin";
     settings.add_path(bin_path);
     const auto finder = cppfind::Finder(config, settings);
     const auto file_results = finder.find();
@@ -519,7 +519,7 @@ TEST_CASE("Test follow_symlinks with default settings should exclude symlinks", 
 TEST_CASE("Test follow_symlinks with follow_symlinks should include symlinks", "[Finder]") {
     const auto config = get_config();
     auto settings = cppfind::FindSettings();
-    const auto bin_path = cppfind::xfind_path() + "/bin";
+    const auto bin_path = config.xfind_path() + "/bin";
     settings.add_path(bin_path);
     settings.follow_symlinks(true);
     const auto finder = cppfind::Finder(config, settings);
@@ -532,7 +532,7 @@ TEST_CASE("Test follow_symlinks with follow_symlinks should include symlinks", "
 TEST_CASE("Test follow_symlinks no follow_symlinks should exclude symlinks", "[Finder]") {
     const auto config = get_config();
     auto settings = cppfind::FindSettings();
-    const auto bin_path = cppfind::xfind_path() + "/bin";
+    const auto bin_path = config.xfind_path() + "/bin";
     settings.add_path(bin_path);
     settings.follow_symlinks(false);
     const auto finder = cppfind::Finder(config, settings);
