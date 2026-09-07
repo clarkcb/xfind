@@ -6,6 +6,7 @@ import (
 )
 
 type FindConfig struct {
+	XFindPath               string
 	FileTypesPath           string
 	FindOptionsPath         string
 	DefaultFindSettingsPath string
@@ -28,6 +29,7 @@ func NewFindConfig() *FindConfig {
 	defaultFindSettingsPath := filepath.Join(xFindConfigDir, "settings.json")
 
 	return &FindConfig{
+		xFindPath,
 		filepath.Join(sharedPath, "filetypes.json"),
 		filepath.Join(sharedPath, "findoptions.json"),
 		defaultFindSettingsPath,
